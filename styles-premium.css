@@ -259,6 +259,14 @@ section {
   background: rgba(142, 255, 61, 0.1);
 }
 
+.browser-icon img {
+  display: block;
+  width: auto;
+  height: 34px;
+  max-width: 100%;
+  object-fit: contain;
+}
+
 .browser-card-copy {
   flex: 1;
 }
