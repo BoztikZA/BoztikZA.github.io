@@ -777,6 +777,90 @@ section{
 
 }
 
+.adsense-section{
+
+    padding:8px 30px 0;
+
+}
+
+.adsense-card{
+
+    padding:18px 20px;
+
+    border-radius:22px;
+
+    border:1px solid var(--border);
+
+    background:linear-gradient(145deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+
+    box-shadow:var(--shadow);
+
+    min-height:120px;
+
+    display:grid;
+
+    gap:12px;
+
+    overflow:hidden;
+
+}
+
+.adsense-meta{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    gap:12px;
+
+    flex-wrap:wrap;
+
+}
+
+.adsense-label{
+
+    display:inline-flex;
+
+    align-items:center;
+
+    padding:7px 12px;
+
+    border-radius:999px;
+
+    background:rgba(142,255,61,.12);
+
+    color:var(--accent);
+
+    font-size:12px;
+
+    font-weight:800;
+
+    letter-spacing:.16em;
+
+    text-transform:uppercase;
+
+}
+
+.adsense-note{
+
+    color:var(--text-muted);
+
+    font-size:14px;
+
+}
+
+.adsense-card .adsbygoogle{
+
+    min-height:90px;
+
+    border-radius:16px;
+
+    overflow:hidden;
+
+}
+
 .section-heading{
 
     max-width:760px;
