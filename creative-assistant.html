@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Creative Assistant | Boztik Creative Toolkit</title>
+  <meta name="description" content="A lightweight creative assistant page for Photoshop guidance, Firefly prompts, workflow tips, background removal help and image quality improvements.">
+  <meta property="og:title" content="Creative Assistant | Boztik Creative Toolkit">
+  <meta property="og:description" content="A modern creative assistant experience designed for future AI integration while remaining useful today.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://boztik.dev/creative-assistant.html">
+  <link rel="icon" href="images/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles-premium.css">
+</head>
+<body>
+  <div class="background-glow">
+    <div class="glow1"></div>
+    <div class="glow2"></div>
+    <div class="glow3"></div>
+  </div>
+
+  <header>
+    <nav class="navbar">
+      <a href="index.html" class="logo-area">
+        <img src="images/logo.png" alt="Boztik Creative Toolkit logo">
+        <div>
+          <span class="logo-title">Boztik Creative Toolkit</span>
+          <span class="logo-subtitle">Professional Browser Extension</span>
+        </div>
+      </a>
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="image-inspector.html">Image Inspector</a>
+        <a href="creative-assistant.html">Creative Assistant</a>
+        <a href="index.html#downloads">Download Extension</a>
+        <a href="privacy.html">Privacy</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page-hero reveal">
+      <div class="section-heading" style="margin-bottom:24px;">
+        <span class="section-label">Free Creative Tool</span>
+        <h1>Creative Assistant</h1>
+        <p>A calm, modern assistant for Photoshop, Firefly prompts, edit workflows and instant creative guidance. The interface is ready for future AI API integration without a redesign.</p>
+      </div>
+    </section>
+
+    <section class="tool-shell reveal">
+      <div class="chat-shell">
+        <div class="chat-log" id="chatLog">
+          <div class="message assistant">Hello! I can help you improve Photoshop workflows, write stronger Firefly prompts, explain frequency separation and suggest export settings for your next project.</div>
+        </div>
+        <div class="prompt-pills">
+          <button class="prompt-pill" type="button" data-prompt="Improve my Photoshop workflow">Improve my Photoshop workflow</button>
+          <button class="prompt-pill" type="button" data-prompt="Write a Firefly prompt">Write a Firefly prompt</button>
+          <button class="prompt-pill" type="button" data-prompt="Explain frequency separation">Explain frequency separation</button>
+          <button class="prompt-pill" type="button" data-prompt="Best export settings">Best export settings</button>
+          <button class="prompt-pill" type="button" data-prompt="Help remove backgrounds">Help remove backgrounds</button>
+        </div>
+        <form class="chat-form" id="chatForm">
+          <input id="chatInput" type="text" placeholder="Ask for guidance, prompts or workflow help..." autocomplete="off">
+          <button class="support-button" type="submit">Send</button>
+        </form>
+      </div>
+      <div class="analysis-card">
+        <h3 style="margin-bottom:12px;">What this assistant can do</h3>
+        <ul class="analysis-list">
+          <li>Offer practical Photoshop workflow advice</li>
+          <li>Generate tailored Firefly prompt ideas</li>
+          <li>Explain technical editing concepts in plain language</li>
+          <li>Recommend export settings for web, print and social media</li>
+          <li>Provide simple steps for background removal and image quality improvement</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="tool-callout reveal">
+      <div class="download-card">
+        <h2>Bring the same creative support into your browser.</h2>
+        <p>Install Boztik Creative Toolkit and keep the assistant, image analysis and workflow ideas close at hand while you browse.</p>
+        <div class="support-actions">
+          <a class="support-button" href="https://chromewebstore.google.com/detail/boztik-creative-toolkit/maaebbajegilfcpmljlpcclebdpngign" target="_blank" rel="noopener noreferrer">Download for Chrome</a>
+          <a class="secondary-link" href="https://microsoftedge.microsoft.com/addons/detail/ajpnibmfjlajpgijgaionelkdjgiemfi" target="_blank" rel="noopener noreferrer">Download for Edge</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <img src="images/logo.png" alt="Boztik Creative Toolkit logo" class="footer-logo">
+    <h3>Boztik Creative Toolkit</h3>
+    <p>Fast, friendly creative support for modern photographers, designers and marketers.</p>
+    <div class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="image-inspector.html">Image Inspector</a>
+      <a href="creative-assistant.html">Creative Assistant</a>
+      <a href="index.html#downloads">Download</a>
+      <a href="privacy.html">Privacy</a>
+    </div>
+  </footer>
+
+  <script>
+    const chatLog = document.getElementById('chatLog');
+    const chatForm = document.getElementById('chatForm');
+    const chatInput = document.getElementById('chatInput');
+    const promptButtons = document.querySelectorAll('.prompt-pill');
+
+    const revealItems = Array.from(document.querySelectorAll('.reveal'));
+    const revealOnScroll = () => {
+      const triggerPoint = window.innerHeight - 90;
+      revealItems.forEach((item) => {
+        const itemTop = item.getBoundingClientRect().top;
+        if (itemTop < triggerPoint) item.classList.add('is-visible');
+      });
+    };
+    revealOnScroll();
+    window.addEventListener('scroll', revealOnScroll, { passive: true });
+    window.addEventListener('resize', revealOnScroll);
+
+    chatForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const prompt = chatInput.value.trim();
+      if (!prompt) return;
+      addMessage(prompt, 'user');
+      chatInput.value = '';
+      addMessage(getResponse(prompt), 'assistant');
+    });
+
+    promptButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        chatInput.value = button.dataset.prompt;
+        chatInput.focus();
+      });
+    });
+
+    function addMessage(text, author) {
+      const message = document.createElement('div');
+      message.className = `message ${author}`;
+      message.textContent = text;
+      chatLog.appendChild(message);
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    function getResponse(prompt) {
+      const text = prompt.toLowerCase();
+      if (text.includes('firefly')) return 'A strong Firefly prompt usually includes subject, style, lighting, camera angle, mood and output format. Try: “Ultra-detailed editorial portrait, soft rim light, cinematic color grade, 4k, commercial photo, natural skin texture.”';
+      if (text.includes('frequency')) return 'Frequency separation is a retouching technique that separates texture from tone. Use it to smooth skin while preserving detail and avoid a plastic-looking result.';
+      if (text.includes('export')) return 'For web, export at 70–85% quality in JPG or PNG depending on transparency needs. For print, use TIFF or high-quality PNG with 300 ppi in the final document.';
+      if (text.includes('background')) return 'For background removal, start with a clean mask, refine edge detail and keep a slight feather for natural transitions. A soft brush and selective refinement usually look best.';
+      if (text.includes('quality')) return 'To improve image quality, first fix exposure and white balance, then sharpen selectively, remove noise carefully and preserve color depth in the final export.';
+      if (text.includes('workflow')) return 'A smoother Photoshop workflow starts with a clear folder structure, smart object templates, action sets and a simple naming convention that keeps revisions easy to manage.';
+      return 'That is a strong creative question. For now, this assistant offers practical guidance and can later be connected to a real AI API without changing the interface.';
+    }
+  </script>
+</body>
+</html>
