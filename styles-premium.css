@@ -933,15 +933,449 @@ footer p {
   transform: translateY(0);
 }
 
+/* ============================
+   Free Creative Tools — Homepage Showcase
+   ============================ */
+.tools-showcase {
+  padding-top: 30px;
+}
+
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.tool-card {
+  padding: 32px;
+  border-radius: 28px;
+  border: 1px solid var(--border);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+}
+
+.tool-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--primary);
+  box-shadow: 0 24px 58px rgba(140, 255, 63, 0.16);
+}
+
+.tool-icon {
+  font-size: 2.1rem;
+  margin-bottom: 16px;
+}
+
+.tool-card h3 {
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  margin-bottom: 10px;
+}
+
+.tool-card p {
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+.tool-card-teaser {
+  border-style: dashed;
+  opacity: 0.85;
+}
+
+/* ============================
+   Free Creative Tool Sub-Pages
+   (Image Inspector, Creative Assistant)
+   ============================ */
+.page-hero {
+  padding-bottom: 10px;
+  text-align: center;
+}
+
+.page-hero h1 {
+  font-family: var(--font-heading);
+  font-size: clamp(2.2rem, 4vw, 3.2rem);
+  letter-spacing: -0.02em;
+  margin-bottom: 14px;
+}
+
+.page-hero p {
+  color: var(--text-muted);
+  max-width: 640px;
+  margin: 0 auto;
+  font-size: 1.05rem;
+}
+
+.tool-shell {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 24px;
+  align-items: start;
+  padding-top: 20px;
+}
+
+.upload-card,
+.analysis-card,
+.chat-shell {
+  padding: 28px;
+  border-radius: 26px;
+  border: 1px solid var(--border);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  box-shadow: var(--shadow);
+}
+
+.drop-zone {
+  text-align: center;
+  padding: 40px 20px;
+  border: 2px dashed var(--border);
+  border-radius: 20px;
+  transition: var(--transition);
+}
+
+.drop-zone.is-dragging {
+  border-color: var(--primary);
+  background: rgba(142, 255, 61, 0.06);
+}
+
+.drop-zone p {
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.drop-zone span {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  margin-bottom: 20px;
+}
+
+.tool-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.tool-actions input[type="file"] {
+  display: none;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 30px 10px;
+}
+
+.empty-state h3 {
+  font-family: var(--font-heading);
+  margin-bottom: 10px;
+}
+
+.empty-state p {
+  color: var(--text-muted);
+}
+
+.analysis-results .analysis-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.analysis-results .analysis-card {
+  padding: 18px;
+  border-radius: 16px;
+  box-shadow: none;
+}
+
+.analysis-results .analysis-card.full {
+  grid-column: 1 / -1;
+}
+
+.analysis-results .analysis-card h3 {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--primary);
+  margin-bottom: 8px;
+}
+
+.analysis-results .analysis-card p {
+  font-size: 1.02rem;
+  font-weight: 600;
+}
+
+.analysis-list {
+  list-style: none;
+  display: grid;
+  gap: 6px;
+  color: var(--text-muted);
+}
+
+.palette-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.palette-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  font-size: 0.82rem;
+  font-family: monospace;
+}
+
+.palette-swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.tool-callout {
+  padding-top: 10px;
+}
+
+.download-card {
+  text-align: center;
+  padding: 40px;
+  border-radius: 28px;
+  border: 1px solid var(--border);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  box-shadow: var(--shadow);
+}
+
+.download-card h2 {
+  font-family: var(--font-heading);
+  font-size: 1.7rem;
+  margin-bottom: 12px;
+}
+
+.download-card p {
+  color: var(--text-muted);
+  max-width: 560px;
+  margin: 0 auto 22px;
+}
+
+/* Reset native button element so support-button/secondary-link
+   look identical whether used on <a>, <label> or <button> */
+button.support-button,
+button.secondary-link {
+  border: none;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+/* ============================
+   Creative Assistant — Chat
+   ============================ */
+.chat-log {
+  display: grid;
+  gap: 12px;
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 6px;
+  margin-bottom: 18px;
+}
+
+.message {
+  padding: 14px 16px;
+  border-radius: 16px;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  max-width: 92%;
+}
+
+.message.assistant {
+  background: rgba(142, 255, 61, 0.08);
+  border: 1px solid var(--border);
+  justify-self: start;
+}
+
+.message.user {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  justify-self: end;
+  color: var(--text);
+}
+
+.message.pending {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.prompt-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.prompt-pill {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.prompt-pill:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.chat-form {
+  display: flex;
+  gap: 10px;
+}
+
+.chat-form input {
+  flex: 1;
+  padding: 14px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+}
+
+.chat-form input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.chat-form input::placeholder {
+  color: var(--text-muted);
+}
+
+/* ============================
+   Creative Assistant — Bring Your Own AI Key
+   ============================ */
+.ai-connect-section {
+  padding-top: 10px;
+  padding-bottom: 0;
+}
+
+.ai-connect-card {
+  padding: 26px 28px;
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  box-shadow: var(--shadow);
+}
+
+.ai-connect-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.ai-connect-head h2 {
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  margin-bottom: 6px;
+}
+
+.ai-connect-head p {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  max-width: 560px;
+}
+
+.ai-status-pill {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ai-status-pill.is-connected {
+  background: rgba(142, 255, 61, 0.14);
+  border-color: var(--border);
+  color: var(--primary);
+}
+
+.ai-status-pill.is-error {
+  background: rgba(255, 90, 90, 0.12);
+  border-color: rgba(255, 90, 90, 0.35);
+  color: #ff8a8a;
+}
+
+.ai-connect-form {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ai-select,
+.ai-connect-form input {
+  padding: 12px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+}
+
+.ai-select {
+  flex: 0 0 190px;
+}
+
+.ai-connect-form input {
+  flex: 1 1 220px;
+}
+
+.ai-select:focus,
+.ai-connect-form input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.ai-connect-note {
+  margin-top: 14px;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+@media (max-width: 640px) {
+  .ai-connect-form {
+    flex-direction: column;
+  }
+
+  .ai-select {
+    flex-basis: auto;
+  }
+}
+
 @media (max-width: 1000px) {
   .hero,
   .compatibility-shell,
   .assistant-showcase,
-  .about-grid {
+  .about-grid,
+  .tool-shell {
     grid-template-columns: 1fr;
   }
 
-  .feature-grid {
+  .feature-grid,
+  .tools-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -975,7 +1409,9 @@ footer p {
 
   .download-grid,
   .feature-grid,
-  .about-grid {
+  .about-grid,
+  .tools-grid,
+  .analysis-grid {
     grid-template-columns: 1fr;
   }
 

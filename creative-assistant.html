@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Creative Assistant | Boztik Creative Toolkit</title>
+  <meta name="description" content="A lightweight creative assistant page for Photoshop guidance, Firefly prompts, workflow tips, background removal help and image quality improvements.">
+  <meta property="og:title" content="Creative Assistant | Boztik Creative Toolkit">
+  <meta property="og:description" content="A modern creative assistant experience designed for future AI integration while remaining useful today.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://boztik.dev/creative-assistant.html">
+  <link rel="icon" href="images/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles-premium.css">
+</head>
+<body>
+  <div class="background-glow">
+    <div class="glow1"></div>
+    <div class="glow2"></div>
+    <div class="glow3"></div>
+  </div>
+
+  <header>
+    <nav class="navbar">
+      <a href="index.html" class="logo-area">
+        <img src="images/logo.png" alt="Boztik Creative Toolkit logo">
+        <div>
+          <span class="logo-title">Boztik Creative Toolkit</span>
+          <span class="logo-subtitle">Professional Browser Extension</span>
+        </div>
+      </a>
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="image-inspector.html">Image Inspector</a>
+        <a href="creative-assistant.html">Creative Assistant</a>
+        <a href="index.html#downloads">Download Extension</a>
+        <a href="privacy.html">Privacy</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page-hero reveal">
+      <div class="section-heading" style="margin-bottom:24px;">
+        <span class="section-label">Free Creative Tool</span>
+        <h1>Creative Assistant</h1>
+        <p>A calm, modern assistant for Photoshop, Firefly prompts, edit workflows and instant creative guidance. The interface is ready for future AI API integration without a redesign.</p>
+      </div>
+    </section>
+
+    <section class="ai-connect-section reveal">
+      <div class="ai-connect-card">
+        <div class="ai-connect-head">
+          <div>
+            <h2>Connect a real AI provider</h2>
+            <p>Optional. Add your own OpenAI, Claude, or Gemini API key to get live AI answers instead of the built-in quick-reference guidance. Your key is stored only in this browser and is sent directly to your chosen provider &mdash; Boztik never sees it.</p>
+          </div>
+          <span class="ai-status-pill" id="aiStatusPill">Not Connected</span>
+        </div>
+        <div class="ai-connect-form">
+          <select id="aiProvider" class="ai-select">
+            <option value="openai">OpenAI (ChatGPT)</option>
+            <option value="anthropic">Anthropic (Claude)</option>
+            <option value="google">Google (Gemini)</option>
+          </select>
+          <input id="aiKeyInput" type="password" placeholder="Paste your API key" autocomplete="off">
+          <button type="button" class="support-button" id="aiConnectButton">Connect</button>
+          <button type="button" class="secondary-link" id="aiTestButton">Test</button>
+          <button type="button" class="secondary-link" id="aiDisconnectButton" hidden>Disconnect</button>
+        </div>
+        <p class="ai-connect-note" id="aiConnectNote">No key? The assistant below still works with built-in guidance &mdash; a connection is never required.</p>
+      </div>
+    </section>
+
+    <section class="tool-shell reveal">
+      <div class="chat-shell">
+        <div class="chat-log" id="chatLog">
+          <div class="message assistant">Hello! I can help you improve Photoshop workflows, write stronger Firefly prompts, explain frequency separation and suggest export settings for your next project.</div>
+        </div>
+        <div class="prompt-pills">
+          <button class="prompt-pill" type="button" data-prompt="Improve my Photoshop workflow">Improve my Photoshop workflow</button>
+          <button class="prompt-pill" type="button" data-prompt="Write a Firefly prompt">Write a Firefly prompt</button>
+          <button class="prompt-pill" type="button" data-prompt="Explain frequency separation">Explain frequency separation</button>
+          <button class="prompt-pill" type="button" data-prompt="Best export settings">Best export settings</button>
+          <button class="prompt-pill" type="button" data-prompt="Help remove backgrounds">Help remove backgrounds</button>
+        </div>
+        <form class="chat-form" id="chatForm">
+          <input id="chatInput" type="text" placeholder="Ask for guidance, prompts or workflow help..." autocomplete="off">
+          <button class="support-button" type="submit">Send</button>
+        </form>
+      </div>
+      <div class="analysis-card">
+        <h3 style="margin-bottom:12px;">What this assistant can do</h3>
+        <ul class="analysis-list">
+          <li>Offer practical Photoshop workflow advice</li>
+          <li>Generate tailored Firefly prompt ideas</li>
+          <li>Explain technical editing concepts in plain language</li>
+          <li>Recommend export settings for web, print and social media</li>
+          <li>Provide simple steps for background removal and image quality improvement</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="tool-callout reveal">
+      <div class="download-card">
+        <h2>Bring the same creative support into your browser.</h2>
+        <p>Install Boztik Creative Toolkit and keep the assistant, image analysis and workflow ideas close at hand while you browse.</p>
+        <div class="support-actions">
+          <a class="support-button" href="https://chromewebstore.google.com/detail/boztik-creative-toolkit/maaebbajegilfcpmljlpcclebdpngign" target="_blank" rel="noopener noreferrer">Download for Chrome</a>
+          <a class="secondary-link" href="https://microsoftedge.microsoft.com/addons/detail/ajpnibmfjlajpgijgaionelkdjgiemfi" target="_blank" rel="noopener noreferrer">Download for Edge</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <img src="images/logo.png" alt="Boztik Creative Toolkit logo" class="footer-logo">
+    <h3>Boztik Creative Toolkit</h3>
+    <p>Fast, friendly creative support for modern photographers, designers and marketers.</p>
+    <div class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="image-inspector.html">Image Inspector</a>
+      <a href="creative-assistant.html">Creative Assistant</a>
+      <a href="index.html#downloads">Download</a>
+      <a href="privacy.html">Privacy</a>
+    </div>
+  </footer>
+
+  <script>
+    const chatLog = document.getElementById('chatLog');
+    const chatForm = document.getElementById('chatForm');
+    const chatInput = document.getElementById('chatInput');
+    const promptButtons = document.querySelectorAll('.prompt-pill');
+
+    const revealItems = Array.from(document.querySelectorAll('.reveal'));
+    const revealOnScroll = () => {
+      const triggerPoint = window.innerHeight - 90;
+      revealItems.forEach((item) => {
+        const itemTop = item.getBoundingClientRect().top;
+        if (itemTop < triggerPoint) item.classList.add('is-visible');
+      });
+    };
+    revealOnScroll();
+    window.addEventListener('scroll', revealOnScroll, { passive: true });
+    window.addEventListener('resize', revealOnScroll);
+
+    chatForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const prompt = chatInput.value.trim();
+      if (!prompt) return;
+      addMessage(prompt, 'user');
+      chatInput.value = '';
+
+      if (isAIConnected()) {
+        const pending = addMessage('Thinking…', 'assistant pending');
+        try {
+          const reply = await callAIProvider(prompt);
+          pending.textContent = reply;
+          pending.className = 'message assistant';
+        } catch (error) {
+          pending.remove();
+          addMessage(`AI request failed (${error.message}). Showing built-in guidance instead:`, 'assistant pending');
+          addMessage(getResponse(prompt), 'assistant');
+        }
+        return;
+      }
+
+      addMessage(getResponse(prompt), 'assistant');
+    });
+
+    promptButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        chatInput.value = button.dataset.prompt;
+        chatInput.focus();
+      });
+    });
+
+    function addMessage(text, author) {
+      const message = document.createElement('div');
+      message.className = `message ${author}`;
+      message.textContent = text;
+      chatLog.appendChild(message);
+      chatLog.scrollTop = chatLog.scrollHeight;
+      return message;
+    }
+
+    function getResponse(prompt) {
+      const text = prompt.toLowerCase();
+      if (text.includes('firefly')) return 'A strong Firefly prompt usually includes subject, style, lighting, camera angle, mood and output format. Try: “Ultra-detailed editorial portrait, soft rim light, cinematic color grade, 4k, commercial photo, natural skin texture.”';
+      if (text.includes('frequency')) return 'Frequency separation is a retouching technique that separates texture from tone. Use it to smooth skin while preserving detail and avoid a plastic-looking result.';
+      if (text.includes('export')) return 'For web, export at 70–85% quality in JPG or PNG depending on transparency needs. For print, use TIFF or high-quality PNG with 300 ppi in the final document.';
+      if (text.includes('background')) return 'For background removal, start with a clean mask, refine edge detail and keep a slight feather for natural transitions. A soft brush and selective refinement usually look best.';
+      if (text.includes('quality')) return 'To improve image quality, first fix exposure and white balance, then sharpen selectively, remove noise carefully and preserve color depth in the final export.';
+      if (text.includes('workflow')) return 'A smoother Photoshop workflow starts with a clear folder structure, smart object templates, action sets and a simple naming convention that keeps revisions easy to manage.';
+      return 'That is a strong creative question. For now, this assistant offers practical guidance and can later be connected to a real AI API without changing the interface.';
+    }
+
+    /* ============================
+       Bring Your Own AI Key
+       Keys are stored ONLY in this browser's localStorage, one per
+       provider, and are sent directly from the visitor's browser to
+       that provider's API. Boztik's site and servers never see them.
+       ============================ */
+    const AI_SYSTEM_PROMPT = 'You are the Boztik Creative Assistant, a friendly expert on Photoshop workflows, Adobe Firefly prompts, photo retouching, color grading, export settings and general creative/design advice. Keep answers practical and concise (under 150 words) unless the visitor asks for more detail.';
+
+    const AI_PROVIDERS = {
+      openai: {
+        label: 'OpenAI',
+        keyPrefix: 'sk-',
+        model: 'gpt-5-mini',
+        endpoint: 'https://api.openai.com/v1/chat/completions',
+        buildHeaders: (key) => ({
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${key}`
+        }),
+        buildBody: (key, prompt) => JSON.stringify({
+          model: AI_PROVIDERS.openai.model,
+          messages: [
+            { role: 'system', content: AI_SYSTEM_PROMPT },
+            { role: 'user', content: prompt }
+          ],
+          max_tokens: 400
+        }),
+        parseReply: (data) => data?.choices?.[0]?.message?.content?.trim(),
+        parseError: (data) => data?.error?.message
+      },
+      anthropic: {
+        label: 'Anthropic (Claude)',
+        keyPrefix: 'sk-ant-',
+        model: 'claude-haiku-4-5-20251001',
+        endpoint: 'https://api.anthropic.com/v1/messages',
+        buildHeaders: (key) => ({
+          'Content-Type': 'application/json',
+          'x-api-key': key,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        }),
+        buildBody: (key, prompt) => JSON.stringify({
+          model: AI_PROVIDERS.anthropic.model,
+          max_tokens: 400,
+          system: AI_SYSTEM_PROMPT,
+          messages: [{ role: 'user', content: prompt }]
+        }),
+        parseReply: (data) => data?.content?.[0]?.text?.trim(),
+        parseError: (data) => data?.error?.message
+      },
+      google: {
+        label: 'Google (Gemini)',
+        keyPrefix: '',
+        model: 'gemini-flash-latest',
+        endpoint: (key, model) => `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+        buildHeaders: () => ({ 'Content-Type': 'application/json' }),
+        buildBody: (key, prompt) => JSON.stringify({
+          systemInstruction: { parts: [{ text: AI_SYSTEM_PROMPT }] },
+          contents: [{ role: 'user', parts: [{ text: prompt }] }]
+        }),
+        parseReply: (data) => data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim(),
+        parseError: (data) => data?.error?.message
+      }
+    };
+
+    const aiProviderSelect = document.getElementById('aiProvider');
+    const aiKeyInput = document.getElementById('aiKeyInput');
+    const aiConnectButton = document.getElementById('aiConnectButton');
+    const aiTestButton = document.getElementById('aiTestButton');
+    const aiDisconnectButton = document.getElementById('aiDisconnectButton');
+    const aiStatusPill = document.getElementById('aiStatusPill');
+    const aiConnectNote = document.getElementById('aiConnectNote');
+
+    function storageKey(provider) {
+      return `boztik_ai_key_${provider}`;
+    }
+
+    function getStoredKey(provider) {
+      try {
+        return localStorage.getItem(storageKey(provider)) || '';
+      } catch (error) {
+        return '';
+      }
+    }
+
+    function setStoredKey(provider, key) {
+      try {
+        localStorage.setItem(storageKey(provider), key);
+      } catch (error) {
+        /* localStorage unavailable (e.g. private browsing) — key simply won't persist */
+      }
+    }
+
+    function clearStoredKey(provider) {
+      try {
+        localStorage.removeItem(storageKey(provider));
+      } catch (error) {
+        /* no-op */
+      }
+    }
+
+    function isAIConnected() {
+      return Boolean(getStoredKey(aiProviderSelect.value));
+    }
+
+    function setStatus(state, label) {
+      aiStatusPill.textContent = label;
+      aiStatusPill.classList.remove('is-connected', 'is-error');
+      if (state) aiStatusPill.classList.add(state);
+    }
+
+    function refreshConnectionUI() {
+      const provider = aiProviderSelect.value;
+      const storedKey = getStoredKey(provider);
+      if (storedKey) {
+        aiKeyInput.value = storedKey;
+        aiKeyInput.placeholder = 'Key saved in this browser';
+        aiDisconnectButton.hidden = false;
+        setStatus('is-connected', `Connected · ${AI_PROVIDERS[provider].label}`);
+        aiConnectNote.textContent = `Live replies are being generated with your ${AI_PROVIDERS[provider].label} key. Nothing is sent to Boztik's servers.`;
+      } else {
+        aiKeyInput.value = '';
+        aiKeyInput.placeholder = 'Paste your API key';
+        aiDisconnectButton.hidden = true;
+        setStatus(null, 'Not Connected');
+        aiConnectNote.textContent = "No key? The assistant below still works with built-in guidance — a connection is never required.";
+      }
+    }
+
+    aiProviderSelect.addEventListener('change', refreshConnectionUI);
+
+    aiConnectButton.addEventListener('click', () => {
+      const provider = aiProviderSelect.value;
+      const key = aiKeyInput.value.trim();
+      if (!key) {
+        setStatus('is-error', 'Enter a key first');
+        return;
+      }
+      setStoredKey(provider, key);
+      refreshConnectionUI();
+    });
+
+    aiDisconnectButton.addEventListener('click', () => {
+      const provider = aiProviderSelect.value;
+      clearStoredKey(provider);
+      refreshConnectionUI();
+    });
+
+    aiTestButton.addEventListener('click', async () => {
+      const provider = aiProviderSelect.value;
+      const key = aiKeyInput.value.trim();
+      if (!key) {
+        setStatus('is-error', 'Enter a key first');
+        return;
+      }
+      setStatus(null, 'Testing…');
+      try {
+        await callAIProviderWithKey(provider, key, 'Reply with the single word: OK');
+        setStoredKey(provider, key);
+        refreshConnectionUI();
+      } catch (error) {
+        setStatus('is-error', `Test failed: ${error.message}`);
+      }
+    });
+
+    async function callAIProvider(prompt) {
+      const provider = aiProviderSelect.value;
+      const key = getStoredKey(provider);
+      if (!key) throw new Error('no key connected');
+      return callAIProviderWithKey(provider, key, prompt);
+    }
+
+    async function callAIProviderWithKey(provider, key, prompt) {
+      const config = AI_PROVIDERS[provider];
+      const url = typeof config.endpoint === 'function' ? config.endpoint(key, config.model) : config.endpoint;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: config.buildHeaders(key),
+        body: config.buildBody(key, prompt)
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(config.parseError(data) || `HTTP ${response.status}`);
+      }
+      const reply = config.parseReply(data);
+      if (!reply) throw new Error('empty response');
+      return reply;
+    }
+
+    refreshConnectionUI();
+  </script>
+</body>
+</html>

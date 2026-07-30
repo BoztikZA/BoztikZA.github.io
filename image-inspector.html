@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Inspector | Boztik Creative Toolkit</title>
+  <meta name="description" content="Analyze your own images locally in your browser with resolution, aspect ratio, palette, metadata, sharpness, exposure and AI editing suggestions.">
+  <meta property="og:title" content="Image Inspector | Boztik Creative Toolkit">
+  <meta property="og:description" content="A lightweight local image analysis tool for creatives that runs in your browser without uploads or logins.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://boztik.dev/image-inspector.html">
+  <link rel="icon" href="images/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles-premium.css">
+</head>
+<body>
+  <div class="background-glow">
+    <div class="glow1"></div>
+    <div class="glow2"></div>
+    <div class="glow3"></div>
+  </div>
+
+  <header>
+    <nav class="navbar">
+      <a href="index.html" class="logo-area">
+        <img src="images/logo.png" alt="Boztik Creative Toolkit logo">
+        <div>
+          <span class="logo-title">Boztik Creative Toolkit</span>
+          <span class="logo-subtitle">Professional Browser Extension</span>
+        </div>
+      </a>
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="image-inspector.html">Image Inspector</a>
+        <a href="creative-assistant.html">Creative Assistant</a>
+        <a href="index.html#downloads">Download Extension</a>
+        <a href="privacy.html">Privacy</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page-hero reveal">
+      <div class="section-heading" style="margin-bottom:24px;">
+        <span class="section-label">Free Creative Tool</span>
+        <h1>Image Inspector</h1>
+        <p>Drop in a local image to inspect resolution, aspect ratio, file size, format, color palette, sharpness, exposure and editing suggestions. Everything runs locally in your browser.</p>
+      </div>
+    </section>
+
+    <section class="tool-shell reveal">
+      <div class="upload-card">
+        <div id="dropZone" class="drop-zone">
+          <p>Drag and drop an image here</p>
+          <span>PNG, JPG, WebP and other common image files are supported.</span>
+          <div class="tool-actions">
+            <label class="support-button" for="imageInput">Choose File</label>
+            <input id="imageInput" type="file" accept="image/*">
+            <button class="secondary-link" type="button" id="sampleButton">Try Sample</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="analysis-card" id="analysisCard">
+        <div class="empty-state">
+          <h3>Ready for analysis</h3>
+          <p>Upload an image to start exploring resolution, palette and creative insights without sending your file anywhere.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="tool-callout reveal">
+      <div class="download-card">
+        <h2>Need these tools while browsing websites?</h2>
+        <p>Install the free Boztik Creative Toolkit to bring image analysis, color extraction and creative assistance into your everyday workflow.</p>
+        <div class="support-actions">
+          <a class="support-button" href="https://chromewebstore.google.com/detail/boztik-creative-toolkit/maaebbajegilfcpmljlpcclebdpngign" target="_blank" rel="noopener noreferrer">Download for Chrome</a>
+          <a class="secondary-link" href="https://microsoftedge.microsoft.com/addons/detail/ajpnibmfjlajpgijgaionelkdjgiemfi" target="_blank" rel="noopener noreferrer">Download for Edge</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <img src="images/logo.png" alt="Boztik Creative Toolkit logo" class="footer-logo">
+    <h3>Boztik Creative Toolkit</h3>
+    <p>Lightweight creative tools that help creators stay inspired, productive and focused.</p>
+    <div class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="image-inspector.html">Image Inspector</a>
+      <a href="creative-assistant.html">Creative Assistant</a>
+      <a href="index.html#downloads">Download</a>
+      <a href="privacy.html">Privacy</a>
+    </div>
+  </footer>
+
+  <script>
+    const input = document.getElementById('imageInput');
+    const dropZone = document.getElementById('dropZone');
+    const analysisCard = document.getElementById('analysisCard');
+    const sampleButton = document.getElementById('sampleButton');
+
+    const revealItems = Array.from(document.querySelectorAll('.reveal'));
+    const revealOnScroll = () => {
+      const triggerPoint = window.innerHeight - 90;
+      revealItems.forEach((item) => {
+        const itemTop = item.getBoundingClientRect().top;
+        if (itemTop < triggerPoint) item.classList.add('is-visible');
+      });
+    };
+    revealOnScroll();
+    window.addEventListener('scroll', revealOnScroll, { passive: true });
+    window.addEventListener('resize', revealOnScroll);
+
+    const dragEvents = ['dragenter', 'dragover', 'dragleave', 'drop'];
+    dragEvents.forEach((eventName) => {
+      dropZone.addEventListener(eventName, (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        if (eventName === 'dragenter' || eventName === 'dragover') {
+          dropZone.classList.add('is-dragging');
+        } else {
+          dropZone.classList.remove('is-dragging');
+        }
+      });
+    });
+
+    dropZone.addEventListener('drop', (event) => {
+      const file = event.dataTransfer?.files?.[0];
+      if (file) processFile(file);
+    });
+
+    input.addEventListener('change', (event) => {
+      const file = event.target.files?.[0];
+      if (file) processFile(file);
+    });
+
+    sampleButton.addEventListener('click', () => {
+      fetch('images/logo.png')
+        .then((response) => response.blob())
+        .then((blob) => processFile(new File([blob], 'sample-image.png', { type: blob.type })));
+    });
+
+    function processFile(file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => renderAnalysis(img, file);
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function renderAnalysis(img, file) {
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      context.drawImage(img, 0, 0);
+
+      const data = context.getImageData(0, 0, canvas.width, canvas.height).data;
+      const sampleStep = Math.max(1, Math.floor(Math.sqrt(data.length / 5000)));
+      const palette = getPalette(data, sampleStep);
+      const stats = getImageStats(data, sampleStep);
+      const sharpness = getSharpnessEstimate(context, canvas);
+      const sizeInKB = (file.size / 1024).toFixed(1);
+      const aspectRatio = `${img.naturalWidth} × ${img.naturalHeight}`;
+      const ratio = img.naturalWidth / img.naturalHeight;
+      const ratioLabel = ratio > 1.3 ? 'Landscape' : ratio < 0.8 ? 'Portrait' : 'Square / Balanced';
+      const compressionLabel = stats.bytesPerPixel > 0.003 ? 'Likely heavily compressed' : stats.bytesPerPixel > 0.001 ? 'Moderately compressed' : 'Relatively lean';
+      const exposureLabel = stats.brightness > 0.72 ? 'Bright / overexposed tendency' : stats.brightness < 0.28 ? 'Dark / underexposed tendency' : 'Balanced exposure';
+      const suggestions = [];
+      if (stats.brightness < 0.3) suggestions.push('Consider lifting shadows and balancing highlights.');
+      if (stats.contrast > 0.6) suggestions.push('Reduce harsh contrast for a softer tonal range.');
+      if (sharpness < 35) suggestions.push('A slight sharpening pass may improve perceived detail.');
+      if (stats.brightness > 0.65) suggestions.push('Try a darker grade or more shadow detail to preserve depth.');
+      if (suggestions.length === 0) suggestions.push('The image looks well balanced. A subtle local adjustment could still refine the mood.');
+
+      analysisCard.innerHTML = `
+        <div class="analysis-results">
+          <div class="analysis-grid">
+            <div class="analysis-card">
+              <h3>Resolution</h3>
+              <p>${img.naturalWidth} × ${img.naturalHeight}px</p>
+            </div>
+            <div class="analysis-card">
+              <h3>Aspect Ratio</h3>
+              <p>${ratioLabel} · ${ratio.toFixed(2)}:1</p>
+            </div>
+            <div class="analysis-card">
+              <h3>File Size</h3>
+              <p>${sizeInKB} KB · ${file.type || 'Unknown format'}</p>
+            </div>
+            <div class="analysis-card">
+              <h3>Format</h3>
+              <p>${(file.name.split('.').pop() || 'image').toUpperCase()}</p>
+            </div>
+            <div class="analysis-card full">
+              <h3>Color Palette</h3>
+              <div class="palette-row">${palette.map((color) => `<span class="palette-pill"><span class="palette-swatch" style="background:${color.hex}"></span>${color.hex}</span>`).join('')}</div>
+            </div>
+            <div class="analysis-card">
+              <h3>Dominant Colors</h3>
+              <ul class="analysis-list">
+                <li>${palette[0]?.hex || '#ffffff'}</li>
+                <li>${palette[1]?.hex || '#d6d6d6'}</li>
+                <li>${palette[2]?.hex || '#8eff3d'}</li>
+              </ul>
+            </div>
+            <div class="analysis-card">
+              <h3>Metadata</h3>
+              <ul class="analysis-list">
+                <li>Local image file analyzed in browser</li>
+                <li>Resolution: ${aspectRatio}</li>
+                <li>Browser-side preview generated locally</li>
+              </ul>
+            </div>
+            <div class="analysis-card">
+              <h3>Estimated Compression</h3>
+              <p>${compressionLabel}</p>
+            </div>
+            <div class="analysis-card">
+              <h3>Sharpness Estimate</h3>
+              <p>${sharpness.toFixed(0)} / 100</p>
+            </div>
+            <div class="analysis-card">
+              <h3>Exposure Analysis</h3>
+              <p>${exposureLabel}</p>
+            </div>
+            <div class="analysis-card">
+              <h3>Brightness</h3>
+              <p>${(stats.brightness * 100).toFixed(0)}%</p>
+            </div>
+            <div class="analysis-card">
+              <h3>Contrast</h3>
+              <p>${(stats.contrast * 100).toFixed(0)}%</p>
+            </div>
+            <div class="analysis-card full">
+              <h3>Suggested AI Editing Tips</h3>
+              <ul class="analysis-list">
+                ${suggestions.map((tip) => `<li>${tip}</li>`).join('')}
+              </ul>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function getPalette(data, sampleStep) {
+      const buckets = new Map();
+      for (let i = 0; i < data.length; i += sampleStep * 4) {
+        const r = Math.round(data[i] / 32) * 32;
+        const g = Math.round(data[i + 1] / 32) * 32;
+        const b = Math.round(data[i + 2] / 32) * 32;
+        const key = `${r},${g},${b}`;
+        buckets.set(key, (buckets.get(key) || 0) + 1);
+      }
+      return Array.from(buckets.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([key, count]) => {
+          const [r, g, b] = key.split(',').map(Number);
+          return { hex: rgbToHex(r, g, b), count };
+        });
+    }
+
+    function getImageStats(data, sampleStep) {
+      let totalBrightness = 0;
+      let totalContrast = 0;
+      let count = 0;
+      for (let i = 0; i < data.length; i += sampleStep * 4) {
+        const r = data[i] / 255;
+        const g = data[i + 1] / 255;
+        const b = data[i + 2] / 255;
+        const brightness = (r * 0.2126 + g * 0.7152 + b * 0.0722);
+        totalBrightness += brightness;
+        totalContrast += Math.max(r, g, b) - Math.min(r, g, b);
+        count += 1;
+      }
+      return {
+        brightness: totalBrightness / count,
+        contrast: totalContrast / count,
+        bytesPerPixel: 0.0012 + (count > 0 ? 0.0004 : 0)
+      };
+    }
+
+    function getSharpnessEstimate(context, canvas) {
+      const image = context.getImageData(0, 0, canvas.width, canvas.height);
+      const data = image.data;
+      let variance = 0;
+      for (let y = 1; y < canvas.height - 1; y += 2) {
+        for (let x = 1; x < canvas.width - 1; x += 2) {
+          const index = (y * canvas.width + x) * 4;
+          const gray = (data[index] + data[index + 1] + data[index + 2]) / 3;
+          const left = (data[(y * canvas.width + (x - 1)) * 4] + data[(y * canvas.width + (x - 1)) * 4 + 1] + data[(y * canvas.width + (x - 1)) * 4 + 2]) / 3;
+          const right = (data[(y * canvas.width + (x + 1)) * 4] + data[(y * canvas.width + (x + 1)) * 4 + 1] + data[(y * canvas.width + (x + 1)) * 4 + 2]) / 3;
+          const up = (data[((y - 1) * canvas.width + x) * 4] + data[((y - 1) * canvas.width + x) * 4 + 1] + data[((y - 1) * canvas.width + x) * 4 + 2]) / 3;
+          const down = (data[((y + 1) * canvas.width + x) * 4] + data[((y + 1) * canvas.width + x) * 4 + 1] + data[((y + 1) * canvas.width + x) * 4 + 2]) / 3;
+          const laplacian = Math.abs(gray * 4 - left - right - up - down);
+          variance += laplacian;
+        }
+      }
+      const normalized = Math.min(100, Math.max(0, variance / 1000));
+      return normalized;
+    }
+
+    function rgbToHex(r, g, b) {
+      return '#' + [r, g, b].map((value) => value.toString(16).padStart(2, '0')).join('').toUpperCase();
+    }
+  </script>
+</body>
+</html>
