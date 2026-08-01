@@ -415,5 +415,18 @@
       <a href="privacy.html">Privacy</a>
     </div>
   </footer>
+
+  <script>
+    const revealItems = Array.from(document.querySelectorAll('.reveal'));
+    const revealOnLoad = () => {
+      revealItems.forEach((item) => item.classList.add('is-visible'));
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', revealOnLoad, { once: true });
+    } else {
+      revealOnLoad();
+    }
+  </script>
 </body>
 </html>
