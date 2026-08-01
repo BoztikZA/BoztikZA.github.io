@@ -50,6 +50,30 @@
       </div>
     </section>
 
+    <section class="ai-connect-section reveal">
+      <div class="ai-connect-card">
+        <div class="ai-connect-head">
+          <div>
+            <h2>Connect a real AI provider</h2>
+            <p>Optional. Add your own OpenAI, Claude, or Gemini API key to get live AI answers instead of the built-in quick-reference guidance. Your key is stored only in this browser and is sent directly to your chosen provider &mdash; Boztik never sees it.</p>
+          </div>
+          <span class="ai-status-pill" id="aiStatusPill">Not Connected</span>
+        </div>
+        <div class="ai-connect-form">
+          <select id="aiProvider" class="ai-select">
+            <option value="openai">OpenAI (ChatGPT)</option>
+            <option value="anthropic">Anthropic (Claude)</option>
+            <option value="google">Google (Gemini)</option>
+          </select>
+          <input id="aiKeyInput" type="password" placeholder="Paste your API key" autocomplete="off">
+          <button type="button" class="support-button" id="aiConnectButton">Connect</button>
+          <button type="button" class="secondary-link" id="aiTestButton">Test</button>
+          <button type="button" class="secondary-link" id="aiDisconnectButton" hidden>Disconnect</button>
+        </div>
+        <p class="ai-connect-note" id="aiConnectNote">No key? The assistant below still works with built-in guidance &mdash; a connection is never required.</p>
+      </div>
+    </section>
+
     <section class="tool-shell reveal">
       <div class="chat-shell">
         <div class="chat-log" id="chatLog">
@@ -122,12 +146,27 @@
     window.addEventListener('scroll', revealOnScroll, { passive: true });
     window.addEventListener('resize', revealOnScroll);
 
-    chatForm.addEventListener('submit', (event) => {
+    chatForm.addEventListener('submit', async (event) => {
       event.preventDefault();
       const prompt = chatInput.value.trim();
       if (!prompt) return;
       addMessage(prompt, 'user');
       chatInput.value = '';
+
+      if (isAIConnected()) {
+        const pending = addMessage('Thinking…', 'assistant pending');
+        try {
+          const reply = await callAIProvider(prompt);
+          pending.textContent = reply;
+          pending.className = 'message assistant';
+        } catch (error) {
+          pending.remove();
+          addMessage(`AI request failed (${error.message}). Showing built-in guidance instead:`, 'assistant pending');
+          addMessage(getResponse(prompt), 'assistant');
+        }
+        return;
+      }
+
       addMessage(getResponse(prompt), 'assistant');
     });
 
@@ -144,6 +183,7 @@
       message.textContent = text;
       chatLog.appendChild(message);
       chatLog.scrollTop = chatLog.scrollHeight;
+      return message;
     }
 
     function getResponse(prompt) {
@@ -156,6 +196,196 @@
       if (text.includes('workflow')) return 'A smoother Photoshop workflow starts with a clear folder structure, smart object templates, action sets and a simple naming convention that keeps revisions easy to manage.';
       return 'That is a strong creative question. For now, this assistant offers practical guidance and can later be connected to a real AI API without changing the interface.';
     }
+
+    /* ============================
+       Bring Your Own AI Key
+       Keys are stored ONLY in this browser's localStorage, one per
+       provider, and are sent directly from the visitor's browser to
+       that provider's API. Boztik's site and servers never see them.
+       ============================ */
+    const AI_SYSTEM_PROMPT = 'You are the Boztik Creative Assistant, a friendly expert on Photoshop workflows, Adobe Firefly prompts, photo retouching, color grading, export settings and general creative/design advice. Keep answers practical and concise (under 150 words) unless the visitor asks for more detail.';
+
+    const AI_PROVIDERS = {
+      openai: {
+        label: 'OpenAI',
+        keyPrefix: 'sk-',
+        model: 'gpt-5-mini',
+        endpoint: 'https://api.openai.com/v1/chat/completions',
+        buildHeaders: (key) => ({
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${key}`
+        }),
+        buildBody: (key, prompt) => JSON.stringify({
+          model: AI_PROVIDERS.openai.model,
+          messages: [
+            { role: 'system', content: AI_SYSTEM_PROMPT },
+            { role: 'user', content: prompt }
+          ],
+          max_tokens: 400
+        }),
+        parseReply: (data) => data?.choices?.[0]?.message?.content?.trim(),
+        parseError: (data) => data?.error?.message
+      },
+      anthropic: {
+        label: 'Anthropic (Claude)',
+        keyPrefix: 'sk-ant-',
+        model: 'claude-haiku-4-5-20251001',
+        endpoint: 'https://api.anthropic.com/v1/messages',
+        buildHeaders: (key) => ({
+          'Content-Type': 'application/json',
+          'x-api-key': key,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        }),
+        buildBody: (key, prompt) => JSON.stringify({
+          model: AI_PROVIDERS.anthropic.model,
+          max_tokens: 400,
+          system: AI_SYSTEM_PROMPT,
+          messages: [{ role: 'user', content: prompt }]
+        }),
+        parseReply: (data) => data?.content?.[0]?.text?.trim(),
+        parseError: (data) => data?.error?.message
+      },
+      google: {
+        label: 'Google (Gemini)',
+        keyPrefix: '',
+        model: 'gemini-flash-latest',
+        endpoint: (key, model) => `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+        buildHeaders: () => ({ 'Content-Type': 'application/json' }),
+        buildBody: (key, prompt) => JSON.stringify({
+          systemInstruction: { parts: [{ text: AI_SYSTEM_PROMPT }] },
+          contents: [{ role: 'user', parts: [{ text: prompt }] }]
+        }),
+        parseReply: (data) => data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim(),
+        parseError: (data) => data?.error?.message
+      }
+    };
+
+    const aiProviderSelect = document.getElementById('aiProvider');
+    const aiKeyInput = document.getElementById('aiKeyInput');
+    const aiConnectButton = document.getElementById('aiConnectButton');
+    const aiTestButton = document.getElementById('aiTestButton');
+    const aiDisconnectButton = document.getElementById('aiDisconnectButton');
+    const aiStatusPill = document.getElementById('aiStatusPill');
+    const aiConnectNote = document.getElementById('aiConnectNote');
+
+    function storageKey(provider) {
+      return `boztik_ai_key_${provider}`;
+    }
+
+    function getStoredKey(provider) {
+      try {
+        return localStorage.getItem(storageKey(provider)) || '';
+      } catch (error) {
+        return '';
+      }
+    }
+
+    function setStoredKey(provider, key) {
+      try {
+        localStorage.setItem(storageKey(provider), key);
+      } catch (error) {
+        /* localStorage unavailable (e.g. private browsing) — key simply won't persist */
+      }
+    }
+
+    function clearStoredKey(provider) {
+      try {
+        localStorage.removeItem(storageKey(provider));
+      } catch (error) {
+        /* no-op */
+      }
+    }
+
+    function isAIConnected() {
+      return Boolean(getStoredKey(aiProviderSelect.value));
+    }
+
+    function setStatus(state, label) {
+      aiStatusPill.textContent = label;
+      aiStatusPill.classList.remove('is-connected', 'is-error');
+      if (state) aiStatusPill.classList.add(state);
+    }
+
+    function refreshConnectionUI() {
+      const provider = aiProviderSelect.value;
+      const storedKey = getStoredKey(provider);
+      if (storedKey) {
+        aiKeyInput.value = storedKey;
+        aiKeyInput.placeholder = 'Key saved in this browser';
+        aiDisconnectButton.hidden = false;
+        setStatus('is-connected', `Connected · ${AI_PROVIDERS[provider].label}`);
+        aiConnectNote.textContent = `Live replies are being generated with your ${AI_PROVIDERS[provider].label} key. Nothing is sent to Boztik's servers.`;
+      } else {
+        aiKeyInput.value = '';
+        aiKeyInput.placeholder = 'Paste your API key';
+        aiDisconnectButton.hidden = true;
+        setStatus(null, 'Not Connected');
+        aiConnectNote.textContent = "No key? The assistant below still works with built-in guidance — a connection is never required.";
+      }
+    }
+
+    aiProviderSelect.addEventListener('change', refreshConnectionUI);
+
+    aiConnectButton.addEventListener('click', () => {
+      const provider = aiProviderSelect.value;
+      const key = aiKeyInput.value.trim();
+      if (!key) {
+        setStatus('is-error', 'Enter a key first');
+        return;
+      }
+      setStoredKey(provider, key);
+      refreshConnectionUI();
+    });
+
+    aiDisconnectButton.addEventListener('click', () => {
+      const provider = aiProviderSelect.value;
+      clearStoredKey(provider);
+      refreshConnectionUI();
+    });
+
+    aiTestButton.addEventListener('click', async () => {
+      const provider = aiProviderSelect.value;
+      const key = aiKeyInput.value.trim();
+      if (!key) {
+        setStatus('is-error', 'Enter a key first');
+        return;
+      }
+      setStatus(null, 'Testing…');
+      try {
+        await callAIProviderWithKey(provider, key, 'Reply with the single word: OK');
+        setStoredKey(provider, key);
+        refreshConnectionUI();
+      } catch (error) {
+        setStatus('is-error', `Test failed: ${error.message}`);
+      }
+    });
+
+    async function callAIProvider(prompt) {
+      const provider = aiProviderSelect.value;
+      const key = getStoredKey(provider);
+      if (!key) throw new Error('no key connected');
+      return callAIProviderWithKey(provider, key, prompt);
+    }
+
+    async function callAIProviderWithKey(provider, key, prompt) {
+      const config = AI_PROVIDERS[provider];
+      const url = typeof config.endpoint === 'function' ? config.endpoint(key, config.model) : config.endpoint;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: config.buildHeaders(key),
+        body: config.buildBody(key, prompt)
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(config.parseError(data) || `HTTP ${response.status}`);
+      }
+      const reply = config.parseReply(data);
+      if (!reply) throw new Error('empty response');
+      return reply;
+    }
+
+    refreshConnectionUI();
   </script>
 </body>
 </html>
