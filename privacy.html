@@ -14,6 +14,190 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles-premium.css">
+  <style>
+    .privacy-page {
+      padding: 28px 20px 0;
+    }
+
+    .privacy-hero {
+      max-width: 900px;
+      margin: 0 auto 24px;
+      padding: 36px 40px;
+      border: 1px solid rgba(142,255,61,.24);
+      border-radius: 24px;
+      background: rgba(10,16,12,.8);
+      box-shadow: 0 20px 60px rgba(0,0,0,.24);
+    }
+
+    .privacy-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(142,255,61,.24);
+      color: var(--primary);
+      font-size: 0.84rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      background: rgba(142,255,61,.08);
+    }
+
+    .privacy-hero h1 {
+      margin-bottom: 12px;
+      font-family: var(--font-heading);
+      font-size: clamp(2rem, 4vw, 2.9rem);
+      line-height: 1.08;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .privacy-intro {
+      max-width: 720px;
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 1.02rem;
+      line-height: 1.75;
+    }
+
+    .privacy-meta {
+      margin-top: 16px;
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 0.96rem;
+    }
+
+    .privacy-content {
+      max-width: 900px;
+      margin: 0 auto;
+      display: grid;
+      gap: 24px;
+      padding-bottom: 42px;
+    }
+
+    .privacy-card {
+      padding: 32px;
+      border: 1px solid rgba(142,255,61,.22);
+      border-radius: 24px;
+      background: rgba(13,20,15,.9);
+      box-shadow: 0 18px 44px rgba(0,0,0,.26);
+    }
+
+    .privacy-card-heading {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .privacy-icon {
+      display: inline-grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      border: 1px solid rgba(142,255,61,.24);
+      background: rgba(142,255,61,.12);
+      color: var(--primary);
+      flex-shrink: 0;
+    }
+
+    .privacy-icon svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .privacy-card h2 {
+      margin: 0;
+      font-size: 1.18rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .privacy-card h3 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .privacy-card p,
+    .privacy-card li {
+      color: var(--text-muted);
+      line-height: 1.75;
+      font-size: 1rem;
+    }
+
+    .privacy-card p + p {
+      margin-top: 10px;
+    }
+
+    .privacy-list {
+      margin: 14px 0 0;
+      padding-left: 18px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .privacy-list li::marker {
+      color: var(--primary);
+    }
+
+    .privacy-permission-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin: 16px 0 10px;
+    }
+
+    .privacy-permission-card {
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(142,255,61,.14);
+      background: rgba(255,255,255,.03);
+    }
+
+    .privacy-permission-card h3 {
+      margin-bottom: 6px;
+      font-size: 0.98rem;
+    }
+
+    .privacy-note {
+      margin-top: 12px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    @media (max-width: 780px) {
+      .privacy-hero {
+        padding: 28px 24px;
+      }
+
+      .privacy-card {
+        padding: 24px;
+      }
+
+      .privacy-permission-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .privacy-page {
+        padding: 24px 14px 0;
+      }
+
+      .privacy-hero {
+        padding: 24px 18px;
+      }
+
+      .privacy-card {
+        padding: 20px;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="background-glow">
@@ -41,86 +225,181 @@
     </nav>
   </header>
 
-  <main>
-    <section class="page-hero reveal">
-      <div class="section-heading" style="margin-bottom:24px;">
-        <span class="section-label">Privacy Policy</span>
-        <h1>Boztik Creative Toolkit Privacy Policy</h1>
-        <p>Boztik Creative Toolkit respects your privacy. This policy explains how the extension and website handle information, permissions, and external services.</p>
-        <div class="policy-meta">
-          <span class="policy-badge">Last updated: August 1, 2026</span>
-          <a class="support-button" href="index.html">Back to Home</a>
-        </div>
-      </div>
+  <main class="privacy-page">
+    <section class="privacy-hero reveal" aria-labelledby="privacy-policy-title">
+      <p class="privacy-eyebrow">Privacy Policy</p>
+      <h1 id="privacy-policy-title">Privacy Policy</h1>
+      <p class="privacy-intro">We believe your privacy matters. This policy explains how Boztik Creative Toolkit handles information, browser permissions, and your privacy while using our extension and website.</p>
+      <div class="privacy-meta">Last Updated: August 2026</div>
     </section>
 
-    <section class="policy-shell reveal">
-      <div class="policy-card">
-        <h3>At a glance</h3>
-        <p>Boztik Creative Toolkit does not require an account and does not collect personal profile data. The extension is designed to process image analysis locally in the browser whenever possible and to leave your device data on your device.</p>
-        <ul>
-          <li>No personal information is collected, transmitted, sold, rented, or shared.</li>
-          <li>Extension preferences and settings are stored locally in the browser.</li>
-          <li>Image analysis is performed locally whenever possible.</li>
-          <li>Third-party services remain subject to their own privacy policies.</li>
+    <section class="privacy-content reveal" aria-label="Privacy policy sections">
+      <article class="privacy-card">
+        <div class="privacy-card-heading">
+          <span class="privacy-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3l7 3v5c0 4.2-2.7 7.9-7 10-4.3-2.1-7-5.8-7-10V6l7-3z"></path>
+              <path d="M9.5 12.5l1.8 1.8 3.2-3.5"></path>
+            </svg>
+          </span>
+          <h2>1. Information We Collect</h2>
+        </div>
+        <p>Boztik Creative Toolkit is designed with privacy in mind.</p>
+        <p>The extension does <strong>not collect, transmit, sell, or store personal information</strong> on our servers.</p>
+        <ul class="privacy-list">
+          <li>We do not require users to create an account.</li>
+          <li>We do not track browsing activity.</li>
+          <li>We do not build user profiles.</li>
         </ul>
-      </div>
+      </article>
 
-      <div class="policy-grid">
-        <article class="policy-card">
-          <h3>Information collection</h3>
-          <p>Boztik Creative Toolkit does not collect personal information by default. There is no account creation requirement, and no personal profile information is gathered for marketing or advertising purposes.</p>
-        </article>
-
-        <article class="policy-card">
-          <h3>Local storage and settings</h3>
-          <p>Any extension settings or preferences that are saved are stored locally using the browser storage API. They are not transmitted to Boztik servers and remain on the device unless the user clears them.</p>
-        </article>
-
-        <article class="policy-card">
-          <h3>Image processing</h3>
-          <p>Image analysis and inspection are handled locally in the browser whenever possible. Uploaded or viewed images are not collected or stored by Boztik Creative Toolkit as a central service.</p>
-        </article>
-
-        <article class="policy-card">
-          <h3>Data sharing and security</h3>
-          <p>User data is never sold, rented, or shared with third parties for advertising purposes. Reasonable browser-side security practices are used to protect locally stored settings and preferences.</p>
-        </article>
-
-        <article class="policy-card">
-          <h3>Permissions</h3>
-          <p>Permissions are requested only to support the extension’s intended functionality. Storage saves preferences locally, downloads allows the download-original feature, active tab and host permissions support image analysis and context-aware browsing features.</p>
-        </article>
-
-        <article class="policy-card">
-          <h3>Third-party services</h3>
-          <p>If a user chooses to open services such as Google Reverse Image Search, Bing Visual Search, TinEye, or Ko-fi, they are redirected to those services and become subject to each provider’s own privacy policy.</p>
-        </article>
-      </div>
-    </section>
-
-    <section class="tool-shell reveal">
-      <div class="analysis-card" style="width:100%; max-width:980px; margin:0 auto;">
-        <h3 style="margin-bottom:12px;">Children's privacy</h3>
-        <p>Boztik Creative Toolkit is not directed to children under 13 and does not knowingly collect personal information from children. If a parent or guardian becomes aware of a child’s information being provided without consent, please contact us so it can be removed.</p>
-        <br>
-        <h3 style="margin-bottom:12px;">Policy updates</h3>
-        <p>This Privacy Policy may be updated from time to time to reflect product changes, legal requirements, or improved privacy practices. Any changes will be reflected on this page.</p>
-        <br>
-        <h3 style="margin-bottom:12px;">Contact</h3>
-        <p>Questions or privacy requests can be directed to <a href="mailto:hello@boztik.dev" style="color:var(--primary);">hello@boztik.dev</a>. You may also visit the Boztik website and use the support links available there.</p>
-      </div>
-    </section>
-
-    <section class="tool-callout reveal">
-      <div class="download-card">
-        <h2>Need help or have questions?</h2>
-        <p>We’re happy to answer questions about privacy, extension permissions, or how Boztik Creative Toolkit operates.</p>
-        <div class="support-actions">
-          <a class="support-button" href="mailto:hello@boztik.dev">Contact Boztik</a>
-          <a class="secondary-link" href="index.html#downloads">View Downloads</a>
+      <article class="privacy-card">
+        <div class="privacy-card-heading">
+          <span class="privacy-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <ellipse cx="12" cy="7" rx="5" ry="3"></ellipse>
+              <path d="M7 7v3c0 1.7 2.2 3 5 3s5-1.3 5-3V7"></path>
+              <path d="M7 10v3c0 1.7 2.2 3 5 3s5-1.3 5-3v-3"></path>
+              <path d="M7 13v3c0 1.7 2.2 3 5 3s5-1.3 5-3v-3"></path>
+            </svg>
+          </span>
+          <h2>2. Local Storage</h2>
         </div>
-      </div>
+        <p>Some extension settings, preferences, statistics, and achievements are stored locally on your own device using the browser Storage API.</p>
+        <p>This information never leaves your computer unless you explicitly choose to share it.</p>
+      </article>
+
+      <article class="privacy-card">
+        <div class="privacy-card-heading">
+          <span class="privacy-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="14" rx="2"></rect>
+              <path d="M7 8h10"></path>
+              <path d="M7 12h5"></path>
+            </svg>
+          </span>
+          <h2>3. Image Processing</h2>
+        </div>
+        <p>Image analysis is performed locally within your browser whenever possible.</p>
+        <p>Boztik Creative Toolkit does not upload or permanently store images that you inspect.</p>
+      </article>
+
+      <article class="privacy-card">
+        <div class="privacy-card-heading">
+          <span class="privacy-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="8"></circle>
+              <path d="M12 8v4l2.5 2.5"></path>
+            </svg>
+          </span>
+          <h2>4. Browser Permissions</h2>
+        </div>
+        <p>Browser permissions are requested only to support the extension’s intended functionality.</p>
+        <div class="privacy-permission-grid">
+          <div class="privacy-permission-card">
+            <h3>Storage</h3>
+            <p>Used only to save your preferences and extension settings locally.</p>
+          </div>
+          <div class="privacy-permission-card">
+            <h3>Downloads</h3>
+            <p>Used only when you choose to download an image using the Download Original feature.</p>
+          </div>
+          <div class="privacy-permission-card">
+            <h3>Host Permissions</h3>
+            <p>Required so the extension can inspect images available on websites that you choose to interact with.</p>
+          </div>
+        </div>
+        <p class="privacy-note">Permissions are never used to collect personal information.</p>
+      </article>
+
+      <article class="privacy-card">
+        <div class="privacy-card-heading">
+          <span class="privacy-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M7 7h10"></path>
+              <path d="M7 12h10"></path>
+              <path d="M7 17h10"></path>
+              <path d="M4 4h16"></path>
+              <path d="M4 20h16"></path>
+            </svg>
+          </span>
+          <h2>5. Third-Party Services</h2>
+        </div>
+        <p>Users may voluntarily open services such as Google Reverse Image Search, Bing Visual Search, TinEye, or Ko-fi.</p>
+        <p>Once users visit those services, they are subject to those companies’ own Privacy Policies. Boztik Creative Toolkit does not control those websites.</p>
+      </article>
+
+      <article class="privacy-card">
+        <div class="privacy-card-heading">
+          <span class="privacy-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8 10V7a4 4 0 1 1 8 0v3"></path>
+              <rect x="5" y="10" width="14" height="9" rx="2"></rect>
+            </svg>
+          </span>
+          <h2>6. Data Sharing</h2>
+        </div>
+        <p>We never sell, rent, or share user information with advertisers or third parties.</p>
+      </article>
+
+      <article class="privacy-card">
+        <div class="privacy-card-heading">
+          <span class="privacy-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="4" y="8" width="16" height="12" rx="2"></rect>
+              <path d="M8 8V6a4 4 0 1 1 8 0v2"></path>
+            </svg>
+          </span>
+          <h2>7. Data Security</h2>
+        </div>
+        <p>We use privacy-first design principles.</p>
+        <p>No personal information is transmitted to Boztik servers. Locally stored information remains on the user’s own device.</p>
+      </article>
+
+      <article class="privacy-card">
+        <div class="privacy-card-heading">
+          <span class="privacy-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8 10V8a4 4 0 1 1 8 0v2"></path>
+              <rect x="5" y="10" width="14" height="9" rx="2"></rect>
+              <path d="M10 14h4"></path>
+            </svg>
+          </span>
+          <h2>8. Children’s Privacy</h2>
+        </div>
+        <p>Boztik Creative Toolkit is not intended for children under 13 years of age and does not knowingly collect personal information from children.</p>
+      </article>
+
+      <article class="privacy-card">
+        <div class="privacy-card-heading">
+          <span class="privacy-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12a9 9 0 1 1-9-9"></path>
+              <path d="M21 3v6h-6"></path>
+            </svg>
+          </span>
+          <h2>9. Policy Updates</h2>
+        </div>
+        <p>This Privacy Policy may be updated periodically to reflect improvements, legal requirements, or changes to the extension.</p>
+        <p>The latest version will always be published on this page.</p>
+      </article>
+
+      <article class="privacy-card">
+        <div class="privacy-card-heading">
+          <span class="privacy-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 5h16"></path>
+              <path d="M4 19h16"></path>
+              <path d="M7 5v14"></path>
+              <path d="M17 5v14"></path>
+              <path d="M4 10h16"></path>
+            </svg>
+          </span>
+          <h2>10. Contact</h2>
+        </div>
+        <p>If you have any questions regarding this Privacy Policy, please contact us through the Boztik website or our published support email.</p>
+        <p>For direct contact, email <a href="mailto:hello@boztik.dev" style="color: var(--primary); font-weight: 600;">hello@boztik.dev</a>.</p>
+      </article>
     </section>
   </main>
 
