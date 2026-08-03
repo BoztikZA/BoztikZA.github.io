@@ -310,38 +310,39 @@ or build marketing profiles.
 <h2>2. Local Storage</h2>
 
 <p>
-Boztik Creative Toolkit uses Chrome's Storage API to save a limited amount of
-information directly on your own device.
+The Boztik website and the Boztik Creative Toolkit extension store a very limited amount of data locally in your browser to make the experience convenient and persistent.
 </p>
 
 <p>
-This allows the extension to remember settings between browser sessions.
+On this website, the assistant and UI use the browser's localStorage to keep temporary chat history and optional configuration. When you enter an API key to connect a third-party AI provider on this site, that key is stored only in your browser's localStorage.
+</p>
+
+<p>
+If you install the browser extension, extension settings and preferences are stored locally by the extension using the browser's extension storage API (for example chrome.storage in Chromium-based browsers). In both cases, data is stored on your device and is not transmitted to Boztik-operated servers by default.
 </p>
 
 <h3>Examples of locally stored information:</h3>
 
 <ul>
 
-<li>User preferences</li>
+<li>Site assistant chat history (stored in localStorage on this site)</li>
 
-<li>Extension settings</li>
+<li>Optional AI provider connection keys that you add in your browser (stored locally only)</li>
 
-<li>Achievement progress</li>
+<li>User preferences and extension settings</li>
 
-<li>Usage statistics displayed inside the extension</li>
+<li>Achievement progress and usage counters shown in the UI</li>
 
-<li>Custom configuration options</li>
+<li>Any custom configuration saved by you in the UI</li>
 
 </ul>
 
 <p>
-This information remains on your own device and is not uploaded to
-Boztik-operated servers.
+This locally stored information remains on your device until you clear it (for example by clearing site data or uninstalling the extension). It is not automatically uploaded to Boztik-operated servers unless an explicit feature in the future requires it and you are asked to opt in.
 </p>
 
 <p>
-Users can remove this information at any time by uninstalling the extension
-or clearing the browser's extension storage.
+You can remove this information at any time by clearing your browser's site data, clearing localStorage via developer tools, or uninstalling the extension (which removes extension storage according to the browser's behavior).
 </p>
 
 </section>
@@ -469,53 +470,37 @@ activity.
 <h2>5. Artificial Intelligence Services</h2>
 
 <p>
-
-Some optional features of Boztik Creative Toolkit may connect to third-party
-Artificial Intelligence services when you intentionally use AI-powered tools.
-
+Some features on this website and in the assistant are able to connect to third-party AI providers if you choose to enable them.
 </p>
 
 <p>
-
-Depending on the feature selected, requests may be sent directly to one or more
-of the following providers:
-
+The current site implementation supports direct connections from your browser to the following providers when you supply and enable a provider API key in the UI:
 </p>
 
 <ul>
-
-<li>OpenAI</li>
-
-<li>Anthropic</li>
-
-<li>Google Gemini</li>
-
-<li>Stability AI</li>
-
-<li>Leonardo AI</li>
-
-<li>Black Forest Labs (FLUX)</li>
-
+  <li>OpenAI (ChatGPT-compatible APIs)</li>
+  <li>Anthropic (Claude)</li>
+  <li>Google (Gemini / Generative Language API)</li>
 </ul>
 
 <p>
+How AI requests work on this site:
+</p>
 
-Information is transmitted only when you choose to use an AI-powered feature.
+<ul>
+  <li>Requests are sent only after an explicit user action — for example when you click Connect, Test or Submit in the Creative Assistant UI, or when you send a prompt to the assistant.</li>
+  <li>When a request is made, your browser sends the prompt (and the built-in system prompt used to guide responses) directly to the selected provider's API endpoint. The request may include the API key you supplied in your browser.</li>
+  <li>API keys and prompts are sent directly from your browser to the provider. Boztik's site does not forward your key to any Boztik-operated server, and Boztik does not receive your API key when you connect a provider in the browser UI.</li>
+  <li>The site stores optional keys and a local copy of chat history only in your browser (localStorage) so the connection and chat persist between visits on the same device; these are not uploaded to Boztik-operated servers by the current site code.</li>
+  <li>Responses returned by the provider are displayed in your browser. Unless you explicitly opt in to a future feature that may upload or log prompts/responses, Boztik does not permanently store prompts, requests, responses or uploaded images on Boztik-operated servers.</li>
+</ul>
 
+<p>
+Each AI provider processes requests according to its own Privacy Policy and Terms of Service. When you use a provider you accept that provider's handling of your data (prompts, responses and any content you include in requests).
 </p>
 
 <p>
-
-Boztik Creative Toolkit does not permanently store prompts, requests, responses
-or uploaded content on Boztik-operated servers.
-
-</p>
-
-<p>
-
-Each AI provider processes requests according to its own Privacy Policy and
-Terms of Service.
-
+If you do not want to use external AI services, the assistant continues to provide built-in guidance that runs entirely in your browser and does not require a provider connection.
 </p>
 
 </section>
@@ -524,29 +509,22 @@ Terms of Service.
 <h2>6. Third-Party Services</h2>
 
 <p>
-Some features within Boztik Creative Toolkit may direct you to third-party websites or online services when you choose to use them.
+Some features within the site or the extension may send data to third-party services only when you explicitly choose to use those features.
 </p>
 
 <p>
-These services may include:
+Typical third-party services used by the site and extension include:
 </p>
 
 <ul>
-
-<li>Google Reverse Image Search</li>
-
-<li>Bing Visual Search</li>
-
-<li>TinEye</li>
-
-<li>Ko-fi</li>
-
-<li>GitHub</li>
-
+  <li>Google Reverse Image Search, Bing Visual Search, or TinEye — when you choose to use a reverse image search feature; the image or image URL you provide is sent directly to that service.</li>
+  <li>Google AdSense — the site loads the AdSense script; Google may collect information for ad personalization and measurement according to Google's policies.</li>
+  <li>Ko‑fi — used for voluntary support/donations via an external link.</li>
+  <li>GitHub, LaunchZone and other listing services — used as promotional or support links.</li>
 </ul>
 
 <p>
-When you leave Boztik Creative Toolkit and visit a third-party website, your interaction is governed by that website's own Privacy Policy and Terms of Service. Boztik Creative Toolkit is not responsible for the privacy practices or content of external websites.
+When you leave Boztik Creative Toolkit and visit an external website, your interaction is governed by that website's own Privacy Policy and Terms of Service. Boztik Creative Toolkit is not responsible for the privacy practices or content of external websites.
 </p>
 
 </section>
