@@ -13,9 +13,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles-premium.css">
+  <link rel="stylesheet" href="styles-premium.css?v=20260805a">
 </head>
 <body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
   <div class="background-glow">
     <div class="glow1"></div>
     <div class="glow2"></div>
@@ -23,7 +24,7 @@
   </div>
 
   <header>
-    <nav class="navbar">
+    <nav class="navbar" aria-label="Primary navigation">
       <a href="index.html" class="logo-area">
         <img src="images/logo.png" alt="Boztik Creative Toolkit logo">
         <div>
@@ -31,7 +32,10 @@
           <span class="logo-subtitle">Professional Browser Extension</span>
         </div>
       </a>
-      <div class="nav-links">
+      <button class="nav-toggle" type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="primary-navigation">
+        <span class="nav-toggle__label">Menu</span><span class="nav-toggle__icon" aria-hidden="true"></span>
+      </button>
+      <div class="nav-links" id="primary-navigation">
         <a href="index.html">Home</a>
         <a href="image-inspector.html">Image Inspector</a>
         <a href="creative-assistant.html">Creative Assistant</a>
@@ -42,7 +46,7 @@
     </nav>
   </header>
 
-  <main>
+  <main id="main-content">
     <section class="support-hero reveal">
       <div class="support-hero__copy">
         <span class="section-label">Support Boztik</span>
@@ -177,6 +181,7 @@
     </div>
   </footer>
 
+  <script src="js/site.js?v=20260805a"></script>
   <script src="js/support.js"></script>
 </body>
 </html>

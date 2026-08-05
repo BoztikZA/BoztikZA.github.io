@@ -1893,3 +1893,166 @@ button.secondary-link {
     width: 100%;
   }
 }
+
+/* Shared interaction and navigation polish */
+html { scroll-padding-top: 96px; }
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 4px;
+}
+
+.skip-link {
+  position: fixed;
+  z-index: 2000;
+  top: 16px;
+  left: 16px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--primary);
+  color: #041107;
+  font-weight: 800;
+  transform: translateY(-180%);
+  transition: transform 0.2s ease;
+}
+
+.skip-link:focus { transform: translateY(0); }
+
+.navbar {
+  min-height: 82px;
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+
+.nav-links a {
+  position: relative;
+  transition: color var(--transition);
+}
+
+.nav-links a::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: -8px;
+  left: 0;
+  height: 2px;
+  border-radius: 99px;
+  background: var(--primary);
+  transform: scaleX(0);
+  transition: transform var(--transition);
+}
+
+.nav-links a:hover::after,
+.nav-links a[aria-current="page"]::after { transform: scaleX(1); }
+
+.nav-toggle { display: none; }
+
+.browser-card:hover,
+.download-card-large:hover,
+.featured-card:hover,
+.tool-card:hover,
+.feature-card:hover,
+.support-feature-card:hover,
+.support-roadmap-card:hover,
+.support-link-card:hover {
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.32), 0 0 0 1px rgba(142, 255, 61, 0.14);
+}
+
+.browser-card:focus-within,
+.download-card-large:focus-within,
+.tool-card:focus-within,
+.featured-card:focus-within { border-color: var(--primary); }
+
+@media (max-width: 820px) {
+  header { backdrop-filter: blur(20px); }
+
+  .navbar {
+    min-height: 72px;
+    padding: 10px 20px;
+    flex-direction: row;
+    gap: 12px;
+  }
+
+  .logo-area { gap: 10px; }
+  .logo-area img { width: 44px; }
+  .logo-area .logo-title { font-size: 0.95rem; }
+  .logo-area .logo-subtitle { display: none; }
+
+  .nav-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    padding: 10px 12px;
+    border: 1px solid rgba(142, 255, 61, 0.28);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text);
+    font: 700 0.85rem var(--font-body);
+    cursor: pointer;
+  }
+
+  .nav-toggle__icon,
+  .nav-toggle__icon::before,
+  .nav-toggle__icon::after {
+    display: block;
+    width: 17px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--primary);
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
+  .nav-toggle__icon { position: relative; }
+  .nav-toggle__icon::before,
+  .nav-toggle__icon::after { content: ""; position: absolute; left: 0; }
+  .nav-toggle__icon::before { top: -5px; }
+  .nav-toggle__icon::after { top: 5px; }
+  .is-menu-open .nav-toggle__icon { background: transparent; }
+  .is-menu-open .nav-toggle__icon::before { transform: translateY(5px) rotate(45deg); }
+  .is-menu-open .nav-toggle__icon::after { transform: translateY(-5px) rotate(-45deg); }
+
+  .nav-links {
+    position: absolute;
+    top: calc(100% + 1px);
+    right: 12px;
+    left: 12px;
+    display: grid;
+    gap: 2px;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: rgba(7, 12, 8, 0.98);
+    box-shadow: 0 22px 55px rgba(0, 0, 0, 0.38);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+  }
+
+  .is-menu-open .nav-links {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .nav-links a { padding: 11px 12px; border-radius: 10px; }
+  .nav-links a:hover, .nav-links a[aria-current="page"] { background: rgba(142, 255, 61, 0.1); }
+  .nav-links a::after { display: none; }
+
+  /* Let the value proposition lead on small screens before the visual proof. */
+  .hero-visual { order: 0; }
+}
+
+@media (max-width: 520px) {
+  .navbar { padding-right: 14px; padding-left: 14px; }
+  .nav-toggle__label { display: none; }
+  .nav-toggle { padding: 11px; }
+  .hero { gap: 24px; }
+  .trust-row { gap: 8px; }
+  .trust-pill { padding: 8px 10px; font-size: 0.82rem; }
+  .browser-card { align-items: flex-start; }
+  .browser-card-copy span { line-height: 1.45; }
+}

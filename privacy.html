@@ -25,7 +25,7 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" href="styles-premium.css">
+    <link rel="stylesheet" href="styles-premium.css?v=20260805a">
 
     <style>
 
@@ -170,6 +170,8 @@
 
 <body>
 
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
 <div class="background-glow">
 
 <div class="glow1"></div>
@@ -182,7 +184,7 @@
 
 <header>
 
-<nav class="navbar">
+<nav class="navbar" aria-label="Primary navigation">
 
 <a href="index.html" class="logo-area">
 
@@ -198,7 +200,11 @@
 
 </a>
 
-<div class="nav-links">
+<button class="nav-toggle" type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="primary-navigation">
+<span class="nav-toggle__label">Menu</span><span class="nav-toggle__icon" aria-hidden="true"></span>
+</button>
+
+<div class="nav-links" id="primary-navigation">
 
 <a href="index.html">Home</a>
 
@@ -210,7 +216,7 @@
 
 <a href="support.html">Support</a>
 
-<a href="privacy.html">Privacy</a>
+<a href="privacy.html" aria-current="page">Privacy</a>
 
 </div>
 
@@ -218,7 +224,7 @@
 
 </header>
 
-<main class="privacy-page">
+<main class="privacy-page" id="main-content">
 
 <div class="privacy-container">
 
@@ -695,6 +701,7 @@ Helping photographers, designers and creators work smarter with professional bro
 </footer>
 
 
+<script src="js/site.js?v=20260805a"></script>
 <script src="js/support.js"></script>
 
 <script>

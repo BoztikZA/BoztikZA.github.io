@@ -21,22 +21,8 @@
     }
   };
 
-  const handleReveal = () => {
-    const revealItems = document.querySelectorAll('.reveal');
-    const triggerPoint = window.innerHeight - 90;
-    revealItems.forEach((item) => {
-      if (item.getBoundingClientRect().top < triggerPoint) {
-        item.classList.add('is-visible');
-      }
-    });
-  };
-
   const init = () => {
     createFloatingButton();
-    handleReveal();
-
-    window.addEventListener('scroll', handleReveal, { passive: true });
-    window.addEventListener('resize', handleReveal);
   };
 
   if (document.readyState === 'loading') {
