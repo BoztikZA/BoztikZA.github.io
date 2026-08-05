@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deliver Dashboard | Boztik</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#8eff3d">
+  <link rel="icon" type="image/png" href="../images/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles-premium.css?v=20260805a">
+  <link rel="stylesheet" href="css/deliver.css?v=1">
+</head>
+<body>
+  <div class="background-glow">
+    <div class="glow1"></div>
+    <div class="glow2"></div>
+    <div class="glow3"></div>
+  </div>
+
+  <header>
+    <nav class="navbar" aria-label="Primary navigation">
+      <a href="../index.html" class="logo-area">
+        <img src="../images/logo.png" alt="Boztik Creative Toolkit logo">
+        <div>
+          <span class="logo-title">Boztik Deliver</span>
+          <span class="logo-subtitle">Admin Dashboard</span>
+        </div>
+      </a>
+      <div class="nav-links" style="display:flex;">
+        <a href="../index.html">Back to site</a>
+        <a href="#" id="dash-logout-link" style="display:none;">Log out</a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main-content">
+
+    <!-- LOGIN -->
+    <div id="dash-login-view" class="dash-login-wrap">
+      <h1>Admin Login</h1>
+      <p>Sign in to manage client deliveries. This area is private.</p>
+      <form id="dash-login-form" novalidate>
+        <div class="dash-field">
+          <label for="dash-email">Email</label>
+          <input type="email" id="dash-email" name="email" autocomplete="username" required>
+        </div>
+        <div class="dash-field">
+          <label for="dash-password">Password</label>
+          <input type="password" id="dash-password" name="password" autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="dash-btn" id="dash-login-btn">Sign In</button>
+        <p class="dash-error" id="dash-login-error"></p>
+      </form>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dash-main-view" class="dash-page" style="display:none;">
+      <div class="dash-header">
+        <h1>Deliveries</h1>
+      </div>
+
+      <div class="dash-stats">
+        <div class="dash-stat-card">
+          <span>Active Deliveries</span>
+          <strong id="stat-active-count">0</strong>
+        </div>
+        <div class="dash-stat-card">
+          <span>Total Downloads</span>
+          <strong id="stat-download-count">0</strong>
+        </div>
+        <div class="dash-stat-card">
+          <span>Storage Used</span>
+          <strong id="stat-storage-used">0 B</strong>
+        </div>
+        <div class="dash-stat-card">
+          <span>Total Deliveries</span>
+          <strong id="stat-total-count">0</strong>
+        </div>
+      </div>
+
+      <div class="dash-grid">
+        <!-- NEW DELIVERY PANEL -->
+        <div class="dash-panel">
+          <h2>New Delivery</h2>
+          <form id="dash-upload-form">
+            <div class="dash-dropzone" id="dash-dropzone" tabindex="0" role="button" aria-label="Choose a ZIP file to upload">
+              <strong>Click to choose</strong> or drag a ZIP file here<br>
+              <small>Maximum 250MB · .zip only</small>
+              <input type="file" id="dash-file-input" accept=".zip,application/zip" hidden>
+            </div>
+            <div class="dash-file-chip" id="dash-file-chip">
+              <span id="dash-file-chip-name">—</span>
+              <button type="button" class="dash-btn--ghost" id="dash-file-chip-remove" style="width:auto;padding:4px 10px;">✕</button>
+            </div>
+
+            <div class="dash-field">
+              <label for="dash-client-name">Client Name</label>
+              <input type="text" id="dash-client-name" required>
+            </div>
+            <div class="dash-field">
+              <label for="dash-project-name">Project Name</label>
+              <input type="text" id="dash-project-name" required>
+            </div>
+            <div class="dash-field">
+              <label for="dash-notes">Notes (optional)</label>
+              <textarea id="dash-notes" rows="3"></textarea>
+            </div>
+            <div class="dash-field">
+              <label for="dash-expiry">Expires In</label>
+              <select id="dash-expiry">
+                <option value="24">24 hours (default)</option>
+                <option value="48">48 hours</option>
+                <option value="72">72 hours</option>
+                <option value="168">7 days</option>
+              </select>
+            </div>
+
+            <div class="dash-progress" id="dash-progress">
+              <div class="dash-progress-bar" id="dash-progress-bar"></div>
+            </div>
+
+            <button type="submit" class="dash-btn" id="dash-upload-btn">Generate Delivery</button>
+            <p class="dash-error" id="dash-upload-error"></p>
+          </form>
+        </div>
+
+        <!-- DELIVERIES LIST PANEL -->
+        <div class="dash-panel">
+          <h2>Recent Deliveries</h2>
+          <div class="dash-deliveries-list" id="dash-deliveries-list">
+            <div class="dash-empty-state">Loading deliveries…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/deliver-config.js"></script>
+  <script src="js/deliver-shared.js"></script>
+  <script src="js/deliver-dashboard.js"></script>
+</body>
+</html>
