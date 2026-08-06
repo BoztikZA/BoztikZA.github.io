@@ -8,7 +8,7 @@
  */
 window.BOZTIK_DELIVER_CONFIG = {
   SUPABASE_URL: "https://hwcxxotgtqchcriascti.supabase.co",
-  SUPABASE_ANON_KEY: "PASTE_YOUR_SUPABASE_ANON_KEY_HERE", // Project Settings → API → anon public key
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh3Y3h4b3RndHFjaGNyaWFzY3RpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU5NTI5MzMsImV4cCI6MjEwMTUyODkzM30.bLyXIjvw0NcZQsyStPvq6d7nwDrMSycsTKuJkOtd9wU", // Project Settings → API → anon public key
 
   // Storage bucket that holds the ZIP deliveries (see supabase/schema.sql)
   STORAGE_BUCKET: "deliveries",
