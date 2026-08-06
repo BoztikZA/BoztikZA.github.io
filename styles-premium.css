@@ -1902,6 +1902,38 @@ button.secondary-link {
   font-weight: 800;
 }
 
+.paypal-support-button,
+.paypal-home-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.paypal-cta-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  margin-top: 14px;
+  padding: 13px 16px;
+  border-radius: 10px;
+  background: #ffc439;
+  color: #003087;
+  font-weight: 800;
+  text-decoration: none;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.paypal-cta-button:hover,
+.paypal-cta-button:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(255, 196, 57, .2);
+}
+
+.paypal-cta-note { margin: 8px 0 0; color: var(--text-muted); font-size: .82rem; text-align: center; }
+
 /* Shared interaction and navigation polish */
 html { scroll-padding-top: 96px; }
 

@@ -8,7 +8,7 @@ Boztik Deliver is a static premium client-delivery interface backed by Supabase 
 2. Create the `deliveries` bucket as private if it does not already exist; the SQL also applies its file-type rules.
 3. In Authentication, create the administrator user in project `hwcxxotgtqchcriascti`. Disable public sign-ups.
 4. Confirm the anon key in `js/config.js` is the **anon public key from this same project**. Never use a service-role key in this static site.
-5. Set `publicBaseUrl` to the deployed Deliver directory. Replace `paypalUrl` and the PayPal placeholders in `index.html` and `support.html` with your real PayPal URL.
+5. Set `publicBaseUrl` to the deployed Deliver directory. The configured PayPal support URL is `http://paypal.me/angry5p1c3`.
 
 ## Authentication checks
 

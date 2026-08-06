@@ -6,5 +6,5 @@ export const config = Object.freeze({
   defaultExpiryHours: 24,
   maxUploadBytes: 250 * 1024 * 1024,
   allowedExtensions: ["zip", "jpg", "jpeg", "png", "psd", "tif", "tiff", "webp", "pdf", "ai", "eps"],
-  paypalUrl: "https://paypal.me/REPLACE_WITH_YOUR_PAYPAL"
+  paypalUrl: "http://paypal.me/angry5p1c3"
 });
