@@ -1894,6 +1894,14 @@ button.secondary-link {
   }
 }
 
+.paypal-support-button,
+.paypal-home-link {
+  background: #ffc439;
+  color: #003087;
+  border-color: #ffc439;
+  font-weight: 800;
+}
+
 /* Shared interaction and navigation polish */
 html { scroll-padding-top: 96px; }
 

@@ -154,3 +154,56 @@ create policy "Anonymous can read files for active deliveries"
 -- password). Do NOT enable public sign-ups for this project — Deliver
 -- has no registration flow and none should be added.
 -- ---------------------------------------------------------
+
+-- =========================================================
+-- V2 UPGRADE: MULTI-FILE DELIVERIES
+-- Run this section after the original schema when upgrading an existing
+-- Deliver installation. It is safe to run more than once.
+-- =========================================================
+create table if not exists public.delivery_files (
+  id uuid primary key default gen_random_uuid(),
+  delivery_id text not null references public.deliveries(id) on delete cascade,
+  file_path text not null unique,
+  file_name text not null,
+  file_size bigint not null check (file_size > 0),
+  content_type text,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists delivery_files_delivery_id_idx on public.delivery_files(delivery_id);
+alter table public.delivery_files enable row level security;
+
+create policy "Admins can manage delivery files"
+  on public.delivery_files for all to authenticated
+  using (true) with check (true);
+
+create policy "Anonymous can view active delivery files"
+  on public.delivery_files for select to anon
+  using (exists (select 1 from public.deliveries d where d.id = delivery_id and d.expires_at > now()));
+
+create or replace view public.delivery_files_public
+with (security_invoker = true) as
+select f.delivery_id, f.file_path, f.file_name, f.file_size, f.content_type, f.created_at
+from public.delivery_files f
+join public.deliveries d on d.id = f.delivery_id
+where d.expires_at > now();
+
+grant select on public.delivery_files_public to anon;
+grant select on public.delivery_files to anon;
+
+-- Backfill existing one-file deliveries so older delivery links continue
+-- to work in the new gallery. The conflict guard makes this idempotent.
+insert into public.delivery_files (delivery_id, file_path, file_name, file_size, content_type)
+select id, file_path, file_name, file_size,
+  case when lower(file_name) like '%.zip' then 'application/zip' else null end
+from public.deliveries
+on conflict (file_path) do nothing;
+
+-- The bucket must accept the file types validated by the dashboard.
+update storage.buckets
+set allowed_mime_types = array[
+  'application/zip', 'application/x-zip-compressed', 'image/jpeg',
+  'image/png', 'image/webp', 'image/tiff', 'application/pdf',
+  'application/postscript', 'application/octet-stream'
+]
+where id = 'deliveries';
