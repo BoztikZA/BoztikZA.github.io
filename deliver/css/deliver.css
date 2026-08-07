@@ -224,6 +224,29 @@
   text-decoration: underline;
 }
 
+.deliver-feature-list {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px 20px;
+  margin: 0 0 20px;
+  padding: 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.deliver-feature-list li {
+  padding-left: 18px;
+  position: relative;
+}
+
+.deliver-feature-list li::before {
+  content: "\2713";
+  position: absolute;
+  left: 0;
+  color: var(--primary);
+}
+
 /* ---- Support cards (Ko-fi + PayPal) reused here ---- */
 
 .deliver-support-row {
