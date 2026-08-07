@@ -13,23 +13,60 @@ async function renderFileInfo(file, slot) {
   const mimeType = guessMimeType(file.file_name);
   const format = formatLabelFor(file.file_name, mimeType);
   const isImage = mimeType.startsWith("image/");
-  try {
-    if (isImage) {
+  
+  if (isImage) {
+    let dims = null;
+    let exif = null;
+    try {
+      // Stage D: Try to generate signed URL and fetch dimensions / EXIF (best-effort)
       const url = await signedDownload(file);
-      const dims = await getImageDimensions(url);
-      let exif = null;
+      try {
+        dims = await getImageDimensions(url);
+      } catch (dimErr) {
+        console.warn("Boztik Deliver: failed to get image dimensions:", dimErr);
+      }
       if (mimeType === "image/jpeg") {
-        try { const buffer = await (await fetch(url)).arrayBuffer(); exif = await parseExif(buffer); } catch { /* EXIF is best-effort only */ }
+        try {
+          const buffer = await (await fetch(url)).arrayBuffer();
+          exif = await parseExif(buffer);
+        } catch (exifErr) {
+          console.warn("Boztik Deliver: failed to parse JPEG EXIF:", exifErr);
+        }
       }
-      slot.innerHTML = buildImageInfoHTML({ fileName: file.file_name, sizeLabel, format, mimeType, width: dims.width, height: dims.height, exif });
-    } else {
-      let pageCount = null;
-      if (file.file_name.toLowerCase().endsWith(".pdf")) {
-        try { const url = await signedDownload(file); const buffer = await (await fetch(url)).arrayBuffer(); pageCount = await estimatePdfPageCount(buffer); } catch { /* page count is best-effort only */ }
-      }
-      slot.innerHTML = buildGenericInfoHTML({ fileName: file.file_name, sizeLabel, format, mimeType, pageCount });
+    } catch (downloadErr) {
+      console.warn("Boztik Deliver: failed to generate download URL for image information:", downloadErr);
     }
-  } catch { /* file information is a non-critical enhancement — leave the slot empty on failure */ }
+    
+    try {
+      if (dims) {
+        // Stage C: Render full image info (dimensions and optional EXIF)
+        slot.innerHTML = buildImageInfoHTML({ fileName: file.file_name, sizeLabel, format, mimeType, width: dims.width, height: dims.height, exif });
+      } else {
+        // Stage C Fallback: Render generic info for the image since we couldn't load dimensions
+        slot.innerHTML = buildGenericInfoHTML({ fileName: file.file_name, sizeLabel, format, mimeType });
+      }
+    } catch (renderErr) {
+      console.error("Boztik Deliver: failed to render image file info:", renderErr);
+    }
+  } else {
+    let pageCount = null;
+    if (file.file_name.toLowerCase().endsWith(".pdf")) {
+      try {
+        // Stage D: Try to generate signed URL and fetch page count (best-effort)
+        const url = await signedDownload(file);
+        const buffer = await (await fetch(url)).arrayBuffer();
+        pageCount = await estimatePdfPageCount(buffer);
+      } catch (pdfErr) {
+        console.warn("Boztik Deliver: failed to estimate PDF pages:", pdfErr);
+      }
+    }
+    try {
+      // Stage C: Render basic generic info
+      slot.innerHTML = buildGenericInfoHTML({ fileName: file.file_name, sizeLabel, format, mimeType, pageCount });
+    } catch (renderErr) {
+      console.error("Boztik Deliver: failed to render generic file info:", renderErr);
+    }
+  }
 }
 function updateCountdown() { const value = countdown(delivery.expires_at); if (value.expired) { clearInterval(timer); state("expired"); return; } els.count.textContent = value.label; }
 async function download(file) { try { const url = await signedDownload(file); recordDownload(delivery.id); const a = Object.assign(document.createElement("a"), { href: url, download: file.file_name }); document.body.append(a); a.click(); a.remove(); toast("Download started."); } catch { toast("The download could not be prepared. Please refresh and try again.", "error"); } }
