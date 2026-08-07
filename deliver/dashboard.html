@@ -5,7 +5,7 @@
   <title>Deliver Dashboard | Boztik</title><link rel="icon" href="../images/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../styles-premium.css"><link rel="stylesheet" href="css/deliver.css?v=2">
+  <link rel="stylesheet" href="../styles-premium.css"><link rel="stylesheet" href="css/deliver.css?v=3">
 </head><body class="deliver-dashboard-body">
   <a class="skip-link" href="#main-content">Skip to content</a><div class="background-glow"><div class="glow1"></div><div class="glow2"></div></div>
   <header><nav class="navbar" aria-label="Primary navigation"><a class="logo-area" href="../index.html"><img src="../images/logo.png" alt="Boztik logo"><div><span class="logo-title">Boztik Deliver</span><span class="logo-subtitle">Delivery command centre</span></div></a><div class="nav-links" style="display:flex"><a href="../index.html">Back to site</a><a href="#" id="dash-logout-link" hidden>Log out</a></div></nav></header>
@@ -18,5 +18,6 @@
       <section class="dash-panel dash-panel--list"><div class="dash-list-toolbar"><h2>Recent deliveries</h2><label class="sr-only" for="dash-search">Search deliveries</label><input id="dash-search" type="search" placeholder="Search projects or clients"><select id="dash-filter" aria-label="Filter deliveries"><option value="all">All status</option><option value="active">Active</option><option value="expired">Expired</option></select><select id="dash-sort" aria-label="Sort deliveries"><option value="recent">Newest first</option><option value="name">Project name</option><option value="downloads">Downloads</option></select></div><div id="dash-deliveries-list" class="dash-deliveries-list" aria-live="polite"></div></section></div>
     </section>
   </main><dialog id="dash-confirm" class="dash-dialog"><h2>Confirm action</h2><p id="dash-confirm-text"></p><form method="dialog"><button>Cancel</button><button id="dash-confirm-action" type="button" class="is-danger">Continue</button></form></dialog>
+  <dialog id="dash-success" class="dash-dialog dash-dialog--wide"><h2>Delivery ready</h2><p id="dash-success-meta"></p><label class="dash-field">Client download link<input id="dash-success-link" type="text" readonly onclick="this.select()"></label><p id="dash-success-copy-status" class="dash-success-status" hidden></p><div class="dash-success-actions"><button type="button" id="dash-success-copy" class="dash-btn dash-btn--ghost dash-compact">Copy link</button><a id="dash-success-open" class="dash-btn dash-compact" target="_blank" rel="noopener noreferrer">Open client page</a></div><form method="dialog"><button>Done</button></form></dialog>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script type="module" src="js/dashboard.js"></script>
 </body></html>
