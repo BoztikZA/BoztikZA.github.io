@@ -5,7 +5,7 @@ export async function listDeliveries() { const { data, error } = await supabase(
 export async function createDelivery(metadata, files, onProgress) {
   const id = metadata.id; const uploaded = [];
   try {
-    for (let i = 0; i < files.length; i++) { const file = files[i], path = `${id}/${crypto.randomUUID()}-${safeFileName(file.name)}`; const { error } = await supabase().storage.from(config.storageBucket).upload(path, file, { cacheControl: "3600", upsert: false, contentType: file.type || "application/octet-stream" }); if (error) throw error; uploaded.push({ delivery_id: id, file_path: path, file_name: file.name, file_size: file.size, content_type: file.type || null }); onProgress?.((i + 1) / files.length); }
+    for (let i = 0; i < files.length; i++) { const file = files[i], path = `${id}/${crypto.randomUUID()}-${safeFileName(file.name)}`; const { error } = await supabase().storage.from(config.storageBucket).upload(path, file, { cacheControl: "3600", upsert: false, contentType: file.type || "application/octet-stream" }); if (error) throw error; uploaded.push({ delivery_id: id, file_path: path, file_name: file.name, file_size: file.size }); onProgress?.((i + 1) / files.length); }
     const { error } = await supabase().from("deliveries").insert({ ...metadata, file_path: uploaded[0].file_path, file_name: uploaded[0].file_name, file_size: uploaded.reduce((total, file) => total + file.file_size, 0) }); if (error) throw error;
     const { error: filesError } = await supabase().from("delivery_files").insert(uploaded); if (filesError) throw filesError;
   } catch (error) { if (uploaded.length) await supabase().storage.from(config.storageBucket).remove(uploaded.map(file => file.file_path)); throw error; }
