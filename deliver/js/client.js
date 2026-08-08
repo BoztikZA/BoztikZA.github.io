@@ -32,7 +32,7 @@ async function renderFileInfo(file, slot) {
   } catch { /* file information is a non-critical enhancement — leave the slot empty on failure */ }
 }
 function updateCountdown() { const value = countdown(delivery.expires_at); if (value.expired) { clearInterval(timer); state("expired"); return; } els.count.textContent = value.label; }
-async function download(file) { try { const url = await signedDownload(file); recordDownload(delivery.id); const a = Object.assign(document.createElement("a"), { href: url, download: file.file_name }); document.body.append(a); a.click(); a.remove(); toast("Download started."); } catch { toast("The download could not be prepared. Please refresh and try again.", "error"); } }
+async function download(file) { try { const url = await signedDownload(file); console.log("[Boztik Deliver] Download URL obtained, triggering download:", file.file_name); recordDownload(delivery.id).catch(error => console.error("[Boztik Deliver] recordDownload failed (non-fatal, download still proceeds):", error)); const a = Object.assign(document.createElement("a"), { href: url, download: file.file_name }); document.body.append(a); a.click(); a.remove(); toast("Download started."); } catch (error) { console.error("[Boztik Deliver] Download failed for", file.file_name, ":", error); toast("The download could not be prepared. Please refresh and try again.", "error"); } }
 async function init() {
   const id = new URLSearchParams(location.search).get("id")?.trim().toUpperCase();
   if (!id || !/^BZ-[A-Z2-9-]+$/.test(id)) return state("expired"); // INVALID: no/malformed id — treated like an invalid link

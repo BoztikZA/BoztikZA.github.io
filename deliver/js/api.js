@@ -41,6 +41,32 @@ export async function getPublicDelivery(id) {
     return { ...data, delivery_files: null };
   }
 }
-export async function signedDownload(file) { const { data, error } = await supabase().storage.from(config.storageBucket).createSignedUrl(file.file_path, 60, { download: file.file_name }); if (error) { console.error("[Boztik Deliver] signedDownload error for", file.file_path, ":", { message: error.message, statusCode: error.statusCode || error.status }); throw error; } return data.signedUrl; }
-export async function signedPreview(file) { const { data, error } = await supabase().storage.from(config.storageBucket).createSignedUrl(file.file_path, 300); if (error) { console.error("[Boztik Deliver] signedPreview error for", file.file_path, ":", { message: error.message, statusCode: error.statusCode || error.status }); throw error; } return data.signedUrl; }
+function logStorageError(fnName, file, error) {
+  console.error(`[Boztik Deliver] ${fnName} error:`, {
+    file_path: file.file_path,
+    file_name: file.file_name,
+    bucket: config.storageBucket,
+    message: error?.message,
+    statusCode: error?.statusCode,
+    status: error?.status,
+    code: error?.code,
+    details: error?.details,
+    hint: error?.hint
+  });
+}
+
+export async function signedDownload(file) {
+  console.log("[Boztik Deliver] signedDownload requesting:", { file_path: file.file_path, file_name: file.file_name, bucket: config.storageBucket });
+  const { data, error } = await supabase().storage.from(config.storageBucket).createSignedUrl(file.file_path, 60, { download: file.file_name });
+  console.log("[Boztik Deliver] signedDownload result:", { data, error });
+  if (error) { logStorageError("signedDownload", file, error); throw error; }
+  return data.signedUrl;
+}
+export async function signedPreview(file) {
+  console.log("[Boztik Deliver] signedPreview requesting:", { file_path: file.file_path, file_name: file.file_name, bucket: config.storageBucket });
+  const { data, error } = await supabase().storage.from(config.storageBucket).createSignedUrl(file.file_path, 300);
+  console.log("[Boztik Deliver] signedPreview result:", { data, error });
+  if (error) { logStorageError("signedPreview", file, error); throw error; }
+  return data.signedUrl;
+}
 export async function recordDownload(id) { await supabase().rpc("increment_delivery_downloads", { p_delivery_id: id }); }
