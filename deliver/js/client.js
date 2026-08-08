@@ -2,7 +2,7 @@ import { countdown, formatBytes, formatDate, toast, guessMimeType, isPreviewable
 import { getPublicDelivery, recordDownload, signedDownload, signedPreview } from "./api.js";
 import { getImageDimensions, parseExif, estimatePdfPageCount, buildImageInfoHTML, buildGenericInfoHTML, formatLabelFor } from "./fileinfo.js";
 
-const $ = id => document.getElementById(id); const els = { loading: $("deliver-loading"), active: $("deliver-active"), expired: $("deliver-expired"), error: $("deliver-error"), title: $("deliver-project-name"), client: $("deliver-client-name"), id: $("deliver-id-value"), size: $("deliver-file-size"), date: $("deliver-upload-date"), notes: $("deliver-notes"), notesWrap: $("deliver-notes-wrap"), count: $("deliver-countdown-label"), gallery: $("deliver-gallery"), all: $("deliver-download-all"), discover: $("deliver-discover"), explore: $("deliver-explore"), adSlot: $("deliver-adsense-slot") }; let delivery, timer;
+const $ = id => document.getElementById(id); const els = { loading: $("deliver-loading"), active: $("deliver-active"), expired: $("deliver-expired"), error: $("deliver-error"), errorDetail: $("deliver-error-detail"), title: $("deliver-project-name"), client: $("deliver-client-name"), id: $("deliver-id-value"), size: $("deliver-file-size"), date: $("deliver-upload-date"), notes: $("deliver-notes"), notesWrap: $("deliver-notes-wrap"), count: $("deliver-countdown-label"), gallery: $("deliver-gallery"), all: $("deliver-download-all"), discover: $("deliver-discover"), explore: $("deliver-explore"), adSlot: $("deliver-adsense-slot") }; let delivery, timer;
 function state(name) { ["loading","active","expired","error"].forEach(key => { if (els[key]) els[key].hidden = key !== name; }); const showPromo = name === "active"; if (els.discover) els.discover.hidden = !showPromo; if (els.explore) els.explore.hidden = !showPromo; if (els.adSlot) { els.adSlot.hidden = !showPromo; if (showPromo) loadAd(); } }
 let adLoaded = false;
 function loadAd() { if (adLoaded) return; adLoaded = true; try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (error) { console.error("Boztik Deliver: AdSense failed to load:", error); } }
@@ -54,14 +54,29 @@ async function init() {
     state("active"); // SUCCESS
   } catch (error) {
     console.error("Boztik Deliver client initialization failed:", error); // ERROR
-    state("error");
+    showError(error);
   }
+}
+
+// TEMPORARY DIAGNOSTIC — safe to leave enabled while debugging the public
+// delivery lookup. Only message/code are shown (never a stack trace, URL,
+// key, or other internal detail) so this can be screenshotted directly
+// instead of requiring devtools access.
+function showError(error) {
+  if (els.errorDetail) {
+    const parts = [];
+    if (error?.message) parts.push(error.message);
+    if (error?.code) parts.push(`(code: ${error.code})`);
+    els.errorDetail.textContent = parts.length ? `Diagnostic: ${parts.join(" ")}` : "Diagnostic: no error details were available.";
+    els.errorDetail.hidden = false;
+  }
+  state("error");
 }
 
 // Safety net: if something outside the try/catch above throws (a script
 // error, a rejected promise nothing else caught), never leave the page
 // stuck on the loading state — surface the error card instead.
-window.addEventListener("error", event => { console.error("Boztik Deliver: uncaught error:", event.error || event.message); if (els.loading && !els.loading.hidden) state("error"); });
-window.addEventListener("unhandledrejection", event => { console.error("Boztik Deliver: unhandled rejection:", event.reason); if (els.loading && !els.loading.hidden) state("error"); });
+window.addEventListener("error", event => { console.error("Boztik Deliver: uncaught error:", event.error || event.message); if (els.loading && !els.loading.hidden) showError(event.error || { message: String(event.message || "Unknown script error") }); });
+window.addEventListener("unhandledrejection", event => { console.error("Boztik Deliver: unhandled rejection:", event.reason); if (els.loading && !els.loading.hidden) showError(event.reason || { message: "Unknown unhandled rejection" }); });
 
 init();
