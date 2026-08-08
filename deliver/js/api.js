@@ -13,21 +13,24 @@ export async function createDelivery(metadata, files, onProgress) {
 export async function deleteDelivery(delivery) { const files = delivery.delivery_files?.length ? delivery.delivery_files : [{ file_path: delivery.file_path }]; const { error: storageError } = await supabase().storage.from(config.storageBucket).remove(files.map(file => file.file_path)); if (storageError) throw storageError; const { error } = await supabase().from("deliveries").delete().eq("id", delivery.id); if (error) throw error; }
 export async function duplicateDelivery(delivery) { const { delivery_files, id, created_at, download_count, ...copy } = delivery; const newId = `${id}-COPY-${Math.random().toString(36).slice(2, 6).toUpperCase()}`; const { error } = await supabase().from("deliveries").insert({ ...copy, id: newId, project_name: `${copy.project_name} (copy)`, expires_at: new Date(Date.now() + 24 * 3600000).toISOString() }); if (error) throw error; return newId; }
 export async function getPublicDelivery(id) {
+  console.log("[Boztik Deliver] Looking up delivery:", id);
   const { data, error } = await supabase().from("deliveries_public").select("*").eq("id", id).maybeSingle();
-  if (error) throw error;
-  if (!data) return null;
+  console.log("[Boztik Deliver] deliveries_public result:", { data, error });
+  if (error) { console.error("[Boztik Deliver] deliveries_public error:", { message: error.message, code: error.code, details: error.details, hint: error.hint }); throw error; }
+  if (!data) { console.warn("[Boztik Deliver] No matching row in deliveries_public for id:", id); return null; }
   try {
     const { data: files, error: filesError } = await supabase().from("delivery_files_public").select("*").eq("delivery_id", id).order("created_at");
+    console.log("[Boztik Deliver] delivery_files_public result:", { files, filesError });
     if (filesError) throw filesError;
     return { ...data, delivery_files: files };
   } catch (filesError) {
     // delivery_files_public may not exist / may be unreachable — fall back
     // to the single-file columns already present on deliveries_public so
     // the client page still renders instead of failing the whole delivery.
-    console.error("Boztik Deliver: could not load delivery_files_public, falling back to single-file mode:", filesError);
+    console.error("[Boztik Deliver] delivery_files_public error — falling back to single-file mode:", { message: filesError.message, code: filesError.code, details: filesError.details, hint: filesError.hint });
     return { ...data, delivery_files: null };
   }
 }
-export async function signedDownload(file) { const { data, error } = await supabase().storage.from(config.storageBucket).createSignedUrl(file.file_path, 60, { download: file.file_name }); if (error) throw error; return data.signedUrl; }
-export async function signedPreview(file) { const { data, error } = await supabase().storage.from(config.storageBucket).createSignedUrl(file.file_path, 300); if (error) throw error; return data.signedUrl; }
+export async function signedDownload(file) { const { data, error } = await supabase().storage.from(config.storageBucket).createSignedUrl(file.file_path, 60, { download: file.file_name }); if (error) { console.error("[Boztik Deliver] signedDownload error for", file.file_path, ":", { message: error.message, statusCode: error.statusCode || error.status }); throw error; } return data.signedUrl; }
+export async function signedPreview(file) { const { data, error } = await supabase().storage.from(config.storageBucket).createSignedUrl(file.file_path, 300); if (error) { console.error("[Boztik Deliver] signedPreview error for", file.file_path, ":", { message: error.message, statusCode: error.statusCode || error.status }); throw error; } return data.signedUrl; }
 export async function recordDownload(id) { await supabase().rpc("increment_delivery_downloads", { p_delivery_id: id }); }
