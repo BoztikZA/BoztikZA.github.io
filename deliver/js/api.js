@@ -1,7 +1,17 @@
 import { config } from "./config.js";
 import { supabase, safeFileName } from "./shared.js";
 
-export async function listDeliveries() { const { data, error } = await supabase().from("deliveries").select("*, delivery_files(*)").order("created_at", { ascending: false }).limit(100); if (error) throw error; return data; }
+export async function listDeliveries() {
+  const { data: deliveries, error } = await supabase().from("deliveries").select("*").order("created_at", { ascending: false }).limit(100);
+  if (error) throw error;
+  if (!deliveries.length) return deliveries;
+  const ids = deliveries.map(d => d.id);
+  const { data: files, error: filesError } = await supabase().from("delivery_files").select("*").in("delivery_id", ids).order("created_at");
+  if (filesError) throw filesError;
+  const filesByDelivery = {};
+  for (const file of files) (filesByDelivery[file.delivery_id] ??= []).push(file);
+  return deliveries.map(d => ({ ...d, delivery_files: filesByDelivery[d.id] || [] }));
+}
 export async function createDelivery(metadata, files, onProgress) {
   const id = metadata.id; const uploaded = [];
   try {
