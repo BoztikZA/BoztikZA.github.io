@@ -13,12 +13,30 @@ export async function listDeliveries() {
   return deliveries.map(d => ({ ...d, delivery_files: filesByDelivery[d.id] || [] }));
 }
 export async function createDelivery(metadata, files, onProgress) {
-  const id = metadata.id; const uploaded = [];
+  const id = metadata.id; const uploaded = []; let deliveryInserted = false;
   try {
     for (let i = 0; i < files.length; i++) { const file = files[i], path = `${id}/${crypto.randomUUID()}-${safeFileName(file.name)}`; const { error } = await supabase().storage.from(config.storageBucket).upload(path, file, { cacheControl: "3600", upsert: false, contentType: file.type || "application/octet-stream" }); if (error) throw error; uploaded.push({ delivery_id: id, file_path: path, file_name: file.name, file_size: file.size }); onProgress?.((i + 1) / files.length); }
-    const { error } = await supabase().from("deliveries").insert({ ...metadata, file_path: uploaded[0].file_path, file_name: uploaded[0].file_name, file_size: uploaded.reduce((total, file) => total + file.file_size, 0) }); if (error) throw error;
-    const { error: filesError } = await supabase().from("delivery_files").insert(uploaded); if (filesError) throw filesError;
-  } catch (error) { if (uploaded.length) await supabase().storage.from(config.storageBucket).remove(uploaded.map(file => file.file_path)); throw error; }
+    const { error } = await supabase().from("deliveries").insert({ ...metadata, file_path: uploaded[0].file_path, file_name: uploaded[0].file_name, file_size: uploaded.reduce((total, file) => total + file.file_size, 0) });
+    if (error) throw error;
+    deliveryInserted = true;
+    const { error: filesError } = await supabase().from("delivery_files").insert(uploaded);
+    if (filesError) throw filesError;
+  } catch (error) {
+    console.error("[Boztik Deliver] createDelivery failed — rolling back:", { deliveryId: id, filesUploaded: uploaded.length, deliveryRowInserted: deliveryInserted, message: error?.message, code: error?.code });
+    // Roll back EVERYTHING that succeeded before the failure — not just
+    // storage. Leaving the deliveries row in place after storage cleanup
+    // (the previous bug) is exactly what produced an orphaned delivery
+    // record pointing at a deleted object.
+    if (uploaded.length) {
+      const { error: removeError } = await supabase().storage.from(config.storageBucket).remove(uploaded.map(file => file.file_path));
+      if (removeError) console.error("[Boztik Deliver] Rollback: failed to remove uploaded storage objects:", removeError);
+    }
+    if (deliveryInserted) {
+      const { error: deleteError } = await supabase().from("deliveries").delete().eq("id", id);
+      if (deleteError) console.error("[Boztik Deliver] Rollback: failed to delete orphaned deliveries row:", deleteError);
+    }
+    throw error;
+  }
 }
 export async function deleteDelivery(delivery) { const files = delivery.delivery_files?.length ? delivery.delivery_files : [{ file_path: delivery.file_path }]; const { error: storageError } = await supabase().storage.from(config.storageBucket).remove(files.map(file => file.file_path)); if (storageError) throw storageError; const { error } = await supabase().from("deliveries").delete().eq("id", delivery.id); if (error) throw error; }
 export async function duplicateDelivery(delivery) { const { delivery_files, id, created_at, download_count, ...copy } = delivery; const newId = `${id}-COPY-${Math.random().toString(36).slice(2, 6).toUpperCase()}`; const { error } = await supabase().from("deliveries").insert({ ...copy, id: newId, project_name: `${copy.project_name} (copy)`, expires_at: new Date(Date.now() + 24 * 3600000).toISOString() }); if (error) throw error; return newId; }
@@ -56,6 +74,7 @@ function logStorageError(fnName, file, error) {
 }
 
 export async function signedDownload(file) {
+  if (!file?.file_path) { const error = new Error("signedDownload: file.file_path is missing — cannot request a signed URL for an unknown object."); console.error("[Boztik Deliver]", error.message, { file }); throw error; }
   console.log("[Boztik Deliver] signedDownload requesting:", { file_path: file.file_path, file_name: file.file_name, bucket: config.storageBucket });
   const { data, error } = await supabase().storage.from(config.storageBucket).createSignedUrl(file.file_path, 60, { download: file.file_name });
   console.log("[Boztik Deliver] signedDownload result:", { data, error });
@@ -63,6 +82,7 @@ export async function signedDownload(file) {
   return data.signedUrl;
 }
 export async function signedPreview(file) {
+  if (!file?.file_path) { const error = new Error("signedPreview: file.file_path is missing — cannot request a signed URL for an unknown object."); console.error("[Boztik Deliver]", error.message, { file }); throw error; }
   console.log("[Boztik Deliver] signedPreview requesting:", { file_path: file.file_path, file_name: file.file_name, bucket: config.storageBucket });
   const { data, error } = await supabase().storage.from(config.storageBucket).createSignedUrl(file.file_path, 300);
   console.log("[Boztik Deliver] signedPreview result:", { data, error });
