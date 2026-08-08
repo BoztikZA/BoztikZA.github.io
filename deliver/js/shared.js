@@ -21,3 +21,8 @@ export function safeFileName(name) { return name.normalize("NFKD").replace(/[^a-
 export function isValidFile(file) { const extension = file.name.split(".").pop()?.toLowerCase(); return file && config.allowedExtensions.includes(extension) && file.size > 0 && file.size <= config.maxUploadBytes; }
 const EXT_MIME_MAP = { jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp", tif: "image/tiff", tiff: "image/tiff", gif: "image/gif", zip: "application/zip", pdf: "application/pdf", psd: "image/vnd.adobe.photoshop", ai: "application/postscript", eps: "application/postscript" };
 export function guessMimeType(fileName) { const ext = fileName.split(".").pop()?.toLowerCase(); return EXT_MIME_MAP[ext] || "application/octet-stream"; }
+// Browser support for inline <img>/canvas decoding of TIFF/PSD/AI/EPS is
+// inconsistent across Chrome/Safari/Firefox, so those always get the
+// generic file card instead of a broken/blank preview attempt.
+const PREVIEWABLE_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+export function isPreviewable(fileName) { return PREVIEWABLE_MIME_TYPES.has(guessMimeType(fileName)); }
