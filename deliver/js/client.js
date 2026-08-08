@@ -1,72 +1,35 @@
 import { countdown, formatBytes, formatDate, toast, guessMimeType } from "./shared.js";
-import { getPublicDelivery, recordDownload, signedDownload } from "./api.js";
+import { getPublicDelivery, recordDownload, signedDownload, signedPreview } from "./api.js";
 import { getImageDimensions, parseExif, estimatePdfPageCount, buildImageInfoHTML, buildGenericInfoHTML, formatLabelFor } from "./fileinfo.js";
 
 const $ = id => document.getElementById(id); const els = { loading: $("deliver-loading"), active: $("deliver-active"), expired: $("deliver-expired"), error: $("deliver-error"), title: $("deliver-project-name"), client: $("deliver-client-name"), id: $("deliver-id-value"), size: $("deliver-file-size"), date: $("deliver-upload-date"), notes: $("deliver-notes"), notesWrap: $("deliver-notes-wrap"), count: $("deliver-countdown-label"), gallery: $("deliver-gallery"), all: $("deliver-download-all"), discover: $("deliver-discover"), explore: $("deliver-explore"), adSlot: $("deliver-adsense-slot") }; let delivery, timer;
 function state(name) { ["loading","active","expired","error"].forEach(key => { if (els[key]) els[key].hidden = key !== name; }); const showPromo = name === "active"; if (els.discover) els.discover.hidden = !showPromo; if (els.explore) els.explore.hidden = !showPromo; if (els.adSlot) { els.adSlot.hidden = !showPromo; if (showPromo) loadAd(); } }
 let adLoaded = false;
 function loadAd() { if (adLoaded) return; adLoaded = true; try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (error) { console.error("Boztik Deliver: AdSense failed to load:", error); } }
-function renderFiles(files) { els.gallery.innerHTML = files.map((file, index) => { const image = guessMimeType(file.file_name).startsWith("image/"); return `<article class="deliver-file-card">${image ? `<div class="deliver-file-preview" data-preview="${index}">Image preview</div>` : `<div class="deliver-file-icon">${file.file_name.split(".").pop().toUpperCase()}</div>`}<div><strong>${file.file_name}</strong><small>${formatBytes(file.file_size)}</small></div><div class="fileinfo-slot" data-info="${index}"></div><button type="button" data-download="${index}">Download</button></article>`; }).join(""); els.gallery.querySelectorAll("[data-download]").forEach(button => button.addEventListener("click", () => download(files[Number(button.dataset.download)]))); els.gallery.querySelectorAll("[data-preview]").forEach(async preview => { const file = files[Number(preview.dataset.preview)]; try { const url = await signedDownload(file); preview.innerHTML = `<img src="${url}" alt="Preview of ${file.file_name}">`; } catch { preview.textContent = "Preview unavailable"; } }); els.gallery.querySelectorAll("[data-info]").forEach(slot => renderFileInfo(files[Number(slot.dataset.info)], slot)); }
+function renderFiles(files) { els.gallery.innerHTML = files.map((file, index) => { const image = guessMimeType(file.file_name).startsWith("image/"); return `<article class="deliver-file-card">${image ? `<div class="deliver-file-preview" data-preview="${index}">Image preview</div>` : `<div class="deliver-file-icon">${file.file_name.split(".").pop().toUpperCase()}</div>`}<div><strong>${file.file_name}</strong><small>${formatBytes(file.file_size)}</small></div><div class="fileinfo-slot" data-info="${index}"></div><button type="button" data-download="${index}">Download</button></article>`; }).join(""); els.gallery.querySelectorAll("[data-download]").forEach(button => button.addEventListener("click", () => download(files[Number(button.dataset.download)]))); els.gallery.querySelectorAll("[data-preview]").forEach(async preview => { const file = files[Number(preview.dataset.preview)]; try { const url = await signedPreview(file); preview.innerHTML = `<a href="${url}" target="_blank" rel="noopener noreferrer" aria-label="Open larger preview of ${file.file_name}"><img src="${url}" alt="Preview of ${file.file_name}" loading="lazy"></a>`; } catch { preview.textContent = "Preview unavailable"; } }); els.gallery.querySelectorAll("[data-info]").forEach(slot => renderFileInfo(files[Number(slot.dataset.info)], slot)); }
 
 async function renderFileInfo(file, slot) {
   const sizeLabel = formatBytes(file.file_size);
   const mimeType = guessMimeType(file.file_name);
   const format = formatLabelFor(file.file_name, mimeType);
   const isImage = mimeType.startsWith("image/");
-  
-  if (isImage) {
-    let dims = null;
-    let exif = null;
-    try {
-      // Stage D: Try to generate signed URL and fetch dimensions / EXIF (best-effort)
-      const url = await signedDownload(file);
-      try {
-        dims = await getImageDimensions(url);
-      } catch (dimErr) {
-        console.warn("Boztik Deliver: failed to get image dimensions:", dimErr);
-      }
+  try {
+    if (isImage) {
+      const url = await signedPreview(file);
+      const dims = await getImageDimensions(url);
+      let exif = null;
       if (mimeType === "image/jpeg") {
-        try {
-          const buffer = await (await fetch(url)).arrayBuffer();
-          exif = await parseExif(buffer);
-        } catch (exifErr) {
-          console.warn("Boztik Deliver: failed to parse JPEG EXIF:", exifErr);
-        }
+        try { const buffer = await (await fetch(url)).arrayBuffer(); exif = await parseExif(buffer); } catch { /* EXIF is best-effort only */ }
       }
-    } catch (downloadErr) {
-      console.warn("Boztik Deliver: failed to generate download URL for image information:", downloadErr);
-    }
-    
-    try {
-      if (dims) {
-        // Stage C: Render full image info (dimensions and optional EXIF)
-        slot.innerHTML = buildImageInfoHTML({ fileName: file.file_name, sizeLabel, format, mimeType, width: dims.width, height: dims.height, exif });
-      } else {
-        // Stage C Fallback: Render generic info for the image since we couldn't load dimensions
-        slot.innerHTML = buildGenericInfoHTML({ fileName: file.file_name, sizeLabel, format, mimeType });
+      slot.innerHTML = buildImageInfoHTML({ fileName: file.file_name, sizeLabel, format, mimeType, width: dims.width, height: dims.height, exif });
+    } else {
+      let pageCount = null;
+      if (file.file_name.toLowerCase().endsWith(".pdf")) {
+        try { const url = await signedPreview(file); const buffer = await (await fetch(url)).arrayBuffer(); pageCount = await estimatePdfPageCount(buffer); } catch { /* page count is best-effort only */ }
       }
-    } catch (renderErr) {
-      console.error("Boztik Deliver: failed to render image file info:", renderErr);
-    }
-  } else {
-    let pageCount = null;
-    if (file.file_name.toLowerCase().endsWith(".pdf")) {
-      try {
-        // Stage D: Try to generate signed URL and fetch page count (best-effort)
-        const url = await signedDownload(file);
-        const buffer = await (await fetch(url)).arrayBuffer();
-        pageCount = await estimatePdfPageCount(buffer);
-      } catch (pdfErr) {
-        console.warn("Boztik Deliver: failed to estimate PDF pages:", pdfErr);
-      }
-    }
-    try {
-      // Stage C: Render basic generic info
       slot.innerHTML = buildGenericInfoHTML({ fileName: file.file_name, sizeLabel, format, mimeType, pageCount });
-    } catch (renderErr) {
-      console.error("Boztik Deliver: failed to render generic file info:", renderErr);
     }
-  }
+  } catch { /* file information is a non-critical enhancement — leave the slot empty on failure */ }
 }
 function updateCountdown() { const value = countdown(delivery.expires_at); if (value.expired) { clearInterval(timer); state("expired"); return; } els.count.textContent = value.label; }
 async function download(file) { try { const url = await signedDownload(file); recordDownload(delivery.id); const a = Object.assign(document.createElement("a"), { href: url, download: file.file_name }); document.body.append(a); a.click(); a.remove(); toast("Download started."); } catch { toast("The download could not be prepared. Please refresh and try again.", "error"); } }

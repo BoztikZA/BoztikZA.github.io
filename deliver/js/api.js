@@ -29,4 +29,5 @@ export async function getPublicDelivery(id) {
   }
 }
 export async function signedDownload(file) { const { data, error } = await supabase().storage.from(config.storageBucket).createSignedUrl(file.file_path, 60, { download: file.file_name }); if (error) throw error; return data.signedUrl; }
+export async function signedPreview(file) { const { data, error } = await supabase().storage.from(config.storageBucket).createSignedUrl(file.file_path, 300); if (error) throw error; return data.signedUrl; }
 export async function recordDownload(id) { await supabase().rpc("increment_delivery_downloads", { p_delivery_id: id }); }
