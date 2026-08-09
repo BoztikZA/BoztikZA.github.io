@@ -344,6 +344,119 @@
   color: #06090b;
 }
 
+.deliver-support-row a:hover,
+.deliver-support-row a:focus-visible {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+}
+
+.deliver-btn-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+
+/* ---- Wide single-column marketing card (support / private requests / toolkit / brand) ---- */
+
+.deliver-marketing-card--wide {
+  grid-column: 1 / -1;
+}
+
+.deliver-marketing-card--wide h3 {
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+}
+
+/* ---- Neutral CTA link (used where the button shouldn't compete with the download CTA) ---- */
+
+.deliver-cta-link {
+  flex: 1 1 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-decoration: none;
+  color: #04140a;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  transition: var(--transition);
+}
+
+.deliver-cta-link:hover,
+.deliver-cta-link:focus-visible {
+  transform: translateY(-2px);
+}
+
+.deliver-cta-link--ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+/* ---- Soft callout (e.g. "no upfront payment") — not a legal-disclaimer look ---- */
+
+.deliver-callout {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  border-radius: 14px;
+  border: 1px solid rgba(142, 255, 61, 0.3);
+  background: rgba(142, 255, 61, 0.08);
+  color: var(--text);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.deliver-callout-icon {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  color: var(--primary);
+  margin-top: 1px;
+}
+
+/* ---- Portfolio / brand footer card ---- */
+
+.deliver-brand-card {
+  text-align: center;
+  padding: 30px 28px;
+}
+
+.deliver-brand-card .deliver-eyebrow {
+  font-size: 0.9rem;
+  letter-spacing: 0.12em;
+}
+
+.deliver-brand-tagline {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  margin: 0 0 18px;
+}
+
+.deliver-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 22px;
+}
+
+.deliver-footer-links a {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.deliver-footer-links a:hover,
+.deliver-footer-links a:focus-visible {
+  color: var(--primary);
+}
+
 /* ---- Ad slot ---- */
 
 .deliver-ad-slot {
@@ -775,22 +888,6 @@
 .deliver-file-preview a:focus-visible, .deliver-file-preview a:hover img { opacity: .88; }
 @media (max-width: 780px) { .dash-list-toolbar { grid-template-columns: 1fr 1fr; }.dash-list-toolbar h2 { grid-column: 1 / -1; } }
 
-.deliver-paypal-support {
-  width: min(100%, 900px);
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 18px 20px;
-  border: 1px solid rgba(255, 196, 57, .35);
-  border-radius: 16px;
-  background: rgba(255, 196, 57, .08);
-}
-.deliver-paypal-support img { flex: 0 0 auto; }
-.deliver-paypal-support strong { display: block; color: var(--text); }
-.deliver-paypal-support p { margin: 4px 0 0; color: var(--text-muted); font-size: .88rem; }
-.deliver-paypal-support a { margin-left: auto; flex: 0 0 auto; padding: 11px 15px; border-radius: 10px; background: #ffc439; color: #003087; font-weight: 800; text-decoration: none; transition: transform .2s ease; }
-.deliver-paypal-support a:hover, .deliver-paypal-support a:focus-visible { transform: translateY(-2px); }
-@media (max-width: 600px) { .deliver-paypal-support { align-items: flex-start; flex-wrap: wrap; }.deliver-paypal-support a { width: 100%; margin-left: 0; text-align: center; } }
 /* =========================================================
    BOZTIK DELIVER — PROFESSIONAL COMMAND CENTRE
    TAB SYSTEM + ANALYTICS

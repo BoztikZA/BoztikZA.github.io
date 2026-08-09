@@ -49,7 +49,9 @@ const els = {
 
   discover: $("deliver-discover"),
   explore: $("deliver-explore"),
-  adSlot: $("deliver-adsense-slot")
+  adSlot: $("deliver-adsense-slot"),
+  support: $("deliver-support"),
+  privateRequests: $("deliver-private-requests")
 };
 
 let delivery;
@@ -83,6 +85,14 @@ function state(name) {
     if (showPromo) {
       loadAd();
     }
+  }
+
+  if (els.support) {
+    els.support.hidden = !showPromo;
+  }
+
+  if (els.privateRequests) {
+    els.privateRequests.hidden = !showPromo;
   }
 }
 
