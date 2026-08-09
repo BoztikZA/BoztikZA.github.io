@@ -21,6 +21,12 @@ import {
 
 
 /* =========================================================
+   BOZTIK DELIVER DASHBOARD
+   Complete dashboard controller
+========================================================= */
+
+
+/* =========================================================
    DOM HELPER
 ========================================================= */
 
@@ -103,10 +109,11 @@ const els = {
 let deliveries = [];
 let selectedFiles = [];
 let pendingConfirmAction = null;
+let cleanupRunning = false;
 
 
 /* =========================================================
-   AUTHENTICATION
+   AUTHENTICATION UI
 ========================================================= */
 
 function showLogin() {
@@ -143,6 +150,10 @@ function showDashboard() {
 }
 
 
+/* =========================================================
+   LOGIN ERROR
+========================================================= */
+
 function setLoginError(message) {
 
   if (!els.loginError) {
@@ -157,6 +168,10 @@ function setLoginError(message) {
 
 }
 
+
+/* =========================================================
+   LOGIN LOADING
+========================================================= */
 
 function setLoginLoading(loading) {
 
@@ -174,6 +189,10 @@ function setLoginLoading(loading) {
 
 }
 
+
+/* =========================================================
+   FRIENDLY AUTH ERRORS
+========================================================= */
 
 function friendlyAuthError(error) {
 
@@ -213,12 +232,8 @@ function friendlyAuthError(error) {
 
 
   if (
-    normalized.includes(
-      "failed to fetch"
-    ) ||
-    normalized.includes(
-      "network"
-    )
+    normalized.includes("failed to fetch") ||
+    normalized.includes("network")
   ) {
 
     return (
@@ -303,6 +318,7 @@ async function handleLogin(event) {
       els.password.value = "";
     }
 
+
     showDashboard();
 
     await load();
@@ -342,6 +358,7 @@ async function handleLogout(event) {
     const client =
       supabase();
 
+
     const {
       error
     } =
@@ -359,6 +376,7 @@ async function handleLogout(event) {
 
     setLoginError("");
 
+
     toast(
       "You have been logged out."
     );
@@ -371,6 +389,7 @@ async function handleLogout(event) {
       error
     );
 
+
     toast(
       "Could not log out. Please try again.",
       "error"
@@ -382,7 +401,7 @@ async function handleLogout(event) {
 
 
 /* =========================================================
-   AUTH SESSION CHECK
+   SESSION INITIALISATION
 ========================================================= */
 
 async function initialiseAuthentication() {
@@ -444,7 +463,9 @@ async function initialiseAuthentication() {
       error
     );
 
+
     showLogin();
+
 
     setLoginError(
       "Could not initialise secure login. " +
@@ -466,10 +487,49 @@ function isExpired(delivery) {
     return false;
   }
 
-  return (
+  const timestamp =
     new Date(
       delivery.expires_at
-    ).getTime() <= Date.now()
+    ).getTime();
+
+
+  if (!Number.isFinite(timestamp)) {
+    return false;
+  }
+
+
+  return timestamp <= Date.now();
+
+}
+
+
+/* =========================================================
+   EXPIRING SOON
+========================================================= */
+
+function isExpiringSoon(delivery) {
+
+  if (
+    !delivery?.expires_at ||
+    isExpired(delivery)
+  ) {
+    return false;
+  }
+
+
+  const expiry =
+    new Date(
+      delivery.expires_at
+    ).getTime();
+
+
+  const twentyFourHours =
+    24 * 60 * 60 * 1000;
+
+
+  return (
+    expiry - Date.now() <=
+    twentyFourHours
   );
 
 }
@@ -489,10 +549,12 @@ function getMonthlyTotals(items) {
           delivery.monthly_views || 0
         );
 
+
       totals.downloads +=
         Number(
           delivery.monthly_downloads || 0
         );
+
 
       return totals;
 
@@ -518,12 +580,14 @@ function getLifetimeTotals(items) {
           0
         );
 
+
       totals.downloads +=
         Number(
           delivery.lifetime_downloads ||
           delivery.download_count ||
           0
         );
+
 
       return totals;
 
@@ -719,10 +783,12 @@ function getVisibleDeliveries() {
               delivery.project_name || ""
             ).toLowerCase();
 
+
           const client =
             String(
               delivery.client_name || ""
             ).toLowerCase();
+
 
           return (
             project.includes(
@@ -813,6 +879,28 @@ function getVisibleDeliveries() {
 
 
 /* =========================================================
+   FILE COUNT
+========================================================= */
+
+function getFileCount(delivery) {
+
+  if (
+    Array.isArray(
+      delivery.delivery_files
+    )
+  ) {
+
+    return delivery.delivery_files.length;
+
+  }
+
+
+  return 1;
+
+}
+
+
+/* =========================================================
    DELIVERY CARD
 ========================================================= */
 
@@ -820,6 +908,10 @@ function renderDelivery(delivery) {
 
   const expired =
     isExpired(delivery);
+
+
+  const expiringSoon =
+    isExpiringSoon(delivery);
 
 
   const monthlyViews =
@@ -851,8 +943,15 @@ function renderDelivery(delivery) {
 
 
   const fileCount =
-    delivery.delivery_files?.length ||
-    1;
+    getFileCount(
+      delivery
+    );
+
+
+  const fileSize =
+    Number(
+      delivery.file_size || 0
+    );
 
 
   const card =
@@ -865,13 +964,63 @@ function renderDelivery(delivery) {
     "delivery-card";
 
 
+  if (expired) {
+
+    card.classList.add(
+      "is-expired"
+    );
+
+  }
+
+
+  if (expiringSoon) {
+
+    card.classList.add(
+      "is-expiring-soon"
+    );
+
+  }
+
+
+  let statusText =
+    "Active";
+
+
+  let statusClass =
+    "active";
+
+
+  if (expired) {
+
+    statusText =
+      "Expired";
+
+    statusClass =
+      "expired";
+
+  } else if (expiringSoon) {
+
+    statusText =
+      "Expires soon";
+
+    statusClass =
+      "expiring";
+
+  }
+
+
   card.innerHTML = `
 
     <div class="delivery-card-main">
 
+
+      <!-- ==========================================
+           HEADER
+      =========================================== -->
+
       <div class="delivery-card-heading">
 
-        <div>
+        <div class="delivery-title-area">
 
           <h3>
             ${escapeHtml(
@@ -889,15 +1038,22 @@ function renderDelivery(delivery) {
 
         </div>
 
-        <span class="
-          delivery-status
-          ${expired ? "expired" : "active"}
-        ">
-          ${expired ? "Expired" : "Active"}
+
+        <span
+          class="
+            delivery-status
+            ${statusClass}
+          "
+        >
+          ${statusText}
         </span>
 
       </div>
 
+
+      <!-- ==========================================
+           METADATA
+      =========================================== -->
 
       <div class="delivery-meta">
 
@@ -910,6 +1066,7 @@ function renderDelivery(delivery) {
           </strong>
         </span>
 
+
         <span>
           Expires:
           <strong>
@@ -919,10 +1076,33 @@ function renderDelivery(delivery) {
           </strong>
         </span>
 
+
+        <span>
+          Files:
+          <strong>
+            ${fileCount}
+          </strong>
+        </span>
+
+
+        <span>
+          Size:
+          <strong>
+            ${formatBytes(
+              fileSize
+            )}
+          </strong>
+        </span>
+
       </div>
 
 
+      <!-- ==========================================
+           ANALYTICS
+      =========================================== -->
+
       <div class="delivery-analytics">
+
 
         <div class="analytics-section">
 
@@ -930,7 +1110,9 @@ function renderDelivery(delivery) {
             This Month
           </h4>
 
+
           <div class="analytics-grid">
+
 
             <div class="analytics-stat">
 
@@ -943,6 +1125,7 @@ function renderDelivery(delivery) {
               </strong>
 
             </div>
+
 
             <div class="analytics-stat">
 
@@ -967,7 +1150,9 @@ function renderDelivery(delivery) {
             Lifetime
           </h4>
 
+
           <div class="analytics-grid">
+
 
             <div class="analytics-stat">
 
@@ -980,6 +1165,7 @@ function renderDelivery(delivery) {
               </strong>
 
             </div>
+
 
             <div class="analytics-stat">
 
@@ -1000,26 +1186,75 @@ function renderDelivery(delivery) {
       </div>
 
 
-      <div class="delivery-files">
+      <!-- ==========================================
+           ACTIVITY
+      =========================================== -->
 
-        <strong>
-          Files:
-        </strong>
+      <div class="delivery-activity">
 
-        <span>
-          ${fileCount}
-        </span>
 
-        <span>
-          ${formatBytes(
-            delivery.file_size || 0
-          )}
-        </span>
+        <div class="activity-item">
+
+          <span class="activity-icon">
+            👁
+          </span>
+
+          <div>
+
+            <span>
+              Last viewed
+            </span>
+
+            <strong>
+              ${
+                delivery.last_viewed_at
+                  ? formatDate(
+                      delivery.last_viewed_at
+                    )
+                  : "Never"
+              }
+            </strong>
+
+          </div>
+
+        </div>
+
+
+        <div class="activity-item">
+
+          <span class="activity-icon">
+            ↓
+          </span>
+
+          <div>
+
+            <span>
+              Last downloaded
+            </span>
+
+            <strong>
+              ${
+                delivery.last_downloaded_at
+                  ? formatDate(
+                      delivery.last_downloaded_at
+                    )
+                  : "Never"
+              }
+            </strong>
+
+          </div>
+
+        </div>
 
       </div>
 
 
+      <!-- ==========================================
+           ACTIONS
+      =========================================== -->
+
       <div class="delivery-actions">
+
 
         <button
           type="button"
@@ -1028,6 +1263,7 @@ function renderDelivery(delivery) {
           Open Delivery
         </button>
 
+
         <button
           type="button"
           class="btn-copy-link"
@@ -1035,12 +1271,14 @@ function renderDelivery(delivery) {
           Copy Link
         </button>
 
+
         <button
           type="button"
           class="btn-duplicate"
         >
           Duplicate
         </button>
+
 
         <button
           type="button"
@@ -1051,12 +1289,15 @@ function renderDelivery(delivery) {
 
       </div>
 
+
     </div>
 
   `;
 
 
-  /* Open */
+  /* =======================================================
+     OPEN
+  ======================================================= */
 
   card
     .querySelector(
@@ -1078,7 +1319,9 @@ function renderDelivery(delivery) {
     );
 
 
-  /* Copy */
+  /* =======================================================
+     COPY
+  ======================================================= */
 
   card
     .querySelector(
@@ -1115,8 +1358,10 @@ function renderDelivery(delivery) {
 
           setTimeout(
             () => {
+
               button.textContent =
                 original;
+
             },
             1500
           );
@@ -1130,7 +1375,7 @@ function renderDelivery(delivery) {
         } catch (error) {
 
           console.error(
-            "Clipboard error:",
+            "[Boztik Deliver] Clipboard error:",
             error
           );
 
@@ -1146,7 +1391,9 @@ function renderDelivery(delivery) {
     );
 
 
-  /* Duplicate */
+  /* =======================================================
+     DUPLICATE
+  ======================================================= */
 
   card
     .querySelector(
@@ -1182,7 +1429,7 @@ function renderDelivery(delivery) {
         } catch (error) {
 
           console.error(
-            "Duplicate failed:",
+            "[Boztik Deliver] Duplicate failed:",
             error
           );
 
@@ -1204,7 +1451,9 @@ function renderDelivery(delivery) {
     );
 
 
-  /* Delete */
+  /* =======================================================
+     DELETE
+  ======================================================= */
 
   card
     .querySelector(
@@ -1215,7 +1464,9 @@ function renderDelivery(delivery) {
       () => {
 
         openConfirm(
-          `Delete "${delivery.project_name || "this delivery"}"? This cannot be undone.`,
+
+          `Delete "${delivery.project_name || "this delivery"}"? This will permanently remove the delivery files.`,
+
           async () => {
 
             try {
@@ -1226,7 +1477,7 @@ function renderDelivery(delivery) {
 
 
               toast(
-                "Delivery deleted."
+                "Delivery and files deleted."
               );
 
 
@@ -1236,7 +1487,7 @@ function renderDelivery(delivery) {
             } catch (error) {
 
               console.error(
-                "Delete failed:",
+                "[Boztik Deliver] Delete failed:",
                 error
               );
 
@@ -1249,6 +1500,7 @@ function renderDelivery(delivery) {
             }
 
           }
+
         );
 
       }
@@ -1323,6 +1575,151 @@ function renderDeliveries() {
 
 
 /* =========================================================
+   AUTOMATIC EXPIRED DELIVERY CLEANUP
+=========================================================
+
+   IMPORTANT:
+
+   This function calls the secure Edge Function.
+
+   It does NOT contain a Supabase service-role key.
+
+   The Edge Function performs the privileged Storage
+   deletion server-side.
+
+   The scheduled server-side job is still required for
+   guaranteed automatic cleanup when the dashboard is
+   closed.
+========================================================= */
+
+async function cleanupExpiredDeliveries() {
+
+  if (cleanupRunning) {
+    return;
+  }
+
+
+  cleanupRunning =
+    true;
+
+
+  try {
+
+    const client =
+      supabase();
+
+
+    const {
+      data: sessionData,
+      error: sessionError
+    } =
+      await client.auth.getSession();
+
+
+    if (sessionError) {
+      throw sessionError;
+    }
+
+
+    const accessToken =
+      sessionData?.session?.access_token;
+
+
+    if (!accessToken) {
+      return;
+    }
+
+
+    const functionUrl =
+      `${config.supabaseUrl}/functions/v1/cleanup-expired-deliveries`;
+
+
+    const response =
+      await fetch(
+        functionUrl,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            "apikey":
+              config.supabaseAnonKey,
+
+            "Authorization":
+              `Bearer ${accessToken}`
+          },
+
+          body: JSON.stringify({})
+        }
+      );
+
+
+    let result =
+      null;
+
+
+    try {
+
+      result =
+        await response.json();
+
+    } catch {
+
+      result =
+        null;
+
+    }
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        result?.message ||
+        result?.error ||
+        `Cleanup request failed with HTTP ${response.status}.`
+      );
+
+    }
+
+
+    if (
+      Number(
+        result?.deletedDeliveries || 0
+      ) > 0
+    ) {
+
+      console.info(
+        "[Boztik Deliver] Expired deliveries cleaned up:",
+        result.deletedDeliveries
+      );
+
+    }
+
+  } catch (error) {
+
+    /*
+     * Cleanup failure should NOT prevent the dashboard
+     * itself from loading.
+     */
+
+    console.warn(
+      "[Boztik Deliver] Automatic cleanup request failed:",
+      error
+    );
+
+  } finally {
+
+    cleanupRunning =
+      false;
+
+  }
+
+}
+
+
+/* =========================================================
    LOAD DELIVERIES
 ========================================================= */
 
@@ -1339,6 +1736,19 @@ async function load() {
         "Refreshing…";
 
     }
+
+
+    /*
+     * Ask the secure server function to clean up anything
+     * that has already expired.
+     *
+     * This is a convenience cleanup.
+     *
+     * The scheduled Edge Function handles true automatic
+     * background cleanup.
+     */
+
+    await cleanupExpiredDeliveries();
 
 
     deliveries =
@@ -1358,9 +1768,15 @@ async function load() {
     );
 
 
+    const message =
+      error?.message?.toLowerCase() ||
+      "";
+
+
     if (
-      error?.message?.toLowerCase()
-        .includes("jwt")
+      message.includes("jwt") ||
+      message.includes("token") ||
+      message.includes("unauthorized")
     ) {
 
       toast(
@@ -1451,7 +1867,7 @@ function validateSelectedFiles(files) {
 
 
 /* =========================================================
-   FILE LIST / PREVIEWS
+   FILE PREVIEWS
 ========================================================= */
 
 function renderFileList() {
@@ -1484,7 +1900,8 @@ function renderFileList() {
         );
 
 
-      let preview = "";
+      let preview =
+        "";
 
 
       if (isImage) {
@@ -1506,9 +1923,11 @@ function renderFileList() {
 
         setTimeout(
           () => {
+
             URL.revokeObjectURL(
               url
             );
+
           },
           60000
         );
@@ -1555,8 +1974,10 @@ function renderFileList() {
 
 function setupDropzone() {
 
-  if (!els.dropzone ||
-      !els.fileInput) {
+  if (
+    !els.dropzone ||
+    !els.fileInput
+  ) {
     return;
   }
 
@@ -1564,7 +1985,9 @@ function setupDropzone() {
   els.dropzone.addEventListener(
     "click",
     () => {
+
       els.fileInput.click();
+
     }
   );
 
@@ -1702,6 +2125,23 @@ async function handleUpload(event) {
   }
 
 
+  if (
+    !Number.isFinite(
+      expiryHours
+    ) ||
+    expiryHours <= 0
+  ) {
+
+    toast(
+      "Please select a valid expiry period.",
+      "error"
+    );
+
+    return;
+
+  }
+
+
   const id =
     deliveryId();
 
@@ -1748,14 +2188,18 @@ async function handleUpload(event) {
 
 
     if (els.progress) {
+
       els.progress.hidden =
         false;
+
     }
 
 
     if (els.progressBar) {
+
       els.progressBar.style.width =
         "0%";
+
     }
 
 
@@ -1858,14 +2302,18 @@ async function handleUpload(event) {
   } finally {
 
     if (els.progress) {
+
       els.progress.hidden =
         true;
+
     }
 
 
     if (els.progressBar) {
+
       els.progressBar.style.width =
         "0%";
+
     }
 
 
@@ -1905,8 +2353,11 @@ function openConfirm(
 
 
     if (confirmed) {
+
       action();
+
     }
+
 
     return;
 
@@ -1956,7 +2407,7 @@ if (els.confirmAction) {
         } catch (error) {
 
           console.error(
-            "Confirmation action failed:",
+            "[Boztik Deliver] Confirmation action failed:",
             error
           );
 
@@ -2015,7 +2466,7 @@ if (els.successCopy) {
       } catch (error) {
 
         console.error(
-          "Copy failed:",
+          "[Boztik Deliver] Copy failed:",
           error
         );
 
