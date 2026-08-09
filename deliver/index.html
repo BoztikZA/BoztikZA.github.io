@@ -1,1 +1,732 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,follow"><meta name="theme-color" content="#8eff3d"><title>Boztik Deliver | Secure client delivery</title><link rel="icon" href="../images/logo.png"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="../styles-premium.css"><link rel="stylesheet" href="css/deliver.css?v=4"><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3739684241868984" crossorigin="anonymous"></script></head><body><a class="skip-link" href="#main-content">Skip to delivery</a><div class="background-glow"><div class="glow1"></div><div class="glow2"></div></div><header><nav class="navbar"><a class="logo-area" href="../index.html"><img src="../images/logo.png" alt="Boztik logo"><div><span class="logo-title">Boztik Deliver</span><span class="logo-subtitle">Secure client delivery</span></div></a></nav></header><main id="main-content" class="deliver-page"><section id="deliver-loading" class="deliver-card" role="status"><span class="deliver-eyebrow">Secure delivery</span><h1>Preparing your files…</h1><p class="deliver-subtitle">Please wait a moment.</p></section><section id="deliver-active" class="deliver-card deliver-card--wide" hidden><span class="deliver-eyebrow">Secure delivery</span><h1 id="deliver-project-name">Your project</h1><p id="deliver-client-name" class="deliver-subtitle"></p><div class="deliver-meta-grid"><div class="deliver-meta-item"><span>Delivery ID</span><strong id="deliver-id-value"></strong></div><div class="deliver-meta-item"><span>Total size</span><strong id="deliver-file-size"></strong></div><div class="deliver-meta-item"><span>Uploaded</span><strong id="deliver-upload-date"></strong></div><div id="deliver-notes-wrap" class="deliver-meta-item" hidden><span>Project notes</span><strong id="deliver-notes"></strong></div></div><div class="deliver-countdown">Available for <span id="deliver-countdown-label"></span></div><div id="deliver-gallery" class="deliver-gallery"></div><button id="deliver-download-all" class="deliver-download-btn">Download all files</button><p class="deliver-download-note">Each download is prepared securely for this delivery.</p></section><section id="deliver-explore" class="deliver-marketing" aria-label="Explore Boztik" hidden><div class="deliver-marketing-card" style="grid-column:1/-1"><h3>Explore Boztik</h3><p>Discover more creative tools, services and resources from Boztik.</p><div class="deliver-support-row"><a class="kofi-link" href="https://boztikza.github.io/" target="_blank" rel="noopener noreferrer">Explore Boztik</a></div></div></section><div id="deliver-adsense-slot" class="deliver-ad-slot" aria-label="Advertisement" hidden><span class="deliver-ad-label">Advertisement</span><ins class="adsbygoogle" style="display:block;width:100%;min-height:90px" data-ad-client="ca-pub-3739684241868984" data-ad-slot="7204038822" data-ad-format="auto" data-full-width-responsive="true"></ins></div><section id="deliver-discover" class="deliver-marketing" aria-label="Discover Boztik Creative Toolkit" hidden><div class="deliver-marketing-card" style="grid-column:1/-1"><span class="deliver-eyebrow">Free browser extension</span><h3>Boztik Creative Toolkit</h3><p>Powerful browser-based tools for photographers, designers and creators.</p><ul class="deliver-feature-list"><li>Image Resolution Analyzer</li><li>Color Palette Extractor</li><li>Reverse Image Search</li><li>Download Original Images</li><li>AI Creative Assistant</li><li>Usage Statistics</li><li>Context Menu Tools</li></ul><div class="deliver-support-row"><a class="kofi-link" href="https://chromewebstore.google.com/detail/boztik-creative-toolkit/maaebbajegilfcpmljlpcclebdpngign" target="_blank" rel="noopener noreferrer">Get it for Chrome</a><a class="paypal-link" href="https://microsoftedge.microsoft.com/addons/detail/ajpnibmfjlajpgijgaionelkdjgiemfi" target="_blank" rel="noopener noreferrer">Get it for Microsoft Edge</a></div></div></section><section id="deliver-expired" class="deliver-card" hidden><div class="deliver-expired-icon">⌛</div><h1>This delivery is unavailable.</h1><p class="deliver-subtitle">It may have expired, been removed, or the link may be incomplete. Please contact your creative for a fresh delivery.</p><a class="deliver-download-btn" href="../support.html#contact">Contact Boztik</a></section><section id="deliver-error" class="deliver-card" hidden><div class="deliver-expired-icon">⚠️</div><h1>Unable to load this delivery</h1><p class="deliver-subtitle">Something prevented the delivery from loading. The link may be invalid, expired, or temporarily unavailable.</p><p id="deliver-error-detail" class="deliver-error-detail" hidden></p><a class="deliver-download-btn" href="../support.html#contact">Contact Boztik</a></section><aside class="deliver-paypal-support" aria-label="Support Boztik"><img src="https://www.paypalobjects.com/webstatic/icon/pp258.png" alt="PayPal" width="34" height="34"><div><strong>Enjoying Boztik Deliver?</strong><p>Support the creative tools that keep your workflow moving.</p></div><a href="http://paypal.me/angry5p1c3" target="_blank" rel="noopener noreferrer" aria-label="Support Boztik with PayPal (opens in a new tab)">Support via PayPal</a></aside></main><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script><script>setTimeout(function(){var l=document.getElementById("deliver-loading"),e=document.getElementById("deliver-error"),d=document.getElementById("deliver-error-detail");if(l&&!l.hidden&&e){console.error("Boztik Deliver: client script did not initialize within 8s — showing error state.");l.hidden=true;e.hidden=false;if(d){d.textContent="Diagnostic: client.js did not finish initializing within 8 seconds (module load or execution issue, not a caught database error).";d.hidden=false;}}},8000);</script><script type="module" src="js/client.js"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <meta
+    name="robots"
+    content="noindex,follow"
+  >
+
+  <meta
+    name="theme-color"
+    content="#8eff3d"
+  >
+
+  <title>Boztik Deliver | Secure client delivery</title>
+
+  <meta
+    name="description"
+    content="Secure creative file delivery from Boztik."
+  >
+
+  <link
+    rel="icon"
+    href="../images/logo.png"
+  >
+
+  <link
+    rel="preconnect"
+    href="https://fonts.googleapis.com"
+  >
+
+  <link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+  >
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap"
+    rel="stylesheet"
+  >
+
+  <link
+    rel="stylesheet"
+    href="../styles-premium.css"
+  >
+
+  <link
+    rel="stylesheet"
+    href="css/deliver.css?v=5"
+  >
+
+  <!-- Google AdSense -->
+  <script
+    async
+    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3739684241868984"
+    crossorigin="anonymous">
+  </script>
+</head>
+
+<body>
+
+  <a
+    class="skip-link"
+    href="#main-content"
+  >
+    Skip to delivery
+  </a>
+
+  <div class="background-glow">
+    <div class="glow1"></div>
+    <div class="glow2"></div>
+  </div>
+
+  <!-- =========================================
+       HEADER
+       ========================================= -->
+
+  <header>
+    <nav class="navbar">
+
+      <a
+        class="logo-area"
+        href="../index.html"
+        aria-label="Boztik home"
+      >
+
+        <img
+          src="../images/logo.png"
+          alt="Boztik logo"
+        >
+
+        <div>
+          <span class="logo-title">
+            Boztik Deliver
+          </span>
+
+          <span class="logo-subtitle">
+            Secure client delivery
+          </span>
+        </div>
+
+      </a>
+
+    </nav>
+  </header>
+
+
+  <main
+    id="main-content"
+    class="deliver-page"
+  >
+
+    <!-- =========================================
+         LOADING
+         ========================================= -->
+
+    <section
+      id="deliver-loading"
+      class="deliver-card"
+      role="status"
+    >
+
+      <span class="deliver-eyebrow">
+        Secure delivery
+      </span>
+
+      <h1>
+        Preparing your files…
+      </h1>
+
+      <p class="deliver-subtitle">
+        Please wait a moment while we securely prepare your delivery.
+      </p>
+
+    </section>
+
+
+    <!-- =========================================
+         ACTIVE DELIVERY
+         ========================================= -->
+
+    <section
+      id="deliver-active"
+      class="deliver-card deliver-card--wide"
+      hidden
+    >
+
+      <span class="deliver-eyebrow">
+        Secure delivery
+      </span>
+
+      <h1 id="deliver-project-name">
+        Your project
+      </h1>
+
+      <p
+        id="deliver-client-name"
+        class="deliver-subtitle"
+      ></p>
+
+
+      <!-- Delivery information -->
+
+      <div class="deliver-meta-grid">
+
+        <div class="deliver-meta-item">
+
+          <span>
+            Delivery ID
+          </span>
+
+          <strong id="deliver-id-value"></strong>
+
+        </div>
+
+
+        <div class="deliver-meta-item">
+
+          <span>
+            Total size
+          </span>
+
+          <strong id="deliver-file-size"></strong>
+
+        </div>
+
+
+        <div class="deliver-meta-item">
+
+          <span>
+            Uploaded
+          </span>
+
+          <strong id="deliver-upload-date"></strong>
+
+        </div>
+
+
+        <div
+          id="deliver-notes-wrap"
+          class="deliver-meta-item"
+          hidden
+        >
+
+          <span>
+            Project notes
+          </span>
+
+          <strong id="deliver-notes"></strong>
+
+        </div>
+
+      </div>
+
+
+      <!-- Expiry -->
+
+      <div class="deliver-countdown">
+
+        Available for
+
+        <span id="deliver-countdown-label"></span>
+
+      </div>
+
+
+      <!-- Files -->
+
+      <div
+        id="deliver-gallery"
+        class="deliver-gallery"
+      ></div>
+
+
+      <!-- Download all -->
+
+      <button
+        id="deliver-download-all"
+        class="deliver-download-btn"
+        type="button"
+      >
+
+        Download all files
+
+      </button>
+
+
+      <p class="deliver-download-note">
+
+        Your files are prepared securely for this delivery.
+
+      </p>
+
+    </section>
+
+
+    <!-- =========================================
+         EXPERIENCE FULL BOZTIK
+         ========================================= -->
+
+    <section
+      id="deliver-explore"
+      class="deliver-marketing"
+      aria-label="Explore Boztik"
+      hidden
+    >
+
+      <div
+        class="deliver-marketing-card"
+        style="grid-column:1/-1;text-align:center;padding:34px 28px"
+      >
+
+        <span class="deliver-eyebrow">
+          More from Boztik
+        </span>
+
+        <h3 style="font-size:1.45rem">
+
+          Enjoying your Boztik experience?
+
+        </h3>
+
+        <p>
+
+          This delivery page is powered by Boztik.
+          Explore the full site to discover creative services,
+          browser tools, resources and more.
+
+        </p>
+
+
+        <div class="deliver-support-row">
+
+          <a
+            class="kofi-link"
+            href="../index.html"
+          >
+
+            Experience the Full Boztik Site
+
+          </a>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================================
+         CREATIVE TOOLKIT
+         ========================================= -->
+
+    <section
+      id="deliver-discover"
+      class="deliver-marketing"
+      aria-label="Discover Boztik Creative Toolkit"
+      hidden
+    >
+
+      <div
+        class="deliver-marketing-card"
+        style="grid-column:1/-1"
+      >
+
+        <span class="deliver-eyebrow">
+          Free browser extension
+        </span>
+
+        <h3
+          style="font-size:1.35rem"
+        >
+
+          Meet the Boztik Creative Toolkit
+
+        </h3>
+
+        <p>
+
+          Useful browser-based tools built for
+          photographers, designers and creators.
+          Analyze images, extract colours, find originals
+          and speed up your creative workflow.
+
+        </p>
+
+
+        <ul class="deliver-feature-list">
+
+          <li>
+            Image Resolution Analyzer
+          </li>
+
+          <li>
+            Color Palette Extractor
+          </li>
+
+          <li>
+            Reverse Image Search
+          </li>
+
+          <li>
+            Download Original Images
+          </li>
+
+          <li>
+            AI Creative Assistant
+          </li>
+
+          <li>
+            Usage Statistics
+          </li>
+
+          <li>
+            Context Menu Tools
+          </li>
+
+        </ul>
+
+
+        <div class="deliver-support-row">
+
+          <a
+            class="kofi-link"
+            href="https://chromewebstore.google.com/detail/boztik-creative-toolkit/maaebbajegilfcpmljlpcclebdpngign"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+
+            Get it for Chrome
+
+          </a>
+
+
+          <a
+            class="paypal-link"
+            href="https://microsoftedge.microsoft.com/addons/detail/ajpnibmfjlajpgijgaionelkdjgiemfi"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+
+            Get it for Microsoft Edge
+
+          </a>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================================
+         AD
+         ========================================= -->
+
+    <div
+      id="deliver-adsense-slot"
+      class="deliver-ad-slot"
+      aria-label="Advertisement"
+      hidden
+    >
+
+      <span class="deliver-ad-label">
+        Advertisement
+      </span>
+
+      <ins
+        class="adsbygoogle"
+        style="display:block;width:100%;min-height:90px"
+        data-ad-client="ca-pub-3739684241868984"
+        data-ad-slot="7204038822"
+        data-ad-format="auto"
+        data-full-width-responsive="true">
+      </ins>
+
+    </div>
+
+
+    <!-- =========================================
+         SUPPORT BOZTIK
+         ========================================= -->
+
+    <section
+      id="deliver-support"
+      class="deliver-marketing"
+      aria-label="Support Boztik"
+      hidden
+    >
+
+      <div
+        class="deliver-marketing-card"
+        style="grid-column:1/-1;text-align:center"
+      >
+
+        <span class="deliver-eyebrow">
+          Support independent development
+        </span>
+
+        <h3
+          style="font-size:1.3rem"
+        >
+
+          Enjoying Boztik?
+
+        </h3>
+
+        <p>
+
+          Boztik is independently built and maintained.
+          If the tools or services have helped you,
+          you can support the project and help keep
+          new features coming.
+
+        </p>
+
+
+        <div class="deliver-support-row">
+
+          <a
+            class="kofi-link"
+            href="https://ko-fi.com/boztik"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+
+            ☕ Support on Ko-fi
+
+          </a>
+
+
+          <a
+            class="paypal-link"
+            href="https://paypal.me/angry5p1c3"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+
+            Support via PayPal
+
+          </a>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================================
+         EXPIRED
+         ========================================= -->
+
+    <section
+      id="deliver-expired"
+      class="deliver-card"
+      hidden
+    >
+
+      <div class="deliver-expired-icon">
+        ⌛
+      </div>
+
+      <h1>
+        This delivery is unavailable.
+      </h1>
+
+      <p class="deliver-subtitle">
+
+        It may have expired, been removed,
+        or the link may be incomplete.
+        Please contact your creative for a fresh delivery.
+
+      </p>
+
+
+      <div class="deliver-expired-actions">
+
+        <a
+          class="is-primary"
+          href="../index.html"
+        >
+          Visit Boztik
+        </a>
+
+        <a
+          href="../support.html#contact"
+        >
+          Contact Boztik
+        </a>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================================
+         ERROR
+         ========================================= -->
+
+    <section
+      id="deliver-error"
+      class="deliver-card"
+      hidden
+    >
+
+      <div class="deliver-expired-icon">
+        ⚠️
+      </div>
+
+      <h1>
+        Unable to load this delivery
+      </h1>
+
+      <p class="deliver-subtitle">
+
+        Something prevented the delivery from loading.
+        The link may be invalid, expired,
+        or temporarily unavailable.
+
+      </p>
+
+      <p
+        id="deliver-error-detail"
+        class="deliver-error-detail"
+        hidden
+      ></p>
+
+
+      <div class="deliver-expired-actions">
+
+        <a
+          class="is-primary"
+          href="../index.html"
+        >
+          Visit Boztik
+        </a>
+
+        <a
+          href="../support.html#contact"
+        >
+          Contact Boztik
+        </a>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================================
+         PAYPAL SUPPORT
+         ========================================= -->
+
+    <aside
+      class="deliver-paypal-support"
+      aria-label="Support Boztik"
+    >
+
+      <img
+        src="https://www.paypalobjects.com/webstatic/icon/pp258.png"
+        alt="PayPal"
+        width="34"
+        height="34"
+      >
+
+      <div>
+
+        <strong>
+          Enjoying Boztik Deliver?
+        </strong>
+
+        <p>
+          Support the creative tools
+          that keep your workflow moving.
+        </p>
+
+      </div>
+
+
+      <a
+        href="https://paypal.me/angry5p1c3"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Support Boztik with PayPal"
+      >
+
+        Support via PayPal
+
+      </a>
+
+    </aside>
+
+
+  </main>
+
+
+  <!-- Supabase -->
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js">
+  </script>
+
+
+  <!-- Safety timeout -->
+
+  <script>
+
+    setTimeout(function () {
+
+      var loading =
+        document.getElementById(
+          "deliver-loading"
+        );
+
+      var error =
+        document.getElementById(
+          "deliver-error"
+        );
+
+      var detail =
+        document.getElementById(
+          "deliver-error-detail"
+        );
+
+      if (
+        loading &&
+        !loading.hidden &&
+        error
+      ) {
+
+        console.error(
+          "Boztik Deliver: client script did not initialize within 8 seconds."
+        );
+
+        loading.hidden = true;
+        error.hidden = false;
+
+        if (detail) {
+
+          detail.textContent =
+            "Diagnostic: client.js did not finish initializing within 8 seconds.";
+
+          detail.hidden = false;
+
+        }
+
+      }
+
+    }, 8000);
+
+  </script>
+
+
+  <!-- IMPORTANT:
+       Do not change this.
+       This loads the working delivery system.
+  -->
+
+  <script
+    type="module"
+    src="js/client.js">
+  </script>
+
+</body>
+</html>
