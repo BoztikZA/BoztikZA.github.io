@@ -21,8 +21,18 @@ import {
 
 
 /* =========================================================
-   BOZTIK DELIVER DASHBOARD
-   Complete dashboard controller
+   BOZTIK DELIVER — DASHBOARD
+   =========================================================
+   This file is designed to work with the current dashboard
+   HTML structure using:
+
+     data-tab
+     data-panel
+
+   It intentionally does not depend on the old:
+
+     data-dash-tab
+     data-dash-panel
 ========================================================= */
 
 
@@ -53,7 +63,7 @@ const els = {
   /* Dashboard */
   refresh: $("dash-refresh"),
 
-  /* Statistics */
+  /* Main statistics */
   activeCount: $("stat-active-count"),
   downloadCount: $("stat-download-count"),
   storageUsed: $("stat-storage-used"),
@@ -64,6 +74,10 @@ const els = {
   monthlyDownloads: $("delivery-monthly-downloads"),
   lifetimeViews: $("delivery-lifetime-views"),
   lifetimeDownloads: $("delivery-lifetime-downloads"),
+
+  /* Overview analytics */
+  overviewMonthlyViews: $("overview-monthly-views"),
+  overviewMonthlyDownloads: $("overview-monthly-downloads"),
 
   /* Upload */
   uploadForm: $("dash-upload-form"),
@@ -109,7 +123,17 @@ const els = {
 let deliveries = [];
 let selectedFiles = [];
 let pendingConfirmAction = null;
-let cleanupRunning = false;
+let authListener = null;
+
+
+/* =========================================================
+   CONSTANTS
+========================================================= */
+
+const MAX_FILES = 30;
+
+const TAB_STORAGE_KEY =
+  "boztik-deliver-dashboard-tab";
 
 
 /* =========================================================
@@ -150,28 +174,17 @@ function showDashboard() {
 }
 
 
-/* =========================================================
-   LOGIN ERROR
-========================================================= */
-
-function setLoginError(message) {
+function setLoginError(message = "") {
 
   if (!els.loginError) {
     return;
   }
 
-  els.loginError.textContent =
-    message || "";
-
-  els.loginError.hidden =
-    !message;
+  els.loginError.textContent = message;
+  els.loginError.hidden = !message;
 
 }
 
-
-/* =========================================================
-   LOGIN LOADING
-========================================================= */
 
 function setLoginLoading(loading) {
 
@@ -179,8 +192,7 @@ function setLoginLoading(loading) {
     return;
   }
 
-  els.loginButton.disabled =
-    loading;
+  els.loginButton.disabled = loading;
 
   els.loginButton.textContent =
     loading
@@ -191,23 +203,21 @@ function setLoginLoading(loading) {
 
 
 /* =========================================================
-   FRIENDLY AUTH ERRORS
+   AUTH ERROR HANDLING
 ========================================================= */
 
 function friendlyAuthError(error) {
 
   const message =
-    error?.message ||
-    "";
+    String(error?.message || "");
 
   const normalized =
     message.toLowerCase();
 
 
   if (
-    normalized.includes(
-      "invalid login credentials"
-    )
+    normalized.includes("invalid login credentials") ||
+    normalized.includes("invalid credentials")
   ) {
 
     return (
@@ -219,13 +229,12 @@ function friendlyAuthError(error) {
 
 
   if (
-    normalized.includes(
-      "email not confirmed"
-    )
+    normalized.includes("email not confirmed")
   ) {
 
     return (
-      "This administrator email has not been confirmed in Supabase."
+      "This administrator email has not been confirmed " +
+      "in Supabase."
     );
 
   }
@@ -233,12 +242,25 @@ function friendlyAuthError(error) {
 
   if (
     normalized.includes("failed to fetch") ||
-    normalized.includes("network")
+    normalized.includes("network") ||
+    normalized.includes("fetch")
   ) {
 
     return (
       "Could not connect to Supabase. " +
       "Please check your internet connection and try again."
+    );
+
+  }
+
+
+  if (
+    normalized.includes("rate limit")
+  ) {
+
+    return (
+      "Too many login attempts. Please wait a moment " +
+      "and try again."
     );
 
   }
@@ -263,7 +285,7 @@ async function handleLogin(event) {
   setLoginError("");
 
   const email =
-    els.email?.value.trim();
+    els.email?.value.trim() || "";
 
   const password =
     els.password?.value || "";
@@ -276,6 +298,7 @@ async function handleLogin(event) {
     );
 
     return;
+
   }
 
 
@@ -314,6 +337,7 @@ async function handleLogin(event) {
 
     setLoginError("");
 
+
     if (els.password) {
       els.password.value = "";
     }
@@ -331,9 +355,11 @@ async function handleLogin(event) {
       error
     );
 
+
     setLoginError(
       friendlyAuthError(error)
     );
+
 
   } finally {
 
@@ -371,6 +397,13 @@ async function handleLogout(event) {
 
 
     deliveries = [];
+    selectedFiles = [];
+
+
+    renderFileList();
+    renderSummary();
+    renderDeliveries();
+
 
     showLogin();
 
@@ -401,7 +434,7 @@ async function handleLogout(event) {
 
 
 /* =========================================================
-   SESSION INITIALISATION
+   AUTH SESSION CHECK
 ========================================================= */
 
 async function initialiseAuthentication() {
@@ -437,23 +470,38 @@ async function initialiseAuthentication() {
     }
 
 
-    client.auth.onAuthStateChange(
-      async (_event, session) => {
+    /*
+      Prevent duplicate auth listeners if this function
+      is ever called again.
+    */
 
-        if (session) {
+    if (authListener) {
+      authListener.subscription.unsubscribe();
+      authListener = null;
+    }
 
-          showDashboard();
 
-        } else {
+    authListener =
+      client.auth.onAuthStateChange(
+        async (_event, session) => {
 
-          deliveries = [];
+          if (session) {
 
-          showLogin();
+            showDashboard();
+
+          } else {
+
+            deliveries = [];
+
+            showLogin();
+
+            renderSummary();
+            renderDeliveries();
+
+          }
 
         }
-
-      }
-    );
+      );
 
 
   } catch (error) {
@@ -487,6 +535,7 @@ function isExpired(delivery) {
     return false;
   }
 
+
   const timestamp =
     new Date(
       delivery.expires_at
@@ -504,39 +553,7 @@ function isExpired(delivery) {
 
 
 /* =========================================================
-   EXPIRING SOON
-========================================================= */
-
-function isExpiringSoon(delivery) {
-
-  if (
-    !delivery?.expires_at ||
-    isExpired(delivery)
-  ) {
-    return false;
-  }
-
-
-  const expiry =
-    new Date(
-      delivery.expires_at
-    ).getTime();
-
-
-  const twentyFourHours =
-    24 * 60 * 60 * 1000;
-
-
-  return (
-    expiry - Date.now() <=
-    twentyFourHours
-  );
-
-}
-
-
-/* =========================================================
-   ANALYTICS TOTALS
+   ANALYTICS HELPERS
 ========================================================= */
 
 function getMonthlyTotals(items) {
@@ -544,16 +561,14 @@ function getMonthlyTotals(items) {
   return items.reduce(
     (totals, delivery) => {
 
-      totals.views +=
-        Number(
-          delivery.monthly_views || 0
-        );
+      totals.views += Number(
+        delivery.monthly_views || 0
+      );
 
 
-      totals.downloads +=
-        Number(
-          delivery.monthly_downloads || 0
-        );
+      totals.downloads += Number(
+        delivery.monthly_downloads || 0
+      );
 
 
       return totals;
@@ -573,20 +588,18 @@ function getLifetimeTotals(items) {
   return items.reduce(
     (totals, delivery) => {
 
-      totals.views +=
-        Number(
-          delivery.lifetime_views ||
-          delivery.view_count ||
-          0
-        );
+      totals.views += Number(
+        delivery.lifetime_views ??
+        delivery.view_count ??
+        0
+      );
 
 
-      totals.downloads +=
-        Number(
-          delivery.lifetime_downloads ||
-          delivery.download_count ||
-          0
-        );
+      totals.downloads += Number(
+        delivery.lifetime_downloads ??
+        delivery.download_count ??
+        0
+      );
 
 
       return totals;
@@ -618,7 +631,10 @@ function renderSummary() {
 
 
   const active =
-    total - expired;
+    Math.max(
+      0,
+      total - expired
+    );
 
 
   const downloads =
@@ -655,67 +671,72 @@ function renderSummary() {
     );
 
 
+  /* -------------------------------------------------------
+     MAIN STATISTICS
+  ------------------------------------------------------- */
+
   if (els.activeCount) {
-
-    els.activeCount.textContent =
-      active;
-
+    els.activeCount.textContent = active;
   }
 
 
   if (els.downloadCount) {
-
-    els.downloadCount.textContent =
-      downloads;
-
+    els.downloadCount.textContent = downloads;
   }
 
 
   if (els.storageUsed) {
-
     els.storageUsed.textContent =
       formatBytes(storage);
-
   }
 
 
   if (els.totalCount) {
-
-    els.totalCount.textContent =
-      total;
-
+    els.totalCount.textContent = total;
   }
 
 
-  if (els.monthlyViews) {
+  /* -------------------------------------------------------
+     ANALYTICS
+  ------------------------------------------------------- */
 
+  if (els.monthlyViews) {
     els.monthlyViews.textContent =
       monthly.views;
-
   }
 
 
   if (els.monthlyDownloads) {
-
     els.monthlyDownloads.textContent =
       monthly.downloads;
-
   }
 
 
   if (els.lifetimeViews) {
-
     els.lifetimeViews.textContent =
       lifetime.views;
-
   }
 
 
   if (els.lifetimeDownloads) {
-
     els.lifetimeDownloads.textContent =
       lifetime.downloads;
+  }
 
+
+  /* -------------------------------------------------------
+     OVERVIEW
+  ------------------------------------------------------- */
+
+  if (els.overviewMonthlyViews) {
+    els.overviewMonthlyViews.textContent =
+      monthly.views;
+  }
+
+
+  if (els.overviewMonthlyDownloads) {
+    els.overviewMonthlyDownloads.textContent =
+      monthly.downloads;
   }
 
 }
@@ -726,6 +747,11 @@ function renderSummary() {
 ========================================================= */
 
 function buildDeliveryUrl(id) {
+
+  if (!id) {
+    return "";
+  }
+
 
   const url =
     new URL(
@@ -741,6 +767,333 @@ function buildDeliveryUrl(id) {
 
 
   return url.href;
+
+}
+
+
+/* =========================================================
+   DASHBOARD TABS
+========================================================= */
+
+function setupDashboardTabs() {
+
+  /*
+    IMPORTANT:
+
+    Current HTML uses:
+
+      data-tab="overview"
+      data-panel="overview"
+
+    NOT:
+
+      data-dash-tab
+      data-dash-panel
+  */
+
+  const tabs =
+    document.querySelectorAll(
+      "[data-tab]"
+    );
+
+
+  const panels =
+    document.querySelectorAll(
+      "[data-panel]"
+    );
+
+
+  if (!tabs.length) {
+
+    console.warn(
+      "[Boztik Deliver] No dashboard tabs found."
+    );
+
+    return;
+
+  }
+
+
+  function activateTab(tabName) {
+
+    const validTab =
+      [...tabs].some(
+        tab =>
+          tab.dataset.tab ===
+          tabName
+      );
+
+
+    if (!validTab) {
+      tabName = tabs[0]?.dataset.tab;
+    }
+
+
+    tabs.forEach(
+      tab => {
+
+        const active =
+          tab.dataset.tab ===
+          tabName;
+
+
+        tab.classList.toggle(
+          "is-active",
+          active
+        );
+
+
+        tab.setAttribute(
+          "aria-selected",
+          active
+            ? "true"
+            : "false"
+        );
+
+
+        tab.setAttribute(
+          "tabindex",
+          active
+            ? "0"
+            : "-1"
+        );
+
+      }
+    );
+
+
+    panels.forEach(
+      panel => {
+
+        const active =
+          panel.dataset.panel ===
+          tabName;
+
+
+        panel.hidden =
+          !active;
+
+
+        panel.classList.toggle(
+          "is-active",
+          active
+        );
+
+      }
+    );
+
+
+    try {
+
+      localStorage.setItem(
+        TAB_STORAGE_KEY,
+        tabName
+      );
+
+    } catch (error) {
+
+      console.warn(
+        "[Boztik Deliver] Could not save dashboard tab:",
+        error
+      );
+
+    }
+
+  }
+
+
+  tabs.forEach(
+    tab => {
+
+      tab.addEventListener(
+        "click",
+        () => {
+
+          activateTab(
+            tab.dataset.tab
+          );
+
+        }
+      );
+
+
+      /*
+        Keyboard support for the tab list.
+      */
+
+      tab.addEventListener(
+        "keydown",
+        event => {
+
+          if (
+            event.key !== "ArrowRight" &&
+            event.key !== "ArrowLeft" &&
+            event.key !== "Home" &&
+            event.key !== "End"
+          ) {
+            return;
+          }
+
+
+          event.preventDefault();
+
+
+          const tabArray =
+            [...tabs];
+
+
+          const currentIndex =
+            tabArray.indexOf(
+              tab
+            );
+
+
+          let nextIndex =
+            currentIndex;
+
+
+          if (
+            event.key ===
+            "ArrowRight"
+          ) {
+
+            nextIndex =
+              (currentIndex + 1) %
+              tabArray.length;
+
+          }
+
+
+          if (
+            event.key ===
+            "ArrowLeft"
+          ) {
+
+            nextIndex =
+              (
+                currentIndex -
+                1 +
+                tabArray.length
+              ) %
+              tabArray.length;
+
+          }
+
+
+          if (
+            event.key ===
+            "Home"
+          ) {
+
+            nextIndex = 0;
+
+          }
+
+
+          if (
+            event.key ===
+            "End"
+          ) {
+
+            nextIndex =
+              tabArray.length - 1;
+
+          }
+
+
+          const nextTab =
+            tabArray[nextIndex];
+
+
+          if (nextTab) {
+
+            activateTab(
+              nextTab.dataset.tab
+            );
+
+            nextTab.focus();
+
+          }
+
+        }
+      );
+
+    }
+  );
+
+
+  /*
+    Buttons such as:
+
+      View analytics →
+      Create a delivery
+      View all →
+      + New delivery
+
+    use data-open-tab.
+  */
+
+  document
+    .querySelectorAll(
+      "[data-open-tab]"
+    )
+    .forEach(
+      button => {
+
+        button.addEventListener(
+          "click",
+          () => {
+
+            activateTab(
+              button.dataset.openTab
+            );
+
+          }
+        );
+
+      }
+    );
+
+
+  let initialTab =
+    "overview";
+
+
+  try {
+
+    const savedTab =
+      localStorage.getItem(
+        TAB_STORAGE_KEY
+      );
+
+
+    if (
+      savedTab &&
+      [...tabs].some(
+        tab =>
+          tab.dataset.tab ===
+          savedTab
+      )
+    ) {
+
+      initialTab =
+        savedTab;
+
+    }
+
+  } catch (error) {
+
+    console.warn(
+      "[Boztik Deliver] Could not read saved dashboard tab:",
+      error
+    );
+
+  }
+
+
+  activateTab(
+    initialTab
+  );
 
 }
 
@@ -771,6 +1124,10 @@ function getVisibleDeliveries() {
     els.sort?.value ||
     "recent";
 
+
+  /* -------------------------------------------------------
+     SEARCH
+  ------------------------------------------------------- */
 
   if (searchTerm) {
 
@@ -805,6 +1162,10 @@ function getVisibleDeliveries() {
   }
 
 
+  /* -------------------------------------------------------
+     STATUS
+  ------------------------------------------------------- */
+
   if (filter === "active") {
 
     items =
@@ -826,6 +1187,10 @@ function getVisibleDeliveries() {
 
   }
 
+
+  /* -------------------------------------------------------
+     SORT
+  ------------------------------------------------------- */
 
   if (sort === "name") {
 
@@ -864,38 +1229,16 @@ function getVisibleDeliveries() {
       (a, b) =>
         new Date(
           b.created_at || 0
-        ) -
+        ).getTime() -
         new Date(
           a.created_at || 0
-        )
+        ).getTime()
     );
 
   }
 
 
   return items;
-
-}
-
-
-/* =========================================================
-   FILE COUNT
-========================================================= */
-
-function getFileCount(delivery) {
-
-  if (
-    Array.isArray(
-      delivery.delivery_files
-    )
-  ) {
-
-    return delivery.delivery_files.length;
-
-  }
-
-
-  return 1;
 
 }
 
@@ -908,10 +1251,6 @@ function renderDelivery(delivery) {
 
   const expired =
     isExpired(delivery);
-
-
-  const expiringSoon =
-    isExpiringSoon(delivery);
 
 
   const monthlyViews =
@@ -928,30 +1267,26 @@ function renderDelivery(delivery) {
 
   const lifetimeViews =
     Number(
-      delivery.lifetime_views ||
-      delivery.view_count ||
+      delivery.lifetime_views ??
+      delivery.view_count ??
       0
     );
 
 
   const lifetimeDownloads =
     Number(
-      delivery.lifetime_downloads ||
-      delivery.download_count ||
+      delivery.lifetime_downloads ??
+      delivery.download_count ??
       0
     );
 
 
   const fileCount =
-    getFileCount(
-      delivery
-    );
-
-
-  const fileSize =
-    Number(
-      delivery.file_size || 0
-    );
+    Array.isArray(
+      delivery.delivery_files
+    )
+      ? delivery.delivery_files.length
+      : 1;
 
 
   const card =
@@ -964,63 +1299,13 @@ function renderDelivery(delivery) {
     "delivery-card";
 
 
-  if (expired) {
-
-    card.classList.add(
-      "is-expired"
-    );
-
-  }
-
-
-  if (expiringSoon) {
-
-    card.classList.add(
-      "is-expiring-soon"
-    );
-
-  }
-
-
-  let statusText =
-    "Active";
-
-
-  let statusClass =
-    "active";
-
-
-  if (expired) {
-
-    statusText =
-      "Expired";
-
-    statusClass =
-      "expired";
-
-  } else if (expiringSoon) {
-
-    statusText =
-      "Expires soon";
-
-    statusClass =
-      "expiring";
-
-  }
-
-
   card.innerHTML = `
 
     <div class="delivery-card-main">
 
-
-      <!-- ==========================================
-           HEADER
-      =========================================== -->
-
       <div class="delivery-card-heading">
 
-        <div class="delivery-title-area">
+        <div>
 
           <h3>
             ${escapeHtml(
@@ -1038,22 +1323,15 @@ function renderDelivery(delivery) {
 
         </div>
 
-
-        <span
-          class="
-            delivery-status
-            ${statusClass}
-          "
-        >
-          ${statusText}
+        <span class="
+          delivery-status
+          ${expired ? "expired" : "active"}
+        ">
+          ${expired ? "Expired" : "Active"}
         </span>
 
       </div>
 
-
-      <!-- ==========================================
-           METADATA
-      =========================================== -->
 
       <div class="delivery-meta">
 
@@ -1066,7 +1344,6 @@ function renderDelivery(delivery) {
           </strong>
         </span>
 
-
         <span>
           Expires:
           <strong>
@@ -1076,33 +1353,10 @@ function renderDelivery(delivery) {
           </strong>
         </span>
 
-
-        <span>
-          Files:
-          <strong>
-            ${fileCount}
-          </strong>
-        </span>
-
-
-        <span>
-          Size:
-          <strong>
-            ${formatBytes(
-              fileSize
-            )}
-          </strong>
-        </span>
-
       </div>
 
 
-      <!-- ==========================================
-           ANALYTICS
-      =========================================== -->
-
       <div class="delivery-analytics">
-
 
         <div class="analytics-section">
 
@@ -1110,9 +1364,7 @@ function renderDelivery(delivery) {
             This Month
           </h4>
 
-
           <div class="analytics-grid">
-
 
             <div class="analytics-stat">
 
@@ -1150,9 +1402,7 @@ function renderDelivery(delivery) {
             Lifetime
           </h4>
 
-
           <div class="analytics-grid">
-
 
             <div class="analytics-stat">
 
@@ -1186,79 +1436,31 @@ function renderDelivery(delivery) {
       </div>
 
 
-      <!-- ==========================================
-           ACTIVITY
-      =========================================== -->
+      <div class="delivery-files">
 
-      <div class="delivery-activity">
+        <strong>
+          Files:
+        </strong>
 
+        <span>
+          ${fileCount}
+        </span>
 
-        <div class="activity-item">
-
-          <span class="activity-icon">
-            👁
-          </span>
-
-          <div>
-
-            <span>
-              Last viewed
-            </span>
-
-            <strong>
-              ${
-                delivery.last_viewed_at
-                  ? formatDate(
-                      delivery.last_viewed_at
-                    )
-                  : "Never"
-              }
-            </strong>
-
-          </div>
-
-        </div>
-
-
-        <div class="activity-item">
-
-          <span class="activity-icon">
-            ↓
-          </span>
-
-          <div>
-
-            <span>
-              Last downloaded
-            </span>
-
-            <strong>
-              ${
-                delivery.last_downloaded_at
-                  ? formatDate(
-                      delivery.last_downloaded_at
-                    )
-                  : "Never"
-              }
-            </strong>
-
-          </div>
-
-        </div>
+        <span>
+          ${formatBytes(
+            delivery.file_size || 0
+          )}
+        </span>
 
       </div>
 
 
-      <!-- ==========================================
-           ACTIONS
-      =========================================== -->
-
       <div class="delivery-actions">
-
 
         <button
           type="button"
           class="btn-open-delivery"
+          ${expired ? "disabled" : ""}
         >
           Open Delivery
         </button>
@@ -1267,6 +1469,7 @@ function renderDelivery(delivery) {
         <button
           type="button"
           class="btn-copy-link"
+          ${expired ? "disabled" : ""}
         >
           Copy Link
         </button>
@@ -1289,28 +1492,40 @@ function renderDelivery(delivery) {
 
       </div>
 
-
     </div>
 
   `;
 
 
-  /* =======================================================
-     OPEN
-  ======================================================= */
+  /* -------------------------------------------------------
+     OPEN DELIVERY
+  ------------------------------------------------------- */
 
-  card
-    .querySelector(
+  const openButton =
+    card.querySelector(
       ".btn-open-delivery"
-    )
-    .addEventListener(
+    );
+
+
+  if (openButton && !expired) {
+
+    openButton.addEventListener(
       "click",
       () => {
 
-        window.open(
+        const url =
           buildDeliveryUrl(
             delivery.id
-          ),
+          );
+
+
+        if (!url) {
+          return;
+        }
+
+
+        window.open(
+          url,
           "_blank",
           "noopener,noreferrer"
         );
@@ -1318,16 +1533,22 @@ function renderDelivery(delivery) {
       }
     );
 
+  }
 
-  /* =======================================================
-     COPY
-  ======================================================= */
 
-  card
-    .querySelector(
+  /* -------------------------------------------------------
+     COPY LINK
+  ------------------------------------------------------- */
+
+  const copyButton =
+    card.querySelector(
       ".btn-copy-link"
-    )
-    .addEventListener(
+    );
+
+
+  if (copyButton && !expired) {
+
+    copyButton.addEventListener(
       "click",
       async event => {
 
@@ -1335,6 +1556,11 @@ function renderDelivery(delivery) {
           buildDeliveryUrl(
             delivery.id
           );
+
+
+        if (!url) {
+          return;
+        }
 
 
         try {
@@ -1380,9 +1606,61 @@ function renderDelivery(delivery) {
           );
 
 
+          /*
+            Fallback for browsers where clipboard
+            permissions are unavailable.
+          */
+
+          const temporaryInput =
+            document.createElement(
+              "input"
+            );
+
+
+          temporaryInput.value =
+            url;
+
+
+          temporaryInput.style.position =
+            "fixed";
+
+          temporaryInput.style.opacity =
+            "0";
+
+
+          document.body.append(
+            temporaryInput
+          );
+
+
+          temporaryInput.select();
+
+
+          let copied = false;
+
+
+          try {
+
+            copied =
+              document.execCommand(
+                "copy"
+              );
+
+          } catch {
+            copied = false;
+          }
+
+
+          temporaryInput.remove();
+
+
           toast(
-            "Could not copy the link.",
-            "error"
+            copied
+              ? "Delivery link copied."
+              : "Could not copy the link.",
+            copied
+              ? "success"
+              : "error"
           );
 
         }
@@ -1390,16 +1668,22 @@ function renderDelivery(delivery) {
       }
     );
 
+  }
 
-  /* =======================================================
+
+  /* -------------------------------------------------------
      DUPLICATE
-  ======================================================= */
+  ------------------------------------------------------- */
 
-  card
-    .querySelector(
+  const duplicateButton =
+    card.querySelector(
       ".btn-duplicate"
-    )
-    .addEventListener(
+    );
+
+
+  if (duplicateButton) {
+
+    duplicateButton.addEventListener(
       "click",
       async event => {
 
@@ -1409,6 +1693,10 @@ function renderDelivery(delivery) {
 
         button.disabled =
           true;
+
+
+        button.textContent =
+          "Duplicating…";
 
 
         try {
@@ -1435,6 +1723,7 @@ function renderDelivery(delivery) {
 
 
           toast(
+            error?.message ||
             "Could not duplicate delivery.",
             "error"
           );
@@ -1445,28 +1734,41 @@ function renderDelivery(delivery) {
           button.disabled =
             false;
 
+
+          button.textContent =
+            "Duplicate";
+
         }
 
       }
     );
 
+  }
 
-  /* =======================================================
+
+  /* -------------------------------------------------------
      DELETE
-  ======================================================= */
+  ------------------------------------------------------- */
 
-  card
-    .querySelector(
+  const deleteButton =
+    card.querySelector(
       ".btn-delete"
-    )
-    .addEventListener(
+    );
+
+
+  if (deleteButton) {
+
+    deleteButton.addEventListener(
       "click",
       () => {
 
+        const projectName =
+          delivery.project_name ||
+          "this delivery";
+
+
         openConfirm(
-
-          `Delete "${delivery.project_name || "this delivery"}"? This will permanently remove the delivery files.`,
-
+          `Delete "${projectName}"? This cannot be undone.`,
           async () => {
 
             try {
@@ -1477,7 +1779,7 @@ function renderDelivery(delivery) {
 
 
               toast(
-                "Delivery and files deleted."
+                "Delivery deleted."
               );
 
 
@@ -1493,6 +1795,7 @@ function renderDelivery(delivery) {
 
 
               toast(
+                error?.message ||
                 "Could not delete delivery.",
                 "error"
               );
@@ -1500,11 +1803,12 @@ function renderDelivery(delivery) {
             }
 
           }
-
         );
 
       }
     );
+
+  }
 
 
   return card;
@@ -1559,10 +1863,14 @@ function renderDeliveries() {
   }
 
 
+  const fragment =
+    document.createDocumentFragment();
+
+
   visible.forEach(
     delivery => {
 
-      els.deliveriesList.append(
+      fragment.append(
         renderDelivery(
           delivery
         )
@@ -1571,150 +1879,10 @@ function renderDeliveries() {
     }
   );
 
-}
 
-
-/* =========================================================
-   AUTOMATIC EXPIRED DELIVERY CLEANUP
-=========================================================
-
-   IMPORTANT:
-
-   This function calls the secure Edge Function.
-
-   It does NOT contain a Supabase service-role key.
-
-   The Edge Function performs the privileged Storage
-   deletion server-side.
-
-   The scheduled server-side job is still required for
-   guaranteed automatic cleanup when the dashboard is
-   closed.
-========================================================= */
-
-async function cleanupExpiredDeliveries() {
-
-  if (cleanupRunning) {
-    return;
-  }
-
-
-  cleanupRunning =
-    true;
-
-
-  try {
-
-    const client =
-      supabase();
-
-
-    const {
-      data: sessionData,
-      error: sessionError
-    } =
-      await client.auth.getSession();
-
-
-    if (sessionError) {
-      throw sessionError;
-    }
-
-
-    const accessToken =
-      sessionData?.session?.access_token;
-
-
-    if (!accessToken) {
-      return;
-    }
-
-
-    const functionUrl =
-      `${config.supabaseUrl}/functions/v1/cleanup-expired-deliveries`;
-
-
-    const response =
-      await fetch(
-        functionUrl,
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type":
-              "application/json",
-
-            "apikey":
-              config.supabaseAnonKey,
-
-            "Authorization":
-              `Bearer ${accessToken}`
-          },
-
-          body: JSON.stringify({})
-        }
-      );
-
-
-    let result =
-      null;
-
-
-    try {
-
-      result =
-        await response.json();
-
-    } catch {
-
-      result =
-        null;
-
-    }
-
-
-    if (!response.ok) {
-
-      throw new Error(
-        result?.message ||
-        result?.error ||
-        `Cleanup request failed with HTTP ${response.status}.`
-      );
-
-    }
-
-
-    if (
-      Number(
-        result?.deletedDeliveries || 0
-      ) > 0
-    ) {
-
-      console.info(
-        "[Boztik Deliver] Expired deliveries cleaned up:",
-        result.deletedDeliveries
-      );
-
-    }
-
-  } catch (error) {
-
-    /*
-     * Cleanup failure should NOT prevent the dashboard
-     * itself from loading.
-     */
-
-    console.warn(
-      "[Boztik Deliver] Automatic cleanup request failed:",
-      error
-    );
-
-  } finally {
-
-    cleanupRunning =
-      false;
-
-  }
+  els.deliveriesList.append(
+    fragment
+  );
 
 }
 
@@ -1732,27 +1900,26 @@ async function load() {
       els.refresh.disabled =
         true;
 
+
       els.refresh.textContent =
         "Refreshing…";
 
     }
 
 
+    const result =
+      await listDeliveries();
+
+
     /*
-     * Ask the secure server function to clean up anything
-     * that has already expired.
-     *
-     * This is a convenience cleanup.
-     *
-     * The scheduled Edge Function handles true automatic
-     * background cleanup.
-     */
-
-    await cleanupExpiredDeliveries();
-
+      Protect the dashboard if the API unexpectedly
+      returns null instead of an array.
+    */
 
     deliveries =
-      await listDeliveries();
+      Array.isArray(result)
+        ? result
+        : [];
 
 
     renderSummary();
@@ -1769,14 +1936,16 @@ async function load() {
 
 
     const message =
-      error?.message?.toLowerCase() ||
-      "";
+      String(
+        error?.message || ""
+      ).toLowerCase();
 
 
     if (
       message.includes("jwt") ||
       message.includes("token") ||
-      message.includes("unauthorized")
+      message.includes("unauthorized") ||
+      message.includes("401")
     ) {
 
       toast(
@@ -1793,6 +1962,7 @@ async function load() {
 
 
     toast(
+      error?.message ||
       "Could not load deliveries. Please refresh the page.",
       "error"
     );
@@ -1804,6 +1974,7 @@ async function load() {
 
       els.refresh.disabled =
         false;
+
 
       els.refresh.textContent =
         "Refresh";
@@ -1821,15 +1992,21 @@ async function load() {
 
 function validateSelectedFiles(files) {
 
-  if (!files.length) {
+  const incoming =
+    Array.isArray(files)
+      ? files
+      : [...files];
+
+
+  if (!incoming.length) {
     return;
   }
 
 
-  if (files.length > 30) {
+  if (incoming.length > MAX_FILES) {
 
     toast(
-      "You can upload a maximum of 30 files.",
+      `You can upload a maximum of ${MAX_FILES} files.`,
       "error"
     );
 
@@ -1839,7 +2016,7 @@ function validateSelectedFiles(files) {
 
 
   const invalid =
-    files.find(
+    incoming.find(
       file =>
         !isValidFile(file)
     );
@@ -1858,7 +2035,7 @@ function validateSelectedFiles(files) {
 
 
   selectedFiles =
-    [...files];
+    incoming;
 
 
   renderFileList();
@@ -1867,7 +2044,7 @@ function validateSelectedFiles(files) {
 
 
 /* =========================================================
-   FILE PREVIEWS
+   FILE LIST / PREVIEWS
 ========================================================= */
 
 function renderFileList() {
@@ -1879,6 +2056,15 @@ function renderFileList() {
 
   els.fileList.innerHTML =
     "";
+
+
+  if (!selectedFiles.length) {
+    return;
+  }
+
+
+  const fragment =
+    document.createDocumentFragment();
 
 
   selectedFiles.forEach(
@@ -1895,7 +2081,9 @@ function renderFileList() {
 
 
       const isImage =
-        file.type.startsWith(
+        String(
+          file.type || ""
+        ).startsWith(
           "image/"
         );
 
@@ -1917,16 +2105,28 @@ function renderFileList() {
             src="${url}"
             alt=""
             class="dash-file-preview"
+            loading="lazy"
           >
         `;
 
 
+        /*
+          The URL is kept alive long enough for the
+          browser to display the thumbnail.
+        */
+
         setTimeout(
           () => {
 
-            URL.revokeObjectURL(
-              url
-            );
+            try {
+
+              URL.revokeObjectURL(
+                url
+              );
+
+            } catch {
+              /* Ignore cleanup errors. */
+            }
 
           },
           60000
@@ -1958,11 +2158,16 @@ function renderFileList() {
       `;
 
 
-      els.fileList.append(
+      fragment.append(
         item
       );
 
     }
+  );
+
+
+  els.fileList.append(
+    fragment
   );
 
 }
@@ -1984,7 +2189,20 @@ function setupDropzone() {
 
   els.dropzone.addEventListener(
     "click",
-    () => {
+    event => {
+
+      /*
+        Avoid reopening the picker if the actual input
+        somehow receives the click.
+      */
+
+      if (
+        event.target ===
+        els.fileInput
+      ) {
+        return;
+      }
+
 
       els.fileInput.click();
 
@@ -2017,6 +2235,10 @@ function setupDropzone() {
 
       event.preventDefault();
 
+      event.dataTransfer.dropEffect =
+        "copy";
+
+
       els.dropzone.classList.add(
         "is-dragging"
       );
@@ -2027,11 +2249,24 @@ function setupDropzone() {
 
   els.dropzone.addEventListener(
     "dragleave",
-    () => {
+    event => {
 
-      els.dropzone.classList.remove(
-        "is-dragging"
-      );
+      /*
+        Only remove the state when the pointer
+        actually leaves the dropzone.
+      */
+
+      if (
+        !els.dropzone.contains(
+          event.relatedTarget
+        )
+      ) {
+
+        els.dropzone.classList.remove(
+          "is-dragging"
+        );
+
+      }
 
     }
   );
@@ -2049,8 +2284,15 @@ function setupDropzone() {
       );
 
 
+      const files =
+        [...(
+          event.dataTransfer?.files ||
+          []
+        )];
+
+
       validateSelectedFiles(
-        [...event.dataTransfer.files]
+        files
       );
 
     }
@@ -2064,6 +2306,15 @@ function setupDropzone() {
       validateSelectedFiles(
         [...els.fileInput.files]
       );
+
+
+      /*
+        Allows selecting the same file again
+        after removing/replacing it.
+      */
+
+      els.fileInput.value =
+        "";
 
     }
   );
@@ -2093,11 +2344,13 @@ async function handleUpload(event) {
 
 
   const clientName =
-    els.clientName?.value.trim();
+    els.clientName?.value.trim() ||
+    "";
 
 
   const projectName =
-    els.projectName?.value.trim();
+    els.projectName?.value.trim() ||
+    "";
 
 
   const notes =
@@ -2112,8 +2365,10 @@ async function handleUpload(event) {
     );
 
 
-  if (!clientName ||
-      !projectName) {
+  if (
+    !clientName ||
+    !projectName
+  ) {
 
     toast(
       "Please enter the client name and project title.",
@@ -2181,6 +2436,7 @@ async function handleUpload(event) {
       els.uploadButton.disabled =
         true;
 
+
       els.uploadButton.textContent =
         "Uploading…";
 
@@ -2208,11 +2464,21 @@ async function handleUpload(event) {
       selectedFiles,
       progress => {
 
+        const safeProgress =
+          Math.max(
+            0,
+            Math.min(
+              1,
+              Number(progress) || 0
+            )
+          );
+
+
         if (els.progressBar) {
 
           els.progressBar.style.width =
             `${Math.round(
-              progress * 100
+              safeProgress * 100
             )}%`;
 
         }
@@ -2256,10 +2522,17 @@ async function handleUpload(event) {
       els.successCopyStatus.hidden =
         true;
 
+      els.successCopyStatus.textContent =
+        "";
+
     }
 
 
-    if (els.successDialog) {
+    if (
+      els.successDialog &&
+      typeof els.successDialog.showModal ===
+        "function"
+    ) {
 
       els.successDialog.showModal();
 
@@ -2271,11 +2544,12 @@ async function handleUpload(event) {
     );
 
 
-    els.uploadForm?.reset();
+    if (els.uploadForm) {
+      els.uploadForm.reset();
+    }
 
 
-    selectedFiles =
-      [];
+    selectedFiles = [];
 
 
     renderFileList();
@@ -2322,6 +2596,7 @@ async function handleUpload(event) {
       els.uploadButton.disabled =
         false;
 
+
       els.uploadButton.textContent =
         "Generate secure delivery";
 
@@ -2343,7 +2618,9 @@ function openConfirm(
 
   if (
     !els.confirmDialog ||
-    !els.confirmAction
+    !els.confirmAction ||
+    typeof els.confirmDialog.showModal !==
+      "function"
   ) {
 
     const confirmed =
@@ -2354,7 +2631,18 @@ function openConfirm(
 
     if (confirmed) {
 
-      action();
+      Promise.resolve(
+        action()
+      ).catch(
+        error => {
+
+          console.error(
+            "[Boztik Deliver] Confirmation action failed:",
+            error
+          );
+
+        }
+      );
 
     }
 
@@ -2364,8 +2652,12 @@ function openConfirm(
   }
 
 
-  els.confirmText.textContent =
-    message;
+  if (els.confirmText) {
+
+    els.confirmText.textContent =
+      message;
+
+  }
 
 
   pendingConfirmAction =
@@ -2381,7 +2673,12 @@ function openConfirm(
    CONFIRM ACTION
 ========================================================= */
 
-if (els.confirmAction) {
+function setupConfirmation() {
+
+  if (!els.confirmAction) {
+    return;
+  }
+
 
   els.confirmAction.addEventListener(
     "click",
@@ -2395,23 +2692,31 @@ if (els.confirmAction) {
         null;
 
 
-      els.confirmDialog.close();
+      if (
+        els.confirmDialog &&
+        els.confirmDialog.open
+      ) {
+
+        els.confirmDialog.close();
+
+      }
 
 
-      if (action) {
+      if (!action) {
+        return;
+      }
 
-        try {
 
-          await action();
+      try {
 
-        } catch (error) {
+        await action();
 
-          console.error(
-            "[Boztik Deliver] Confirmation action failed:",
-            error
-          );
+      } catch (error) {
 
-        }
+        console.error(
+          "[Boztik Deliver] Confirmation action failed:",
+          error
+        );
 
       }
 
@@ -2422,17 +2727,156 @@ if (els.confirmAction) {
 
 
 /* =========================================================
-   SUCCESS COPY
+   SUCCESS DIALOG
 ========================================================= */
 
-if (els.successCopy) {
+function setupSuccessDialog() {
+
+  if (!els.successDialog) {
+    return;
+  }
+
+
+  /*
+    Clicking outside the dialog should not accidentally
+    close it unless the browser handles that natively.
+  */
+
+  els.successDialog.addEventListener(
+    "close",
+    () => {
+
+      if (els.successCopyStatus) {
+
+        els.successCopyStatus.hidden =
+          true;
+
+      }
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   COPY SUCCESS LINK
+========================================================= */
+
+async function copyText(value) {
+
+  if (!value) {
+    return false;
+  }
+
+
+  /*
+    Modern Clipboard API
+  */
+
+  if (
+    navigator.clipboard &&
+    window.isSecureContext
+  ) {
+
+    try {
+
+      await navigator.clipboard.writeText(
+        value
+      );
+
+      return true;
+
+    } catch (error) {
+
+      console.warn(
+        "[Boztik Deliver] Clipboard API failed:",
+        error
+      );
+
+    }
+
+  }
+
+
+  /*
+    Legacy browser fallback
+  */
+
+  const input =
+    document.createElement(
+      "input"
+    );
+
+
+  input.value =
+    value;
+
+
+  input.setAttribute(
+    "readonly",
+    ""
+  );
+
+
+  input.style.position =
+    "fixed";
+
+
+  input.style.left =
+    "-9999px";
+
+
+  document.body.append(
+    input
+  );
+
+
+  input.select();
+
+
+  let copied = false;
+
+
+  try {
+
+    copied =
+      document.execCommand(
+        "copy"
+      );
+
+  } catch (error) {
+
+    console.warn(
+      "[Boztik Deliver] Legacy clipboard failed:",
+      error
+    );
+
+  }
+
+
+  input.remove();
+
+
+  return copied;
+
+}
+
+
+function setupSuccessCopy() {
+
+  if (!els.successCopy) {
+    return;
+  }
+
 
   els.successCopy.addEventListener(
     "click",
     async () => {
 
       const value =
-        els.successLink?.value;
+        els.successLink?.value ||
+        "";
 
 
       if (!value) {
@@ -2440,12 +2884,13 @@ if (els.successCopy) {
       }
 
 
-      try {
-
-        await navigator.clipboard.writeText(
+      const copied =
+        await copyText(
           value
         );
 
+
+      if (copied) {
 
         if (els.successCopyStatus) {
 
@@ -2463,16 +2908,30 @@ if (els.successCopy) {
         );
 
 
-      } catch (error) {
+      } else {
 
-        console.error(
-          "[Boztik Deliver] Copy failed:",
-          error
-        );
+        if (els.successLink) {
+
+          els.successLink.focus();
+
+          els.successLink.select();
+
+        }
+
+
+        if (els.successCopyStatus) {
+
+          els.successCopyStatus.textContent =
+            "Link selected. Press Ctrl+C to copy.";
+
+          els.successCopyStatus.hidden =
+            false;
+
+        }
 
 
         toast(
-          "Could not copy the link.",
+          "Link selected. Press Ctrl+C to copy.",
           "error"
         );
 
@@ -2488,72 +2947,105 @@ if (els.successCopy) {
    EVENT LISTENERS
 ========================================================= */
 
-if (els.loginForm) {
+function setupEventListeners() {
 
-  els.loginForm.addEventListener(
-    "submit",
-    handleLogin
-  );
+  if (els.loginForm) {
+
+    els.loginForm.addEventListener(
+      "submit",
+      handleLogin
+    );
+
+  }
+
+
+  if (els.logout) {
+
+    els.logout.addEventListener(
+      "click",
+      handleLogout
+    );
+
+  }
+
+
+  if (els.refresh) {
+
+    els.refresh.addEventListener(
+      "click",
+      load
+    );
+
+  }
+
+
+  if (els.uploadForm) {
+
+    els.uploadForm.addEventListener(
+      "submit",
+      handleUpload
+    );
+
+  }
+
+
+  if (els.search) {
+
+    els.search.addEventListener(
+      "input",
+      renderDeliveries
+    );
+
+  }
+
+
+  if (els.filter) {
+
+    els.filter.addEventListener(
+      "change",
+      renderDeliveries
+    );
+
+  }
+
+
+  if (els.sort) {
+
+    els.sort.addEventListener(
+      "change",
+      renderDeliveries
+    );
+
+  }
 
 }
 
 
-if (els.logout) {
+/* =========================================================
+   STARTUP
+========================================================= */
 
-  els.logout.addEventListener(
-    "click",
-    handleLogout
+function initialiseDashboard() {
+
+  console.log(
+    "[Boztik Deliver] Dashboard initialising..."
   );
 
-}
+
+  setupDropzone();
+
+  setupDashboardTabs();
+
+  setupConfirmation();
+
+  setupSuccessDialog();
+
+  setupSuccessCopy();
+
+  setupEventListeners();
 
 
-if (els.refresh) {
-
-  els.refresh.addEventListener(
-    "click",
-    load
-  );
-
-}
-
-
-if (els.uploadForm) {
-
-  els.uploadForm.addEventListener(
-    "submit",
-    handleUpload
-  );
-
-}
-
-
-if (els.search) {
-
-  els.search.addEventListener(
-    "input",
-    renderDeliveries
-  );
-
-}
-
-
-if (els.filter) {
-
-  els.filter.addEventListener(
-    "change",
-    renderDeliveries
-  );
-
-}
-
-
-if (els.sort) {
-
-  els.sort.addEventListener(
-    "change",
-    renderDeliveries
-  );
+  initialiseAuthentication();
 
 }
 
@@ -2562,6 +3054,4 @@ if (els.sort) {
    START
 ========================================================= */
 
-setupDropzone();
-
-initialiseAuthentication();
+initialiseDashboard();

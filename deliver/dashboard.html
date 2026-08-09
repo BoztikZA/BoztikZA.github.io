@@ -20,7 +20,7 @@
   >
 
   <link rel="stylesheet" href="../styles-premium.css">
-  <link rel="stylesheet" href="css/deliver.css?v=3">
+  <link rel="stylesheet" href="css/deliver.css?v=4">
 </head>
 
 <body class="deliver-dashboard-body">
@@ -34,22 +34,14 @@
     <div class="glow2"></div>
   </div>
 
-
   <!-- =====================================================
        NAVIGATION
   ====================================================== -->
 
   <header>
+    <nav class="navbar" aria-label="Primary navigation">
 
-    <nav
-      class="navbar"
-      aria-label="Primary navigation"
-    >
-
-      <a
-        class="logo-area"
-        href="../index.html"
-      >
+      <a class="logo-area" href="../index.html">
 
         <img
           src="../images/logo.png"
@@ -57,7 +49,6 @@
         >
 
         <div>
-
           <span class="logo-title">
             Boztik Deliver
           </span>
@@ -65,16 +56,11 @@
           <span class="logo-subtitle">
             Delivery command centre
           </span>
-
         </div>
 
       </a>
 
-
-      <div
-        class="nav-links"
-        style="display:flex"
-      >
+      <div class="nav-links" style="display:flex">
 
         <a href="../index.html">
           Back to site
@@ -91,16 +77,13 @@
       </div>
 
     </nav>
-
   </header>
-
 
   <!-- =====================================================
        MAIN
   ====================================================== -->
 
   <main id="main-content">
-
 
     <!-- ===================================================
          LOGIN
@@ -124,11 +107,9 @@
         in this Deliver Supabase project.
       </p>
 
-
       <form id="dash-login-form">
 
         <label class="dash-field">
-
           Email
 
           <input
@@ -137,12 +118,9 @@
             autocomplete="username"
             required
           >
-
         </label>
 
-
         <label class="dash-field">
-
           Password
 
           <input
@@ -151,17 +129,15 @@
             autocomplete="current-password"
             required
           >
-
         </label>
 
-
         <button
+          type="submit"
           class="dash-btn"
           id="dash-login-btn"
         >
           Sign in
         </button>
-
 
         <p
           class="dash-error"
@@ -174,7 +150,6 @@
 
     </section>
 
-
     <!-- ===================================================
          DASHBOARD
     ==================================================== -->
@@ -185,17 +160,15 @@
       hidden
     >
 
-
-      <!-- ================================================
+      <!-- =================================================
            DASHBOARD HEADER
-      ================================================= -->
+      ================================================== -->
 
       <div class="dash-header">
 
         <div>
-
           <span class="deliver-eyebrow">
-            Overview
+            Delivery command centre
           </span>
 
           <h1>
@@ -203,13 +176,13 @@
           </h1>
 
           <p>
-            Professional, secure hand-off for every project.
+            Manage your client hand-offs, monitor activity
+            and keep your delivery workflow organised.
           </p>
-
         </div>
 
-
         <button
+          type="button"
           class="dash-btn dash-btn--ghost dash-compact"
           id="dash-refresh"
         >
@@ -218,392 +191,672 @@
 
       </div>
 
+      <!-- =================================================
+           DASHBOARD TABS
+      ================================================== -->
 
-      <!-- ================================================
-           EXISTING STATISTICS
-      ================================================= -->
+      <div
+        class="dash-tabs"
+        role="tablist"
+        aria-label="Delivery command centre sections"
+      >
 
-      <div class="dash-stats">
-
-        <article class="dash-stat-card">
-
+        <button
+          type="button"
+          class="dash-tab is-active"
+          id="tab-overview"
+          role="tab"
+          aria-selected="true"
+          aria-controls="panel-overview"
+          tabindex="0"
+          data-tab="overview"
+        >
+          <span class="dash-tab-icon">◉</span>
           <span>
-            Active deliveries
+            <strong>Overview</strong>
+            <small>Command centre</small>
           </span>
+        </button>
 
-          <strong id="stat-active-count">
-            0
-          </strong>
-
-        </article>
-
-
-        <article class="dash-stat-card">
-
+        <button
+          type="button"
+          class="dash-tab"
+          id="tab-create"
+          role="tab"
+          aria-selected="false"
+          aria-controls="panel-create"
+          tabindex="-1"
+          data-tab="create"
+        >
+          <span class="dash-tab-icon">＋</span>
           <span>
-            Total downloads
+            <strong>Create Delivery</strong>
+            <small>New client hand-off</small>
           </span>
+        </button>
 
-          <strong id="stat-download-count">
-            0
-          </strong>
-
-        </article>
-
-
-        <article class="dash-stat-card">
-
+        <button
+          type="button"
+          class="dash-tab"
+          id="tab-deliveries"
+          role="tab"
+          aria-selected="false"
+          aria-controls="panel-deliveries"
+          tabindex="-1"
+          data-tab="deliveries"
+        >
+          <span class="dash-tab-icon">▣</span>
           <span>
-            Storage used
+            <strong>Deliveries</strong>
+            <small>Manage projects</small>
           </span>
+        </button>
 
-          <strong id="stat-storage-used">
-            0 B
-          </strong>
-
-        </article>
-
-
-        <article class="dash-stat-card">
-
+        <button
+          type="button"
+          class="dash-tab"
+          id="tab-analytics"
+          role="tab"
+          aria-selected="false"
+          aria-controls="panel-analytics"
+          tabindex="-1"
+          data-tab="analytics"
+        >
+          <span class="dash-tab-icon">↗</span>
           <span>
-            All deliveries
+            <strong>Analytics</strong>
+            <small>Views & downloads</small>
           </span>
-
-          <strong id="stat-total-count">
-            0
-          </strong>
-
-        </article>
+        </button>
 
       </div>
 
-
-      <!-- ================================================
-           ANALYTICS
-      ================================================= -->
+      <!-- =================================================
+           TAB: OVERVIEW
+      ================================================== -->
 
       <section
-        class="delivery-analytics-dashboard"
-        aria-label="Delivery analytics"
+        id="panel-overview"
+        class="dash-tab-panel is-active"
+        role="tabpanel"
+        aria-labelledby="tab-overview"
+        data-panel="overview"
       >
 
-        <div class="analytics-heading">
+        <div class="dash-section-heading">
 
-          <span class="analytics-eyebrow">
-            DELIVERY ANALYTICS
-          </span>
+          <div>
+            <span class="dash-section-eyebrow">
+              COMMAND CENTRE
+            </span>
 
-          <h2>
-            Client Activity
-          </h2>
+            <h2>
+              Delivery overview
+            </h2>
+
+            <p>
+              A quick snapshot of your current delivery operation.
+            </p>
+          </div>
+
+        </div>
+
+        <!-- PRIMARY STATS -->
+
+        <div class="dash-stats dash-stats--premium">
+
+          <article class="dash-stat-card dash-stat-card--featured">
+
+            <div class="dash-stat-icon">
+              ◉
+            </div>
+
+            <div>
+              <span>
+                Active deliveries
+              </span>
+
+              <strong id="stat-active-count">
+                0
+              </strong>
+
+              <small>
+                Currently available to clients
+              </small>
+            </div>
+
+          </article>
+
+          <article class="dash-stat-card">
+
+            <div class="dash-stat-icon">
+              ↓
+            </div>
+
+            <div>
+              <span>
+                Total downloads
+              </span>
+
+              <strong id="stat-download-count">
+                0
+              </strong>
+
+              <small>
+                Across all deliveries
+              </small>
+            </div>
+
+          </article>
+
+          <article class="dash-stat-card">
+
+            <div class="dash-stat-icon">
+              ◫
+            </div>
+
+            <div>
+              <span>
+                Storage used
+              </span>
+
+              <strong id="stat-storage-used">
+                0 B
+              </strong>
+
+              <small>
+                Delivery files
+              </small>
+            </div>
+
+          </article>
+
+          <article class="dash-stat-card">
+
+            <div class="dash-stat-icon">
+              #
+            </div>
+
+            <div>
+              <span>
+                All deliveries
+              </span>
+
+              <strong id="stat-total-count">
+                0
+              </strong>
+
+              <small>
+                Created in your workspace
+              </small>
+            </div>
+
+          </article>
+
+        </div>
+
+        <!-- QUICK ANALYTICS -->
+
+        <div class="dash-overview-grid">
+
+          <article class="dash-overview-card">
+
+            <div class="dash-overview-card-header">
+
+              <div>
+                <span class="dash-section-eyebrow">
+                  THIS MONTH
+                </span>
+
+                <h3>
+                  Client activity
+                </h3>
+              </div>
+
+              <button
+                type="button"
+                class="dash-text-button"
+                data-open-tab="analytics"
+              >
+                View analytics →
+              </button>
+
+            </div>
+
+            <div class="dash-mini-stats">
+
+              <div class="dash-mini-stat">
+
+                <span>
+                  Link views
+                </span>
+
+                <strong id="overview-monthly-views">
+                  0
+                </strong>
+
+              </div>
+
+              <div class="dash-mini-stat">
+
+                <span>
+                  Downloads
+                </span>
+
+                <strong id="overview-monthly-downloads">
+                  0
+                </strong>
+
+              </div>
+
+            </div>
+
+          </article>
+
+
+          <article class="dash-overview-card">
+
+            <div class="dash-overview-card-header">
+
+              <div>
+                <span class="dash-section-eyebrow">
+                  QUICK ACTION
+                </span>
+
+                <h3>
+                  Ready to send a project?
+                </h3>
+              </div>
+
+            </div>
+
+            <p>
+              Upload your finished client files and generate
+              a secure delivery page in seconds.
+            </p>
+
+            <button
+              type="button"
+              class="dash-btn dash-compact"
+              data-open-tab="create"
+            >
+              Create a delivery
+            </button>
+
+          </article>
+
+        </div>
+
+        <!-- RECENT ACTIVITY -->
+
+        <div class="dash-overview-card dash-recent-overview">
+
+          <div class="dash-overview-card-header">
+
+            <div>
+              <span class="dash-section-eyebrow">
+                WORKSPACE
+              </span>
+
+              <h3>
+                Recent deliveries
+              </h3>
+            </div>
+
+            <button
+              type="button"
+              class="dash-text-button"
+              data-open-tab="deliveries"
+            >
+              View all →
+            </button>
+
+          </div>
 
           <p>
-            Monitor delivery link views and downloads.
+            Your latest client deliveries are available in the
+            Deliveries section.
           </p>
-
-        </div>
-
-
-        <!-- ============================================
-             THIS MONTH
-        ============================================= -->
-
-        <div class="analytics-group">
-
-          <h3>
-            This Month
-          </h3>
-
-
-          <div class="analytics-summary-grid">
-
-
-            <div class="analytics-summary-card">
-
-              <div class="analytics-summary-icon">
-                👁
-              </div>
-
-              <div>
-
-                <span>
-                  Link Views
-                </span>
-
-                <strong
-                  id="delivery-monthly-views"
-                >
-                  0
-                </strong>
-
-              </div>
-
-            </div>
-
-
-            <div class="analytics-summary-card">
-
-              <div class="analytics-summary-icon">
-                ↓
-              </div>
-
-              <div>
-
-                <span>
-                  Downloads
-                </span>
-
-                <strong
-                  id="delivery-monthly-downloads"
-                >
-                  0
-                </strong>
-
-              </div>
-
-            </div>
-
-
-          </div>
-
-        </div>
-
-
-        <!-- ============================================
-             LIFETIME
-        ============================================= -->
-
-        <div class="analytics-group">
-
-          <h3>
-            Lifetime
-          </h3>
-
-
-          <div class="analytics-summary-grid">
-
-
-            <div class="analytics-summary-card">
-
-              <div class="analytics-summary-icon">
-                👁
-              </div>
-
-              <div>
-
-                <span>
-                  Link Views
-                </span>
-
-                <strong
-                  id="delivery-lifetime-views"
-                >
-                  0
-                </strong>
-
-              </div>
-
-            </div>
-
-
-            <div class="analytics-summary-card">
-
-              <div class="analytics-summary-icon">
-                ↓
-              </div>
-
-              <div>
-
-                <span>
-                  Downloads
-                </span>
-
-                <strong
-                  id="delivery-lifetime-downloads"
-                >
-                  0
-                </strong>
-
-              </div>
-
-            </div>
-
-
-          </div>
 
         </div>
 
       </section>
 
 
-      <!-- ================================================
-           MAIN DASHBOARD GRID
-      ================================================= -->
+      <!-- =================================================
+           TAB: CREATE DELIVERY
+      ================================================== -->
 
-      <div class="dash-grid">
+      <section
+        id="panel-create"
+        class="dash-tab-panel"
+        role="tabpanel"
+        aria-labelledby="tab-create"
+        data-panel="create"
+        hidden
+      >
 
+        <div class="dash-section-heading">
 
-        <!-- ==============================================
-             CREATE DELIVERY
-        =============================================== -->
+          <div>
+            <span class="dash-section-eyebrow">
+              NEW DELIVERY
+            </span>
 
-        <section class="dash-panel">
+            <h2>
+              Create a delivery
+            </h2>
 
-          <h2>
-            Create a delivery
-          </h2>
+            <p>
+              Prepare a secure client hand-off for your finished project.
+            </p>
+          </div>
 
-          <p class="dash-panel-copy">
-            Upload up to 30 project files.
-            Images receive instant local previews.
-          </p>
-
-
-          <form id="dash-upload-form">
-
-
-            <div
-              id="dash-dropzone"
-              class="dash-dropzone"
-              tabindex="0"
-              role="button"
-            >
-
-              <strong>
-                Drop files here
-              </strong>
-
-              <br>
-
-              <span>
-                or choose ZIP, JPG, PNG, PSD,
-                TIFF, WEBP, PDF, AI or EPS
-              </span>
+        </div>
 
 
-              <input
-                id="dash-file-input"
-                type="file"
-                multiple
-                accept=".zip,.jpg,.jpeg,.png,.psd,.tif,.tiff,.webp,.pdf,.ai,.eps"
+        <div class="dash-create-layout">
+
+          <section class="dash-panel dash-create-panel">
+
+            <form id="dash-upload-form">
+
+              <div class="dash-form-section">
+
+                <div class="dash-form-section-title">
+                  <span>01</span>
+
+                  <div>
+                    <h3>
+                      Project files
+                    </h3>
+
+                    <p>
+                      Upload up to 30 supported files.
+                    </p>
+                  </div>
+                </div>
+
+
+                <div
+                  id="dash-dropzone"
+                  class="dash-dropzone"
+                  tabindex="0"
+                  role="button"
+                  aria-label="Choose files or drag files here"
+                >
+
+                  <div class="dash-dropzone-icon">
+                    ↑
+                  </div>
+
+                  <strong>
+                    Drop files here
+                  </strong>
+
+                  <span>
+                    or choose ZIP, JPG, PNG, PSD, TIFF,
+                    WEBP, PDF, AI or EPS
+                  </span>
+
+                  <input
+                    id="dash-file-input"
+                    type="file"
+                    multiple
+                    accept=".zip,.jpg,.jpeg,.png,.psd,.tif,.tiff,.webp,.pdf,.ai,.eps"
+                    hidden
+                  >
+
+                </div>
+
+
+                <ul
+                  id="dash-file-list"
+                  class="dash-file-list"
+                  aria-live="polite"
+                ></ul>
+
+              </div>
+
+
+              <div class="dash-form-section">
+
+                <div class="dash-form-section-title">
+                  <span>02</span>
+
+                  <div>
+                    <h3>
+                      Client information
+                    </h3>
+
+                    <p>
+                      These details appear on the client delivery page.
+                    </p>
+                  </div>
+                </div>
+
+
+                <label class="dash-field">
+
+                  Client name
+
+                  <input
+                    id="dash-client-name"
+                    maxlength="120"
+                    autocomplete="name"
+                    required
+                  >
+
+                </label>
+
+
+                <label class="dash-field">
+
+                  Project title
+
+                  <input
+                    id="dash-project-name"
+                    maxlength="160"
+                    required
+                  >
+
+                </label>
+
+
+                <label class="dash-field">
+
+                  Project notes
+
+                  <textarea
+                    id="dash-notes"
+                    rows="4"
+                    maxlength="2000"
+                    placeholder="Optional message or delivery notes for your client."
+                  ></textarea>
+
+                </label>
+
+              </div>
+
+
+              <div class="dash-form-section">
+
+                <div class="dash-form-section-title">
+                  <span>03</span>
+
+                  <div>
+                    <h3>
+                      Security & expiry
+                    </h3>
+
+                    <p>
+                      Choose how long the client link remains available.
+                    </p>
+                  </div>
+                </div>
+
+
+                <label class="dash-field">
+
+                  Expires in
+
+                  <select id="dash-expiry">
+
+                    <option value="24">
+                      24 hours
+                    </option>
+
+                    <option value="48">
+                      48 hours
+                    </option>
+
+                    <option value="72">
+                      72 hours
+                    </option>
+
+                    <option value="168">
+                      7 days
+                    </option>
+
+                  </select>
+
+                </label>
+
+              </div>
+
+
+              <div
+                id="dash-progress"
+                class="dash-progress"
                 hidden
               >
 
-            </div>
+                <div
+                  id="dash-progress-bar"
+                  class="dash-progress-bar"
+                ></div>
+
+              </div>
 
 
-            <ul
-              id="dash-file-list"
-              class="dash-file-list"
-              aria-live="polite"
-            ></ul>
-
-
-            <label class="dash-field">
-
-              Client name
-
-              <input
-                id="dash-client-name"
-                maxlength="120"
-                required
+              <button
+                type="submit"
+                class="dash-btn dash-btn--large"
+                id="dash-upload-btn"
               >
+                Generate secure delivery
+              </button>
 
-            </label>
+            </form>
 
-
-            <label class="dash-field">
-
-              Project title
-
-              <input
-                id="dash-project-name"
-                maxlength="160"
-                required
-              >
-
-            </label>
+          </section>
 
 
-            <label class="dash-field">
+          <aside class="dash-create-info">
 
-              Project notes
+            <div class="dash-info-card">
 
-              <textarea
-                id="dash-notes"
-                rows="3"
-                maxlength="2000"
-              ></textarea>
+              <span class="dash-section-eyebrow">
+                SECURE HAND-OFF
+              </span>
 
-            </label>
+              <h3>
+                Built for professional client delivery.
+              </h3>
 
+              <ul>
 
-            <label class="dash-field">
+                <li>
+                  Secure client-facing delivery page
+                </li>
 
-              Expires in
+                <li>
+                  Automatic expiry timer
+                </li>
 
-              <select id="dash-expiry">
+                <li>
+                  Download tracking
+                </li>
 
-                <option value="24">
-                  24 hours
-                </option>
+                <li>
+                  View analytics
+                </li>
 
-                <option value="48">
-                  48 hours
-                </option>
+                <li>
+                  Professional Boztik branding
+                </li>
 
-                <option value="72">
-                  72 hours
-                </option>
-
-                <option value="168">
-                  7 days
-                </option>
-
-              </select>
-
-            </label>
-
-
-            <div
-              id="dash-progress"
-              class="dash-progress"
-              hidden
-            >
-
-              <div
-                id="dash-progress-bar"
-                class="dash-progress-bar"
-              ></div>
+              </ul>
 
             </div>
 
+            <div class="dash-info-card dash-info-card--accent">
 
-            <button
-              class="dash-btn"
-              id="dash-upload-btn"
-            >
-              Generate secure delivery
-            </button>
+              <span>
+                TIP
+              </span>
 
-          </form>
+              <p>
+                ZIP files are ideal for delivering large
+                batches of edited images while keeping the
+                client experience simple.
+              </p>
 
-        </section>
+            </div>
+
+          </aside>
+
+        </div>
+
+      </section>
 
 
-        <!-- ==============================================
-             DELIVERY LIST
-        =============================================== -->
+      <!-- =================================================
+           TAB: DELIVERIES
+      ================================================== -->
 
-        <section
-          class="dash-panel dash-panel--list"
-        >
+      <section
+        id="panel-deliveries"
+        class="dash-tab-panel"
+        role="tabpanel"
+        aria-labelledby="tab-deliveries"
+        data-panel="deliveries"
+        hidden
+      >
+
+        <div class="dash-section-heading">
+
+          <div>
+            <span class="dash-section-eyebrow">
+              DELIVERY LIBRARY
+            </span>
+
+            <h2>
+              Your deliveries
+            </h2>
+
+            <p>
+              Search, monitor and manage every client hand-off.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            class="dash-btn dash-compact"
+            data-open-tab="create"
+          >
+            + New delivery
+          </button>
+
+        </div>
+
+
+        <section class="dash-panel dash-panel--list">
 
           <div class="dash-list-toolbar">
 
             <h2>
-              Recent deliveries
+              Delivery library
             </h2>
 
 
@@ -671,7 +924,217 @@
 
         </section>
 
-      </div>
+      </section>
+
+
+      <!-- =================================================
+           TAB: ANALYTICS
+      ================================================== -->
+
+      <section
+        id="panel-analytics"
+        class="dash-tab-panel"
+        role="tabpanel"
+        aria-labelledby="tab-analytics"
+        data-panel="analytics"
+        hidden
+      >
+
+        <div class="dash-section-heading">
+
+          <div>
+            <span class="dash-section-eyebrow">
+              DELIVERY ANALYTICS
+            </span>
+
+            <h2>
+              Client activity
+            </h2>
+
+            <p>
+              Understand how clients interact with your delivery links.
+            </p>
+          </div>
+
+        </div>
+
+
+        <!-- MONTHLY -->
+
+        <div class="analytics-period-card">
+
+          <div class="analytics-period-heading">
+
+            <div>
+              <span class="dash-section-eyebrow">
+                THIS MONTH
+              </span>
+
+              <h3>
+                Monthly performance
+              </h3>
+            </div>
+
+            <span class="analytics-period-badge">
+              Current period
+            </span>
+
+          </div>
+
+
+          <div class="analytics-summary-grid">
+
+            <div class="analytics-summary-card">
+
+              <div class="analytics-summary-icon">
+                👁
+              </div>
+
+              <div>
+                <span>
+                  Link Views
+                </span>
+
+                <strong id="delivery-monthly-views">
+                  0
+                </strong>
+
+                <small>
+                  Client page visits
+                </small>
+              </div>
+
+            </div>
+
+
+            <div class="analytics-summary-card">
+
+              <div class="analytics-summary-icon">
+                ↓
+              </div>
+
+              <div>
+                <span>
+                  Downloads
+                </span>
+
+                <strong id="delivery-monthly-downloads">
+                  0
+                </strong>
+
+                <small>
+                  Files downloaded
+                </small>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- LIFETIME -->
+
+        <div class="analytics-period-card">
+
+          <div class="analytics-period-heading">
+
+            <div>
+              <span class="dash-section-eyebrow">
+                LIFETIME
+              </span>
+
+              <h3>
+                All-time performance
+              </h3>
+            </div>
+
+            <span class="analytics-period-badge">
+              All deliveries
+            </span>
+
+          </div>
+
+
+          <div class="analytics-summary-grid">
+
+            <div class="analytics-summary-card">
+
+              <div class="analytics-summary-icon">
+                👁
+              </div>
+
+              <div>
+                <span>
+                  Link Views
+                </span>
+
+                <strong id="delivery-lifetime-views">
+                  0
+                </strong>
+
+                <small>
+                  Total client page visits
+                </small>
+              </div>
+
+            </div>
+
+
+            <div class="analytics-summary-card">
+
+              <div class="analytics-summary-icon">
+                ↓
+              </div>
+
+              <div>
+                <span>
+                  Downloads
+                </span>
+
+                <strong id="delivery-lifetime-downloads">
+                  0
+                </strong>
+
+                <small>
+                  Total files downloaded
+                </small>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- PERFORMANCE INSIGHT -->
+
+        <div class="dash-analytics-note">
+
+          <div class="dash-analytics-note-icon">
+            ↗
+          </div>
+
+          <div>
+
+            <strong>
+              Delivery performance
+            </strong>
+
+            <p>
+              Use these figures to see which projects are
+              being viewed and downloaded by clients. More
+              detailed per-delivery analytics remain available
+              inside each delivery card.
+            </p>
+
+          </div>
+
+        </div>
+
+      </section>
 
     </section>
 
@@ -693,10 +1156,9 @@
 
     <p id="dash-confirm-text"></p>
 
-
     <form method="dialog">
 
-      <button>
+      <button type="button">
         Cancel
       </button>
 
@@ -775,7 +1237,7 @@
 
     <form method="dialog">
 
-      <button>
+      <button type="submit">
         Done
       </button>
 
