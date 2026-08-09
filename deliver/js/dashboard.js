@@ -1,45 +1,810 @@
-import { config } from "./config.js";
-import { getSession, signIn, signOut, onAuthChange } from "./auth.js";
-import { createDelivery, deleteDelivery, duplicateDelivery, listDeliveries } from "./api.js";
-import { countdown, deliveryId, deliveryLink, escapeHtml, formatBytes, formatDate, isValidFile, toast } from "./shared.js";
+import {
+  formatBytes,
+  formatDate,
+  toast,
+  escapeHtml
+} from "./shared.js";
+
+import {
+  listDeliveries,
+  deleteDelivery,
+  duplicateDelivery
+} from "./api.js";
 
 const $ = id => document.getElementById(id);
-const els = { login: $("dash-login-view"), app: $("dash-main-view"), form: $("dash-login-form"), loginError: $("dash-login-error"), loginButton: $("dash-login-btn"), logout: $("dash-logout-link"), upload: $("dash-upload-form"), dropzone: $("dash-dropzone"), input: $("dash-file-input"), files: $("dash-file-list"), progress: $("dash-progress"), bar: $("dash-progress-bar"), submit: $("dash-upload-btn"), list: $("dash-deliveries-list"), search: $("dash-search"), filter: $("dash-filter"), sort: $("dash-sort"), refresh: $("dash-refresh"), modal: $("dash-confirm"), modalText: $("dash-confirm-text"), confirm: $("dash-confirm-action"), success: $("dash-success"), successMeta: $("dash-success-meta"), successLink: $("dash-success-link"), successCopy: $("dash-success-copy"), successOpen: $("dash-success-open"), successStatus: $("dash-success-copy-status") };
-let selected = [], deliveries = [], confirmAction;
-const show = (el, visible) => { el.hidden = !visible; };
-function showLogin(message = "") { show(els.login, true); show(els.app, false); show(els.logout, false); if (message) { els.loginError.textContent = message; els.loginError.hidden = false; } }
-function showApp() { show(els.login, false); show(els.app, true); show(els.logout, true); refresh(); }
-function renderFiles() { els.files.innerHTML = selected.map((file, i) => `<li><span>${escapeHtml(file.name)}</span><small>${formatBytes(file.size)}</small><button type="button" data-remove="${i}" aria-label="Remove ${escapeHtml(file.name)}">×</button></li>`).join(""); }
-function addFiles(incoming) { const candidates = [...incoming]; const invalid = candidates.filter(file => !isValidFile(file)); selected = [...selected, ...candidates.filter(isValidFile)].slice(0, 30); if (invalid.length) toast(`Some files were skipped. Allowed: ${config.allowedExtensions.join(", ")}; max ${formatBytes(config.maxUploadBytes)} each.`, "error"); renderFiles(); }
-function filtered() { const q = els.search.value.trim().toLowerCase(), mode = els.filter.value, sort = els.sort.value; const out = deliveries.filter(d => { const active = !countdown(d.expires_at).expired; return (!q || `${d.project_name} ${d.client_name} ${d.id}`.toLowerCase().includes(q)) && (mode === "all" || (mode === "active") === active); }); return out.sort((a,b) => sort === "name" ? a.project_name.localeCompare(b.project_name) : sort === "downloads" ? b.download_count - a.download_count : new Date(b.created_at) - new Date(a.created_at)); }
-function renderStats() { const active = deliveries.filter(d => !countdown(d.expires_at).expired); $("stat-active-count").textContent = active.length; $("stat-download-count").textContent = deliveries.reduce((n,d) => n + Number(d.download_count || 0), 0); $("stat-storage-used").textContent = formatBytes(deliveries.reduce((n,d) => n + Number(d.file_size || 0), 0)); $("stat-total-count").textContent = deliveries.length; }
-function renderList() { const data = filtered(); els.list.innerHTML = data.length ? data.map(d => { const state = countdown(d.expires_at), amount = d.delivery_files?.length || 1; return `<article class="dash-delivery-item"><div class="dash-delivery-top"><div><h3>${escapeHtml(d.project_name)}</h3><small>${escapeHtml(d.client_name)} · ${escapeHtml(d.id)}</small></div><span class="dash-status-badge ${state.expired ? "dash-status-badge--expired" : "dash-status-badge--active"}">${state.expired ? "Expired" : state.label}</span></div><div class="dash-delivery-meta"><span>${amount} file${amount === 1 ? "" : "s"}</span><span>${formatBytes(d.file_size)}</span><span>${d.download_count || 0} downloads</span><span>${formatDate(d.created_at)}</span></div><div class="dash-delivery-actions"><button data-copy="${escapeHtml(d.id)}">Copy link</button><button data-duplicate="${escapeHtml(d.id)}">Duplicate</button><button class="is-danger" data-delete="${escapeHtml(d.id)}">Delete</button></div></article>`; }).join("") : `<div class="dash-empty-state">No deliveries match this view. Create a polished client delivery to get started.</div>`; }
-async function refresh() { els.list.innerHTML = `<div class="dash-skeleton">Loading deliveries…</div>`; try { deliveries = await listDeliveries(); renderStats(); renderList(); } catch (error) { els.list.innerHTML = `<div class="dash-empty-state">Could not load deliveries. ${escapeHtml(error.message)}</div>`; } }
-async function copy(id) { try { await navigator.clipboard.writeText(deliveryLink(id)); toast("Client link copied."); } catch { toast("Copy is unavailable in this browser. Use the link from the address bar.", "error"); } }
-async function showSuccess(delivery) {
-  const link = deliveryLink(delivery.id);
-  els.successMeta.textContent = `${delivery.client_name} · ${delivery.project_name} · ${delivery.id}`;
-  els.successLink.value = link;
-  els.successOpen.href = link;
-  els.successStatus.hidden = true;
-  try {
-    await navigator.clipboard.writeText(link);
-    els.successStatus.textContent = "Link copied to clipboard.";
-    els.successStatus.hidden = false;
-  } catch {
-    // Clipboard API unavailable/blocked — the link stays visible and
-    // selectable in the input above so it can still be copied manually.
+
+const els = {
+  list: $("delivery-list"),
+  empty: $("delivery-empty"),
+
+  total: $("delivery-total"),
+  active: $("delivery-active"),
+  expired: $("delivery-expired"),
+
+  monthlyViews: $("delivery-monthly-views"),
+  monthlyDownloads: $("delivery-monthly-downloads"),
+
+  lifetimeViews: $("delivery-lifetime-views"),
+  lifetimeDownloads: $("delivery-lifetime-downloads"),
+
+  refresh: $("delivery-refresh")
+};
+
+let deliveries = [];
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function isExpired(delivery) {
+  if (!delivery?.expires_at) {
+    return false;
   }
-  els.success.showModal();
+
+  return new Date(delivery.expires_at).getTime() <= Date.now();
 }
-function ask(message, action) { els.modalText.textContent = message; confirmAction = action; els.modal.showModal(); }
-els.form.addEventListener("submit", async event => { event.preventDefault(); els.loginError.hidden = true; els.loginButton.disabled = true; els.loginButton.textContent = "Signing in…"; try { await signIn($("dash-email").value.trim(), $("dash-password").value); showApp(); } catch (error) { els.loginError.textContent = error.message === "Invalid login credentials" ? "That email and password do not match a user in this Supabase project." : error.message; els.loginError.hidden = false; } finally { els.loginButton.disabled = false; els.loginButton.textContent = "Sign in"; } });
-els.logout.addEventListener("click", async event => { event.preventDefault(); await signOut(); showLogin(); });
-els.dropzone.addEventListener("click", () => els.input.click()); els.input.addEventListener("change", e => addFiles(e.target.files)); ["dragenter","dragover"].forEach(type => els.dropzone.addEventListener(type, e => { e.preventDefault(); els.dropzone.classList.add("is-dragover"); })); ["dragleave","drop"].forEach(type => els.dropzone.addEventListener(type, e => { e.preventDefault(); els.dropzone.classList.remove("is-dragover"); })); els.dropzone.addEventListener("drop", e => addFiles(e.dataTransfer.files));
-els.files.addEventListener("click", e => { const i = e.target.dataset.remove; if (i !== undefined) { selected.splice(Number(i), 1); renderFiles(); } });
-els.upload.addEventListener("submit", async e => { e.preventDefault(); if (!selected.length) return toast("Select at least one file first.", "error"); const client = $("dash-client-name").value.trim(), project = $("dash-project-name").value.trim(); if (!client || !project) return toast("Add both a client name and project title.", "error"); els.submit.disabled = true; show(els.progress, true); try { const hours = Number($("dash-expiry").value) || config.defaultExpiryHours, id = deliveryId(); await createDelivery({ id, client_name: client.slice(0, 120), project_name: project.slice(0, 160), notes: $("dash-notes").value.trim().slice(0, 2000) || null, expires_at: new Date(Date.now() + hours * 3600000).toISOString() }, selected, progress => els.bar.style.width = `${Math.round(progress * 100)}%`); els.upload.reset(); selected = []; renderFiles(); await showSuccess({ id, client_name: client, project_name: project }); await refresh(); } catch (error) { toast(error.message || "Upload failed. No incomplete delivery was created.", "error"); } finally { els.submit.disabled = false; setTimeout(() => { show(els.progress, false); els.bar.style.width = "0%"; }, 500); } });
-[els.search, els.filter, els.sort].forEach(el => el.addEventListener("input", renderList)); els.refresh.addEventListener("click", refresh); els.list.addEventListener("click", e => { const id = e.target.dataset.copy || e.target.dataset.delete || e.target.dataset.duplicate; if (!id) return; const delivery = deliveries.find(d => d.id === id); if (e.target.dataset.copy) copy(id); if (e.target.dataset.delete) ask(`Permanently delete “${delivery.project_name}” and its uploaded files?`, async () => { await deleteDelivery(delivery); toast("Delivery deleted."); refresh(); }); if (e.target.dataset.duplicate) ask(`Create a new delivery record from “${delivery.project_name}”? Upload files again before sharing it.`, async () => { await duplicateDelivery(delivery); toast("Draft delivery duplicated. Upload files before sharing."); refresh(); }); });
-els.successCopy.addEventListener("click", async () => { try { await navigator.clipboard.writeText(els.successLink.value); els.successStatus.textContent = "Link copied to clipboard."; els.successStatus.hidden = false; } catch { els.successLink.select(); toast("Copy is unavailable in this browser. Link is selected — press Ctrl/Cmd+C.", "error"); } });
-els.confirm.addEventListener("click", async () => { try { await confirmAction?.(); els.modal.close(); } catch (error) { toast(error.message || "That action could not be completed.", "error"); } });
-onAuthChange(session => { if (!session && !els.login.hidden) return; if (!session) showLogin(); });
-getSession().then(session => session ? showApp() : showLogin()).catch(error => showLogin(error.message));
+
+
+function getCurrentMonthTotals(items) {
+
+  return items.reduce(
+    (totals, delivery) => {
+
+      totals.views +=
+        Number(
+          delivery.monthly_views || 0
+        );
+
+      totals.downloads +=
+        Number(
+          delivery.monthly_downloads || 0
+        );
+
+      return totals;
+
+    },
+    {
+      views: 0,
+      downloads: 0
+    }
+  );
+
+}
+
+
+function getLifetimeTotals(items) {
+
+  return items.reduce(
+    (totals, delivery) => {
+
+      totals.views +=
+        Number(
+          delivery.lifetime_views ||
+          delivery.view_count ||
+          0
+        );
+
+      totals.downloads +=
+        Number(
+          delivery.lifetime_downloads ||
+          delivery.download_count ||
+          0
+        );
+
+      return totals;
+
+    },
+    {
+      views: 0,
+      downloads: 0
+    }
+  );
+
+}
+
+
+function formatLastActivity(value) {
+
+  if (!value) {
+    return "Never";
+  }
+
+  return formatDate(value);
+}
+
+
+/* =========================================================
+   DASHBOARD SUMMARY
+========================================================= */
+
+function renderSummary() {
+
+  const total =
+    deliveries.length;
+
+  const expired =
+    deliveries.filter(
+      isExpired
+    ).length;
+
+  const active =
+    total - expired;
+
+  const monthly =
+    getCurrentMonthTotals(
+      deliveries
+    );
+
+  const lifetime =
+    getLifetimeTotals(
+      deliveries
+    );
+
+
+  if (els.total) {
+    els.total.textContent =
+      total;
+  }
+
+  if (els.active) {
+    els.active.textContent =
+      active;
+  }
+
+  if (els.expired) {
+    els.expired.textContent =
+      expired;
+  }
+
+
+  if (els.monthlyViews) {
+    els.monthlyViews.textContent =
+      monthly.views;
+  }
+
+  if (els.monthlyDownloads) {
+    els.monthlyDownloads.textContent =
+      monthly.downloads;
+  }
+
+
+  if (els.lifetimeViews) {
+    els.lifetimeViews.textContent =
+      lifetime.views;
+  }
+
+  if (els.lifetimeDownloads) {
+    els.lifetimeDownloads.textContent =
+      lifetime.downloads;
+  }
+
+}
+
+
+/* =========================================================
+   DELIVERY CARD
+========================================================= */
+
+function renderDelivery(delivery) {
+
+  const expired =
+    isExpired(delivery);
+
+  const monthlyViews =
+    Number(
+      delivery.monthly_views || 0
+    );
+
+  const monthlyDownloads =
+    Number(
+      delivery.monthly_downloads || 0
+    );
+
+  const lifetimeViews =
+    Number(
+      delivery.lifetime_views ||
+      delivery.view_count ||
+      0
+    );
+
+  const lifetimeDownloads =
+    Number(
+      delivery.lifetime_downloads ||
+      delivery.download_count ||
+      0
+    );
+
+
+  const card =
+    document.createElement("article");
+
+  card.className =
+    "delivery-card";
+
+
+  card.innerHTML = `
+
+    <div class="delivery-card-main">
+
+      <div class="delivery-card-heading">
+
+        <div>
+
+          <h3>
+            ${escapeHtml(
+              delivery.project_name ||
+              "Untitled delivery"
+            )}
+          </h3>
+
+          <p>
+            ${escapeHtml(
+              delivery.client_name ||
+              "Client"
+            )}
+          </p>
+
+        </div>
+
+        <span class="
+          delivery-status
+          ${expired ? "expired" : "active"}
+        ">
+          ${expired ? "Expired" : "Active"}
+        </span>
+
+      </div>
+
+
+      <div class="delivery-meta">
+
+        <span>
+          ID:
+          <strong>
+            ${escapeHtml(
+              delivery.id
+            )}
+          </strong>
+        </span>
+
+        <span>
+          Created:
+          <strong>
+            ${formatDate(
+              delivery.created_at
+            )}
+          </strong>
+        </span>
+
+        <span>
+          Expires:
+          <strong>
+            ${formatDate(
+              delivery.expires_at
+            )}
+          </strong>
+        </span>
+
+      </div>
+
+
+      <div class="delivery-analytics">
+
+        <div class="analytics-section">
+
+          <h4>
+            This Month
+          </h4>
+
+          <div class="analytics-grid">
+
+            <div class="analytics-stat">
+
+              <span class="analytics-label">
+                Link Views
+              </span>
+
+              <strong>
+                ${monthlyViews}
+              </strong>
+
+            </div>
+
+            <div class="analytics-stat">
+
+              <span class="analytics-label">
+                Downloads
+              </span>
+
+              <strong>
+                ${monthlyDownloads}
+              </strong>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="analytics-section">
+
+          <h4>
+            Lifetime
+          </h4>
+
+          <div class="analytics-grid">
+
+            <div class="analytics-stat">
+
+              <span class="analytics-label">
+                Link Views
+              </span>
+
+              <strong>
+                ${lifetimeViews}
+              </strong>
+
+            </div>
+
+            <div class="analytics-stat">
+
+              <span class="analytics-label">
+                Downloads
+              </span>
+
+              <strong>
+                ${lifetimeDownloads}
+              </strong>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <div class="delivery-last-activity">
+
+        <span>
+          Last opened:
+          <strong>
+            ${formatLastActivity(
+              delivery.last_viewed_at
+            )}
+          </strong>
+        </span>
+
+        <span>
+          Last downloaded:
+          <strong>
+            ${formatLastActivity(
+              delivery.last_downloaded_at
+            )}
+          </strong>
+        </span>
+
+      </div>
+
+
+      <div class="delivery-files">
+
+        <strong>
+          Files:
+        </strong>
+
+        <span>
+          ${
+            delivery.delivery_files?.length ||
+            1
+          }
+        </span>
+
+        <span>
+          ${formatBytes(
+            delivery.file_size || 0
+          )}
+        </span>
+
+      </div>
+
+
+      <div class="delivery-actions">
+
+        <button
+          type="button"
+          class="btn-open-delivery"
+          data-id="${escapeHtml(
+            delivery.id
+          )}"
+        >
+          Open Delivery
+        </button>
+
+        <button
+          type="button"
+          class="btn-copy-link"
+          data-id="${escapeHtml(
+            delivery.id
+          )}"
+        >
+          Copy Link
+        </button>
+
+        <button
+          type="button"
+          class="btn-duplicate"
+          data-id="${escapeHtml(
+            delivery.id
+          )}"
+        >
+          Duplicate
+        </button>
+
+        <button
+          type="button"
+          class="btn-delete danger"
+          data-id="${escapeHtml(
+            delivery.id
+          )}"
+        >
+          Delete
+        </button>
+
+      </div>
+
+    </div>
+
+  `;
+
+
+  /* =======================================================
+     OPEN DELIVERY
+  ======================================================= */
+
+  card
+    .querySelector(
+      ".btn-open-delivery"
+    )
+    .addEventListener(
+      "click",
+      () => {
+
+        const url =
+          buildDeliveryUrl(
+            delivery.id
+          );
+
+        window.open(
+          url,
+          "_blank",
+          "noopener,noreferrer"
+        );
+
+      }
+    );
+
+
+  /* =======================================================
+     COPY LINK
+  ======================================================= */
+
+  card
+    .querySelector(
+      ".btn-copy-link"
+    )
+    .addEventListener(
+      "click",
+      async event => {
+
+        const url =
+          buildDeliveryUrl(
+            delivery.id
+          );
+
+        try {
+
+          await navigator.clipboard.writeText(
+            url
+          );
+
+          const button =
+            event.currentTarget;
+
+          const original =
+            button.textContent;
+
+          button.textContent =
+            "Copied!";
+
+          setTimeout(
+            () => {
+              button.textContent =
+                original;
+            },
+            1500
+          );
+
+          toast(
+            "Delivery link copied."
+          );
+
+        } catch (error) {
+
+          console.error(
+            "Clipboard error:",
+            error
+          );
+
+          toast(
+            "Could not copy the link.",
+            "error"
+          );
+
+        }
+
+      }
+    );
+
+
+  /* =======================================================
+     DUPLICATE
+  ======================================================= */
+
+  card
+    .querySelector(
+      ".btn-duplicate"
+    )
+    .addEventListener(
+      "click",
+      async event => {
+
+        const button =
+          event.currentTarget;
+
+        button.disabled =
+          true;
+
+        try {
+
+          await duplicateDelivery(
+            delivery
+          );
+
+          toast(
+            "Delivery duplicated."
+          );
+
+          await load();
+
+        } catch (error) {
+
+          console.error(
+            "Duplicate failed:",
+            error
+          );
+
+          toast(
+            "Could not duplicate delivery.",
+            "error"
+          );
+
+        } finally {
+
+          button.disabled =
+            false;
+
+        }
+
+      }
+    );
+
+
+  /* =======================================================
+     DELETE
+  ======================================================= */
+
+  card
+    .querySelector(
+      ".btn-delete"
+    )
+    .addEventListener(
+      "click",
+      async event => {
+
+        const confirmed =
+          window.confirm(
+            `Delete "${delivery.project_name || "this delivery"}"?\n\nThis cannot be undone.`
+          );
+
+        if (!confirmed) {
+          return;
+        }
+
+        const button =
+          event.currentTarget;
+
+        button.disabled =
+          true;
+
+        try {
+
+          await deleteDelivery(
+            delivery
+          );
+
+          toast(
+            "Delivery deleted."
+          );
+
+          await load();
+
+        } catch (error) {
+
+          console.error(
+            "Delete failed:",
+            error
+          );
+
+          toast(
+            "Could not delete delivery.",
+            "error"
+          );
+
+          button.disabled =
+            false;
+
+        }
+
+      }
+    );
+
+
+  return card;
+}
+
+
+/* =========================================================
+   DELIVERY URL
+========================================================= */
+
+function buildDeliveryUrl(id) {
+
+  const base =
+    new URL(
+      "index.html",
+      window.location.href
+    );
+
+  base.searchParams.set(
+    "id",
+    id
+  );
+
+  return base.href;
+}
+
+
+/* =========================================================
+   RENDER LIST
+========================================================= */
+
+function renderList() {
+
+  if (!els.list) {
+    return;
+  }
+
+  els.list.innerHTML = "";
+
+
+  if (!deliveries.length) {
+
+    if (els.empty) {
+      els.empty.hidden =
+        false;
+    }
+
+    return;
+  }
+
+
+  if (els.empty) {
+    els.empty.hidden =
+      true;
+  }
+
+
+  deliveries.forEach(
+    delivery => {
+
+      els.list.appendChild(
+        renderDelivery(
+          delivery
+        )
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   LOAD
+========================================================= */
+
+async function load() {
+
+  try {
+
+    if (els.refresh) {
+
+      els.refresh.disabled =
+        true;
+
+      els.refresh.textContent =
+        "Refreshing…";
+
+    }
+
+
+    deliveries =
+      await listDeliveries();
+
+
+    renderSummary();
+
+    renderList();
+
+  } catch (error) {
+
+    console.error(
+      "Failed to load deliveries:",
+      error
+    );
+
+    toast(
+      "Could not load deliveries. Please refresh the page.",
+      "error"
+    );
+
+  } finally {
+
+    if (els.refresh) {
+
+      els.refresh.disabled =
+        false;
+
+      els.refresh.textContent =
+        "Refresh";
+
+    }
+
+  }
+
+}
+
+
+/* =========================================================
+   REFRESH BUTTON
+========================================================= */
+
+if (els.refresh) {
+
+  els.refresh.addEventListener(
+    "click",
+    load
+  );
+
+}
+
+
+/* =========================================================
+   INITIAL LOAD
+========================================================= */
+
+load();

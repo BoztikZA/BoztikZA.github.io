@@ -25,13 +25,6 @@ async function requestServerSignedUrl(file, mode) {
     throw error;
   }
 
-  console.log("[Boztik Deliver] Requesting server-side signed URL:", {
-    deliveryId,
-    filePath: file.file_path,
-    fileName: file.file_name,
-    mode
-  });
-
   const response = await fetch(DELIVER_FILE_FUNCTION, {
     method: "POST",
     headers: {
@@ -60,41 +53,14 @@ async function requestServerSignedUrl(file, mode) {
       result?.error ||
       `Edge Function request failed with HTTP ${response.status}.`;
 
-    const error = new Error(message);
-
-    console.error("[Boztik Deliver] Edge Function failed:", {
-      status: response.status,
-      statusText: response.statusText,
-      deliveryId,
-      filePath: file.file_path,
-      mode,
-      result
-    });
-
-    throw error;
+    throw new Error(message);
   }
 
   if (!result?.signedUrl) {
-    const error = new Error(
+    throw new Error(
       "The server did not return a signed download URL."
     );
-
-    console.error("[Boztik Deliver] Invalid Edge Function response:", {
-      deliveryId,
-      filePath: file.file_path,
-      mode,
-      result
-    });
-
-    throw error;
   }
-
-  console.log("[Boztik Deliver] Server-side signed URL received:", {
-    deliveryId,
-    filePath: file.file_path,
-    mode,
-    expiresIn: result.expiresIn
-  });
 
   return result.signedUrl;
 }
@@ -127,14 +93,80 @@ export async function listDeliveries() {
 
   const filesByDelivery = {};
 
-  for (const file of files) {
+  for (const file of files || []) {
     (filesByDelivery[file.delivery_id] ??= []).push(file);
   }
 
-  return deliveries.map(d => ({
-    ...d,
-    delivery_files: filesByDelivery[d.id] || []
-  }));
+  /*
+   * Current-month analytics.
+   *
+   * We calculate the month using UTC so that it matches
+   * Supabase/Postgres date_trunc('month', now()).
+   */
+  const now = new Date();
+
+  const monthStart =
+    new Date(
+      Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        1
+      )
+    )
+      .toISOString()
+      .slice(0, 10);
+
+  const {
+    data: analytics,
+    error: analyticsError
+  } = await supabase()
+    .from("delivery_analytics")
+    .select("*")
+    .in("delivery_id", ids)
+    .eq("month_start", monthStart);
+
+  if (analyticsError) {
+    console.warn(
+      "[Boztik Deliver] Monthly analytics could not be loaded:",
+      analyticsError
+    );
+  }
+
+  const analyticsByDelivery = {};
+
+  for (const row of analytics || []) {
+    analyticsByDelivery[row.delivery_id] = row;
+  }
+
+  return deliveries.map(d => {
+    const monthly =
+      analyticsByDelivery[d.id] || {};
+
+    return {
+      ...d,
+
+      delivery_files:
+        filesByDelivery[d.id] || [],
+
+      monthly_views:
+        Number(monthly.view_count || 0),
+
+      monthly_downloads:
+        Number(monthly.download_count || 0),
+
+      lifetime_views:
+        Number(d.view_count || 0),
+
+      lifetime_downloads:
+        Number(d.download_count || 0),
+
+      last_viewed_at:
+        d.last_viewed_at || null,
+
+      last_downloaded_at:
+        d.last_downloaded_at || null
+    };
+  });
 }
 
 export async function createDelivery(metadata, files, onProgress) {
@@ -155,7 +187,8 @@ export async function createDelivery(metadata, files, onProgress) {
         .upload(path, file, {
           cacheControl: "3600",
           upsert: false,
-          contentType: file.type || "application/octet-stream"
+          contentType:
+            file.type || "application/octet-stream"
         });
 
       if (error) throw error;
@@ -167,7 +200,9 @@ export async function createDelivery(metadata, files, onProgress) {
         file_size: file.size
       });
 
-      onProgress?.((i + 1) / files.length);
+      onProgress?.(
+        (i + 1) / files.length
+      );
     }
 
     const { error } = await supabase()
@@ -177,7 +212,8 @@ export async function createDelivery(metadata, files, onProgress) {
         file_path: uploaded[0].file_path,
         file_name: uploaded[0].file_name,
         file_size: uploaded.reduce(
-          (total, file) => total + file.file_size,
+          (total, file) =>
+            total + file.file_size,
           0
         )
       });
@@ -186,50 +222,37 @@ export async function createDelivery(metadata, files, onProgress) {
 
     deliveryInserted = true;
 
-    const { error: filesError } = await supabase()
+    const {
+      error: filesError
+    } = await supabase()
       .from("delivery_files")
       .insert(uploaded);
 
     if (filesError) throw filesError;
 
   } catch (error) {
+
     console.error(
       "[Boztik Deliver] createDelivery failed — rolling back:",
-      {
-        deliveryId: id,
-        filesUploaded: uploaded.length,
-        deliveryRowInserted: deliveryInserted,
-        message: error?.message,
-        code: error?.code
-      }
+      error
     );
 
     if (uploaded.length) {
-      const { error: removeError } = await supabase()
+      await supabase()
         .storage
         .from(config.storageBucket)
-        .remove(uploaded.map(file => file.file_path));
-
-      if (removeError) {
-        console.error(
-          "[Boztik Deliver] Rollback: failed to remove uploaded storage objects:",
-          removeError
+        .remove(
+          uploaded.map(
+            file => file.file_path
+          )
         );
-      }
     }
 
     if (deliveryInserted) {
-      const { error: deleteError } = await supabase()
+      await supabase()
         .from("deliveries")
         .delete()
         .eq("id", id);
-
-      if (deleteError) {
-        console.error(
-          "[Boztik Deliver] Rollback: failed to delete orphaned deliveries row:",
-          deleteError
-        );
-      }
     }
 
     throw error;
@@ -237,23 +260,33 @@ export async function createDelivery(metadata, files, onProgress) {
 }
 
 export async function deleteDelivery(delivery) {
-  const files = delivery.delivery_files?.length
-    ? delivery.delivery_files
-    : [{ file_path: delivery.file_path }];
+  const files =
+    delivery.delivery_files?.length
+      ? delivery.delivery_files
+      : [{ file_path: delivery.file_path }];
 
-  const { error: storageError } = await supabase()
+  const {
+    error: storageError
+  } = await supabase()
     .storage
     .from(config.storageBucket)
-    .remove(files.map(file => file.file_path));
+    .remove(
+      files.map(
+        file => file.file_path
+      )
+    );
 
-  if (storageError) throw storageError;
+  if (storageError)
+    throw storageError;
 
-  const { error } = await supabase()
-    .from("deliveries")
-    .delete()
-    .eq("id", delivery.id);
+  const { error } =
+    await supabase()
+      .from("deliveries")
+      .delete()
+      .eq("id", delivery.id);
 
-  if (error) throw error;
+  if (error)
+    throw error;
 }
 
 export async function duplicateDelivery(delivery) {
@@ -262,29 +295,40 @@ export async function duplicateDelivery(delivery) {
     id,
     created_at,
     download_count,
+    view_count,
+    last_viewed_at,
+    last_downloaded_at,
     ...copy
   } = delivery;
 
   const newId =
-    `${id}-COPY-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+    `${id}-COPY-${Math.random()
+      .toString(36)
+      .slice(2, 6)
+      .toUpperCase()}`;
 
-  const { error } = await supabase()
-    .from("deliveries")
-    .insert({
-      ...copy,
-      id: newId,
-      project_name: `${copy.project_name} (copy)`,
-      expires_at: new Date(Date.now() + 24 * 3600000).toISOString()
-    });
+  const { error } =
+    await supabase()
+      .from("deliveries")
+      .insert({
+        ...copy,
+        id: newId,
+        project_name:
+          `${copy.project_name} (copy)`,
+        expires_at:
+          new Date(
+            Date.now() +
+            24 * 3600000
+          ).toISOString()
+      });
 
-  if (error) throw error;
+  if (error)
+    throw error;
 
   return newId;
 }
 
 export async function getPublicDelivery(id) {
-  console.log("[Boztik Deliver] Looking up delivery:", id);
-
   const {
     data,
     error
@@ -294,32 +338,14 @@ export async function getPublicDelivery(id) {
     .eq("id", id)
     .maybeSingle();
 
-  console.log("[Boztik Deliver] deliveries_public result:", {
-    data,
-    error
-  });
-
-  if (error) {
-    console.error("[Boztik Deliver] deliveries_public error:", {
-      message: error.message,
-      code: error.code,
-      details: error.details,
-      hint: error.hint
-    });
-
+  if (error)
     throw error;
-  }
 
-  if (!data) {
-    console.warn(
-      "[Boztik Deliver] No matching row in deliveries_public for id:",
-      id
-    );
-
+  if (!data)
     return null;
-  }
 
   try {
+
     const {
       data: files,
       error: filesError
@@ -329,31 +355,15 @@ export async function getPublicDelivery(id) {
       .eq("delivery_id", id)
       .order("created_at");
 
-    console.log(
-      "[Boztik Deliver] delivery_files_public result:",
-      {
-        files,
-        filesError
-      }
-    );
-
-    if (filesError) throw filesError;
+    if (filesError)
+      throw filesError;
 
     return {
       ...data,
       delivery_files: files
     };
 
-  } catch (filesError) {
-    console.error(
-      "[Boztik Deliver] delivery_files_public error — falling back to single-file mode:",
-      {
-        message: filesError.message,
-        code: filesError.code,
-        details: filesError.details,
-        hint: filesError.hint
-      }
-    );
+  } catch {
 
     return {
       ...data,
@@ -362,19 +372,70 @@ export async function getPublicDelivery(id) {
   }
 }
 
-export async function signedDownload(file) {
-  return requestServerSignedUrl(file, "download");
-}
-
-export async function signedPreview(file) {
-  return requestServerSignedUrl(file, "preview");
-}
-
-export async function recordDownload(id) {
-  await supabase().rpc(
-    "increment_delivery_downloads",
+/*
+ * Records a client opening the delivery page.
+ *
+ * This uses the SECURITY DEFINER Supabase RPC created
+ * in the analytics SQL.
+ */
+export async function recordView(id) {
+  const {
+    error
+  } = await supabase().rpc(
+    "record_delivery_view",
     {
       p_delivery_id: id
     }
+  );
+
+  if (error) {
+    console.error(
+      "[Boztik Deliver] recordView failed:",
+      error
+    );
+
+    throw error;
+  }
+}
+
+/*
+ * Records an actual download.
+ *
+ * IMPORTANT:
+ * We use the new analytics RPC instead of the old
+ * increment_delivery_downloads RPC so the lifetime
+ * and monthly counters stay synchronized.
+ */
+export async function recordDownload(id) {
+  const {
+    error
+  } = await supabase().rpc(
+    "record_delivery_download",
+    {
+      p_delivery_id: id
+    }
+  );
+
+  if (error) {
+    console.error(
+      "[Boztik Deliver] recordDownload failed:",
+      error
+    );
+
+    throw error;
+  }
+}
+
+export async function signedDownload(file) {
+  return requestServerSignedUrl(
+    file,
+    "download"
+  );
+}
+
+export async function signedPreview(file) {
+  return requestServerSignedUrl(
+    file,
+    "preview"
   );
 }

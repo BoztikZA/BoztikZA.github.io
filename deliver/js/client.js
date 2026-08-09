@@ -1,5 +1,20 @@
-import { countdown, formatBytes, formatDate, toast, guessMimeType, isPreviewable } from "./shared.js";
-import { getPublicDelivery, recordDownload, signedDownload, signedPreview } from "./api.js";
+import {
+  countdown,
+  formatBytes,
+  formatDate,
+  toast,
+  guessMimeType,
+  isPreviewable
+} from "./shared.js";
+
+import {
+  getPublicDelivery,
+  recordView,
+  recordDownload,
+  signedDownload,
+  signedPreview
+} from "./api.js";
+
 import {
   getImageDimensions,
   parseExif,
@@ -17,16 +32,21 @@ const els = {
   expired: $("deliver-expired"),
   error: $("deliver-error"),
   errorDetail: $("deliver-error-detail"),
+
   title: $("deliver-project-name"),
   client: $("deliver-client-name"),
   id: $("deliver-id-value"),
   size: $("deliver-file-size"),
   date: $("deliver-upload-date"),
+
   notes: $("deliver-notes"),
   notesWrap: $("deliver-notes-wrap"),
+
   count: $("deliver-countdown-label"),
+
   gallery: $("deliver-gallery"),
   all: $("deliver-download-all"),
+
   discover: $("deliver-discover"),
   explore: $("deliver-explore"),
   adSlot: $("deliver-adsense-slot")
@@ -34,6 +54,11 @@ const els = {
 
 let delivery;
 let timer;
+
+
+/* =========================================================
+   PAGE STATE
+========================================================= */
 
 function state(name) {
   ["loading", "active", "expired", "error"].forEach(key => {
@@ -61,6 +86,11 @@ function state(name) {
   }
 }
 
+
+/* =========================================================
+   ADSENSE
+========================================================= */
+
 let adLoaded = false;
 
 function loadAd() {
@@ -78,12 +108,21 @@ function loadAd() {
   }
 }
 
+
+/* =========================================================
+   RENDER FILES
+========================================================= */
+
 function renderFiles(files) {
+
   els.gallery.innerHTML = files.map((file, index) => {
-    const previewable = isPreviewable(file.file_name);
+
+    const previewable =
+      isPreviewable(file.file_name);
 
     return `
       <article class="deliver-file-card">
+
         ${
           previewable
             ? `
@@ -96,14 +135,22 @@ function renderFiles(files) {
             `
             : `
               <div class="deliver-file-icon">
-                ${file.file_name.split(".").pop().toUpperCase()}
+                ${file.file_name
+                  .split(".")
+                  .pop()
+                  .toUpperCase()}
               </div>
             `
         }
 
         <div>
-          <strong>${file.file_name}</strong>
-          <small>${formatBytes(file.file_size)}</small>
+          <strong>
+            ${file.file_name}
+          </strong>
+
+          <small>
+            ${formatBytes(file.file_size)}
+          </small>
         </div>
 
         <div
@@ -117,36 +164,55 @@ function renderFiles(files) {
         >
           Download
         </button>
+
       </article>
     `;
+
   }).join("");
 
-  /*
-   * DOWNLOAD BUTTONS
-   */
+
+  /* =======================================================
+     DOWNLOAD BUTTONS
+  ======================================================= */
+
   els.gallery
     .querySelectorAll("[data-download]")
     .forEach(button => {
+
       button.addEventListener("click", () => {
-        const index = Number(button.dataset.download);
-        download(files[index], button);
+
+        const index =
+          Number(button.dataset.download);
+
+        download(
+          files[index],
+          button
+        );
+
       });
+
     });
 
-  /*
-   * IMAGE PREVIEWS
-   */
+
+  /* =======================================================
+     IMAGE PREVIEWS
+  ======================================================= */
+
   els.gallery
     .querySelectorAll("[data-preview]")
     .forEach(async preview => {
-      const file = files[Number(preview.dataset.preview)];
+
+      const file =
+        files[
+          Number(
+            preview.dataset.preview
+          )
+        ];
 
       try {
-        /*
-         * IMPORTANT:
-         * signedPreview() now expects ONLY the file object.
-         */
-        const url = await signedPreview(file);
+
+        const url =
+          await signedPreview(file);
 
         console.log(
           "[Boztik Deliver] Preview URL for",
@@ -155,19 +221,25 @@ function renderFiles(files) {
           url
         );
 
-        const img = new Image();
+        const img =
+          new Image();
 
-        img.alt = `Preview of ${file.file_name}`;
+        img.alt =
+          `Preview of ${file.file_name}`;
+
         img.loading = "lazy";
 
         img.onload = () => {
+
           console.log(
             "[Boztik Deliver] Preview image loaded successfully:",
             file.file_name
           );
+
         };
 
         img.onerror = () => {
+
           console.error(
             "[Boztik Deliver] Preview image failed to load:",
             {
@@ -178,11 +250,13 @@ function renderFiles(files) {
 
           preview.innerHTML =
             "<span>Preview unavailable</span>";
+
         };
 
         img.src = url;
 
-        const link = document.createElement("a");
+        const link =
+          document.createElement("a");
 
         link.href = url;
         link.target = "_blank";
@@ -196,9 +270,11 @@ function renderFiles(files) {
         link.appendChild(img);
 
         preview.innerHTML = "";
+
         preview.appendChild(link);
 
       } catch (error) {
+
         console.error(
           "[Boztik Deliver] signedPreview() failed:",
           file.file_name,
@@ -208,70 +284,108 @@ function renderFiles(files) {
         preview.innerHTML =
           "<span>Preview unavailable</span>";
       }
+
     });
 
-  /*
-   * FILE INFORMATION
-   */
+
+  /* =======================================================
+     FILE INFORMATION
+  ======================================================= */
+
   els.gallery
     .querySelectorAll("[data-info]")
     .forEach(slot => {
-      const index = Number(slot.dataset.info);
+
+      const index =
+        Number(slot.dataset.info);
 
       renderFileInfo(
         files[index],
         slot
       );
+
     });
+
 }
 
-async function renderFileInfo(file, slot) {
-  const sizeLabel = formatBytes(file.file_size);
-  const mimeType = guessMimeType(file.file_name);
-  const format = formatLabelFor(
-    file.file_name,
-    mimeType
-  );
 
-  const isImage = isPreviewable(
-    file.file_name
-  );
+/* =========================================================
+   FILE INFORMATION
+========================================================= */
+
+async function renderFileInfo(
+  file,
+  slot
+) {
+
+  const sizeLabel =
+    formatBytes(file.file_size);
+
+  const mimeType =
+    guessMimeType(file.file_name);
+
+  const format =
+    formatLabelFor(
+      file.file_name,
+      mimeType
+    );
+
+  const isImage =
+    isPreviewable(
+      file.file_name
+    );
 
   try {
+
     if (isImage) {
 
-      /*
-       * IMPORTANT:
-       * signedPreview() expects ONLY the file.
-       */
-      const url = await signedPreview(file);
+      const url =
+        await signedPreview(file);
 
-      const dims = await getImageDimensions(url);
+      const dims =
+        await getImageDimensions(url);
 
       let exif = null;
 
-      if (mimeType === "image/jpeg") {
-        try {
-          const response = await fetch(url);
-          const buffer = await response.arrayBuffer();
+      if (
+        mimeType ===
+        "image/jpeg"
+      ) {
 
-          exif = await parseExif(buffer);
+        try {
+
+          const response =
+            await fetch(url);
+
+          const buffer =
+            await response.arrayBuffer();
+
+          exif =
+            await parseExif(buffer);
+
         } catch {
-          /*
-           * EXIF is optional.
-           */
+          /* EXIF is optional */
         }
+
       }
 
-      slot.innerHTML = buildImageInfoHTML({
-        fileName: file.file_name,
-        sizeLabel,
-        format,
-        mimeType,
-        width: dims.width,
-        height: dims.height,
-        exif
-      });
+      slot.innerHTML =
+        buildImageInfoHTML({
+          fileName:
+            file.file_name,
+
+          sizeLabel,
+          format,
+          mimeType,
+
+          width:
+            dims.width,
+
+          height:
+            dims.height,
+
+          exif
+        });
 
     } else {
 
@@ -282,53 +396,84 @@ async function renderFileInfo(file, slot) {
           .toLowerCase()
           .endsWith(".pdf")
       ) {
-        try {
-          const url = await signedPreview(file);
 
-          const response = await fetch(url);
-          const buffer = await response.arrayBuffer();
+        try {
+
+          const url =
+            await signedPreview(file);
+
+          const response =
+            await fetch(url);
+
+          const buffer =
+            await response.arrayBuffer();
 
           pageCount =
-            await estimatePdfPageCount(buffer);
+            await estimatePdfPageCount(
+              buffer
+            );
 
         } catch {
-          /*
-           * PDF page count is best effort.
-           */
+          /* PDF page count is best effort */
         }
+
       }
 
-      slot.innerHTML = buildGenericInfoHTML({
-        fileName: file.file_name,
-        sizeLabel,
-        format,
-        mimeType,
-        pageCount
-      });
+      slot.innerHTML =
+        buildGenericInfoHTML({
+          fileName:
+            file.file_name,
+
+          sizeLabel,
+          format,
+          mimeType,
+
+          pageCount
+        });
+
     }
 
   } catch {
-    /*
-     * File information is non-critical.
-     */
+    /* File information is non-critical */
   }
+
 }
 
+
+/* =========================================================
+   COUNTDOWN
+========================================================= */
+
 function updateCountdown() {
-  const value = countdown(
-    delivery.expires_at
-  );
+
+  const value =
+    countdown(
+      delivery.expires_at
+    );
 
   if (value.expired) {
+
     clearInterval(timer);
+
     state("expired");
+
     return;
   }
 
-  els.count.textContent = value.label;
+  els.count.textContent =
+    value.label;
 }
 
-async function download(file, button) {
+
+/* =========================================================
+   DOWNLOAD
+========================================================= */
+
+async function download(
+  file,
+  button
+) {
+
   if (button?.disabled) {
     return;
   }
@@ -337,42 +482,66 @@ async function download(file, button) {
     button?.textContent;
 
   if (button) {
+
     button.disabled = true;
-    button.textContent = "Preparing…";
+
+    button.textContent =
+      "Preparing…";
   }
 
   try {
 
-    /*
-     * IMPORTANT:
-     * signedDownload() expects ONLY the file.
-     */
-    const url = await signedDownload(file);
+    const url =
+      await signedDownload(file);
 
     console.log(
       "[Boztik Deliver] Download URL obtained:",
       file.file_name
     );
 
+
+    /*
+     * Record the download.
+     *
+     * This updates:
+     *
+     * - lifetime download count
+     * - current month download count
+     * - last downloaded timestamp
+     *
+     * We deliberately do NOT allow analytics
+     * failure to stop the client's download.
+     */
+
     recordDownload(
       delivery.id
     ).catch(error => {
+
       console.error(
         "[Boztik Deliver] recordDownload failed:",
         error
       );
+
     });
 
-    const a = document.createElement("a");
+
+    const a =
+      document.createElement("a");
 
     a.href = url;
-    a.download = file.file_name;
+
+    a.download =
+      file.file_name;
 
     document.body.appendChild(a);
+
     a.click();
+
     a.remove();
 
-    toast("Download started.");
+    toast(
+      "Download started."
+    );
 
   } catch (error) {
 
@@ -390,42 +559,63 @@ async function download(file, button) {
   } finally {
 
     if (button) {
+
       button.disabled = false;
-      button.textContent = originalLabel;
+
+      button.textContent =
+        originalLabel;
     }
+
   }
+
 }
 
+
+/* =========================================================
+   INITIALIZE CLIENT DELIVERY
+========================================================= */
+
 async function init() {
+
   const id =
-    new URLSearchParams(location.search)
+    new URLSearchParams(
+      location.search
+    )
       .get("id")
       ?.trim()
       .toUpperCase();
+
 
   if (
     !id ||
     !/^BZ-[A-Z2-9-]+$/.test(id)
   ) {
+
     return state("expired");
   }
+
 
   try {
 
     delivery =
       await getPublicDelivery(id);
 
+
     if (!delivery) {
+
       return state("expired");
     }
+
 
     if (
       countdown(
         delivery.expires_at
       ).expired
     ) {
+
       return state("expired");
     }
+
 
     els.title.textContent =
       delivery.project_name ||
@@ -449,34 +639,76 @@ async function init() {
         delivery.created_at
       );
 
+
     if (delivery.notes) {
+
       els.notes.textContent =
         delivery.notes;
 
-      els.notesWrap.hidden = false;
+      els.notesWrap.hidden =
+        false;
     }
+
+
+    /*
+     * -------------------------------------------------------
+     * RECORD DELIVERY PAGE VIEW
+     * -------------------------------------------------------
+     *
+     * This happens once after:
+     *
+     * 1. The delivery has been found
+     * 2. The delivery is valid
+     * 3. The delivery has not expired
+     *
+     * If analytics fails, the client should STILL receive
+     * their delivery normally.
+     */
+
+    recordView(
+      delivery.id
+    ).catch(error => {
+
+      console.error(
+        "[Boztik Deliver] recordView failed:",
+        error
+      );
+
+    });
+
 
     /*
      * Make sure every fallback file has
      * the delivery ID as well as its path.
      */
+
     const files =
       delivery.delivery_files?.length
         ? delivery.delivery_files
         : [
             {
-              delivery_id: delivery.id,
-              file_path: delivery.file_path,
-              file_name: delivery.file_name,
-              file_size: delivery.file_size
+              delivery_id:
+                delivery.id,
+
+              file_path:
+                delivery.file_path,
+
+              file_name:
+                delivery.file_name,
+
+              file_size:
+                delivery.file_size
             }
           ];
 
+
     renderFiles(files);
 
-    /*
-     * DOWNLOAD ALL
-     */
+
+    /* =======================================================
+       DOWNLOAD ALL
+    ======================================================= */
+
     els.all.addEventListener(
       "click",
       async () => {
@@ -495,26 +727,35 @@ async function init() {
 
         try {
 
-          for (const file of files) {
+          for (
+            const file of files
+          ) {
+
             await download(file);
+
           }
 
         } finally {
 
           els.all.disabled = false;
+
           els.all.textContent =
             original;
         }
+
       }
     );
 
+
     updateCountdown();
+
 
     timer =
       setInterval(
         updateCountdown,
         30000
       );
+
 
     state("active");
 
@@ -526,22 +767,34 @@ async function init() {
     );
 
     showError(error);
+
   }
+
 }
 
+
+/* =========================================================
+   ERROR HANDLING
+========================================================= */
+
 function showError(error) {
+
   if (els.errorDetail) {
 
     const parts = [];
 
     if (error?.message) {
-      parts.push(error.message);
+      parts.push(
+        error.message
+      );
     }
 
     if (error?.code) {
+
       parts.push(
         `(code: ${error.code})`
       );
+
     }
 
     els.errorDetail.textContent =
@@ -549,15 +802,18 @@ function showError(error) {
         ? `Diagnostic: ${parts.join(" ")}`
         : "Diagnostic: no error details were available.";
 
-    els.errorDetail.hidden = false;
+    els.errorDetail.hidden =
+      false;
   }
 
   state("error");
 }
 
-/*
- * Safety net for unexpected JavaScript errors.
- */
+
+/* =========================================================
+   SAFETY NET
+========================================================= */
+
 window.addEventListener(
   "error",
   event => {
@@ -572,6 +828,7 @@ window.addEventListener(
       els.loading &&
       !els.loading.hidden
     ) {
+
       showError(
         event.error || {
           message:
@@ -581,9 +838,12 @@ window.addEventListener(
             )
         }
       );
+
     }
+
   }
 );
+
 
 window.addEventListener(
   "unhandledrejection",
@@ -598,14 +858,22 @@ window.addEventListener(
       els.loading &&
       !els.loading.hidden
     ) {
+
       showError(
         event.reason || {
           message:
             "Unknown unhandled rejection"
         }
       );
+
     }
+
   }
 );
+
+
+/* =========================================================
+   START
+========================================================= */
 
 init();
