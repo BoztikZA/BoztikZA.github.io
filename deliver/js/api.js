@@ -73,20 +73,28 @@ function logStorageError(fnName, file, error) {
   });
 }
 
-export async function signedDownload(file) {
-  if (!file?.file_path) { const error = new Error("signedDownload: file.file_path is missing — cannot request a signed URL for an unknown object."); console.error("[Boztik Deliver]", error.message, { file }); throw error; }
-  console.log("[Boztik Deliver] signedDownload requesting:", { file_path: file.file_path, file_name: file.file_name, bucket: config.storageBucket });
-  const { data, error } = await supabase().storage.from(config.storageBucket).createSignedUrl(file.file_path, 60, { download: file.file_name });
-  console.log("[Boztik Deliver] signedDownload result:", { data, error });
-  if (error) { logStorageError("signedDownload", file, error); throw error; }
-  return data.signedUrl;
+async function requestServerSignedUrl(deliveryId, file, mode) {
+  if (!file?.file_path) { const error = new Error(`requestServerSignedUrl: file.file_path is missing (mode: ${mode}).`); console.error("[Boztik Deliver]", error.message, { file }); throw error; }
+  if (!deliveryId) { const error = new Error("requestServerSignedUrl: no deliveryId provided."); console.error("[Boztik Deliver]", error.message); throw error; }
+  console.log(`[Boztik Deliver] Requesting server-signed URL (${mode}):`, { deliveryId, file_path: file.file_path });
+  const response = await fetch(`${config.supabaseUrl}/functions/v1/deliver-file`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "apikey": config.supabaseAnonKey, "Authorization": `Bearer ${config.supabaseAnonKey}` },
+    body: JSON.stringify({ deliveryId, filePath: file.file_path, mode })
+  });
+  let payload;
+  try { payload = await response.json(); } catch { payload = null; }
+  console.log(`[Boztik Deliver] deliver-file (${mode}) response:`, { status: response.status, payload });
+  if (!response.ok || !payload?.signedUrl) {
+    const error = new Error(payload?.message || payload?.error || `deliver-file returned ${response.status}`);
+    error.statusCode = response.status;
+    error.code = payload?.error;
+    logStorageError(mode === "preview" ? "signedPreview" : "signedDownload", file, error);
+    throw error;
+  }
+  return payload.signedUrl;
 }
-export async function signedPreview(file) {
-  if (!file?.file_path) { const error = new Error("signedPreview: file.file_path is missing — cannot request a signed URL for an unknown object."); console.error("[Boztik Deliver]", error.message, { file }); throw error; }
-  console.log("[Boztik Deliver] signedPreview requesting:", { file_path: file.file_path, file_name: file.file_name, bucket: config.storageBucket });
-  const { data, error } = await supabase().storage.from(config.storageBucket).createSignedUrl(file.file_path, 300);
-  console.log("[Boztik Deliver] signedPreview result:", { data, error });
-  if (error) { logStorageError("signedPreview", file, error); throw error; }
-  return data.signedUrl;
-}
+
+export async function signedDownload(deliveryId, file) { return requestServerSignedUrl(deliveryId, file, "download"); }
+export async function signedPreview(deliveryId, file) { return requestServerSignedUrl(deliveryId, file, "preview"); }
 export async function recordDownload(id) { await supabase().rpc("increment_delivery_downloads", { p_delivery_id: id }); }

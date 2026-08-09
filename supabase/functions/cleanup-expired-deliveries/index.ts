@@ -1,66 +1,90 @@
-// =========================================================
-// BOZTIK DELIVER — cleanup-expired-deliveries
-// Supabase Edge Function
+// Boztik Deliver — deliver-file Edge Function
 //
-// Deletes storage objects and rows for deliveries whose expires_at
-// has passed. GitHub Pages is static and can't run this on a
-// schedule itself, so this function is deployed to Supabase and
-// invoked on a cron schedule (see supabase/CLEANUP_SETUP.md).
+// Runs server-side only. Uses the service-role key (from environment,
+// never sent to or stored in the browser) to validate a delivery/file
+// request and mint a short-lived signed Storage URL. Replaces direct
+// anon-role createSignedUrl() calls from the browser.
 //
-// Deploy:
-//   supabase functions deploy cleanup-expired-deliveries
-//   supabase secrets set SUPABASE_SERVICE_ROLE_KEY=... (auto-available
-//     as SUPABASE_SERVICE_ROLE_KEY in the function runtime already)
-// =========================================================
+// Deploy: supabase functions deploy deliver-file
+// Required secrets (see deployment notes below):
+//   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY — auto-provided by Supabase
+//   ALLOWED_ORIGIN — e.g. https://boztikza.github.io
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+const ALLOWED_ORIGIN = Deno.env.get("ALLOWED_ORIGIN") ?? "https://boztikza.github.io";
+const STORAGE_BUCKET = "deliveries";
+const PREVIEW_TTL_SECONDS = 300;
+const DOWNLOAD_TTL_SECONDS = 60;
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
+function json(body: unknown, status = 200) {
+  return new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+}
+
 Deno.serve(async (req) => {
-  // Optional shared-secret check so this endpoint can't be triggered
-  // by randoms — set CLEANUP_SECRET as a function secret and pass it
-  // as a header from your cron trigger.
-  const expectedSecret = Deno.env.get("CLEANUP_SECRET");
-  if (expectedSecret) {
-    const provided = req.headers.get("x-cleanup-secret");
-    if (provided !== expectedSecret) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
-    }
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
+
+  let body: { deliveryId?: string; filePath?: string; mode?: string };
+  try {
+    body = await req.json();
+  } catch {
+    return json({ error: "invalid_request", message: "Request body must be JSON." }, 400);
   }
 
-  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const { deliveryId, filePath, mode } = body;
+  if (!deliveryId || typeof deliveryId !== "string") return json({ error: "invalid_delivery_id" }, 400);
+  if (!filePath || typeof filePath !== "string") return json({ error: "invalid_file_path" }, 400);
+  if (mode !== "preview" && mode !== "download") return json({ error: "invalid_mode", message: "mode must be 'preview' or 'download'." }, 400);
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!supabaseUrl || !serviceRoleKey) return json({ error: "server_misconfigured" }, 500);
+
+  // Service-role client — bypasses RLS deliberately, since THIS function
+  // is now the trust boundary instead of anon-role Storage policies.
   const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-  const { data: expired, error: fetchError } = await supabase
+  const { data: delivery, error: deliveryError } = await supabase
     .from("deliveries")
-    .select("id, file_path")
-    .lt("expires_at", new Date().toISOString());
+    .select("id, expires_at, file_path")
+    .eq("id", deliveryId)
+    .maybeSingle();
 
-  if (fetchError) {
-    return new Response(JSON.stringify({ error: fetchError.message }), { status: 500 });
+  if (deliveryError) return json({ error: "lookup_failed", message: deliveryError.message }, 500);
+  if (!delivery) return json({ error: "delivery_not_found" }, 404);
+  if (new Date(delivery.expires_at).getTime() <= Date.now()) return json({ error: "delivery_expired" }, 410);
+
+  // Verify the requested file actually belongs to this delivery — checks
+  // both the multi-file table and the legacy single-file column, so one
+  // delivery's ID can never be used to sign a path from another delivery.
+  let belongsToDelivery = delivery.file_path === filePath;
+  if (!belongsToDelivery) {
+    const { data: fileRow, error: fileError } = await supabase
+      .from("delivery_files")
+      .select("file_path")
+      .eq("delivery_id", deliveryId)
+      .eq("file_path", filePath)
+      .maybeSingle();
+    if (fileError) return json({ error: "lookup_failed", message: fileError.message }, 500);
+    belongsToDelivery = !!fileRow;
   }
+  if (!belongsToDelivery) return json({ error: "file_not_in_delivery" }, 403);
 
-  if (!expired || expired.length === 0) {
-    return new Response(JSON.stringify({ deleted: 0, message: "Nothing to clean up." }), {
-      headers: { "Content-Type": "application/json" }
-    });
-  }
+  const ttl = mode === "preview" ? PREVIEW_TTL_SECONDS : DOWNLOAD_TTL_SECONDS;
+  const signOptions = mode === "download" ? { download: filePath.split("/").pop() } : undefined;
 
-  const paths = expired.map((d) => d.file_path);
-  const ids = expired.map((d) => d.id);
+  const { data: signed, error: signError } = await supabase.storage
+    .from(STORAGE_BUCKET)
+    .createSignedUrl(filePath, ttl, signOptions);
 
-  const { error: storageError } = await supabase.storage.from("deliveries").remove(paths);
-  if (storageError) {
-    console.error("Storage cleanup error:", storageError.message);
-  }
+  if (signError || !signed) return json({ error: "signing_failed", message: signError?.message ?? "Unknown signing error" }, 502);
 
-  const { error: dbError } = await supabase.from("deliveries").delete().in("id", ids);
-  if (dbError) {
-    return new Response(JSON.stringify({ error: dbError.message }), { status: 500 });
-  }
-
-  return new Response(
-    JSON.stringify({ deleted: ids.length, ids }),
-    { headers: { "Content-Type": "application/json" } }
-  );
+  return json({ signedUrl: signed.signedUrl, expiresIn: ttl });
 });
