@@ -105,17 +105,25 @@ export async function estimatePdfPageCount(arrayBuffer) {
   } catch { return null; }
 }
 
-function row(label, value) { return value === undefined || value === null || value === "" ? "" : `<div class="fileinfo-row"><span>${label}</span><strong>${value}</strong></div>`; }
+function row(label, value) { return value === undefined || value === null || value === "" ? "" : `<div class="fileinfo-item"><span>${label}</span><strong>${value}</strong></div>`; }
+function chip(value) { return value === undefined || value === null || value === "" ? "" : `<span class="fileinfo-chip">${value}</span>`; }
 
+// Compact glance row (format / dimensions / size) shown immediately, plus a
+// single collapsible <details> for everything else — full spec sheet and
+// print/output estimates stay one click away instead of dominating the card.
 export function buildImageInfoHTML({ fileName, sizeLabel, format, mimeType, width, height, exif }) {
   const megapixels = (width * height) / 1_000_000;
   const orientation = width === height ? "Square" : width > height ? "Landscape" : "Portrait";
+
+  const chips = [
+    chip(format),
+    chip(`${width} × ${height}px`),
+    chip(`${megapixels.toFixed(1)} MP`)
+  ].join("");
+
   const rows = [
     row("Filename", fileName),
-    row("Format", format),
     row("File size", sizeLabel),
-    row("Resolution", `${width} × ${height} px`),
-    row("Megapixels", `${megapixels.toFixed(1)} MP`),
     row("Aspect ratio", aspectRatio(width, height)),
     row("Orientation", orientation),
     row("Color", exif?.colorSpace === 1 ? "RGB" : ""),
@@ -133,29 +141,50 @@ export function buildImageInfoHTML({ fileName, sizeLabel, format, mimeType, widt
 
   const print = width && height ? `
     <div class="fileinfo-print">
-      <h4>Print &amp; output</h4>
-      <p class="fileinfo-hint">Estimated print size at common resolutions:</p>
-      <div class="fileinfo-row"><span>300 DPI</span><strong>${printSize(width, 300)} × ${printSize(height, 300)} in</strong></div>
-      <div class="fileinfo-row"><span>240 DPI</span><strong>${printSize(width, 240)} × ${printSize(height, 240)} in</strong></div>
-      <div class="fileinfo-row"><span>150 DPI</span><strong>${printSize(width, 150)} × ${printSize(height, 150)} in</strong></div>
-      <div class="fileinfo-row"><span>Resolution</span><strong>${megapixels.toFixed(1)} MP</strong></div>
-      <div class="fileinfo-row"><span>Print suitability</span><strong>${qualitySummary(megapixels)}</strong></div>
+      <h5>Print &amp; output</h5>
+      <div class="fileinfo-grid">
+        ${row("300 DPI", `${printSize(width, 300)} × ${printSize(height, 300)} in`)}
+        ${row("240 DPI", `${printSize(width, 240)} × ${printSize(height, 240)} in`)}
+        ${row("150 DPI", `${printSize(width, 150)} × ${printSize(height, 150)} in`)}
+        ${row("Best for", qualitySummary(megapixels))}
+      </div>
     </div>` : "";
 
-  return `<div class="fileinfo-card"><h4>File information</h4>${rows.join("")}</div>${print}`;
+  return `
+    <div class="fileinfo-chips">${chips}</div>
+    <details class="fileinfo-details">
+      <summary>File details</summary>
+      <div class="fileinfo-body">
+        <div class="fileinfo-grid">${rows.join("")}</div>
+        ${print}
+      </div>
+    </details>`;
 }
 
 export function buildGenericInfoHTML({ fileName, sizeLabel, format, mimeType, pageCount }) {
   const ext = extOf(fileName);
+
+  const chips = [
+    chip(FILE_TYPE_LABELS[ext] || format),
+    chip(sizeLabel),
+    ext === "pdf" && pageCount ? chip(`${pageCount} page${pageCount === 1 ? "" : "s"}`) : ""
+  ].join("");
+
   const rows = [
     row("Filename", fileName),
     row("Format", format),
-    row("File size", sizeLabel),
-    row("File type", FILE_TYPE_LABELS[ext] || "File"),
     row("MIME type", mimeType),
     ext === "pdf" ? row("Pages", pageCount) : ""
   ];
-  return `<div class="fileinfo-card"><h4>File information</h4>${rows.join("")}</div>`;
+
+  return `
+    <div class="fileinfo-chips">${chips}</div>
+    <details class="fileinfo-details">
+      <summary>File details</summary>
+      <div class="fileinfo-body">
+        <div class="fileinfo-grid">${rows.join("")}</div>
+      </div>
+    </details>`;
 }
 
 export function formatLabelFor(fileName, mimeType) {

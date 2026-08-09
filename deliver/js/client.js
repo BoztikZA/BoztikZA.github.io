@@ -163,17 +163,18 @@ function renderFiles(files) {
           </small>
         </div>
 
-        <div
-          class="fileinfo-slot"
-          data-info="${index}"
-        ></div>
-
         <button
+          class="deliver-file-download"
           type="button"
           data-download="${index}"
         >
           Download
         </button>
+
+        <div
+          class="fileinfo-slot"
+          data-info="${index}"
+        ></div>
 
       </article>
     `;
