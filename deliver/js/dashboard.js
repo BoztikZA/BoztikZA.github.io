@@ -1,52 +1,485 @@
 import {
+  supabase,
   formatBytes,
   formatDate,
   toast,
-  escapeHtml
+  escapeHtml,
+  deliveryId,
+  isValidFile
 } from "./shared.js";
 
 import {
   listDeliveries,
+  createDelivery,
   deleteDelivery,
   duplicateDelivery
 } from "./api.js";
 
-const $ = id => document.getElementById(id);
-
-const els = {
-  list: $("delivery-list"),
-  empty: $("delivery-empty"),
-
-  total: $("delivery-total"),
-  active: $("delivery-active"),
-  expired: $("delivery-expired"),
-
-  monthlyViews: $("delivery-monthly-views"),
-  monthlyDownloads: $("delivery-monthly-downloads"),
-
-  lifetimeViews: $("delivery-lifetime-views"),
-  lifetimeDownloads: $("delivery-lifetime-downloads"),
-
-  refresh: $("delivery-refresh")
-};
-
-let deliveries = [];
+import {
+  config
+} from "./config.js";
 
 
 /* =========================================================
-   HELPERS
+   DOM HELPER
+========================================================= */
+
+const $ = id => document.getElementById(id);
+
+
+/* =========================================================
+   ELEMENTS
+========================================================= */
+
+const els = {
+
+  /* Authentication */
+  loginView: $("dash-login-view"),
+  mainView: $("dash-main-view"),
+
+  loginForm: $("dash-login-form"),
+  email: $("dash-email"),
+  password: $("dash-password"),
+  loginButton: $("dash-login-btn"),
+  loginError: $("dash-login-error"),
+  logout: $("dash-logout-link"),
+
+  /* Dashboard */
+  refresh: $("dash-refresh"),
+
+  /* Statistics */
+  activeCount: $("stat-active-count"),
+  downloadCount: $("stat-download-count"),
+  storageUsed: $("stat-storage-used"),
+  totalCount: $("stat-total-count"),
+
+  /* Analytics */
+  monthlyViews: $("delivery-monthly-views"),
+  monthlyDownloads: $("delivery-monthly-downloads"),
+  lifetimeViews: $("delivery-lifetime-views"),
+  lifetimeDownloads: $("delivery-lifetime-downloads"),
+
+  /* Upload */
+  uploadForm: $("dash-upload-form"),
+  dropzone: $("dash-dropzone"),
+  fileInput: $("dash-file-input"),
+  fileList: $("dash-file-list"),
+
+  clientName: $("dash-client-name"),
+  projectName: $("dash-project-name"),
+  notes: $("dash-notes"),
+  expiry: $("dash-expiry"),
+
+  progress: $("dash-progress"),
+  progressBar: $("dash-progress-bar"),
+  uploadButton: $("dash-upload-btn"),
+
+  /* Deliveries */
+  deliveriesList: $("dash-deliveries-list"),
+  search: $("dash-search"),
+  filter: $("dash-filter"),
+  sort: $("dash-sort"),
+
+  /* Confirmation */
+  confirmDialog: $("dash-confirm"),
+  confirmText: $("dash-confirm-text"),
+  confirmAction: $("dash-confirm-action"),
+
+  /* Success */
+  successDialog: $("dash-success"),
+  successMeta: $("dash-success-meta"),
+  successLink: $("dash-success-link"),
+  successCopy: $("dash-success-copy"),
+  successCopyStatus: $("dash-success-copy-status"),
+  successOpen: $("dash-success-open")
+
+};
+
+
+/* =========================================================
+   STATE
+========================================================= */
+
+let deliveries = [];
+let selectedFiles = [];
+let pendingConfirmAction = null;
+
+
+/* =========================================================
+   AUTHENTICATION
+========================================================= */
+
+function showLogin() {
+
+  if (els.loginView) {
+    els.loginView.hidden = false;
+  }
+
+  if (els.mainView) {
+    els.mainView.hidden = true;
+  }
+
+  if (els.logout) {
+    els.logout.hidden = true;
+  }
+
+}
+
+
+function showDashboard() {
+
+  if (els.loginView) {
+    els.loginView.hidden = true;
+  }
+
+  if (els.mainView) {
+    els.mainView.hidden = false;
+  }
+
+  if (els.logout) {
+    els.logout.hidden = false;
+  }
+
+}
+
+
+function setLoginError(message) {
+
+  if (!els.loginError) {
+    return;
+  }
+
+  els.loginError.textContent =
+    message || "";
+
+  els.loginError.hidden =
+    !message;
+
+}
+
+
+function setLoginLoading(loading) {
+
+  if (!els.loginButton) {
+    return;
+  }
+
+  els.loginButton.disabled =
+    loading;
+
+  els.loginButton.textContent =
+    loading
+      ? "Signing in…"
+      : "Sign in";
+
+}
+
+
+function friendlyAuthError(error) {
+
+  const message =
+    error?.message ||
+    "";
+
+  const normalized =
+    message.toLowerCase();
+
+
+  if (
+    normalized.includes(
+      "invalid login credentials"
+    )
+  ) {
+
+    return (
+      "The email or password is incorrect. " +
+      "Please check your credentials and try again."
+    );
+
+  }
+
+
+  if (
+    normalized.includes(
+      "email not confirmed"
+    )
+  ) {
+
+    return (
+      "This administrator email has not been confirmed in Supabase."
+    );
+
+  }
+
+
+  if (
+    normalized.includes(
+      "failed to fetch"
+    ) ||
+    normalized.includes(
+      "network"
+    )
+  ) {
+
+    return (
+      "Could not connect to Supabase. " +
+      "Please check your internet connection and try again."
+    );
+
+  }
+
+
+  return (
+    message ||
+    "Unable to sign in. Please try again."
+  );
+
+}
+
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+async function handleLogin(event) {
+
+  event.preventDefault();
+
+  setLoginError("");
+
+  const email =
+    els.email?.value.trim();
+
+  const password =
+    els.password?.value || "";
+
+
+  if (!email || !password) {
+
+    setLoginError(
+      "Please enter your email and password."
+    );
+
+    return;
+  }
+
+
+  setLoginLoading(true);
+
+
+  try {
+
+    const client =
+      supabase();
+
+
+    const {
+      data,
+      error
+    } =
+      await client.auth.signInWithPassword({
+        email,
+        password
+      });
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    if (!data?.session) {
+
+      throw new Error(
+        "Login succeeded but no active session was created."
+      );
+
+    }
+
+
+    setLoginError("");
+
+    if (els.password) {
+      els.password.value = "";
+    }
+
+    showDashboard();
+
+    await load();
+
+
+  } catch (error) {
+
+    console.error(
+      "[Boztik Deliver] Login failed:",
+      error
+    );
+
+    setLoginError(
+      friendlyAuthError(error)
+    );
+
+  } finally {
+
+    setLoginLoading(false);
+
+  }
+
+}
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+async function handleLogout(event) {
+
+  event.preventDefault();
+
+
+  try {
+
+    const client =
+      supabase();
+
+    const {
+      error
+    } =
+      await client.auth.signOut();
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    deliveries = [];
+
+    showLogin();
+
+    setLoginError("");
+
+    toast(
+      "You have been logged out."
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "[Boztik Deliver] Logout failed:",
+      error
+    );
+
+    toast(
+      "Could not log out. Please try again.",
+      "error"
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   AUTH SESSION CHECK
+========================================================= */
+
+async function initialiseAuthentication() {
+
+  try {
+
+    const client =
+      supabase();
+
+
+    const {
+      data,
+      error
+    } =
+      await client.auth.getSession();
+
+
+    if (error) {
+      throw error;
+    }
+
+
+    if (data?.session) {
+
+      showDashboard();
+
+      await load();
+
+    } else {
+
+      showLogin();
+
+    }
+
+
+    client.auth.onAuthStateChange(
+      async (_event, session) => {
+
+        if (session) {
+
+          showDashboard();
+
+        } else {
+
+          deliveries = [];
+
+          showLogin();
+
+        }
+
+      }
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "[Boztik Deliver] Authentication initialisation failed:",
+      error
+    );
+
+    showLogin();
+
+    setLoginError(
+      "Could not initialise secure login. " +
+      "Please refresh the page and try again."
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   EXPIRY
 ========================================================= */
 
 function isExpired(delivery) {
+
   if (!delivery?.expires_at) {
     return false;
   }
 
-  return new Date(delivery.expires_at).getTime() <= Date.now();
+  return (
+    new Date(
+      delivery.expires_at
+    ).getTime() <= Date.now()
+  );
+
 }
 
 
-function getCurrentMonthTotals(items) {
+/* =========================================================
+   ANALYTICS TOTALS
+========================================================= */
+
+function getMonthlyTotals(items) {
 
   return items.reduce(
     (totals, delivery) => {
@@ -104,18 +537,8 @@ function getLifetimeTotals(items) {
 }
 
 
-function formatLastActivity(value) {
-
-  if (!value) {
-    return "Never";
-  }
-
-  return formatDate(value);
-}
-
-
 /* =========================================================
-   DASHBOARD SUMMARY
+   SUMMARY
 ========================================================= */
 
 function renderSummary() {
@@ -123,18 +546,44 @@ function renderSummary() {
   const total =
     deliveries.length;
 
+
   const expired =
     deliveries.filter(
       isExpired
     ).length;
 
+
   const active =
     total - expired;
 
+
+  const downloads =
+    deliveries.reduce(
+      (sum, delivery) =>
+        sum +
+        Number(
+          delivery.download_count || 0
+        ),
+      0
+    );
+
+
+  const storage =
+    deliveries.reduce(
+      (sum, delivery) =>
+        sum +
+        Number(
+          delivery.file_size || 0
+        ),
+      0
+    );
+
+
   const monthly =
-    getCurrentMonthTotals(
+    getMonthlyTotals(
       deliveries
     );
+
 
   const lifetime =
     getLifetimeTotals(
@@ -142,42 +591,223 @@ function renderSummary() {
     );
 
 
-  if (els.total) {
-    els.total.textContent =
-      total;
-  }
+  if (els.activeCount) {
 
-  if (els.active) {
-    els.active.textContent =
+    els.activeCount.textContent =
       active;
+
   }
 
-  if (els.expired) {
-    els.expired.textContent =
-      expired;
+
+  if (els.downloadCount) {
+
+    els.downloadCount.textContent =
+      downloads;
+
+  }
+
+
+  if (els.storageUsed) {
+
+    els.storageUsed.textContent =
+      formatBytes(storage);
+
+  }
+
+
+  if (els.totalCount) {
+
+    els.totalCount.textContent =
+      total;
+
   }
 
 
   if (els.monthlyViews) {
+
     els.monthlyViews.textContent =
       monthly.views;
+
   }
 
+
   if (els.monthlyDownloads) {
+
     els.monthlyDownloads.textContent =
       monthly.downloads;
+
   }
 
 
   if (els.lifetimeViews) {
+
     els.lifetimeViews.textContent =
       lifetime.views;
+
   }
 
+
   if (els.lifetimeDownloads) {
+
     els.lifetimeDownloads.textContent =
       lifetime.downloads;
+
   }
+
+}
+
+
+/* =========================================================
+   DELIVERY URL
+========================================================= */
+
+function buildDeliveryUrl(id) {
+
+  const url =
+    new URL(
+      "index.html",
+      window.location.href
+    );
+
+
+  url.searchParams.set(
+    "id",
+    id
+  );
+
+
+  return url.href;
+
+}
+
+
+/* =========================================================
+   FILTER / SORT
+========================================================= */
+
+function getVisibleDeliveries() {
+
+  let items =
+    [...deliveries];
+
+
+  const searchTerm =
+    els.search?.value
+      .trim()
+      .toLowerCase() ||
+    "";
+
+
+  const filter =
+    els.filter?.value ||
+    "all";
+
+
+  const sort =
+    els.sort?.value ||
+    "recent";
+
+
+  if (searchTerm) {
+
+    items =
+      items.filter(
+        delivery => {
+
+          const project =
+            String(
+              delivery.project_name || ""
+            ).toLowerCase();
+
+          const client =
+            String(
+              delivery.client_name || ""
+            ).toLowerCase();
+
+          return (
+            project.includes(
+              searchTerm
+            ) ||
+            client.includes(
+              searchTerm
+            )
+          );
+
+        }
+      );
+
+  }
+
+
+  if (filter === "active") {
+
+    items =
+      items.filter(
+        delivery =>
+          !isExpired(delivery)
+      );
+
+  }
+
+
+  if (filter === "expired") {
+
+    items =
+      items.filter(
+        delivery =>
+          isExpired(delivery)
+      );
+
+  }
+
+
+  if (sort === "name") {
+
+    items.sort(
+      (a, b) =>
+        String(
+          a.project_name || ""
+        ).localeCompare(
+          String(
+            b.project_name || ""
+          )
+        )
+    );
+
+  }
+
+
+  if (sort === "downloads") {
+
+    items.sort(
+      (a, b) =>
+        Number(
+          b.download_count || 0
+        ) -
+        Number(
+          a.download_count || 0
+        )
+    );
+
+  }
+
+
+  if (sort === "recent") {
+
+    items.sort(
+      (a, b) =>
+        new Date(
+          b.created_at || 0
+        ) -
+        new Date(
+          a.created_at || 0
+        )
+    );
+
+  }
+
+
+  return items;
 
 }
 
@@ -191,15 +821,18 @@ function renderDelivery(delivery) {
   const expired =
     isExpired(delivery);
 
+
   const monthlyViews =
     Number(
       delivery.monthly_views || 0
     );
 
+
   const monthlyDownloads =
     Number(
       delivery.monthly_downloads || 0
     );
+
 
   const lifetimeViews =
     Number(
@@ -207,6 +840,7 @@ function renderDelivery(delivery) {
       delivery.view_count ||
       0
     );
+
 
   const lifetimeDownloads =
     Number(
@@ -216,8 +850,16 @@ function renderDelivery(delivery) {
     );
 
 
+  const fileCount =
+    delivery.delivery_files?.length ||
+    1;
+
+
   const card =
-    document.createElement("article");
+    document.createElement(
+      "article"
+    );
+
 
   card.className =
     "delivery-card";
@@ -258,15 +900,6 @@ function renderDelivery(delivery) {
 
 
       <div class="delivery-meta">
-
-        <span>
-          ID:
-          <strong>
-            ${escapeHtml(
-              delivery.id
-            )}
-          </strong>
-        </span>
 
         <span>
           Created:
@@ -367,29 +1000,6 @@ function renderDelivery(delivery) {
       </div>
 
 
-      <div class="delivery-last-activity">
-
-        <span>
-          Last opened:
-          <strong>
-            ${formatLastActivity(
-              delivery.last_viewed_at
-            )}
-          </strong>
-        </span>
-
-        <span>
-          Last downloaded:
-          <strong>
-            ${formatLastActivity(
-              delivery.last_downloaded_at
-            )}
-          </strong>
-        </span>
-
-      </div>
-
-
       <div class="delivery-files">
 
         <strong>
@@ -397,10 +1007,7 @@ function renderDelivery(delivery) {
         </strong>
 
         <span>
-          ${
-            delivery.delivery_files?.length ||
-            1
-          }
+          ${fileCount}
         </span>
 
         <span>
@@ -417,9 +1024,6 @@ function renderDelivery(delivery) {
         <button
           type="button"
           class="btn-open-delivery"
-          data-id="${escapeHtml(
-            delivery.id
-          )}"
         >
           Open Delivery
         </button>
@@ -427,9 +1031,6 @@ function renderDelivery(delivery) {
         <button
           type="button"
           class="btn-copy-link"
-          data-id="${escapeHtml(
-            delivery.id
-          )}"
         >
           Copy Link
         </button>
@@ -437,9 +1038,6 @@ function renderDelivery(delivery) {
         <button
           type="button"
           class="btn-duplicate"
-          data-id="${escapeHtml(
-            delivery.id
-          )}"
         >
           Duplicate
         </button>
@@ -447,9 +1045,6 @@ function renderDelivery(delivery) {
         <button
           type="button"
           class="btn-delete danger"
-          data-id="${escapeHtml(
-            delivery.id
-          )}"
         >
           Delete
         </button>
@@ -461,9 +1056,7 @@ function renderDelivery(delivery) {
   `;
 
 
-  /* =======================================================
-     OPEN DELIVERY
-  ======================================================= */
+  /* Open */
 
   card
     .querySelector(
@@ -473,13 +1066,10 @@ function renderDelivery(delivery) {
       "click",
       () => {
 
-        const url =
+        window.open(
           buildDeliveryUrl(
             delivery.id
-          );
-
-        window.open(
-          url,
+          ),
           "_blank",
           "noopener,noreferrer"
         );
@@ -488,9 +1078,7 @@ function renderDelivery(delivery) {
     );
 
 
-  /* =======================================================
-     COPY LINK
-  ======================================================= */
+  /* Copy */
 
   card
     .querySelector(
@@ -505,20 +1093,25 @@ function renderDelivery(delivery) {
             delivery.id
           );
 
+
         try {
 
           await navigator.clipboard.writeText(
             url
           );
 
+
           const button =
             event.currentTarget;
+
 
           const original =
             button.textContent;
 
+
           button.textContent =
             "Copied!";
+
 
           setTimeout(
             () => {
@@ -528,9 +1121,11 @@ function renderDelivery(delivery) {
             1500
           );
 
+
           toast(
             "Delivery link copied."
           );
+
 
         } catch (error) {
 
@@ -538,6 +1133,7 @@ function renderDelivery(delivery) {
             "Clipboard error:",
             error
           );
+
 
           toast(
             "Could not copy the link.",
@@ -550,9 +1146,7 @@ function renderDelivery(delivery) {
     );
 
 
-  /* =======================================================
-     DUPLICATE
-  ======================================================= */
+  /* Duplicate */
 
   card
     .querySelector(
@@ -565,8 +1159,10 @@ function renderDelivery(delivery) {
         const button =
           event.currentTarget;
 
+
         button.disabled =
           true;
+
 
         try {
 
@@ -574,11 +1170,14 @@ function renderDelivery(delivery) {
             delivery
           );
 
+
           toast(
             "Delivery duplicated."
           );
 
+
           await load();
+
 
         } catch (error) {
 
@@ -587,10 +1186,12 @@ function renderDelivery(delivery) {
             error
           );
 
+
           toast(
             "Could not duplicate delivery.",
             "error"
           );
+
 
         } finally {
 
@@ -603,9 +1204,7 @@ function renderDelivery(delivery) {
     );
 
 
-  /* =======================================================
-     DELETE
-  ======================================================= */
+  /* Delete */
 
   card
     .querySelector(
@@ -613,115 +1212,105 @@ function renderDelivery(delivery) {
     )
     .addEventListener(
       "click",
-      async event => {
+      () => {
 
-        const confirmed =
-          window.confirm(
-            `Delete "${delivery.project_name || "this delivery"}"?\n\nThis cannot be undone.`
-          );
+        openConfirm(
+          `Delete "${delivery.project_name || "this delivery"}"? This cannot be undone.`,
+          async () => {
 
-        if (!confirmed) {
-          return;
-        }
+            try {
 
-        const button =
-          event.currentTarget;
+              await deleteDelivery(
+                delivery
+              );
 
-        button.disabled =
-          true;
 
-        try {
+              toast(
+                "Delivery deleted."
+              );
 
-          await deleteDelivery(
-            delivery
-          );
 
-          toast(
-            "Delivery deleted."
-          );
+              await load();
 
-          await load();
 
-        } catch (error) {
+            } catch (error) {
 
-          console.error(
-            "Delete failed:",
-            error
-          );
+              console.error(
+                "Delete failed:",
+                error
+              );
 
-          toast(
-            "Could not delete delivery.",
-            "error"
-          );
 
-          button.disabled =
-            false;
+              toast(
+                "Could not delete delivery.",
+                "error"
+              );
 
-        }
+            }
+
+          }
+        );
 
       }
     );
 
 
   return card;
+
 }
 
 
 /* =========================================================
-   DELIVERY URL
+   RENDER DELIVERIES
 ========================================================= */
 
-function buildDeliveryUrl(id) {
+function renderDeliveries() {
 
-  const base =
-    new URL(
-      "index.html",
-      window.location.href
+  if (!els.deliveriesList) {
+    return;
+  }
+
+
+  els.deliveriesList.innerHTML =
+    "";
+
+
+  const visible =
+    getVisibleDeliveries();
+
+
+  if (!visible.length) {
+
+    const empty =
+      document.createElement(
+        "div"
+      );
+
+
+    empty.className =
+      "delivery-empty";
+
+
+    empty.textContent =
+      deliveries.length
+        ? "No deliveries match your search."
+        : "No deliveries created yet.";
+
+
+    els.deliveriesList.append(
+      empty
     );
 
-  base.searchParams.set(
-    "id",
-    id
-  );
-
-  return base.href;
-}
-
-
-/* =========================================================
-   RENDER LIST
-========================================================= */
-
-function renderList() {
-
-  if (!els.list) {
-    return;
-  }
-
-  els.list.innerHTML = "";
-
-
-  if (!deliveries.length) {
-
-    if (els.empty) {
-      els.empty.hidden =
-        false;
-    }
 
     return;
+
   }
 
 
-  if (els.empty) {
-    els.empty.hidden =
-      true;
-  }
-
-
-  deliveries.forEach(
+  visible.forEach(
     delivery => {
 
-      els.list.appendChild(
+      els.deliveriesList.append(
         renderDelivery(
           delivery
         )
@@ -734,7 +1323,7 @@ function renderList() {
 
 
 /* =========================================================
-   LOAD
+   LOAD DELIVERIES
 ========================================================= */
 
 async function load() {
@@ -758,19 +1347,40 @@ async function load() {
 
     renderSummary();
 
-    renderList();
+    renderDeliveries();
+
 
   } catch (error) {
 
     console.error(
-      "Failed to load deliveries:",
+      "[Boztik Deliver] Failed to load deliveries:",
       error
     );
+
+
+    if (
+      error?.message?.toLowerCase()
+        .includes("jwt")
+    ) {
+
+      toast(
+        "Your session has expired. Please sign in again.",
+        "error"
+      );
+
+
+      showLogin();
+
+      return;
+
+    }
+
 
     toast(
       "Could not load deliveries. Please refresh the page.",
       "error"
     );
+
 
   } finally {
 
@@ -790,8 +1400,662 @@ async function load() {
 
 
 /* =========================================================
-   REFRESH BUTTON
+   FILE VALIDATION
 ========================================================= */
+
+function validateSelectedFiles(files) {
+
+  if (!files.length) {
+    return;
+  }
+
+
+  if (files.length > 30) {
+
+    toast(
+      "You can upload a maximum of 30 files.",
+      "error"
+    );
+
+    return;
+
+  }
+
+
+  const invalid =
+    files.find(
+      file =>
+        !isValidFile(file)
+    );
+
+
+  if (invalid) {
+
+    toast(
+      `"${invalid.name}" is not a supported file or is too large.`,
+      "error"
+    );
+
+    return;
+
+  }
+
+
+  selectedFiles =
+    [...files];
+
+
+  renderFileList();
+
+}
+
+
+/* =========================================================
+   FILE LIST / PREVIEWS
+========================================================= */
+
+function renderFileList() {
+
+  if (!els.fileList) {
+    return;
+  }
+
+
+  els.fileList.innerHTML =
+    "";
+
+
+  selectedFiles.forEach(
+    file => {
+
+      const item =
+        document.createElement(
+          "li"
+        );
+
+
+      item.className =
+        "dash-file-item";
+
+
+      const isImage =
+        file.type.startsWith(
+          "image/"
+        );
+
+
+      let preview = "";
+
+
+      if (isImage) {
+
+        const url =
+          URL.createObjectURL(
+            file
+          );
+
+
+        preview = `
+          <img
+            src="${url}"
+            alt=""
+            class="dash-file-preview"
+          >
+        `;
+
+
+        setTimeout(
+          () => {
+            URL.revokeObjectURL(
+              url
+            );
+          },
+          60000
+        );
+
+      }
+
+
+      item.innerHTML = `
+
+        ${preview}
+
+        <div class="dash-file-info">
+
+          <strong>
+            ${escapeHtml(
+              file.name
+            )}
+          </strong>
+
+          <span>
+            ${formatBytes(
+              file.size
+            )}
+          </span>
+
+        </div>
+
+      `;
+
+
+      els.fileList.append(
+        item
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   DROPZONE
+========================================================= */
+
+function setupDropzone() {
+
+  if (!els.dropzone ||
+      !els.fileInput) {
+    return;
+  }
+
+
+  els.dropzone.addEventListener(
+    "click",
+    () => {
+      els.fileInput.click();
+    }
+  );
+
+
+  els.dropzone.addEventListener(
+    "keydown",
+    event => {
+
+      if (
+        event.key === "Enter" ||
+        event.key === " "
+      ) {
+
+        event.preventDefault();
+
+        els.fileInput.click();
+
+      }
+
+    }
+  );
+
+
+  els.dropzone.addEventListener(
+    "dragover",
+    event => {
+
+      event.preventDefault();
+
+      els.dropzone.classList.add(
+        "is-dragging"
+      );
+
+    }
+  );
+
+
+  els.dropzone.addEventListener(
+    "dragleave",
+    () => {
+
+      els.dropzone.classList.remove(
+        "is-dragging"
+      );
+
+    }
+  );
+
+
+  els.dropzone.addEventListener(
+    "drop",
+    event => {
+
+      event.preventDefault();
+
+
+      els.dropzone.classList.remove(
+        "is-dragging"
+      );
+
+
+      validateSelectedFiles(
+        [...event.dataTransfer.files]
+      );
+
+    }
+  );
+
+
+  els.fileInput.addEventListener(
+    "change",
+    () => {
+
+      validateSelectedFiles(
+        [...els.fileInput.files]
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   UPLOAD
+========================================================= */
+
+async function handleUpload(event) {
+
+  event.preventDefault();
+
+
+  if (!selectedFiles.length) {
+
+    toast(
+      "Please select at least one file.",
+      "error"
+    );
+
+    return;
+
+  }
+
+
+  const clientName =
+    els.clientName?.value.trim();
+
+
+  const projectName =
+    els.projectName?.value.trim();
+
+
+  const notes =
+    els.notes?.value.trim() ||
+    "";
+
+
+  const expiryHours =
+    Number(
+      els.expiry?.value ||
+      config.defaultExpiryHours
+    );
+
+
+  if (!clientName ||
+      !projectName) {
+
+    toast(
+      "Please enter the client name and project title.",
+      "error"
+    );
+
+    return;
+
+  }
+
+
+  const id =
+    deliveryId();
+
+
+  const expiresAt =
+    new Date(
+      Date.now() +
+      expiryHours *
+      60 *
+      60 *
+      1000
+    ).toISOString();
+
+
+  const metadata = {
+
+    id,
+
+    client_name:
+      clientName,
+
+    project_name:
+      projectName,
+
+    notes,
+
+    expires_at:
+      expiresAt
+
+  };
+
+
+  try {
+
+    if (els.uploadButton) {
+
+      els.uploadButton.disabled =
+        true;
+
+      els.uploadButton.textContent =
+        "Uploading…";
+
+    }
+
+
+    if (els.progress) {
+      els.progress.hidden =
+        false;
+    }
+
+
+    if (els.progressBar) {
+      els.progressBar.style.width =
+        "0%";
+    }
+
+
+    await createDelivery(
+      metadata,
+      selectedFiles,
+      progress => {
+
+        if (els.progressBar) {
+
+          els.progressBar.style.width =
+            `${Math.round(
+              progress * 100
+            )}%`;
+
+        }
+
+      }
+    );
+
+
+    const url =
+      buildDeliveryUrl(
+        id
+      );
+
+
+    if (els.successMeta) {
+
+      els.successMeta.textContent =
+        `${projectName} for ${clientName}`;
+
+    }
+
+
+    if (els.successLink) {
+
+      els.successLink.value =
+        url;
+
+    }
+
+
+    if (els.successOpen) {
+
+      els.successOpen.href =
+        url;
+
+    }
+
+
+    if (els.successCopyStatus) {
+
+      els.successCopyStatus.hidden =
+        true;
+
+    }
+
+
+    if (els.successDialog) {
+
+      els.successDialog.showModal();
+
+    }
+
+
+    toast(
+      "Delivery created successfully."
+    );
+
+
+    els.uploadForm?.reset();
+
+
+    selectedFiles =
+      [];
+
+
+    renderFileList();
+
+
+    await load();
+
+
+  } catch (error) {
+
+    console.error(
+      "[Boztik Deliver] Upload failed:",
+      error
+    );
+
+
+    toast(
+      error?.message ||
+      "Could not create the delivery.",
+      "error"
+    );
+
+
+  } finally {
+
+    if (els.progress) {
+      els.progress.hidden =
+        true;
+    }
+
+
+    if (els.progressBar) {
+      els.progressBar.style.width =
+        "0%";
+    }
+
+
+    if (els.uploadButton) {
+
+      els.uploadButton.disabled =
+        false;
+
+      els.uploadButton.textContent =
+        "Generate secure delivery";
+
+    }
+
+  }
+
+}
+
+
+/* =========================================================
+   CONFIRMATION DIALOG
+========================================================= */
+
+function openConfirm(
+  message,
+  action
+) {
+
+  if (
+    !els.confirmDialog ||
+    !els.confirmAction
+  ) {
+
+    const confirmed =
+      window.confirm(
+        message
+      );
+
+
+    if (confirmed) {
+      action();
+    }
+
+    return;
+
+  }
+
+
+  els.confirmText.textContent =
+    message;
+
+
+  pendingConfirmAction =
+    action;
+
+
+  els.confirmDialog.showModal();
+
+}
+
+
+/* =========================================================
+   CONFIRM ACTION
+========================================================= */
+
+if (els.confirmAction) {
+
+  els.confirmAction.addEventListener(
+    "click",
+    async () => {
+
+      const action =
+        pendingConfirmAction;
+
+
+      pendingConfirmAction =
+        null;
+
+
+      els.confirmDialog.close();
+
+
+      if (action) {
+
+        try {
+
+          await action();
+
+        } catch (error) {
+
+          console.error(
+            "Confirmation action failed:",
+            error
+          );
+
+        }
+
+      }
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   SUCCESS COPY
+========================================================= */
+
+if (els.successCopy) {
+
+  els.successCopy.addEventListener(
+    "click",
+    async () => {
+
+      const value =
+        els.successLink?.value;
+
+
+      if (!value) {
+        return;
+      }
+
+
+      try {
+
+        await navigator.clipboard.writeText(
+          value
+        );
+
+
+        if (els.successCopyStatus) {
+
+          els.successCopyStatus.textContent =
+            "Link copied to clipboard.";
+
+          els.successCopyStatus.hidden =
+            false;
+
+        }
+
+
+        toast(
+          "Client download link copied."
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Copy failed:",
+          error
+        );
+
+
+        toast(
+          "Could not copy the link.",
+          "error"
+        );
+
+      }
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   EVENT LISTENERS
+========================================================= */
+
+if (els.loginForm) {
+
+  els.loginForm.addEventListener(
+    "submit",
+    handleLogin
+  );
+
+}
+
+
+if (els.logout) {
+
+  els.logout.addEventListener(
+    "click",
+    handleLogout
+  );
+
+}
+
 
 if (els.refresh) {
 
@@ -803,8 +2067,50 @@ if (els.refresh) {
 }
 
 
+if (els.uploadForm) {
+
+  els.uploadForm.addEventListener(
+    "submit",
+    handleUpload
+  );
+
+}
+
+
+if (els.search) {
+
+  els.search.addEventListener(
+    "input",
+    renderDeliveries
+  );
+
+}
+
+
+if (els.filter) {
+
+  els.filter.addEventListener(
+    "change",
+    renderDeliveries
+  );
+
+}
+
+
+if (els.sort) {
+
+  els.sort.addEventListener(
+    "change",
+    renderDeliveries
+  );
+
+}
+
+
 /* =========================================================
-   INITIAL LOAD
+   START
 ========================================================= */
 
-load();
+setupDropzone();
+
+initialiseAuthentication();
