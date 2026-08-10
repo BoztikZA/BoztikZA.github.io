@@ -132,6 +132,72 @@
   margin-top: 14px;
 }
 
+/* ---- Pay What You Want — integrated tip panel (lives inside the
+   delivery card itself, between the files and the download button,
+   instead of a separate standalone marketing section) ---- */
+
+.deliver-tip-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 24px 0;
+  padding: 18px 22px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--surface-light);
+}
+
+.deliver-tip-copy {
+  flex: 1 1 260px;
+}
+
+.deliver-eyebrow--tight {
+  margin-bottom: 4px;
+}
+
+.deliver-tip-panel h3 {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  margin: 0 0 6px;
+}
+
+.deliver-tip-panel p {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.deliver-support-row--tip {
+  flex: 0 1 auto;
+  margin-top: 0;
+  width: auto;
+}
+
+.deliver-support-row--tip a {
+  flex: 0 0 auto;
+  padding: 12px 16px;
+  font-size: 0.88rem;
+}
+
+@media (max-width: 640px) {
+  .deliver-tip-panel {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 18px;
+  }
+
+  .deliver-support-row--tip {
+    width: 100%;
+  }
+
+  .deliver-support-row--tip a {
+    flex: 1 1 auto;
+  }
+}
+
 .deliver-success-banner {
   display: none;
   margin-top: 20px;
@@ -369,6 +435,12 @@
   position: absolute;
   left: 0;
   color: var(--primary);
+}
+
+.deliver-toolkit-note {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  margin: 0 0 14px;
 }
 
 /* ---- Support cards (Ko-fi + PayPal) reused here ---- */
