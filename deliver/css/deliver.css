@@ -467,6 +467,78 @@
   color: var(--text);
 }
 
+/* ---- Private Request CTA — premium outlined treatment.
+   Deliberately NOT the bright filled gradient (that's reserved for the
+   download button, the page's primary action) — an outlined accent
+   card reads as more sophisticated while staying on-brand. ---- */
+
+.deliver-cta-link--private {
+  background: var(--surface-light);
+  border: 1.5px solid var(--primary);
+  color: var(--primary);
+  box-shadow: 0 8px 24px rgba(142, 255, 61, 0.12);
+}
+
+.deliver-cta-link--private:hover,
+.deliver-cta-link--private:focus-visible {
+  background: rgba(142, 255, 61, 0.08);
+  box-shadow: 0 12px 30px rgba(142, 255, 61, 0.2);
+}
+
+/* ---- Compact browser-store cards (Creative Toolkit section) ---- */
+
+.deliver-store-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin: 4px 0 10px;
+}
+
+.deliver-store-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.deliver-store-card {
+  flex: 1 1 200px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface-light);
+  text-decoration: none;
+  color: var(--text);
+  transition: var(--transition);
+}
+
+.deliver-store-card:hover,
+.deliver-store-card:focus-visible {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+
+.deliver-store-card img {
+  flex: 0 0 auto;
+  border-radius: 6px;
+}
+
+.deliver-store-card strong {
+  display: block;
+  font-size: 0.88rem;
+}
+
+.deliver-store-card small {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
 /* ---- Soft callout (e.g. "no upfront payment") — not a legal-disclaimer look ---- */
 
 .deliver-callout {
