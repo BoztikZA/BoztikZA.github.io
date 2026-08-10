@@ -1375,6 +1375,85 @@
   </main>
 
 
+  <!-- =====================================================
+       SUPPORT / TIP POPUP
+       Shown once per browser, on the client's first
+       successful download only (see js/client.js). Purely
+       optional -- the actual download always proceeds
+       automatically regardless of what the client does here.
+  ====================================================== -->
+
+  <dialog
+    id="deliver-support-modal"
+    class="deliver-popup"
+    aria-labelledby="deliver-support-modal-title"
+  >
+
+    <button
+      type="button"
+      id="deliver-support-modal-close"
+      class="deliver-popup-close"
+      aria-label="Close"
+    >
+      &times;
+    </button>
+
+    <h2 id="deliver-support-modal-title">
+      Enjoying the work?
+    </h2>
+
+    <p>
+      If you'd like to support independent creative work, even a small tip helps keep Boztik going.
+    </p>
+
+    <div class="deliver-support-row deliver-support-row--popup">
+
+      <a
+        class="kofi-link"
+        href="https://ko-fi.com/boztik"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Support Boztik on Ko-fi (opens in a new tab)"
+      >
+
+        <svg class="deliver-btn-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path fill="currentColor" d="M2.5 4A1.5 1.5 0 0 1 4 2.5h11A1.5 1.5 0 0 1 16.5 4v1H17a3.5 3.5 0 0 1 0 7h-.86A5.5 5.5 0 0 1 11 16H7a5.5 5.5 0 0 1-5.5-5.5V4Zm14 3v5a2 2 0 0 0 0-5Z"/>
+        </svg>
+        Support on Ko-fi
+
+      </a>
+
+
+      <a
+        class="paypal-link"
+        href="https://paypal.me/angry5p1c3"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Support Boztik with PayPal (opens in a new tab)"
+      >
+
+        <svg class="deliver-btn-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path class="pp-light" d="M8.2 4.3h5c2.6 0 4.1 1.4 3.7 3.8-.5 3.2-2.5 4.7-5.4 4.7H9.9l-.8 5H6.4l1.8-13.5Z"/>
+          <path class="pp-dark" d="M6.3 4.3h5c2.6 0 4.1 1.4 3.7 3.8-.5 3.2-2.5 4.7-5.4 4.7H8l-.8 5H4.5l1.8-13.5Z"/>
+        </svg>
+        Support with PayPal
+
+      </a>
+
+    </div>
+
+    <p class="deliver-popup-thanks">
+      Thank you for supporting independent creative work.
+    </p>
+
+    <p class="deliver-popup-note">
+      Your download will start automatically…
+    </p>
+
+  </dialog>
+
+
+
 
 
 

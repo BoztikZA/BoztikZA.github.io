@@ -499,6 +499,107 @@
 .paypal-link .deliver-btn-icon .pp-dark { fill: #003087; }
 .paypal-link .deliver-btn-icon .pp-light { fill: #009cde; }
 
+/* ---- Support / tip popup (shown once, first download only) ---- */
+
+.deliver-popup {
+  width: 100%;
+  max-width: 380px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 28px 26px 24px;
+  position: relative;
+  animation: deliverPopupIn 0.22s ease-out;
+}
+
+.deliver-popup::backdrop {
+  background: rgba(2, 8, 5, 0.72);
+  backdrop-filter: blur(4px);
+}
+
+@keyframes deliverPopupIn {
+  from { opacity: 0; transform: scale(0.96) translateY(4px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.deliver-popup h2 {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  margin: 0 0 10px;
+  padding-right: 26px;
+}
+
+.deliver-popup p {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  line-height: 1.5;
+  margin: 0 0 16px;
+}
+
+.deliver-popup-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.deliver-popup-close:hover,
+.deliver-popup-close:focus-visible {
+  color: var(--text);
+  border-color: var(--primary);
+  outline: none;
+}
+
+.deliver-support-row--popup {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.deliver-support-row--popup a {
+  padding: 12px 14px;
+  font-size: 0.88rem;
+}
+
+.deliver-popup-thanks {
+  font-style: italic;
+  font-size: 0.8rem !important;
+  margin-bottom: 12px !important;
+}
+
+.deliver-popup-note {
+  font-size: 0.8rem !important;
+  font-weight: 600;
+  color: var(--text) !important;
+  text-align: center;
+  opacity: 0.85;
+  margin-bottom: 0 !important;
+}
+
+@media (max-width: 480px) {
+  .deliver-popup {
+    max-width: calc(100vw - 32px);
+    padding: 24px 20px 20px;
+  }
+
+  .deliver-support-row--popup {
+    flex-direction: column;
+  }
+}
+
 /* ---- Wide single-column marketing card (support / private requests / toolkit / brand) ---- */
 
 .deliver-marketing-card--wide {

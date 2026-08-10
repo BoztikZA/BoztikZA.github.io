@@ -51,8 +51,110 @@ const els = {
   explore: $("deliver-explore"),
   adSlot: $("deliver-adsense-slot"),
   support: $("deliver-support"),
-  privateRequests: $("deliver-private-requests")
+  privateRequests: $("deliver-private-requests"),
+
+  supportModal: $("deliver-support-modal"),
+  supportModalClose: $("deliver-support-modal-close")
 };
+
+
+/* =========================================================
+   SUPPORT / TIP POPUP (first successful download only)
+
+   Shown at most once per browser via localStorage. It never
+   gates or delays the download beyond a short ~1.5s pause the
+   very first time, and it is only ever triggered AFTER the
+   existing signedDownload() validation step below has already
+   succeeded — see download().
+========================================================= */
+
+const SUPPORT_POPUP_STORAGE_KEY =
+  "boztik-deliver-support-shown";
+
+function hasSeenSupportPopup() {
+
+  try {
+
+    return (
+      localStorage.getItem(
+        SUPPORT_POPUP_STORAGE_KEY
+      ) === "1"
+    );
+
+  } catch (error) {
+
+    // Storage unavailable (private browsing, blocked
+    // storage, etc.) — treat as "already seen" so we never
+    // risk repeated nagging and never let this block the
+    // download.
+    return true;
+
+  }
+
+}
+
+function markSupportPopupSeen() {
+
+  try {
+
+    localStorage.setItem(
+      SUPPORT_POPUP_STORAGE_KEY,
+      "1"
+    );
+
+  } catch (error) {
+
+    // Non-critical — worst case the popup shows again.
+
+  }
+
+}
+
+function showSupportPopup() {
+
+  const modal = els.supportModal;
+
+  if (
+    !modal?.showModal ||
+    modal.open
+  ) {
+    return;
+  }
+
+  modal.showModal();
+
+}
+
+function wireSupportPopup() {
+
+  const modal = els.supportModal;
+
+  if (!modal) {
+    return;
+  }
+
+  els.supportModalClose?.addEventListener(
+    "click",
+    () => modal.close()
+  );
+
+  // Clicking the backdrop (outside the popup box) dismisses
+  // it too, same as the close button. It never affects the
+  // download itself either way.
+  modal.addEventListener(
+    "click",
+    event => {
+
+      if (event.target === modal) {
+        modal.close();
+      }
+
+    }
+  );
+
+}
+
+wireSupportPopup();
 
 let delivery;
 let timer;
@@ -480,6 +582,31 @@ function updateCountdown() {
    DOWNLOAD
 ========================================================= */
 
+function triggerFileSave(
+  url,
+  fileName
+) {
+
+  const a =
+    document.createElement("a");
+
+  a.href = url;
+
+  a.download =
+    fileName;
+
+  document.body.appendChild(a);
+
+  a.click();
+
+  a.remove();
+
+  toast(
+    "Download started."
+  );
+
+}
+
 async function download(
   file,
   button
@@ -536,22 +663,36 @@ async function download(
     });
 
 
-    const a =
-      document.createElement("a");
+    /*
+     * Support popup — first successful download only.
+     *
+     * Only ever reached after signedDownload() above has
+     * already succeeded, so it can never interfere with
+     * validation, error handling, or expired-link failures.
+     * The file save always happens either way; the first
+     * time only, it's delayed ~1.5s so the popup is visible
+     * before the browser's save dialog takes over.
+     */
 
-    a.href = url;
+    if (
+      !hasSeenSupportPopup()
+    ) {
 
-    a.download =
-      file.file_name;
+      markSupportPopupSeen();
 
-    document.body.appendChild(a);
+      showSupportPopup();
 
-    a.click();
+      await new Promise(
+        resolve =>
+          setTimeout(resolve, 1500)
+      );
 
-    a.remove();
+    }
 
-    toast(
-      "Download started."
+
+    triggerFileSave(
+      url,
+      file.file_name
     );
 
   } catch (error) {
