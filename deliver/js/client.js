@@ -43,6 +43,8 @@ const els = {
   notesWrap: $("deliver-notes-wrap"),
 
   count: $("deliver-countdown-label"),
+  expiryDate: $("deliver-expiry-date"),
+  expiryDateWrap: $("deliver-expiry-date-wrap"),
 
   gallery: $("deliver-gallery"),
   all: $("deliver-download-all"),
@@ -790,6 +792,17 @@ async function init() {
       formatDate(
         delivery.created_at
       );
+
+    if (els.expiryDate && els.expiryDateWrap && delivery.expires_at) {
+
+      els.expiryDate.textContent =
+        formatDate(
+          delivery.expires_at
+        );
+
+      els.expiryDateWrap.hidden =
+        false;
+    }
 
 
     if (delivery.notes) {

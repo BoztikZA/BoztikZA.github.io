@@ -2021,3 +2021,100 @@
   }
 
 }
+/* =========================================================
+   V2 REDESIGN ADDITIONS — absolute expiry date, trust note,
+   entrance motion, marketing-card elevation. Additive only;
+   nothing above this line was removed or restructured.
+   ========================================================= */
+
+/* ---- Absolute expiry date (pairs with the relative countdown) ---- */
+
+.deliver-expiry-date {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin: -12px 0 20px;
+}
+
+.deliver-expiry-date strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ---- Private & secure delivery trust note ---- */
+
+.deliver-security-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 18px 0;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface-light);
+}
+
+.deliver-security-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: var(--accent);
+}
+
+.deliver-security-note p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.deliver-security-note strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ---- Marketing card hover elevation (matches store-card treatment) ---- */
+
+.deliver-marketing-card {
+  transition: var(--transition);
+}
+
+.deliver-marketing-card:hover {
+  border-color: var(--border);
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+}
+
+/* ---- Subtle entrance motion for revealed sections ----
+   Sections start [hidden] and are un-hidden by client.js once
+   the delivery loads; the fade-up plays the first time each
+   section enters the layout. Respects reduced-motion. ---- */
+
+@media (prefers-reduced-motion: no-preference) {
+  .deliver-card,
+  .deliver-marketing,
+  .deliver-ad-slot {
+    animation: deliverSectionIn 0.45s ease-out both;
+  }
+
+  .deliver-marketing-card {
+    animation: deliverSectionIn 0.45s ease-out both;
+  }
+}
+
+@keyframes deliverSectionIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 480px) {
+  .deliver-expiry-date {
+    margin-top: -8px;
+  }
+}
