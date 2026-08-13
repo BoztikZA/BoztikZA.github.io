@@ -125,6 +125,7 @@ wireSupportPopup();
 
 let delivery;
 let timer;
+let initializationComplete = false;
 
 
 /* =========================================================
@@ -132,6 +133,8 @@ let timer;
 ========================================================= */
 
 function state(name) {
+  console.log(`[Boztik Deliver] Transitioning to state: ${name}`);
+
   ["loading", "active", "expired", "error"].forEach(key => {
     if (els[key]) {
       els[key].hidden = key !== name;
@@ -415,12 +418,23 @@ async function download(file, button) {
 ========================================================= */
 
 async function init() {
+  initializationComplete = false;
+
   const id = new URLSearchParams(location.search)
     .get("id")
     ?.trim()
     .toUpperCase();
 
+  // Safety Timeout
+  setTimeout(() => {
+    if (!initializationComplete) {
+      console.warn("[Boztik Deliver] Initialization safety timeout reached.");
+      showError({ message: "The delivery is taking longer than expected to load. Please try refreshing." });
+    }
+  }, 10000);
+
   if (!id || !/^BZ-[A-Z2-9-]+$/.test(id)) {
+    initializationComplete = true;
     return state("expired");
   }
 
@@ -495,10 +509,15 @@ async function init() {
     });
 
     updateCountdown();
+    
+    if (timer) clearInterval(timer);
     timer = setInterval(updateCountdown, 30000);
+
+    initializationComplete = true;
     state("active");
 
   } catch (error) {
+    initializationComplete = true;
     console.error("Boztik Deliver client initialization failed:", error);
     showError(error);
   }

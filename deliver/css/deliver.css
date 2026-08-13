@@ -390,6 +390,11 @@
   line-height: 1.4;
 }
 
+/* State Management */
+[hidden] {
+  display: none !important;
+}
+
 /* Responsive adjustments */
 @media (max-width: 900px) {
   .toolkit-showcase-refined {
