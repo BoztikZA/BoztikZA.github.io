@@ -352,7 +352,11 @@ async function init() {
     renderFiles(files);
 
     // Non-blocking analytics
-    recordView(delivery.id).catch(e => console.warn("[Boztik Deliver] View analytics failed:", e));
+    try {
+      recordView(delivery.id).catch(e => console.warn("[Boztik Deliver] View analytics failed:", e));
+    } catch (e) {
+      console.warn("[Boztik Deliver] View analytics threw synchronous error:", e);
+    }
 
     /* Download All */
     if (els.all) {
