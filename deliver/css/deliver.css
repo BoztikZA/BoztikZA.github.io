@@ -26,16 +26,16 @@
   --error-deliver: #ff5e5b;
   
   /* Layout & Animation */
-  --radius-deliver: 24px;
-  --radius-inner: 16px;
+  --radius-deliver: 16px;
+  --radius-inner: 12px;
   --transition-deliver: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  --shadow-deliver: 0 30px 80px rgba(0, 0, 0, 0.4);
+  --shadow-deliver: 0 20px 50px rgba(0, 0, 0, 0.25);
 }
 
 /* Base resets & layout */
 .deliver-page {
   min-height: 100vh;
-  padding: 140px 24px 80px;
+  padding: 100px 24px 80px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -200,7 +200,8 @@
 .file-preview-wrap img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  padding: 20px;
   transition: transform 0.6s ease;
 }
 
