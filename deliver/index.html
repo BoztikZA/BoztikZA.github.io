@@ -1,56 +1,12 @@
 <!doctype html>
-
 <html lang="en">
-
 <head>
-
   <meta charset="utf-8">
-
-
-
-  <meta
-
-    name="viewport"
-
-    content="width=device-width, initial-scale=1"
-
-  >
-
-
-
-  <meta
-
-    name="robots"
-
-    content="noindex,follow"
-
-  >
-
-
-
-  <meta
-
-    name="theme-color"
-
-    content="#8eff3d"
-
-  >
-
-
-
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,follow">
+  <meta name="theme-color" content="#8eff3d">
   <title>Boztik Deliver | Secure client delivery</title>
-
-
-
-  <meta
-
-    name="description"
-
-    content="Secure creative file delivery from Boztik."
-
-  >
-
-
+  <meta name="description" content="Secure creative file delivery from Boztik.">
 
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Boztik">
@@ -59,1560 +15,281 @@
   <meta property="og:image" content="../images/logo.png">
   <meta name="twitter:card" content="summary">
 
-  <link
-
-    rel="icon"
-
-    href="../images/logo.png"
-
-  >
-
-
-
-  <link
-
-    rel="preconnect"
-
-    href="https://fonts.googleapis.com"
-
-  >
-
-
-
-  <link
-
-    rel="preconnect"
-
-    href="https://fonts.gstatic.com"
-
-    crossorigin
-
-  >
-
-
-
-  <link
-
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap"
-
-    rel="stylesheet"
-
-  >
-
-
-
-  <link
-
-    rel="stylesheet"
-
-    href="../styles-premium.css"
-
-  >
-
-
-
-  <link
-
-    rel="stylesheet"
-
-    href="css/deliver.css?v=8"
-
-  >
-
-
+  <link rel="icon" href="../images/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles-premium.css">
+  <link rel="stylesheet" href="css/deliver.css?v=9">
 
   <!-- Google AdSense -->
-
-  <script
-
-    async
-
-    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3739684241868984"
-
-    crossorigin="anonymous">
-
-  </script>
-
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3739684241868984" crossorigin="anonymous"></script>
 </head>
 
-
-
 <body>
-
-
-
-  <a
-
-    class="skip-link"
-
-    href="#main-content"
-
-  >
-
-    Skip to delivery
-
-  </a>
-
-
+  <a class="skip-link" href="#main-content">Skip to delivery</a>
 
   <div class="background-glow">
-
     <div class="glow1"></div>
-
     <div class="glow2"></div>
-
   </div>
 
-
-
-  <!-- =========================================
-
-       HEADER
-
-       ========================================= -->
-
-
-
   <header>
-
     <nav class="navbar">
-
-
-
-      <a
-
-        class="logo-area"
-
-        href="../index.html"
-
-        aria-label="Boztik home"
-
-      >
-
-
-
-        <img
-
-          src="../images/logo.png"
-
-          alt="Boztik logo"
-
-        >
-
-
-
+      <a class="logo-area" href="../index.html" aria-label="Boztik home">
+        <img src="../images/logo.png" alt="Boztik logo">
         <div>
-
-          <span class="logo-title">
-
-            Boztik Deliver
-
-          </span>
-
-
-
-          <span class="logo-subtitle">
-
-            Secure client delivery
-
-          </span>
-
+          <span class="logo-title">BOZTIK</span>
+          <span class="logo-subtitle">Creative Delivery</span>
         </div>
-
-
-
       </a>
-
-
-
     </nav>
-
   </header>
 
-
-
-
-
-  <main
-
-    id="main-content"
-
-    class="deliver-page"
-
-  >
-
-
-
-    <!-- =========================================
-
-         LOADING
-
-         ========================================= -->
-
-
-
-    <section
-
-      id="deliver-loading"
-
-      class="deliver-card"
-
-      role="status"
-
-    >
-
-
-
-      <span class="deliver-eyebrow">
-
-        Secure delivery
-
-      </span>
-
-
-
-      <h1>
-
-        Preparing your files…
-
-      </h1>
-
-
-
-      <p class="deliver-subtitle">
-
-        Please wait a moment while we securely prepare your delivery.
-
-      </p>
-
-
-
+  <main id="main-content" class="deliver-page">
+    
+    <!-- LOADING STATE -->
+    <section id="deliver-loading" class="deliver-section">
+      <div class="loading-spinner-refined"></div>
+      <span class="deliver-eyebrow">Secure Connection</span>
+      <h1 class="deliver-hero-title">Preparing your delivery...</h1>
+      <p class="deliver-hero-subtitle">We're securely preparing your finished work for download.</p>
     </section>
 
+    <!-- ACTIVE DELIVERY -->
+    <section id="deliver-active" class="deliver-section" hidden>
+      <span class="deliver-eyebrow">Project Ready</span>
+      <h1 id="deliver-project-name" class="deliver-hero-title">Your finished work is ready</h1>
+      <p id="deliver-client-name" class="deliver-hero-subtitle"></p>
 
-
-
-
-    <!-- =========================================
-
-         ACTIVE DELIVERY
-
-         ========================================= -->
-
-
-
-    <section
-
-      id="deliver-active"
-
-      class="deliver-card deliver-card--wide"
-
-      hidden
-
-    >
-
-
-
-      <span class="deliver-eyebrow">
-
-        Secure delivery
-
-      </span>
-
-
-
-      <h1 id="deliver-project-name">
-
-        Your project
-
-      </h1>
-
-
-
-      <p
-
-        id="deliver-client-name"
-
-        class="deliver-subtitle"
-
-      ></p>
-
-
-
-
-
-      <!-- Delivery information -->
-
-
-
-      <div class="deliver-meta-grid">
-
-
-
-        <div class="deliver-meta-item">
-
-
-
-          <span>
-
-            Delivery ID
-
-          </span>
-
-
-
-          <strong id="deliver-id-value"></strong>
-
-
-
+      <div class="deliver-status-bar">
+        <div class="status-pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Private & Secure
         </div>
-
-
-
-
-
-        <div class="deliver-meta-item">
-
-
-
-          <span>
-
-            Total size
-
-          </span>
-
-
-
-          <strong id="deliver-file-size"></strong>
-
-
-
+        <div id="deliver-countdown-wrap" class="status-pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Available for <span id="deliver-countdown-label"></span>
         </div>
-
-
-
-
-
-        <div class="deliver-meta-item">
-
-
-
-          <span>
-
-            Uploaded
-
-          </span>
-
-
-
-          <strong id="deliver-upload-date"></strong>
-
-
-
-        </div>
-
-
-
-
-
-        <div
-
-          id="deliver-notes-wrap"
-
-          class="deliver-meta-item"
-
-          hidden
-
-        >
-
-
-
-          <span>
-
-            Project notes
-
-          </span>
-
-
-
-          <strong id="deliver-notes"></strong>
-
-
-
-        </div>
-
-
-
       </div>
 
+      <div class="deliver-card-refined">
+        <div class="deliver-meta-refined">
+          <div class="meta-group">
+            <span class="meta-label">Project Name</span>
+            <strong id="display-project-name" class="meta-value">-</strong>
+          </div>
+          <div class="meta-group">
+            <span class="meta-label">Delivery ID</span>
+            <strong id="deliver-id-value" class="meta-value">-</strong>
+          </div>
+          <div class="meta-group">
+            <span class="meta-label">Total Size</span>
+            <strong id="deliver-file-size" class="meta-value">-</strong>
+          </div>
+          <div class="meta-group">
+            <span class="meta-label">Delivery Date</span>
+            <strong id="deliver-upload-date" class="meta-value">-</strong>
+          </div>
+          <div id="deliver-expiry-date-wrap" class="meta-group" hidden>
+            <span class="meta-label">Available Until</span>
+            <strong id="deliver-expiry-date" class="meta-value">-</strong>
+          </div>
+        </div>
 
+        <div id="deliver-notes-wrap" class="deliver-meta-refined" style="margin-top: -24px; border-top: none;" hidden>
+          <div class="meta-group" style="grid-column: 1 / -1;">
+            <span class="meta-label">A note from Boztik</span>
+            <strong id="deliver-notes" class="meta-value" style="font-weight: 500; font-style: italic; opacity: 0.9;"></strong>
+          </div>
+        </div>
 
+        <!-- Files Gallery -->
+        <div id="deliver-gallery" class="deliver-gallery-refined"></div>
 
-
-      <!-- Expiry -->
-
-
-
-      <div class="deliver-countdown">
-
-
-
-        Available for
-
-
-
-        <span id="deliver-countdown-label"></span>
-
-
-
-      </div>
-
-
-      <p class="deliver-expiry-date" id="deliver-expiry-date-wrap" hidden>
-        Available until <strong id="deliver-expiry-date"></strong>
-      </p>
-
-
-
-
-
-      <!-- Files -->
-
-
-
-      <div
-
-        id="deliver-gallery"
-
-        class="deliver-gallery"
-
-      ></div>
-
-      <div class="deliver-security-note">
-        <svg class="deliver-security-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <path fill="currentColor" d="M12 2 4 5v6c0 5.2 3.4 9.4 8 11 4.6-1.6 8-5.8 8-11V5Zm0 2.2 6 2.4v4.4c0 4-2.6 7.4-6 8.8-3.4-1.4-6-4.8-6-8.8V6.6ZM11 12.6 9.1 10.7l-1.4 1.4L11 15.4l5.3-5.3-1.4-1.4Z"/>
-        </svg>
-        <p>
-          <strong>Private &amp; secure delivery.</strong>
-          Your files are shared through this private link only and become unavailable once the delivery expires.
-        </p>
-      </div>
-
-
-      <!-- Pay What You Want — integrated into the delivery card -->
-
-      <section
-        id="deliver-support"
-        class="deliver-tip-panel"
-        aria-label="Support Boztik"
-        hidden
-      >
-
-        <div class="deliver-tip-copy">
-
-          <span class="deliver-eyebrow deliver-eyebrow--tight">
-            Enjoyed the edit?
-          </span>
-
-          <h3>
-            Pay What You Want
-          </h3>
-
-          <p>
-            Thank you for giving me the opportunity to work on your image. If you'd like to support my work, you're welcome to leave a tip of any amount you feel comfortable with — it genuinely helps me keep creating.
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: 24px;">
+          <button id="deliver-download-all" class="btn-primary-deliver" type="button">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download All Files
+          </button>
+          <p style="color: var(--text-muted-deliver); font-size: 0.85rem; font-weight: 500;">
+            Your files are prepared securely and available for a limited time.
           </p>
-
         </div>
-
-
-        <div class="deliver-support-row deliver-support-row--tip">
-
-          <a
-            class="kofi-link"
-            href="https://ko-fi.com/boztik"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Support Boztik on Ko-fi (opens in a new tab)"
-          >
-
-            <svg class="deliver-btn-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <path fill="currentColor" d="M2.5 4A1.5 1.5 0 0 1 4 2.5h11A1.5 1.5 0 0 1 16.5 4v1H17a3.5 3.5 0 0 1 0 7h-.86A5.5 5.5 0 0 1 11 16H7a5.5 5.5 0 0 1-5.5-5.5V4Zm14 3v5a2 2 0 0 0 0-5Z"/>
-            </svg>
-            Support on Ko-fi
-
-          </a>
-
-
-          <a
-            class="paypal-link"
-            href="https://paypal.me/angry5p1c3"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Support Boztik with PayPal (opens in a new tab)"
-          >
-
-            <svg class="deliver-btn-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <path class="pp-light" d="M8.2 4.3h5c2.6 0 4.1 1.4 3.7 3.8-.5 3.2-2.5 4.7-5.4 4.7H9.9l-.8 5H6.4l1.8-13.5Z"/>
-              <path class="pp-dark" d="M6.3 4.3h5c2.6 0 4.1 1.4 3.7 3.8-.5 3.2-2.5 4.7-5.4 4.7H8l-.8 5H4.5l1.8-13.5Z"/>
-            </svg>
-            Support with PayPal
-
-          </a>
-
-        </div>
-
-      </section>
-
-
-
-
-
-
-      <!-- Download all -->
-
-
-
-      <button
-
-        id="deliver-download-all"
-
-        class="deliver-download-btn"
-
-        type="button"
-
-      >
-
-
-
-        Download all files
-
-
-
-      </button>
-
-
-
-
-
-      <p class="deliver-download-note">
-
-
-
-        Your files are prepared securely for this delivery.
-
-
-
-      </p>
-
-
-
-    </section>
-
-
-
-
-
-    <!-- =========================================
-
-         PRIVATE PHOTOSHOP REQUESTS
-
-         ========================================= -->
-
-
-
-    <section
-
-      id="deliver-private-requests"
-
-      class="deliver-marketing"
-
-      aria-label="Private Photoshop Requests"
-
-      hidden
-
-    >
-
-
-
-      <div
-
-        class="deliver-marketing-card deliver-marketing-card--wide"
-
-      >
-
-
-
-        <span class="deliver-eyebrow">
-
-          Private Photoshop Requests
-
-        </span>
-
-
-
-        <h3>
-
-          Need another image edited?
-
-        </h3>
-
-
-
-        <p>
-
-
-
-          Need professional Photoshop work beyond this edit? I'm available
-
-          for private projects including restoration, retouching, object
-
-          removal, enhancement, compositing and other creative image work.
-
-
-
+      </div>
+
+      <!-- GRATITUDE & SUPPORT -->
+      <div id="deliver-support" class="deliver-gratitude" hidden>
+        <span class="deliver-eyebrow">Gratitude</span>
+        <h2 class="gratitude-title">Enjoyed the finished work?</h2>
+        <p class="gratitude-copy">
+          If you're happy with the result and would like to support independent creative work, you're welcome to leave a small tip. There is absolutely no obligation — your support simply helps me continue improving my tools and building things like Boztik Deliver.
         </p>
 
+        <div class="support-options-refined">
+          <!-- Ko-fi -->
+          <div class="support-card-refined kofi">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="#ff5e5b"><path d="M2.5 4A1.5 1.5 0 0 1 4 2.5h11A1.5 1.5 0 0 1 16.5 4v1H17a3.5 3.5 0 0 1 0 7h-.86A5.5 5.5 0 0 1 11 16H7a5.5 5.5 0 0 1-5.5-5.5V4Zm14 3v5a2 2 0 0 0 0-5Z"/></svg>
+            <div style="text-align: center;">
+              <h3 style="font-size: 1.1rem; margin-bottom: 4px;">Support via Ko-fi</h3>
+              <p style="font-size: 0.85rem; color: var(--text-muted-deliver);">Quick & easy one-time support</p>
+            </div>
+            <a href="https://ko-fi.com/boztik" target="_blank" rel="noopener noreferrer" class="btn-secondary-deliver" style="width: 100%; border-color: #ff5e5b; color: #ff5e5b;">
+              Donate on Ko-fi
+            </a>
+            <a href="https://ko-fi.com/boztik/goal?g=9" target="_blank" rel="noopener noreferrer" style="font-size: 0.8rem; color: var(--text-muted-deliver); font-weight: 600; text-decoration: underline;">
+              View my current goal →
+            </a>
+          </div>
 
-
-        <div class="deliver-callout">
-
-
-
-          <svg class="deliver-callout-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2 2 7v6c0 5 4.2 8.7 10 9 5.8-.3 10-4 10-9V7Zm-1.2 13.4-3.6-3.6 1.4-1.4 2.2 2.2 4.6-4.6 1.4 1.4Z"/></svg>
-
-
-
-          <span>
-
-            No upfront payment is required.
-
-            Payment is requested once you're happy with the completed work.
-
-          </span>
-
-
-
+          <!-- PayPal -->
+          <div class="support-card-refined paypal">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M8.2 4.3h5c2.6 0 4.1 1.4 3.7 3.8-.5 3.2-2.5 4.7-5.4 4.7H9.9l-.8 5H6.4l1.8-13.5Z" fill="#009cde"/><path d="M6.3 4.3h5c2.6 0 4.1 1.4 3.7 3.8-.5 3.2-2.5 4.7-5.4 4.7H8l-.8 5H4.5l1.8-13.5Z" fill="#003087"/></svg>
+            <div style="text-align: center;">
+              <h3 style="font-size: 1.1rem; margin-bottom: 4px;">Support via PayPal</h3>
+              <p style="font-size: 0.85rem; color: var(--text-muted-deliver);">Flexible support options</p>
+            </div>
+            <a href="https://paypal.me/angry5p1c3" target="_blank" rel="noopener noreferrer" class="btn-secondary-deliver" style="width: 100%; border-color: var(--paypal-blue); color: var(--paypal-light);">
+              Donate via PayPal
+            </a>
+          </div>
         </div>
+      </div>
 
+      <!-- TOOLKIT DISCOVERY -->
+      <div id="deliver-discover" class="toolkit-showcase-refined" hidden>
+        <div class="toolkit-features-refined">
+          <span class="deliver-eyebrow" style="text-align: left; margin-bottom: 8px;">Product Discovery</span>
+          <h2 style="font-family: var(--font-heading); font-size: 2.4rem; line-height: 1.1; margin-bottom: 16px;">Meet Boztik Creative Toolkit</h2>
+          <p style="color: var(--text-muted-deliver); margin-bottom: 32px; font-size: 1.05rem;">A practical browser toolkit for photographers, designers and creators who work with images every day.</p>
+          
+          <div class="toolkit-feature-item">
+            <div class="toolkit-feature-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            </div>
+            <div class="toolkit-feature-text">
+              <h4>Understand your images</h4>
+              <p>Analyse resolution, dimensions and image information directly in your browser.</p>
+            </div>
+          </div>
 
+          <div class="toolkit-feature-item">
+            <div class="toolkit-feature-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            </div>
+            <div class="toolkit-feature-text">
+              <h4>Extract useful colours</h4>
+              <p>Quickly pull colour palettes from images for design and creative work reference.</p>
+            </div>
+          </div>
 
+          <div class="toolkit-feature-item">
+            <div class="toolkit-feature-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </div>
+            <div class="toolkit-feature-text">
+              <h4>Find image sources</h4>
+              <p>Use reverse image search tools when researching visual references or origins.</p>
+            </div>
+          </div>
 
-
-        <div class="deliver-support-row">
-
-
-
-          <a
-
-            class="deliver-cta-link deliver-cta-link--private"
-
-            href="https://ko-fi.com/c/36ad8145f5"
-
-            target="_blank"
-
-            rel="noopener noreferrer"
-
-          >
-
-
-
-            Request a Private Edit
-
-
-
-          </a>
-
-
-
-
-
-          <a
-
-            class="deliver-cta-link deliver-cta-link--ghost"
-
-            href="https://boztiktech9a11.myportfolio.com/contact"
-
-            target="_blank"
-
-            rel="noopener noreferrer"
-
-          >
-
-
-
-            View My Portfolio
-
-
-
-          </a>
-
-
-
+          <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px;">
+            <a href="https://chromewebstore.google.com/detail/boztik-creative-toolkit/maaebbajegilfcpmljlpcclebdpngign" target="_blank" rel="noopener noreferrer" class="btn-secondary-deliver" style="gap: 12px;">
+              <img src="../images/chrome.png" width="20" height="20" alt=""> Get for Chrome
+            </a>
+            <a href="https://microsoftedge.microsoft.com/addons/detail/ajpnibmfjlajpgijgaionelkdjgiemfi" target="_blank" rel="noopener noreferrer" class="btn-secondary-deliver" style="gap: 12px;">
+              <img src="../images/edge.png" width="20" height="20" alt=""> Get for Edge
+            </a>
+            <a href="../index.html" class="btn-secondary-deliver" style="background: transparent; border-color: transparent; text-decoration: underline;">
+              Full Website
+            </a>
+          </div>
         </div>
-
-
-
-      </div>
-
-
-
-    </section>
-
-
-
-
-
-    <!-- =========================================
-
-         CREATIVE TOOLKIT
-
-         ========================================= -->
-
-
-
-    <section
-
-      id="deliver-discover"
-
-      class="deliver-marketing"
-
-      aria-label="Discover Boztik Creative Toolkit"
-
-      hidden
-
-    >
-
-
-
-      <div
-
-        class="deliver-marketing-card deliver-marketing-card--wide"
-
-      >
-
-
-
-        <span class="deliver-eyebrow">
-
-          More tools for photographers &amp; creators
-
-        </span>
-
-
-
-        <h3>
-
-          Boztik Creative Toolkit
-
-        </h3>
-
-
-
-        <p>
-
-
-
-          Practical image tools designed to make working with
-
-          images faster and easier — available for Chrome &amp;
-
-          Microsoft Edge.
-
-
-
-        </p>
-
-
-
-
-
-        <ul class="deliver-feature-list">
-
-
-
-          <li>
-
-            Image Resolution Analyzer
-
-          </li>
-
-
-
-          <li>
-
-            Color Palette Extractor
-
-          </li>
-
-
-
-          <li>
-
-            Reverse Image Search
-
-          </li>
-
-
-
-          <li>
-
-            Download Original Images
-
-          </li>
-
-
-
-          <li>
-
-            AI Creative Assistant
-
-          </li>
-
-
-
-          <li>
-
-            Usage Statistics
-
-          </li>
-
-
-
-          <li>
-
-            Context Menu Tools
-
-          </li>
-
-
-
-        </ul>
-
-
-        <p class="deliver-toolkit-note">
-
-          More information and features are available on the Boztik website.
-
-        </p>
-
-
-
-
-
-
-        <div class="deliver-support-row">
-
-
-
-          <a
-
-            class="deliver-cta-link"
-
-            href="../index.html#downloads"
-
-          >
-
-
-
-            Learn More About Boztik Creative Toolkit
-
-
-
-          </a>
-
-
-
+        <div class="toolkit-visual-premium">
+          <img src="../images/extension-preview.png" alt="Boztik Creative Toolkit Preview">
         </div>
+      </div>
 
-
-
-
-
-        <span class="deliver-store-label">
-
-          Available for
-
-        </span>
-
-
-
-        <div class="deliver-store-row">
-
-
-
-          <a
-
-            class="deliver-store-card"
-
-            href="https://chromewebstore.google.com/detail/boztik-creative-toolkit/maaebbajegilfcpmljlpcclebdpngign"
-
-            target="_blank"
-
-            rel="noopener noreferrer"
-
-            aria-label="Get Boztik Creative Toolkit for Google Chrome (opens in a new tab)"
-
-          >
-
-
-
-            <img src="../images/chrome.png" alt="" width="26" height="26" decoding="async">
-
-
-
-            <span>
-
-              <strong>Google Chrome</strong>
-
-              <small>Get the Extension</small>
-
-            </span>
-
-
-
-          </a>
-
-
-
-
-
-          <a
-
-            class="deliver-store-card"
-
-            href="https://microsoftedge.microsoft.com/addons/detail/ajpnibmfjlajpgijgaionelkdjgiemfi"
-
-            target="_blank"
-
-            rel="noopener noreferrer"
-
-            aria-label="Get Boztik Creative Toolkit for Microsoft Edge (opens in a new tab)"
-
-          >
-
-
-
-            <img src="../images/edge.png" alt="" width="26" height="26" decoding="async">
-
-
-
-            <span>
-
-              <strong>Microsoft Edge</strong>
-
-              <small>Get the Extension</small>
-
-            </span>
-
-
-
-          </a>
-
-
-
+      <!-- PRIVATE REQUESTS -->
+      <div id="deliver-private-requests" class="deliver-card-refined" style="background: linear-gradient(145deg, rgba(142, 255, 61, 0.03), transparent); border-color: rgba(142, 255, 61, 0.15);" hidden>
+        <div style="text-align: center;">
+          <span class="deliver-eyebrow">Services</span>
+          <h2 class="gratitude-title">Need another image worked on?</h2>
+          <p class="gratitude-copy">If you have another photograph that needs restoration, retouching, object removal, enhancement, colour work or compositing, I can help.</p>
+          <div style="display: flex; flex-wrap: wrap; gap: 16px; justify-content: center;">
+            <a href="https://ko-fi.com/c/36ad8145f5" target="_blank" rel="noopener noreferrer" class="btn-primary-deliver" style="max-width: 300px;">Request an Edit</a>
+            <a href="https://boztiktech9a11.myportfolio.com/contact" target="_blank" rel="noopener noreferrer" class="btn-secondary-deliver" style="padding: 0 40px; border-radius: 999px;">View Portfolio</a>
+          </div>
         </div>
-
-
-
       </div>
 
-
+      <!-- ADSENSE -->
+      <div id="deliver-adsense-slot" class="deliver-section" style="opacity: 0.6;" hidden>
+        <span class="meta-label" style="margin-bottom: 8px;">Advertisement</span>
+        <div style="width: 100%; min-height: 100px; border-top: 1px solid var(--border-deliver); border-bottom: 1px solid var(--border-deliver); padding: 20px 0;">
+          <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-3739684241868984" data-ad-slot="9342555903" data-ad-format="auto" data-full-width-responsive="true"></ins>
+        </div>
+      </div>
 
     </section>
 
-
-
-
-
-    <!-- =========================================
-
-         AD
-
-         ========================================= -->
-
-
-
-    <div
-
-      id="deliver-adsense-slot"
-
-      class="deliver-ad-slot"
-
-      aria-label="Advertisement"
-
-      hidden
-
-    >
-
-
-
-      <span class="deliver-ad-label">
-
-        Advertisement
-
-      </span>
-
-
-
-      <ins
-
-        class="adsbygoogle"
-
-        style="display:block;width:100%;min-height:90px"
-
-        data-ad-client="ca-pub-3739684241868984"
-
-        data-ad-slot="7204038822"
-
-        data-ad-format="auto"
-
-        data-full-width-responsive="true">
-
-      </ins>
-
-
-
-    </div>
-
-
-
-
-
-    <!-- =========================================
-
-         PORTFOLIO / BOZTIK BRANDING
-
-         ========================================= -->
-
-
-
-    <section
-
-      id="deliver-explore"
-
-      class="deliver-marketing"
-
-      aria-label="About Boztik"
-
-      hidden
-
-    >
-
-
-
-      <div
-
-        class="deliver-marketing-card deliver-marketing-card--wide deliver-brand-card"
-
-      >
-
-
-
-        <span class="deliver-eyebrow">
-
-          BOZTIK
-
-        </span>
-
-
-
-        <p class="deliver-brand-tagline">
-
-
-
-          Professional photo editing, restoration &amp; creative
-
-          image services.
-
-
-
-        </p>
-
-
-
-
-
-        <nav class="deliver-footer-links" aria-label="Boztik links">
-
-
-
-          <a href="../index.html">
-
-            Portfolio
-
-          </a>
-
-
-
-          <a href="../index.html#downloads">
-
-            Creative Toolkit
-
-          </a>
-
-
-
-          <a
-
-            href="https://ko-fi.com/c/36ad8145f5"
-
-            target="_blank"
-
-            rel="noopener noreferrer"
-
-          >
-
-            Private Requests
-
-          </a>
-
-
-
-          <a
-
-            href="../support.html"
-
-          >
-
-            Support
-
-          </a>
-
-
-
-        </nav>
-
-
-
+    <!-- EXPIRED / ERROR STATES -->
+    <section id="deliver-expired" class="deliver-section" hidden>
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--error-deliver)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 24px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <h1 class="deliver-hero-title">This delivery has expired</h1>
+      <p class="deliver-hero-subtitle">This private delivery link is no longer available. Please contact Boztik if you need to request another delivery of these files.</p>
+      <div style="display: flex; gap: 16px;">
+        <a href="../index.html" class="btn-primary-deliver" style="max-width: 240px;">Visit Boztik</a>
+        <a href="https://boztiktech9a11.myportfolio.com/contact" class="btn-secondary-deliver" style="padding: 0 40px; border-radius: 999px;">Contact</a>
       </div>
-
-
-
     </section>
 
-
-
-
-
-    <!-- =========================================
-
-         EXPIRED
-
-         ========================================= -->
-
-
-
-    <section
-
-      id="deliver-expired"
-
-      class="deliver-card"
-
-      hidden
-
-    >
-
-
-
-      <div class="deliver-expired-icon">
-
-        ⌛
-
-      </div>
-
-
-
-      <h1>
-
-        This delivery is unavailable.
-
-      </h1>
-
-
-
-      <p class="deliver-subtitle">
-
-
-
-        It may have expired, been removed,
-
-        or the link may be incomplete.
-
-        Please contact your creative for a fresh delivery.
-
-
-
-      </p>
-
-
-
-
-
-      <div class="deliver-expired-actions">
-
-
-
-        <a
-
-          class="is-primary"
-
-          href="../index.html"
-
-        >
-
-          Visit Boztik
-
-        </a>
-
-
-
-        <a
-
-          href="../support.html#contact"
-
-        >
-
-          Contact Boztik
-
-        </a>
-
-
-
-      </div>
-
-
-
+    <section id="deliver-error" class="deliver-section" hidden>
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--error-deliver)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 24px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <h1 class="deliver-hero-title">Something went wrong</h1>
+      <p class="deliver-hero-subtitle">We encountered an error while retrieving your delivery. Please try refreshing the page.</p>
+      <p id="deliver-error-detail" style="font-family: monospace; font-size: 0.8rem; opacity: 0.5; margin-top: 20px;" hidden></p>
+      <a href="javascript:location.reload()" class="btn-primary-deliver" style="max-width: 240px; margin-top: 24px;">Retry</a>
     </section>
 
-
-
-
-
-    <!-- =========================================
-
-         ERROR
-
-         ========================================= -->
-
-
-
-    <section
-
-      id="deliver-error"
-
-      class="deliver-card"
-
-      hidden
-
-    >
-
-
-
-      <div class="deliver-expired-icon">
-
-        ⚠️
-
+    <!-- FOOTER -->
+    <footer class="deliver-footer-premium">
+      <div style="text-align: center;">
+        <strong style="font-family: var(--font-heading); letter-spacing: 0.1em; font-size: 1.1rem;">BOZTIK</strong>
+        <p style="font-size: 0.85rem; color: var(--text-muted-deliver); margin-top: 4px;">Professional photo editing & creative tools.</p>
       </div>
-
-
-
-      <h1>
-
-        Unable to load this delivery
-
-      </h1>
-
-
-
-      <p class="deliver-subtitle">
-
-
-
-        Something prevented the delivery from loading.
-
-        The link may be invalid, expired,
-
-        or temporarily unavailable.
-
-
-
-      </p>
-
-
-
-      <p
-
-        id="deliver-error-detail"
-
-        class="deliver-error-detail"
-
-        hidden
-
-      ></p>
-
-
-
-
-
-      <div class="deliver-expired-actions">
-
-
-
-        <a
-
-          class="is-primary"
-
-          href="../index.html"
-
-        >
-
-          Visit Boztik
-
-        </a>
-
-
-
-        <a
-
-          href="../support.html#contact"
-
-        >
-
-          Contact Boztik
-
-        </a>
-
-
-
+      <div class="footer-links-refined">
+        <a href="../index.html">Website</a>
+        <a href="https://boztiktech9a11.myportfolio.com/">Portfolio</a>
+        <a href="../index.html#downloads">Creative Toolkit</a>
+        <a href="https://boztiktech9a11.myportfolio.com/contact">Contact</a>
+        <a href="https://ko-fi.com/boztik">Ko-fi</a>
       </div>
-
-
-
-    </section>
-
-
-
-
-
+      <p style="font-size: 0.75rem; color: var(--text-muted-deliver); margin-top: 12px;">&copy; 2026 Boztik. All rights reserved.</p>
+    </footer>
   </main>
 
-
-  <!-- =====================================================
-       SUPPORT / TIP POPUP
-       Shown once per browser, on the client's first
-       successful download only (see js/client.js). Purely
-       optional -- the actual download always proceeds
-       automatically regardless of what the client does here.
-  ====================================================== -->
-
-  <dialog
-    id="deliver-support-modal"
-    class="deliver-popup"
-    aria-labelledby="deliver-support-modal-title"
-  >
-
-    <button
-      type="button"
-      id="deliver-support-modal-close"
-      class="deliver-popup-close"
-      aria-label="Close"
-    >
-      &times;
-    </button>
-
-    <h2 id="deliver-support-modal-title">
-      Enjoying the work?
-    </h2>
-
-    <p>
-      If you'd like to support independent creative work, even a small tip helps keep Boztik going.
-    </p>
-
-    <div class="deliver-support-row deliver-support-row--popup">
-
-      <a
-        class="kofi-link"
-        href="https://ko-fi.com/boztik"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Support Boztik on Ko-fi (opens in a new tab)"
-      >
-
-        <svg class="deliver-btn-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <path fill="currentColor" d="M2.5 4A1.5 1.5 0 0 1 4 2.5h11A1.5 1.5 0 0 1 16.5 4v1H17a3.5 3.5 0 0 1 0 7h-.86A5.5 5.5 0 0 1 11 16H7a5.5 5.5 0 0 1-5.5-5.5V4Zm14 3v5a2 2 0 0 0 0-5Z"/>
-        </svg>
-        Support on Ko-fi
-
-      </a>
-
-
-      <a
-        class="paypal-link"
-        href="https://paypal.me/angry5p1c3"
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Support Boztik with PayPal (opens in a new tab)"
-      >
-
-        <svg class="deliver-btn-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-          <path class="pp-light" d="M8.2 4.3h5c2.6 0 4.1 1.4 3.7 3.8-.5 3.2-2.5 4.7-5.4 4.7H9.9l-.8 5H6.4l1.8-13.5Z"/>
-          <path class="pp-dark" d="M6.3 4.3h5c2.6 0 4.1 1.4 3.7 3.8-.5 3.2-2.5 4.7-5.4 4.7H8l-.8 5H4.5l1.8-13.5Z"/>
-        </svg>
-        Support with PayPal
-
-      </a>
-
+  <!-- SUPPORT MODAL (POPUP) -->
+  <dialog id="deliver-support-modal" class="premium-popup">
+    <button id="deliver-support-modal-close" class="deliver-popup-close" aria-label="Close">&times;</button>
+    <div style="text-align: center;">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="var(--primary-deliver)" style="margin-bottom: 20px;"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+      <h2>Thanks for supporting my work</h2>
+      <p>I hope you enjoy the finished result. If you'd like to support independent creative work, even a small contribution helps me keep building and improving.</p>
+      
+      <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 24px;">
+        <a href="https://ko-fi.com/boztik" target="_blank" rel="noopener noreferrer" class="btn-primary-deliver" style="max-width: none;">Support on Ko-fi</a>
+        <a href="https://paypal.me/angry5p1c3" target="_blank" rel="noopener noreferrer" class="btn-secondary-deliver" style="border-color: var(--paypal-blue); color: var(--paypal-light);">Support with PayPal</a>
+        <a href="https://ko-fi.com/boztik/goal?g=9" target="_blank" rel="noopener noreferrer" style="font-size: 0.85rem; color: var(--text-muted-deliver); font-weight: 600; text-decoration: underline; margin-top: 8px;">View what I'm currently working toward →</a>
+      </div>
+      
+      <button onclick="this.closest('dialog').close()" style="background: none; border: none; color: var(--text-muted-deliver); font-size: 0.85rem; font-weight: 600; cursor: pointer; margin-top: 24px; text-decoration: underline;">
+        No thanks, continue
+      </button>
     </div>
-
-    <p class="deliver-popup-thanks">
-      Thank you for supporting independent creative work.
-    </p>
-
-    <p class="deliver-popup-note">
-      Your download will start automatically…
-    </p>
-
   </dialog>
 
-
-
-
-
-
-  <!-- Supabase -->
-
-
-
-  <script
-
-    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js">
-
-  </script>
-
-
-
-
-
-  <!-- Safety timeout -->
-
-
-
-  <script>
-
-
-
-    setTimeout(function () {
-
-
-
-      var loading =
-
-        document.getElementById(
-
-          "deliver-loading"
-
-        );
-
-
-
-      var error =
-
-        document.getElementById(
-
-          "deliver-error"
-
-        );
-
-
-
-      var detail =
-
-        document.getElementById(
-
-          "deliver-error-detail"
-
-        );
-
-
-
-      if (
-
-        loading &&
-
-        !loading.hidden &&
-
-        error
-
-      ) {
-
-
-
-        console.error(
-
-          "Boztik Deliver: client script did not initialize within 8 seconds."
-
-        );
-
-
-
-        loading.hidden = true;
-
-        error.hidden = false;
-
-
-
-        if (detail) {
-
-
-
-          detail.textContent =
-
-            "Diagnostic: client.js did not finish initializing within 8 seconds.";
-
-
-
-          detail.hidden = false;
-
-
-
-        }
-
-
-
-      }
-
-
-
-    }, 8000);
-
-
-
-  </script>
-
-
-
-
-
-  <!-- IMPORTANT:
-
-       Do not change this.
-
-       This loads the working delivery system.
-
-  -->
-
-
-
-  <script
-
-    type="module"
-
-    src="js/client.js">
-
-  </script>
-
-
-
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script type="module" src="js/client.js"></script>
 </body>
-
 </html>
