@@ -26,49 +26,102 @@ import {
 
 
 /* =========================================================
-   DOM HELPERS
+   DOM HELPER
 ========================================================= */
 
-const $ = id => document.getElementById(id);
+const $ = id =>
+  document.getElementById(id);
+
+
+/* =========================================================
+   DOM REFERENCES
+========================================================= */
 
 const els = {
-  loading: $("deliver-loading"),
-  active: $("deliver-active"),
-  expired: $("deliver-expired"),
-  error: $("deliver-error"),
-  errorDetail: $("deliver-error-detail"),
 
-  title: $("deliver-project-name"),
-  displayProjectName: $("display-project-name"),
-  client: $("deliver-client-name"),
-  id: $("deliver-id-value"),
-  size: $("deliver-file-size"),
-  date: $("deliver-upload-date"),
+  loading:
+    $("deliver-loading"),
 
-  notes: $("deliver-notes"),
-  notesWrap: $("deliver-notes-wrap"),
+  active:
+    $("deliver-active"),
 
-  count: $("deliver-countdown-label"),
-  countdownWrap: $("deliver-countdown-wrap"),
-  expiryDate: $("deliver-expiry-date"),
-  expiryDateWrap: $("deliver-expiry-date-wrap"),
+  expired:
+    $("deliver-expired"),
 
-  gallery: $("deliver-gallery"),
-  all: $("deliver-download-all"),
+  error:
+    $("deliver-error"),
 
-  discover: $("deliver-discover"),
-  adSlot: $("deliver-adsense-slot"),
-  support: $("deliver-support"),
-  privateRequests: $("deliver-private-requests"),
+  errorDetail:
+    $("deliver-error-detail"),
 
-  supportModal: $("deliver-support-modal"),
-  supportModalClose: $("deliver-support-modal-close")
+
+  title:
+    $("deliver-project-name"),
+
+  client:
+    $("deliver-client-name"),
+
+  id:
+    $("deliver-id-value"),
+
+  size:
+    $("deliver-file-size"),
+
+  date:
+    $("deliver-upload-date"),
+
+
+  notes:
+    $("deliver-notes"),
+
+  notesWrap:
+    $("deliver-notes-wrap"),
+
+
+  count:
+    $("deliver-countdown-label"),
+
+  expiryDate:
+    $("deliver-expiry-date"),
+
+  expiryDateWrap:
+    $("deliver-expiry-date-wrap"),
+
+
+  gallery:
+    $("deliver-gallery"),
+
+  all:
+    $("deliver-download-all"),
+
+
+  discover:
+    $("deliver-discover"),
+
+  explore:
+    $("deliver-explore"),
+
+  adSlot:
+    $("deliver-adsense-slot"),
+
+  support:
+    $("deliver-support"),
+
+  privateRequests:
+    $("deliver-private-requests"),
+
+
+  supportModal:
+    $("deliver-support-modal"),
+
+  supportModalClose:
+    $("deliver-support-modal-close")
+
 };
 
 
 /* =========================================================
    SUPPORT / TIP POPUP
-   FIRST SUCCESSFUL DOWNLOAD ONLY
 ========================================================= */
 
 const SUPPORT_POPUP_STORAGE_KEY =
@@ -76,64 +129,123 @@ const SUPPORT_POPUP_STORAGE_KEY =
 
 
 function hasSeenSupportPopup() {
+
   try {
+
     return (
       localStorage.getItem(
         SUPPORT_POPUP_STORAGE_KEY
       ) === "1"
     );
-  } catch (error) {
+
+  } catch {
+
+    /*
+      If storage is unavailable, treat the popup
+      as already seen.
+
+      The download must never be affected by
+      localStorage problems.
+    */
+
     return true;
+
   }
+
 }
 
 
 function markSupportPopupSeen() {
+
   try {
+
     localStorage.setItem(
       SUPPORT_POPUP_STORAGE_KEY,
       "1"
     );
-  } catch (error) {
-    // Non-critical
+
+  } catch {
+
+    /*
+      Non-critical.
+    */
+
   }
+
 }
 
 
 function showSupportPopup() {
-  const modal = els.supportModal;
+
+  const modal =
+    els.supportModal;
+
 
   if (
-    !modal?.showModal ||
+    !modal ||
+    typeof modal.showModal !== "function" ||
     modal.open
   ) {
+
     return;
+
   }
 
+
   modal.showModal();
+
 }
 
 
 function wireSupportPopup() {
-  const modal = els.supportModal;
+
+  const modal =
+    els.supportModal;
+
 
   if (!modal) {
+
     return;
+
   }
 
-  els.supportModalClose?.addEventListener(
-    "click",
-    () => modal.close()
-  );
+
+  if (
+    els.supportModalClose
+  ) {
+
+    els.supportModalClose.addEventListener(
+      "click",
+      () => {
+
+        modal.close();
+
+      }
+    );
+
+  }
+
+
+  /*
+    Clicking outside the support card closes
+    the dialog.
+  */
 
   modal.addEventListener(
     "click",
     event => {
-      if (event.target === modal) {
+
+      if (
+        event.target === modal
+      ) {
+
         modal.close();
+
       }
+
     }
   );
+
 }
 
 
@@ -144,143 +256,335 @@ wireSupportPopup();
    DELIVERY STATE
 ========================================================= */
 
-let delivery;
-let timer;
-let initializationComplete = false;
+let delivery =
+  null;
+
+let timer =
+  null;
+
+let initializationComplete =
+  false;
 
 
 /* =========================================================
-   PREVIEW URL CACHE
+   PREVIEW CACHE
 =========================================================
 
-   A delivery file may need its signed preview URL for:
+   The old implementation requests signed preview URLs
+   independently for:
 
-   - the visible image preview
-   - image dimensions
-   - EXIF metadata
-   - full-resolution viewer
+   1. The visual preview.
+   2. Image dimensions.
+   3. EXIF information.
 
-   The previous implementation requested the signed URL
-   multiple times.
+   That creates unnecessary requests.
 
-   Keep one URL per file for the current page session.
+   This cache lets all three operations share the same
+   signed URL while it is still fresh.
+
+   Signed preview URLs are intentionally short-lived.
 ========================================================= */
 
-const previewUrlCache = new Map();
+const PREVIEW_CACHE_TTL =
+  4 * 60 * 1000;
 
 
-function clearPreviewUrlCache() {
-  previewUrlCache.clear();
+const previewUrlCache =
+  new Map();
+
+
+function getPreviewCacheKey(file) {
+
+  if (
+    file?.file_path
+  ) {
+
+    return file.file_path;
+
+  }
+
+
+  return [
+    file?.delivery_id || "",
+    file?.file_name || ""
+  ].join(":");
+
 }
 
 
-async function getCachedPreviewUrl(file) {
+function invalidatePreviewUrl(file) {
 
   const key =
-    file?.file_path ||
-    `${file?.delivery_id || ""}:${file?.file_name || ""}`;
+    getPreviewCacheKey(file);
 
-  if (!key) {
+
+  previewUrlCache.delete(
+    key
+  );
+
+}
+
+
+async function getPreviewUrl(
+  file,
+  forceRefresh = false
+) {
+
+  if (
+    !file ||
+    !file.file_path
+  ) {
+
     throw new Error(
-      "The file does not contain a valid preview identifier."
+      "The file does not contain a valid storage path."
     );
+
   }
 
-  if (previewUrlCache.has(key)) {
-    return previewUrlCache.get(key);
+
+  const key =
+    getPreviewCacheKey(file);
+
+
+  const cached =
+    previewUrlCache.get(
+      key
+    );
+
+
+  const now =
+    Date.now();
+
+
+  /*
+    Reuse a fresh signed URL.
+  */
+
+  if (
+    !forceRefresh &&
+    cached &&
+    cached.url &&
+    now - cached.createdAt <
+      PREVIEW_CACHE_TTL
+  ) {
+
+    return cached.url;
+
   }
+
+
+  /*
+    Ask the existing API layer for a new signed
+    preview URL.
+  */
 
   const url =
-    await signedPreview(file);
+    await signedPreview(
+      file
+    );
+
 
   if (
     !url ||
     typeof url !== "string"
   ) {
+
     throw new Error(
-      "The preview service did not return a valid image URL."
+      "The server returned an invalid preview URL."
     );
+
   }
+
 
   previewUrlCache.set(
     key,
-    url
+    {
+      url,
+      createdAt:
+        now
+    }
   );
 
+
   return url;
+
 }
 
 
 /* =========================================================
    HTML ESCAPING
-=========================================================
-
-   File names and metadata can originate from uploaded files.
-   Escape values before inserting them into innerHTML.
 ========================================================= */
 
-function escapeHTML(value) {
+function escapeHTML(
+  value
+) {
 
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+  return String(
+    value ?? ""
+  )
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
+
 }
 
 
 /* =========================================================
-   PAGE STATE
+   FILE EXTENSION
 ========================================================= */
 
-function state(name) {
+function getFileExtension(
+  fileName
+) {
+
+  if (
+    !fileName
+  ) {
+
+    return "FILE";
+
+  }
+
+
+  const parts =
+    fileName.split(".");
+
+
+  if (
+    parts.length < 2
+  ) {
+
+    return "FILE";
+
+  }
+
+
+  return (
+    parts.pop() ||
+    "FILE"
+  ).toUpperCase();
+
+}
+
+
+/* =========================================================
+   PAGE STATE MANAGEMENT
+========================================================= */
+
+function state(
+  name
+) {
 
   console.log(
-    `[Boztik Deliver] Transitioning to state: ${name}`
+    `[Boztik Deliver] State: ${name}`
   );
 
-  ["loading", "active", "expired", "error"]
-    .forEach(key => {
 
-      if (els[key]) {
+  [
+    "loading",
+    "active",
+    "expired",
+    "error"
+  ].forEach(
+    key => {
+
+      if (
+        els[key]
+      ) {
+
         els[key].hidden =
           key !== name;
+
       }
 
-    });
+    }
+  );
 
+
+  /*
+    Marketing/discovery elements should only appear
+    after the delivery itself has successfully loaded.
+  */
 
   const showPromo =
     name === "active";
 
 
-  if (els.discover) {
+  if (
+    els.discover
+  ) {
+
     els.discover.hidden =
       !showPromo;
+
   }
 
 
-  if (els.adSlot) {
+  if (
+    els.explore
+  ) {
+
+    els.explore.hidden =
+      !showPromo;
+
+  }
+
+
+  if (
+    els.adSlot
+  ) {
+
     els.adSlot.hidden =
       !showPromo;
 
-    if (showPromo) {
+
+    if (
+      showPromo
+    ) {
+
       loadAd();
+
     }
+
   }
 
 
-  if (els.support) {
+  if (
+    els.support
+  ) {
+
     els.support.hidden =
       !showPromo;
+
   }
 
 
-  if (els.privateRequests) {
+  if (
+    els.privateRequests
+  ) {
+
     els.privateRequests.hidden =
       !showPromo;
+
   }
+
 }
 
 
@@ -288,25 +592,37 @@ function state(name) {
    ADSENSE
 ========================================================= */
 
-let adLoaded = false;
+let adLoaded =
+  false;
 
 
 function loadAd() {
 
-  if (adLoaded) {
+  if (
+    adLoaded
+  ) {
+
     return;
+
   }
 
-  adLoaded = true;
+
+  adLoaded =
+    true;
+
 
   try {
 
     (
       window.adsbygoogle =
-        window.adsbygoogle || []
+        window.adsbygoogle ||
+        []
     ).push({});
 
-  } catch (error) {
+
+  } catch (
+    error
+  ) {
 
     console.error(
       "Boztik Deliver: AdSense failed to load:",
@@ -314,58 +630,107 @@ function loadAd() {
     );
 
   }
+
 }
+/* =========================================================
+   FULL RESOLUTION IMAGE VIEWER
+========================================================= */
+
+let fullResolutionViewer =
+  null;
+
+let fullResolutionImage =
+  null;
+
+let fullResolutionTitle =
+  null;
+
+let fullResolutionLoading =
+  null;
+
+let fullResolutionError =
+  null;
+
+let fullResolutionRetry =
+  null;
+
+let fullResolutionDownload =
+  null;
+
+let fullResolutionClose =
+  null;
+
+let activeViewerFile =
+  null;
+
+let activeViewerTrigger =
+  null;
 
 
 /* =========================================================
-   FULL RESOLUTION VIEWER
+   CREATE FULL RESOLUTION VIEWER
 ========================================================= */
 
-let fullResolutionDialog = null;
-let fullResolutionImage = null;
-let fullResolutionTitle = null;
-let fullResolutionDownload = null;
-let fullResolutionLoading = null;
-let fullResolutionError = null;
+function createFullResolutionViewer() {
 
-let fullResolutionReturnFocus = null;
+  /*
+    Only create the viewer once.
 
+    Keeping a single dialog in the DOM prevents duplicate
+    modals from being created every time a client clicks
+    "View Full Resolution".
+  */
 
-function ensureFullResolutionViewer() {
+  if (
+    fullResolutionViewer
+  ) {
 
-  if (fullResolutionDialog) {
     return;
+
   }
 
 
-  fullResolutionDialog =
-    document.createElement("dialog");
+  fullResolutionViewer =
+    document.createElement(
+      "dialog"
+    );
 
-  fullResolutionDialog.className =
-    "deliver-fullscreen-viewer";
 
-  fullResolutionDialog.setAttribute(
-    "aria-labelledby",
-    "deliver-viewer-title"
+  fullResolutionViewer.className =
+    "deliver-full-resolution-viewer";
+
+
+  fullResolutionViewer.setAttribute(
+    "aria-label",
+    "Full resolution image viewer"
   );
 
 
-  fullResolutionDialog.innerHTML = `
+  fullResolutionViewer.innerHTML = `
 
-    <div class="deliver-viewer-shell">
+    <div
+      class="deliver-viewer-shell"
+    >
 
-      <div class="deliver-viewer-header">
+      <header
+        class="deliver-viewer-header"
+      >
 
-        <div class="deliver-viewer-title-wrap">
+        <div
+          class="deliver-viewer-title-wrap"
+        >
 
-          <span class="deliver-viewer-eyebrow">
+          <span
+            class="deliver-viewer-eyebrow"
+          >
             FULL RESOLUTION
           </span>
 
+
           <strong
-            id="deliver-viewer-title"
             class="deliver-viewer-title"
-          ></strong>
+          >
+          </strong>
 
         </div>
 
@@ -375,28 +740,47 @@ function ensureFullResolutionViewer() {
           class="deliver-viewer-close"
           aria-label="Close full resolution viewer"
         >
-          ×
+
+          <span
+            aria-hidden="true"
+          >
+            ×
+          </span>
+
         </button>
 
-      </div>
+      </header>
 
 
-      <div class="deliver-viewer-stage">
+      <main
+        class="deliver-viewer-stage"
+      >
 
         <div
           class="deliver-viewer-loading"
+          role="status"
           aria-live="polite"
         >
-          Loading full-resolution image…
+
+          <span
+            class="deliver-viewer-spinner"
+            aria-hidden="true"
+          >
+          </span>
+
+
+          <span>
+            Loading full-resolution image…
+          </span>
+
         </div>
 
 
         <img
-          id="deliver-viewer-image"
           class="deliver-viewer-image"
           alt=""
           hidden
-        >
+        />
 
 
         <div
@@ -404,34 +788,70 @@ function ensureFullResolutionViewer() {
           hidden
         >
 
+          <div
+            class="deliver-viewer-error-icon"
+            aria-hidden="true"
+          >
+            !
+          </div>
+
+
           <strong>
-            Preview unavailable
+            Unable to load the image
           </strong>
 
+
           <span>
-            The full-resolution image could not be loaded.
+            The original file is still available
+            for download.
           </span>
+
+
+          <button
+            type="button"
+            class="deliver-viewer-retry"
+          >
+            Try Again
+          </button>
 
         </div>
 
-      </div>
+      </main>
 
 
-      <div class="deliver-viewer-footer">
+      <footer
+        class="deliver-viewer-footer"
+      >
 
-        <span class="deliver-viewer-hint">
-          Press Esc to close
-        </span>
+        <div
+          class="deliver-viewer-footer-info"
+        >
+
+          <span>
+            Full-resolution preview
+          </span>
+
+        </div>
 
 
         <button
           type="button"
           class="deliver-viewer-download"
         >
-          Download
+
+          <span
+            aria-hidden="true"
+          >
+            ↓
+          </span>
+
+          <span>
+            Download
+          </span>
+
         </button>
 
-      </div>
+      </footer>
 
     </div>
 
@@ -439,166 +859,366 @@ function ensureFullResolutionViewer() {
 
 
   document.body.appendChild(
-    fullResolutionDialog
+    fullResolutionViewer
   );
 
 
+  /*
+    Cache the elements.
+  */
+
   fullResolutionImage =
-    fullResolutionDialog.querySelector(
-      "#deliver-viewer-image"
+    fullResolutionViewer.querySelector(
+      ".deliver-viewer-image"
     );
 
 
   fullResolutionTitle =
-    fullResolutionDialog.querySelector(
-      "#deliver-viewer-title"
-    );
-
-
-  fullResolutionDownload =
-    fullResolutionDialog.querySelector(
-      ".deliver-viewer-download"
+    fullResolutionViewer.querySelector(
+      ".deliver-viewer-title"
     );
 
 
   fullResolutionLoading =
-    fullResolutionDialog.querySelector(
+    fullResolutionViewer.querySelector(
       ".deliver-viewer-loading"
     );
 
 
   fullResolutionError =
-    fullResolutionDialog.querySelector(
+    fullResolutionViewer.querySelector(
       ".deliver-viewer-error"
     );
 
 
-  const closeButton =
-    fullResolutionDialog.querySelector(
+  fullResolutionRetry =
+    fullResolutionViewer.querySelector(
+      ".deliver-viewer-retry"
+    );
+
+
+  fullResolutionDownload =
+    fullResolutionViewer.querySelector(
+      ".deliver-viewer-download"
+    );
+
+
+  fullResolutionClose =
+    fullResolutionViewer.querySelector(
       ".deliver-viewer-close"
     );
 
 
-  closeButton?.addEventListener(
+  /* =======================================================
+     CLOSE BUTTON
+  ======================================================= */
+
+  fullResolutionClose?.addEventListener(
     "click",
-    closeFullResolutionViewer
+    () => {
+
+      closeFullResolutionViewer();
+
+    }
   );
 
 
-  fullResolutionDialog.addEventListener(
+  /* =======================================================
+     RETRY BUTTON
+  ======================================================= */
+
+  fullResolutionRetry?.addEventListener(
+    "click",
+    () => {
+
+      if (
+        activeViewerFile
+      ) {
+
+        loadFullResolutionImage(
+          activeViewerFile,
+          true
+        );
+
+      }
+
+    }
+  );
+
+
+  /* =======================================================
+     DOWNLOAD BUTTON
+  ======================================================= */
+
+  fullResolutionDownload?.addEventListener(
+    "click",
+    () => {
+
+      if (
+        activeViewerFile
+      ) {
+
+        download(
+          activeViewerFile,
+          fullResolutionDownload
+        );
+
+      }
+
+    }
+  );
+
+
+  /* =======================================================
+     IMAGE LOAD SUCCESS
+  ======================================================= */
+
+  fullResolutionImage?.addEventListener(
+    "load",
+    () => {
+
+      /*
+        Make sure the viewer is still showing an
+        active image.
+      */
+
+      if (
+        !activeViewerFile
+      ) {
+
+        return;
+
+      }
+
+
+      if (
+        fullResolutionLoading
+      ) {
+
+        fullResolutionLoading.hidden =
+          true;
+
+      }
+
+
+      if (
+        fullResolutionError
+      ) {
+
+        fullResolutionError.hidden =
+          true;
+
+      }
+
+
+      if (
+        fullResolutionImage
+      ) {
+
+        fullResolutionImage.hidden =
+          false;
+
+      }
+
+    }
+  );
+
+
+  /* =======================================================
+     IMAGE LOAD FAILURE
+  ======================================================= */
+
+  fullResolutionImage?.addEventListener(
+    "error",
+    () => {
+
+      console.error(
+        "[Boztik Deliver] Full-resolution image failed:",
+        activeViewerFile?.file_name
+      );
+
+
+      if (
+        fullResolutionLoading
+      ) {
+
+        fullResolutionLoading.hidden =
+          true;
+
+      }
+
+
+      if (
+        fullResolutionImage
+      ) {
+
+        fullResolutionImage.hidden =
+          true;
+
+      }
+
+
+      if (
+        fullResolutionError
+      ) {
+
+        fullResolutionError.hidden =
+          false;
+
+      }
+
+    }
+  );
+
+
+  /* =======================================================
+     BACKDROP CLICK
+  ======================================================= */
+
+  fullResolutionViewer.addEventListener(
     "click",
     event => {
 
       if (
         event.target ===
-        fullResolutionDialog
+        fullResolutionViewer
       ) {
+
         closeFullResolutionViewer();
+
       }
 
     }
   );
 
 
-  fullResolutionImage.addEventListener(
-    "load",
-    () => {
+  /* =======================================================
+     ESCAPE KEY
+  ======================================================= */
 
-      if (fullResolutionLoading) {
-        fullResolutionLoading.hidden =
-          true;
-      }
+  fullResolutionViewer.addEventListener(
+    "cancel",
+    event => {
 
-      if (fullResolutionError) {
-        fullResolutionError.hidden =
-          true;
-      }
+      event.preventDefault();
 
-      fullResolutionImage.hidden =
-        false;
+      closeFullResolutionViewer();
 
     }
   );
 
 
-  fullResolutionImage.addEventListener(
-    "error",
-    () => {
+  /* =======================================================
+     CLEANUP WHEN CLOSED
+  ======================================================= */
 
-      if (fullResolutionLoading) {
-        fullResolutionLoading.hidden =
-          true;
-      }
-
-      fullResolutionImage.hidden =
-        true;
-
-      if (fullResolutionError) {
-        fullResolutionError.hidden =
-          false;
-      }
-
-    }
-  );
-
-
-  fullResolutionDialog.addEventListener(
+  fullResolutionViewer.addEventListener(
     "close",
     () => {
 
-      fullResolutionImage?.removeAttribute(
-        "src"
-      );
+      if (
+        fullResolutionImage
+      ) {
 
-      if (fullResolutionReturnFocus) {
+        fullResolutionImage.removeAttribute(
+          "src"
+        );
 
-        try {
-          fullResolutionReturnFocus.focus();
-        } catch {}
+        fullResolutionImage.hidden =
+          true;
 
       }
 
-      fullResolutionReturnFocus =
+
+      activeViewerFile =
         null;
+
+
+      /*
+        Return keyboard focus to the button that
+        opened the viewer.
+      */
+
+      if (
+        activeViewerTrigger
+      ) {
+
+        try {
+
+          activeViewerTrigger.focus();
+
+        } catch {
+
+          /*
+            Focus restoration is non-critical.
+          */
+
+        }
+
+      }
+
+
+      activeViewerTrigger =
+        null;
+
     }
   );
 
 }
 
 
-async function openFullResolution(
+/* =========================================================
+   LOAD FULL RESOLUTION IMAGE
+========================================================= */
+
+async function loadFullResolutionImage(
   file,
-  triggerButton = null
+  forceRefresh = false
 ) {
 
-  ensureFullResolutionViewer();
+  createFullResolutionViewer();
 
 
-  fullResolutionReturnFocus =
-    triggerButton ||
-    document.activeElement;
+  activeViewerFile =
+    file;
 
 
-  if (fullResolutionLoading) {
+  /*
+    Reset viewer state.
+  */
+
+  if (
+    fullResolutionLoading
+  ) {
+
     fullResolutionLoading.hidden =
       false;
+
   }
 
 
-  if (fullResolutionError) {
+  if (
+    fullResolutionError
+  ) {
+
     fullResolutionError.hidden =
       true;
+
   }
 
 
-  if (fullResolutionImage) {
+  if (
+    fullResolutionImage
+  ) {
 
     fullResolutionImage.hidden =
       true;
 
+
     fullResolutionImage.removeAttribute(
       "src"
     );
+
 
     fullResolutionImage.alt =
       `Full resolution view of ${
@@ -608,7 +1228,115 @@ async function openFullResolution(
   }
 
 
-  if (fullResolutionTitle) {
+  try {
+
+    /*
+      Get a fresh or cached signed preview URL.
+    */
+
+    const url =
+      await getPreviewUrl(
+        file,
+        forceRefresh
+      );
+
+
+    /*
+      The user may have clicked another file while
+      this request was running.
+
+      Do not apply an old URL to the new viewer.
+    */
+
+    if (
+      activeViewerFile !==
+      file
+    ) {
+
+      return;
+
+    }
+
+
+    if (
+      !fullResolutionImage
+    ) {
+
+      throw new Error(
+        "Full-resolution image viewer is unavailable."
+      );
+
+    }
+
+
+    /*
+      Set src only after the viewer and image element
+      already exist.
+    */
+
+    fullResolutionImage.src =
+      url;
+
+
+  } catch (
+    error
+  ) {
+
+    console.error(
+      "[Boztik Deliver] Full-resolution preview request failed:",
+      error
+    );
+
+
+    if (
+      fullResolutionLoading
+    ) {
+
+      fullResolutionLoading.hidden =
+        true;
+
+    }
+
+
+    if (
+      fullResolutionError
+    ) {
+
+      fullResolutionError.hidden =
+        false;
+
+    }
+
+  }
+
+}
+
+
+/* =========================================================
+   OPEN FULL RESOLUTION VIEWER
+========================================================= */
+
+function openFullResolutionViewer(
+  file,
+  trigger = null
+) {
+
+  createFullResolutionViewer();
+
+
+  activeViewerFile =
+    file;
+
+
+  activeViewerTrigger =
+    trigger ||
+    document.activeElement ||
+    null;
+
+
+  if (
+    fullResolutionTitle
+  ) {
 
     fullResolutionTitle.textContent =
       file.file_name ||
@@ -617,371 +1345,689 @@ async function openFullResolution(
   }
 
 
-  if (fullResolutionDownload) {
+  /*
+    Reset the viewer before opening.
+  */
 
-    fullResolutionDownload.onclick =
-      () => {
+  if (
+    fullResolutionLoading
+  ) {
 
-        download(
-          file,
-          fullResolutionDownload
-        );
-
-      };
+    fullResolutionLoading.hidden =
+      false;
 
   }
 
 
   if (
-    !fullResolutionDialog.open
+    fullResolutionError
   ) {
 
-    fullResolutionDialog.showModal();
+    fullResolutionError.hidden =
+      true;
 
   }
 
 
-  try {
+  if (
+    fullResolutionImage
+  ) {
 
-    const url =
-      await getCachedPreviewUrl(
-        file
-      );
+    fullResolutionImage.hidden =
+      true;
 
-
-    if (!fullResolutionImage) {
-      throw new Error(
-        "Full-resolution viewer image element is unavailable."
-      );
-    }
-
-
-    /*
-      Set src only after the viewer and image element
-      are already in the DOM.
-    */
-
-    fullResolutionImage.src =
-      url;
-
-
-  } catch (error) {
-
-    console.error(
-      "[Boztik Deliver] Full resolution preview failed:",
-      file?.file_name,
-      error
+    fullResolutionImage.removeAttribute(
+      "src"
     );
 
-
-    if (fullResolutionLoading) {
-      fullResolutionLoading.hidden =
-        true;
-    }
-
-
-    if (fullResolutionImage) {
-      fullResolutionImage.hidden =
-        true;
-    }
-
-
-    if (fullResolutionError) {
-      fullResolutionError.hidden =
-        false;
-    }
-
   }
-}
 
-
-function closeFullResolutionViewer() {
 
   if (
-    fullResolutionDialog &&
-    fullResolutionDialog.open
+    !fullResolutionViewer.open
   ) {
 
-    fullResolutionDialog.close();
+    fullResolutionViewer.showModal();
 
   }
 
-}
 
-
-/* =========================================================
-   FILE TYPE HELPERS
-========================================================= */
-
-function getFileExtension(fileName) {
-
-  return (
-    fileName
-      ?.split(".")
-      .pop()
-      ?.toUpperCase()
-      || "FILE"
+  loadFullResolutionImage(
+    file
   );
 
 }
 
 
 /* =========================================================
-   FILE CARDS
+   CLOSE FULL RESOLUTION VIEWER
 ========================================================= */
 
-function renderFiles(files) {
+function closeFullResolutionViewer() {
 
-  if (!els.gallery) {
+  if (
+    fullResolutionViewer &&
+    fullResolutionViewer.open
+  ) {
+
+    fullResolutionViewer.close();
+
+  }
+
+}
+
+
+/* =========================================================
+   PREVIEW FALLBACK
+========================================================= */
+
+function buildPreviewFallbackHTML(
+  file
+) {
+
+  const extension =
+    getFileExtension(
+      file?.file_name
+    );
+
+
+  return `
+
+    <div
+      class="deliver-preview-fallback"
+    >
+
+      <div
+        class="deliver-preview-fallback-icon"
+        aria-hidden="true"
+      >
+        !
+      </div>
+
+
+      <strong>
+        Preview unavailable
+      </strong>
+
+
+      <span>
+        Your original file is still
+        available to download.
+      </span>
+
+
+      <small>
+        ${escapeHTML(extension)}
+      </small>
+
+    </div>
+
+  `;
+
+}
+
+
+/* =========================================================
+   LOAD IMAGE PREVIEW
+========================================================= */
+
+async function loadImagePreview(
+  file,
+  previewContainer
+) {
+
+  if (
+    !file ||
+    !previewContainer
+  ) {
+
     return;
+
   }
 
 
-  clearPreviewUrlCache();
+  try {
+
+    /*
+      Obtain the signed URL.
+
+      Because getPreviewUrl() uses the cache, the
+      file-information system can reuse this URL.
+    */
+
+    const url =
+      await getPreviewUrl(
+        file
+      );
 
 
-  if (!Array.isArray(files)) {
-    els.gallery.innerHTML = "";
-    return;
+    /*
+      Create a button around the image.
+
+      Clicking the preview opens the full-resolution
+      viewer instead of navigating the client away
+      from the delivery page.
+    */
+
+    const previewButton =
+      document.createElement(
+        "button"
+      );
+
+
+    previewButton.type =
+      "button";
+
+
+    previewButton.className =
+      "deliver-preview-button";
+
+
+    previewButton.setAttribute(
+      "aria-label",
+      `View ${
+        file.file_name || "image"
+      } in full resolution`
+    );
+
+
+    /*
+      Create the actual image element.
+    */
+
+    const image =
+      document.createElement(
+        "img"
+      );
+
+
+    image.className =
+      "deliver-preview-image";
+
+
+    image.alt =
+      `Preview of ${
+        file.file_name || "image"
+      }`;
+
+
+    /*
+      These are the primary images on the delivery
+      page, so eager loading is preferable to lazy
+      loading.
+    */
+
+    image.loading =
+      "eager";
+
+
+    image.decoding =
+      "async";
+
+
+    image.draggable =
+      false;
+
+
+    /*
+      Insert the image into the button first.
+    */
+
+    previewButton.appendChild(
+      image
+    );
+
+
+    /*
+      Replace the temporary loading state.
+    */
+
+    previewContainer.innerHTML =
+      "";
+
+
+    previewContainer.appendChild(
+      previewButton
+    );
+
+
+    /*
+      Mark the container as currently loading.
+    */
+
+    previewContainer.classList.add(
+      "preview-loading"
+    );
+
+
+    previewContainer.classList.remove(
+      "preview-loaded"
+    );
+
+
+    previewContainer.classList.remove(
+      "preview-error"
+    );
+
+
+    /* =====================================================
+       IMAGE SUCCESS
+    ===================================================== */
+
+    image.addEventListener(
+      "load",
+      () => {
+
+        console.log(
+          "[Boztik Deliver] Preview loaded:",
+          file.file_name
+        );
+
+
+        previewContainer.classList.remove(
+          "preview-loading"
+        );
+
+
+        previewContainer.classList.remove(
+          "preview-error"
+        );
+
+
+        previewContainer.classList.add(
+          "preview-loaded"
+        );
+
+
+        /*
+          Give the browser one animation frame before
+          showing the final image. This allows CSS
+          transitions to work smoothly.
+        */
+
+        requestAnimationFrame(
+          () => {
+
+            image.classList.add(
+              "is-loaded"
+            );
+
+          }
+        );
+
+      },
+      {
+        once: true
+      }
+    );
+
+
+    /* =====================================================
+       IMAGE FAILURE
+    ===================================================== */
+
+    image.addEventListener(
+      "error",
+      async () => {
+
+        console.warn(
+          "[Boztik Deliver] Preview failed. Requesting fresh signed URL:",
+          file.file_name
+        );
+
+
+        /*
+          Remove the cached URL because the browser
+          rejected it.
+        */
+
+        invalidatePreviewUrl(
+          file
+        );
+
+
+        try {
+
+          const freshUrl =
+            await getPreviewUrl(
+              file,
+              true
+            );
+
+
+          /*
+            Make sure the preview container is still
+            attached to the page.
+          */
+
+          if (
+            !previewContainer.isConnected
+          ) {
+
+            return;
+
+          }
+
+
+          /*
+            Reset state.
+          */
+
+          previewContainer.classList.remove(
+            "preview-error"
+          );
+
+
+          previewContainer.classList.add(
+            "preview-loading"
+          );
+
+
+          /*
+            Retry with the new signed URL.
+          */
+
+          image.src =
+            freshUrl;
+
+
+        } catch (
+          retryError
+        ) {
+
+          console.error(
+            "[Boztik Deliver] Preview retry failed:",
+            file.file_name,
+            retryError
+          );
+
+
+          previewContainer.classList.remove(
+            "preview-loading"
+          );
+
+
+          previewContainer.classList.add(
+            "preview-error"
+          );
+
+
+          previewContainer.innerHTML =
+            buildPreviewFallbackHTML(
+              file
+            );
+
+        }
+
+      },
+      {
+        once: true
+      }
+    );
+
+
+    /* =====================================================
+       OPEN FULL RESOLUTION
+    ===================================================== */
+
+    previewButton.addEventListener(
+      "click",
+      () => {
+
+        openFullResolutionViewer(
+          file,
+          previewButton
+        );
+
+      }
+    );
+
+
+    /*
+      IMPORTANT:
+      Set the image source only after the image has
+      already been placed into the DOM.
+    */
+
+    image.src =
+      url;
+
+
+  } catch (
+    error
+  ) {
+
+    console.error(
+      "[Boztik Deliver] Could not prepare preview:",
+      file.file_name,
+      error
+    );
+
+
+    previewContainer.classList.remove(
+      "preview-loading"
+    );
+
+
+    previewContainer.classList.add(
+      "preview-error"
+    );
+
+
+    previewContainer.innerHTML =
+      buildPreviewFallbackHTML(
+        file
+      );
+
   }
 
-
-  els.gallery.innerHTML =
-    files.map(
-      (file, index) => {
-
-        const previewable =
-          isPreviewable(
-            file.file_name
-          );
+}
 
 
-        const extension =
-          getFileExtension(
-            file.file_name
-          );
+/* =========================================================
+   BUILD FILE CARD
+========================================================= */
+
+function buildFileCardHTML(
+  file,
+  index
+) {
+
+  const previewable =
+    isPreviewable(
+      file.file_name
+    );
 
 
-        return `
+  const extension =
+    getFileExtension(
+      file.file_name
+    );
 
-          <article
-            class="file-card-premium"
-            data-file-card="${index}"
-          >
 
+  const safeFileName =
+    escapeHTML(
+      file.file_name
+    );
+
+
+  const safeExtension =
+    escapeHTML(
+      extension
+    );
+
+
+  const safeSize =
+    escapeHTML(
+      formatBytes(
+        file.file_size
+      )
+    );
+
+
+  return `
+
+    <article
+      class="deliver-file-card"
+      data-file-card="${index}"
+    >
+
+      ${
+        previewable
+
+          ? `
 
             <div
-              class="file-preview-wrap"
+              class="deliver-file-preview"
               data-preview="${index}"
             >
 
-              ${
-                previewable
+              <div
+                class="deliver-preview-loading"
+              >
 
-                  ? `
+                <span
+                  class="deliver-preview-spinner"
+                  aria-hidden="true"
+                >
+                </span>
 
-                    <div
-                      class="file-preview-loading"
-                    >
 
-                      <span
-                        class="preview-spinner"
-                        aria-hidden="true"
-                      ></span>
+                <span>
+                  Loading preview…
+                </span>
 
-                      <span>
-                        Loading preview…
-                      </span>
-
-                    </div>
-
-                  `
-
-                  : `
-
-                    <div
-                      class="file-type-placeholder"
-                    >
-
-                      <span
-                        class="file-type-badge"
-                      >
-                        ${escapeHTML(extension)}
-                      </span>
-
-                      <span>
-                        Preview not available
-                      </span>
-
-                    </div>
-
-                  `
-              }
+              </div>
 
             </div>
 
+          `
+
+          : `
 
             <div
-              class="file-info-premium"
+              class="deliver-file-preview deliver-file-preview-generic"
             >
 
-
               <div
-                class="file-heading"
-              >
-
-                <span
-                  class="file-heading-label"
-                >
-                  DELIVERED FILE
-                </span>
-
-
-                <strong
-                  class="file-name-premium"
-                >
-                  ${escapeHTML(
-                    file.file_name
-                  )}
-                </strong>
-
-              </div>
-
-
-              <div
-                class="file-meta-line"
+                class="deliver-file-icon"
+                aria-hidden="true"
               >
 
                 <span>
-                  ${escapeHTML(
-                    formatBytes(
-                      file.file_size
-                    )
-                  )}
-                </span>
-
-                <span
-                  class="meta-divider"
-                  aria-hidden="true"
-                >
-                  •
-                </span>
-
-                <span>
-                  ${escapeHTML(
-                    extension
-                  )}
+                  ${safeExtension}
                 </span>
 
               </div>
 
+            </div>
 
-              <div
-                class="fileinfo-slot"
-                data-info="${index}"
-              ></div>
-
-
-              <div
-                class="file-actions"
-              >
-
-                ${
-                  previewable
-
-                    ? `
-
-                      <button
-                        class="
-                          btn-secondary-deliver
-                          file-view-button
-                        "
-                        type="button"
-                        data-view="${index}"
-                      >
-
-                        <span
-                          class="button-icon"
-                          aria-hidden="true"
-                        >
-
-                          <svg
-                            viewBox="0 0 24 24"
-                            fill="none"
-                          >
-
-                            <path
-                              d="M2.5 12s3.5-6 9.5-6
-                                 9.5 6 9.5 6-3.5 6-9.5 6
-                                -9.5-6-9.5-6Z"
-                              stroke="currentColor"
-                              stroke-width="1.8"
-                            />
-
-                            <circle
-                              cx="12"
-                              cy="12"
-                              r="2.7"
-                              stroke="currentColor"
-                              stroke-width="1.8"
-                            />
-
-                          </svg>
-
-                        </span>
+          `
+      }
 
 
-                        <span>
-                          View Full Resolution
-                        </span>
+      <div
+        class="deliver-file-content"
+      >
 
-                      </button>
+        <div
+          class="deliver-file-heading"
+        >
 
-                    `
+          <span
+            class="deliver-file-eyebrow"
+          >
+            DELIVERED FILE
+          </span>
 
-                    : ""
-                }
 
+          <strong
+            class="deliver-file-name"
+            title="${safeFileName}"
+          >
+            ${safeFileName}
+          </strong>
+
+
+          <div
+            class="deliver-file-basic-meta"
+          >
+
+            <span>
+              ${safeSize}
+            </span>
+
+
+            <span
+              aria-hidden="true"
+            >
+              •
+            </span>
+
+
+            <span>
+              ${safeExtension}
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <div
+          class="fileinfo-slot"
+          data-info="${index}"
+        >
+
+          <div
+            class="deliver-fileinfo-loading"
+          >
+            Preparing file details…
+          </div>
+
+        </div>
+
+
+        <div
+          class="deliver-file-actions"
+        >
+
+          ${
+            previewable
+
+              ? `
 
                 <button
-                  class="
-                    btn-primary-deliver
-                    file-download-button
-                  "
                   type="button"
-                  data-download="${index}"
+                  class="deliver-file-view"
+                  data-view="${index}"
+                  aria-label="View ${safeFileName} in full resolution"
                 >
 
                   <span
-                    class="button-icon"
+                    class="deliver-button-icon"
                     aria-hidden="true"
                   >
 
                     <svg
                       viewBox="0 0 24 24"
                       fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
                     >
 
                       <path
-                        d="M12 3v11"
+                        d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"
                         stroke="currentColor"
                         stroke-width="1.8"
-                        stroke-linecap="round"
-                      />
-
-                      <path
-                        d="m7 10 5 5 5-5"
-                        stroke="currentColor"
-                        stroke-width="1.8"
-                        stroke-linecap="round"
                         stroke-linejoin="round"
                       />
 
-                      <path
-                        d="M4 20h16"
+                      <circle
+                        cx="12"
+                        cy="12"
+                        r="2.75"
                         stroke="currentColor"
                         stroke-width="1.8"
-                        stroke-linecap="round"
                       />
 
                     </svg>
@@ -990,21 +2036,161 @@ function renderFiles(files) {
 
 
                   <span>
-                    Download
+                    View Full Resolution
                   </span>
 
                 </button>
 
-              </div>
+              `
 
-            </div>
+              : ""
+          }
 
-          </article>
 
-        `;
+          <button
+            type="button"
+            class="deliver-file-download"
+            data-download="${index}"
+            aria-label="Download ${safeFileName}"
+          >
 
-      }
-    ).join("");
+            <span
+              class="deliver-button-icon"
+              aria-hidden="true"
+            >
+
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+
+                <path
+                  d="M12 3v11"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                />
+
+
+                <path
+                  d="m7 10 5 5 5-5"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+
+
+                <path
+                  d="M4 20h16"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                />
+
+              </svg>
+
+            </span>
+
+
+            <span>
+              Download
+            </span>
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </article>
+
+  `;
+
+}
+
+
+/* =========================================================
+   RENDER FILES
+========================================================= */
+
+function renderFiles(
+  files
+) {
+
+  if (
+    !els.gallery
+  ) {
+
+    console.error(
+      "[Boztik Deliver] Gallery element not found."
+    );
+
+
+    return;
+
+  }
+
+
+  /*
+    A new delivery render starts with a clean preview cache.
+  */
+
+  previewUrlCache.clear();
+
+
+  if (
+    !Array.isArray(files) ||
+    files.length === 0
+  ) {
+
+    els.gallery.innerHTML = `
+
+      <div
+        class="deliver-empty-files"
+      >
+
+        <strong>
+          No files are available.
+        </strong>
+
+
+        <span>
+          Please contact me if you believe
+          something is missing.
+        </span>
+
+      </div>
+
+    `;
+
+
+    return;
+
+  }
+
+
+  /*
+    Render all file cards immediately.
+
+    Preview images and metadata are loaded independently
+    afterwards.
+
+    This is important because a slow image must never make
+    the entire delivery page appear to be stuck loading.
+  */
+
+  els.gallery.innerHTML =
+    files
+      .map(
+        (file, index) =>
+          buildFileCardHTML(
+            file,
+            index
+          )
+      )
+      .join("");
 
 
   /* =======================================================
@@ -1015,72 +2201,88 @@ function renderFiles(files) {
     .querySelectorAll(
       "[data-download]"
     )
-    .forEach(button => {
+    .forEach(
+      button => {
 
-      button.addEventListener(
-        "click",
-        () => {
+        button.addEventListener(
+          "click",
+          () => {
 
-          const index =
-            Number(
-              button.dataset.download
-            );
+            const index =
+              Number(
+                button.dataset.download
+              );
 
 
-          if (
-            Number.isInteger(index) &&
-            files[index]
-          ) {
+            const file =
+              files[index];
+
+
+            if (
+              !file
+            ) {
+
+              return;
+
+            }
+
 
             download(
-              files[index],
+              file,
               button
             );
 
           }
+        );
 
-        }
-      );
-
-    });
+      }
+    );
 
 
   /* =======================================================
-     FULL RESOLUTION BUTTONS
+     VIEW FULL RESOLUTION BUTTONS
   ======================================================= */
 
   els.gallery
     .querySelectorAll(
       "[data-view]"
     )
-    .forEach(button => {
+    .forEach(
+      button => {
 
-      button.addEventListener(
-        "click",
-        () => {
+        button.addEventListener(
+          "click",
+          () => {
 
-          const index =
-            Number(
-              button.dataset.view
-            );
+            const index =
+              Number(
+                button.dataset.view
+              );
 
 
-          if (
-            Number.isInteger(index) &&
-            files[index]
-          ) {
+            const file =
+              files[index];
 
-            openFullResolution(
-              files[index],
+
+            if (
+              !file
+            ) {
+
+              return;
+
+            }
+
+
+            openFullResolutionViewer(
+              file,
               button
             );
 
           }
+        );
 
-        }
-      );
-
-    });
+      }
+    );
 
 
   /* =======================================================
@@ -1091,34 +2293,45 @@ function renderFiles(files) {
     .querySelectorAll(
       "[data-preview]"
     )
-    .forEach(preview => {
+    .forEach(
+      previewContainer => {
 
-      const index =
-        Number(
-          preview.dataset.preview
+        const index =
+          Number(
+            previewContainer.dataset.preview
+          );
+
+
+        const file =
+          files[index];
+
+
+        if (
+          !file ||
+          !isPreviewable(
+            file.file_name
+          )
+        ) {
+
+          return;
+
+        }
+
+
+        /*
+          Fire and forget.
+
+          loadImagePreview() catches its own errors,
+          so a preview problem cannot break the delivery.
+        */
+
+        loadImagePreview(
+          file,
+          previewContainer
         );
 
-
-      const file =
-        files[index];
-
-
-      if (
-        !file ||
-        !isPreviewable(
-          file.file_name
-        )
-      ) {
-        return;
       }
-
-
-      loadImagePreview(
-        file,
-        preview
-      );
-
-    });
+    );
 
 
   /* =======================================================
@@ -1129,263 +2342,35 @@ function renderFiles(files) {
     .querySelectorAll(
       "[data-info]"
     )
-    .forEach(slot => {
+    .forEach(
+      slot => {
 
-      const index =
-        Number(
-          slot.dataset.info
-        );
+        const index =
+          Number(
+            slot.dataset.info
+          );
 
 
-      if (
-        Number.isInteger(index) &&
-        files[index]
-      ) {
+        const file =
+          files[index];
+
+
+        if (
+          !file
+        ) {
+
+          return;
+
+        }
+
 
         renderFileInfo(
-          files[index],
+          file,
           slot
         );
 
       }
-
-    });
-
-}
-
-
-/* =========================================================
-   IMAGE PREVIEW LOADER
-========================================================= */
-
-async function loadImagePreview(
-  file,
-  preview
-) {
-
-  if (!preview) {
-    return;
-  }
-
-
-  try {
-
-    /*
-      Obtain the signed URL once and cache it.
-    */
-
-    const url =
-      await getCachedPreviewUrl(
-        file
-      );
-
-
-    if (!url) {
-      throw new Error(
-        "No preview URL was returned."
-      );
-    }
-
-
-    /*
-      Create the clickable preview container.
-    */
-
-    const link =
-      document.createElement(
-        "button"
-      );
-
-
-    link.type =
-      "button";
-
-
-    link.className =
-      "file-preview-link";
-
-
-    link.setAttribute(
-      "aria-label",
-      `View ${
-        file.file_name || "image"
-      } in full resolution`
     );
-
-
-    /*
-      Create the image element.
-    */
-
-    const img =
-      document.createElement(
-        "img"
-      );
-
-
-    img.alt =
-      `Preview of ${
-        file.file_name || "image"
-      }`;
-
-
-    img.decoding =
-      "async";
-
-
-    /*
-      Do not lazy-load the primary client preview.
-
-      These images are the central content of the
-      delivery page and should begin loading immediately.
-    */
-
-    img.loading =
-      "eager";
-
-
-    /*
-      Insert the image into the document BEFORE assigning src.
-    */
-
-    link.appendChild(
-      img
-    );
-
-
-    preview.innerHTML =
-      "";
-
-
-    preview.appendChild(
-      link
-    );
-
-
-    /*
-      Successful image load.
-    */
-
-    img.addEventListener(
-      "load",
-      () => {
-
-        preview.classList.add(
-          "preview-loaded"
-        );
-
-      },
-      { once: true }
-    );
-
-
-    /*
-      Image decode failure / invalid image response.
-    */
-
-    img.addEventListener(
-      "error",
-      () => {
-
-        console.error(
-          "[Boztik Deliver] Image preview failed:",
-          file.file_name
-        );
-
-
-        preview.innerHTML = `
-
-          <div
-            class="file-preview-fallback"
-          >
-
-            <div
-              class="preview-fallback-icon"
-              aria-hidden="true"
-            >
-              !
-            </div>
-
-            <strong>
-              Preview unavailable
-            </strong>
-
-            <span>
-              The file is still available
-              to download.
-            </span>
-
-          </div>
-
-        `;
-
-      },
-      { once: true }
-    );
-
-
-    /*
-      Clicking the image opens the full-resolution viewer.
-    */
-
-    link.addEventListener(
-      "click",
-      () => {
-
-        openFullResolution(
-          file,
-          link
-        );
-
-      }
-    );
-
-
-    /*
-      IMPORTANT:
-      Set src only AFTER the image is already attached.
-    */
-
-    img.src =
-      url;
-
-
-  } catch (error) {
-
-    console.error(
-      "[Boztik Deliver] signedPreview() failed:",
-      file?.file_name,
-      error
-    );
-
-
-    preview.innerHTML = `
-
-      <div
-        class="file-preview-fallback"
-      >
-
-        <div
-          class="preview-fallback-icon"
-          aria-hidden="true"
-        >
-          !
-        </div>
-
-        <strong>
-          Preview unavailable
-        </strong>
-
-        <span>
-          The file is still available
-          to download.
-        </span>
-
-      </div>
-
-    `;
-
-  }
 
 }
 
@@ -1399,8 +2384,13 @@ async function renderFileInfo(
   slot
 ) {
 
-  if (!file || !slot) {
+  if (
+    !file ||
+    !slot
+  ) {
+
     return;
+
   }
 
 
@@ -1423,7 +2413,7 @@ async function renderFileInfo(
     );
 
 
-  const isImage =
+  const imageFile =
     isPreviewable(
       file.file_name
     );
@@ -1435,20 +2425,27 @@ async function renderFileInfo(
        IMAGE INFORMATION
     ===================================================== */
 
-    if (isImage) {
+    if (
+      imageFile
+    ) {
 
       /*
-        Reuse the exact same signed URL used
-        by the visible image preview.
+        IMPORTANT:
+
+        Reuse the same signed preview URL that the
+        visual preview uses.
+
+        This is one of the main changes from the old
+        implementation.
       */
 
       const url =
-        await getCachedPreviewUrl(
+        await getPreviewUrl(
           file
         );
 
 
-      const dims =
+      const dimensions =
         await getImageDimensions(
           url
         );
@@ -1459,11 +2456,15 @@ async function renderFileInfo(
 
 
       /*
-        EXIF is currently extracted only from JPEG files.
+        EXIF is optional.
+
+        If it fails, the image information still
+        displays normally.
       */
 
       if (
-        mimeType === "image/jpeg"
+        mimeType ===
+        "image/jpeg"
       ) {
 
         try {
@@ -1489,12 +2490,14 @@ async function renderFileInfo(
 
           }
 
-        } catch (error) {
+        } catch (
+          exifError
+        ) {
 
           console.warn(
             "[Boztik Deliver] EXIF unavailable:",
             file.file_name,
-            error
+            exifError
           );
 
         }
@@ -1515,10 +2518,10 @@ async function renderFileInfo(
           mimeType,
 
           width:
-            dims.width,
+            dimensions.width,
 
           height:
-            dims.height,
+            dimensions.height,
 
           exif
 
@@ -1526,11 +2529,12 @@ async function renderFileInfo(
 
 
       return;
+
     }
 
 
     /* =====================================================
-       NON-IMAGE FILE INFORMATION
+       GENERIC FILE INFORMATION
     ===================================================== */
 
     let pageCount =
@@ -1538,21 +2542,21 @@ async function renderFileInfo(
 
 
     /*
-      PDF metadata is optional.
-
-      We reuse the cached signed URL.
+      PDFs get a best-effort page count.
     */
 
     if (
       file.file_name
         ?.toLowerCase()
-        .endsWith(".pdf")
+        .endsWith(
+          ".pdf"
+        )
     ) {
 
       try {
 
         const url =
-          await getCachedPreviewUrl(
+          await getPreviewUrl(
             file
           );
 
@@ -1578,11 +2582,14 @@ async function renderFileInfo(
 
         }
 
-      } catch (error) {
+      } catch (
+        pdfError
+      ) {
 
         console.warn(
-          "[Boztik Deliver] PDF metadata unavailable:",
-          file.file_name
+          "[Boztik Deliver] PDF page count unavailable:",
+          file.file_name,
+          pdfError
         );
 
       }
@@ -1607,15 +2614,19 @@ async function renderFileInfo(
       });
 
 
-  } catch (error) {
+  } catch (
+    error
+  ) {
 
     /*
-      Metadata failure must NEVER make the whole
-      delivery page enter the global error state.
+      File metadata is non-critical.
+
+      Never allow metadata failure to cause the
+      entire delivery page to fail.
     */
 
     console.warn(
-      "[Boztik Deliver] File metadata unavailable:",
+      "[Boztik Deliver] File information could not be loaded:",
       file.file_name,
       error
     );
@@ -1624,17 +2635,22 @@ async function renderFileInfo(
     slot.innerHTML = `
 
       <div
-        class="fileinfo-fallback"
+        class="deliver-fileinfo-fallback"
       >
 
         <span>
           File information
         </span>
 
+
         <strong>
-          ${escapeHTML(format)}
+          ${escapeHTML(
+            format
+          )}
           ·
-          ${escapeHTML(sizeLabel)}
+          ${escapeHTML(
+            sizeLabel
+          )}
         </strong>
 
       </div>
@@ -1644,19 +2660,26 @@ async function renderFileInfo(
   }
 
 }
-
-
 /* =========================================================
    COUNTDOWN
 ========================================================= */
 
 function updateCountdown() {
 
+  /*
+    Do nothing if the delivery has not been loaded yet.
+
+    This prevents the countdown from throwing an error
+    during the initial page load.
+  */
+
   if (
     !delivery ||
     !delivery.expires_at
   ) {
+
     return;
+
   }
 
 
@@ -1666,11 +2689,29 @@ function updateCountdown() {
     );
 
 
-  if (value.expired) {
+  if (
+    value.expired
+  ) {
 
-    clearInterval(
+    /*
+      Stop the timer immediately.
+
+      The delivery is no longer available and the
+      client should see the expiry state.
+    */
+
+    if (
       timer
-    );
+    ) {
+
+      clearInterval(
+        timer
+      );
+
+      timer =
+        null;
+
+    }
 
 
     state(
@@ -1679,37 +2720,16 @@ function updateCountdown() {
 
 
     return;
+
   }
 
 
-  if (els.count) {
+  if (
+    els.count
+  ) {
 
     els.count.textContent =
       value.label;
-
-  }
-
-
-  if (els.countdownWrap) {
-
-    const isUrgent =
-      value.label.includes("h") &&
-      !value.label.includes("d");
-
-
-    if (isUrgent) {
-
-      els.countdownWrap.classList.add(
-        "warning"
-      );
-
-    } else {
-
-      els.countdownWrap.classList.remove(
-        "warning"
-      );
-
-    }
 
   }
 
@@ -1725,6 +2745,13 @@ function triggerFileSave(
   fileName
 ) {
 
+  /*
+    Use a temporary anchor so the browser handles
+    the signed Supabase URL as a download.
+
+    The anchor is removed immediately afterwards.
+  */
+
   const a =
     document.createElement(
       "a"
@@ -1736,11 +2763,16 @@ function triggerFileSave(
 
 
   a.download =
-    fileName;
+    fileName ||
+    "download";
 
 
   a.rel =
     "noopener";
+
+
+  a.style.display =
+    "none";
 
 
   document.body.appendChild(
@@ -1761,27 +2793,52 @@ function triggerFileSave(
 }
 
 
+/* =========================================================
+   DOWNLOAD SINGLE FILE
+========================================================= */
+
 async function download(
   file,
-  button = null
+  button
 ) {
+
+  /*
+    Do not allow the same button to be clicked twice
+    while a signed download URL is being generated.
+  */
 
   if (
     button?.disabled
   ) {
+
     return;
+
   }
 
 
-  const originalLabel =
+  const originalHTML =
     button?.innerHTML;
 
 
-  if (button) {
+  const originalText =
+    button?.textContent;
+
+
+  if (
+    button
+  ) {
 
     button.disabled =
       true;
 
+
+    /*
+      Preserve the button's icon by changing only the
+      visible text when possible.
+
+      If the button has a more complex structure,
+      temporarily show a simple preparing state.
+    */
 
     button.setAttribute(
       "aria-busy",
@@ -1789,13 +2846,54 @@ async function download(
     );
 
 
-    button.textContent =
-      "Preparing…";
+    const label =
+      button.querySelector(
+        "span:last-child"
+      );
+
+
+    if (
+      label
+    ) {
+
+      label.textContent =
+        "Preparing…";
+
+    } else {
+
+      button.textContent =
+        "Preparing…";
+
+    }
 
   }
 
 
   try {
+
+    /*
+      Never attempt a download without a valid file.
+    */
+
+    if (
+      !file ||
+      !file.file_path
+    ) {
+
+      throw new Error(
+        "This file does not have a valid download path."
+      );
+
+    }
+
+
+    /*
+      Get the secure, short-lived download URL.
+
+      The original file remains protected in storage;
+      the client only receives the signed URL needed
+      for this download.
+    */
 
     const url =
       await signedDownload(
@@ -1803,9 +2901,33 @@ async function download(
       );
 
 
+    if (
+      !url ||
+      typeof url !== "string"
+    ) {
+
+      throw new Error(
+        "The server returned an invalid download URL."
+      );
+
+    }
+
+
+    console.log(
+      "[Boztik Deliver] Download URL obtained:",
+      file.file_name
+    );
+
+
+    /* =====================================================
+       RECORD DOWNLOAD ANALYTICS
+    ===================================================== */
+
     /*
-      Analytics failure must never prevent
-      the actual download.
+      Analytics are deliberately fire-and-forget.
+
+      If the analytics request fails, the client must
+      still receive the file.
     */
 
     if (
@@ -1828,9 +2950,20 @@ async function download(
     }
 
 
+    /* =====================================================
+       OPTIONAL SUPPORT MESSAGE
+    ===================================================== */
+
     /*
-      Show the support message only after a
-      successful download URL has been prepared.
+      The support message is shown only after the
+      secure download URL has already been generated.
+
+      Therefore it cannot interfere with:
+      
+      - expiry validation
+      - file access
+      - signed URL generation
+      - download errors
     */
 
     if (
@@ -1839,18 +2972,33 @@ async function download(
 
       markSupportPopupSeen();
 
+
       showSupportPopup();
+
+
+      /*
+        Give the support message a brief moment to be
+        seen before the browser potentially opens its
+        download UI.
+
+        If the browser blocks or delays downloads,
+        the user still has the support dialog available.
+      */
 
       await new Promise(
         resolve =>
           setTimeout(
             resolve,
-            1500
+            1200
           )
       );
 
     }
 
+
+    /* =====================================================
+       START FILE DOWNLOAD
+    ===================================================== */
 
     triggerFileSave(
       url,
@@ -1858,7 +3006,9 @@ async function download(
     );
 
 
-  } catch (error) {
+  } catch (
+    error
+  ) {
 
     console.error(
       "[Boztik Deliver] Download failed:",
@@ -1867,15 +3017,24 @@ async function download(
     );
 
 
+    /*
+      Do not expose raw Supabase/database errors to
+      the client.
+
+      The developer console retains the technical error.
+    */
+
     toast(
-      "The download could not be prepared. Please try again.",
+      "The download could not be prepared. Please refresh and try again.",
       "error"
     );
 
 
   } finally {
 
-    if (button) {
+    if (
+      button
+    ) {
 
       button.disabled =
         false;
@@ -1886,8 +3045,28 @@ async function download(
       );
 
 
-      button.innerHTML =
-        originalLabel;
+      /*
+        Restore the original button structure.
+
+        This is safer than trying to reconstruct an SVG
+        or other markup manually.
+      */
+
+      if (
+        originalHTML !== undefined
+      ) {
+
+        button.innerHTML =
+          originalHTML;
+
+      } else if (
+        originalText !== undefined
+      ) {
+
+        button.textContent =
+          originalText;
+
+      }
 
     }
 
@@ -1902,68 +3081,45 @@ async function download(
 
 async function init() {
 
-  initializationComplete =
-    false;
+  /*
+    The delivery ID is supplied in the URL:
 
+      client.html?id=BZ-XXXXXXXX
 
-  clearPreviewUrlCache();
-
+    Normalize it once.
+  */
 
   const id =
     new URLSearchParams(
       location.search
     )
-      .get("id")
+      .get(
+        "id"
+      )
       ?.trim()
       .toUpperCase();
 
 
   /*
-    Safety timeout.
+    Invalid IDs should behave exactly like an unavailable
+    delivery.
 
-    This only concerns the INITIAL delivery request.
-
-    Preview failures must NOT trigger this timeout
-    because previews are loaded independently after
-    the delivery has already become active.
+    Do not expose internal database information.
   */
-
-  setTimeout(
-    () => {
-
-      if (
-        !initializationComplete
-      ) {
-
-        console.warn(
-          "[Boztik Deliver] Initialization safety timeout reached."
-        );
-
-
-        showError({
-          message:
-            "The delivery is taking longer than expected to load. Please try refreshing."
-        });
-
-      }
-
-    },
-    10000
-  );
-
 
   if (
     !id ||
-    !/^BZ-[A-Z2-9-]+$/.test(id)
+    !/^BZ-[A-Z2-9-]+$/.test(
+      id
+    )
   ) {
 
-    initializationComplete =
-      true;
-
-
-    return state(
+    state(
       "expired"
     );
+
+
+    return;
 
   }
 
@@ -1971,7 +3127,10 @@ async function init() {
   try {
 
     /*
-      Fetch the public delivery record.
+      Ask the API layer for the public delivery.
+
+      This is the only request that determines whether
+      the delivery itself exists.
     */
 
     delivery =
@@ -1980,72 +3139,85 @@ async function init() {
       );
 
 
-    if (!delivery) {
+    /*
+      If the API returned nothing, treat the delivery
+      as unavailable.
+    */
 
-      initializationComplete =
-        true;
+    if (
+      !delivery
+    ) {
 
-      return state(
+      state(
         "expired"
       );
+
+
+      return;
 
     }
 
 
     /*
-      Check actual delivery expiry.
+      IMPORTANT:
+
+      Check expiry immediately after retrieving the
+      delivery.
+
+      Do not render client content or attempt preview
+      requests for an expired delivery.
     */
 
-    if (
+    const expiry =
       countdown(
         delivery.expires_at
-      ).expired
+      );
+
+
+    if (
+      expiry.expired
     ) {
 
-      initializationComplete =
-        true;
-
-      return state(
+      state(
         "expired"
       );
+
+
+      return;
 
     }
 
 
     /* =====================================================
-       POPULATE DELIVERY HEADER
+       DELIVERY HEADER
     ===================================================== */
 
-    if (els.title) {
+    if (
+      els.title
+    ) {
 
       els.title.textContent =
-        "Your finished work is ready";
+        delivery.project_name ||
+        "Your delivery";
 
     }
 
 
     if (
-      els.displayProjectName
+      els.client
     ) {
-
-      els.displayProjectName.textContent =
-        delivery.project_name ||
-        "Your project";
-
-    }
-
-
-    if (els.client) {
 
       els.client.textContent =
         delivery.client_name
-          ? `Prepared especially for ${delivery.client_name}`
-          : "Prepared especially for you";
+          ? `Prepared for ${delivery.client_name}`
+          : "";
 
     }
 
 
-    if (els.id) {
+    if (
+      els.id
+    ) {
 
       els.id.textContent =
         delivery.id;
@@ -2053,7 +3225,9 @@ async function init() {
     }
 
 
-    if (els.size) {
+    if (
+      els.size
+    ) {
 
       els.size.textContent =
         formatBytes(
@@ -2063,7 +3237,9 @@ async function init() {
     }
 
 
-    if (els.date) {
+    if (
+      els.date
+    ) {
 
       els.date.textContent =
         formatDate(
@@ -2072,6 +3248,10 @@ async function init() {
 
     }
 
+
+    /* =====================================================
+       EXPIRY DATE
+    ===================================================== */
 
     if (
       els.expiryDate &&
@@ -2091,18 +3271,36 @@ async function init() {
     }
 
 
+    /* =====================================================
+       CLIENT NOTES
+    ===================================================== */
+
     if (
-      delivery.notes &&
       els.notes &&
       els.notesWrap
     ) {
 
-      els.notes.textContent =
-        delivery.notes;
+      if (
+        delivery.notes
+      ) {
+
+        els.notes.textContent =
+          delivery.notes;
 
 
-      els.notesWrap.hidden =
-        false;
+        els.notesWrap.hidden =
+          false;
+
+      } else {
+
+        els.notes.textContent =
+          "";
+
+
+        els.notesWrap.hidden =
+          true;
+
+      }
 
     }
 
@@ -2111,29 +3309,53 @@ async function init() {
        RECORD DELIVERY VIEW
     ===================================================== */
 
-    recordView(
+    /*
+      Analytics must NEVER block the delivery.
+
+      The client can receive their files even if the
+      analytics endpoint is unavailable.
+    */
+
+    if (
       delivery.id
-    ).catch(
-      error => {
+    ) {
 
-        console.error(
-          "[Boztik Deliver] recordView failed:",
-          error
-        );
+      recordView(
+        delivery.id
+      ).catch(
+        error => {
 
-      }
-    );
+          console.error(
+            "[Boztik Deliver] recordView failed:",
+            error
+          );
+
+        }
+      );
+
+    }
 
 
     /* =====================================================
-       RESOLVE FILES
+       BUILD FILE LIST
     ===================================================== */
 
+    /*
+      Newer deliveries can contain multiple files in
+      delivery_files.
+
+      Older deliveries may still use the original
+      single-file columns.
+
+      Support both structures.
+    */
+
     const files =
-      delivery.delivery_files?.length
-
+      Array.isArray(
+        delivery.delivery_files
+      ) &&
+      delivery.delivery_files.length
         ? delivery.delivery_files
-
         : [
             {
               delivery_id:
@@ -2146,25 +3368,63 @@ async function init() {
                 delivery.file_name,
 
               file_size:
-                delivery.file_size
+                delivery.file_size,
+
+              file_type:
+                delivery.file_type ||
+                null
             }
           ];
 
 
     /*
-      Render the delivery files.
+      Filter out malformed records.
 
-      Preview and metadata loading happens independently.
-      A preview failure cannot reject this initialization.
+      A single bad row should not destroy the entire
+      delivery page.
+    */
+
+    const validFiles =
+      files.filter(
+        file =>
+          file &&
+          file.file_path &&
+          file.file_name
+      );
+
+
+    if (
+      validFiles.length === 0
+    ) {
+
+      throw new Error(
+        "No downloadable files were found for this delivery."
+      );
+
+    }
+
+
+    /* =====================================================
+       RENDER FILES
+    ===================================================== */
+
+    /*
+      IMPORTANT:
+
+      renderFiles() does not wait for previews.
+
+      This means the delivery itself becomes interactive
+      immediately while individual previews load in the
+      background.
     */
 
     renderFiles(
-      files
+      validFiles
     );
 
 
     /* =====================================================
-       DOWNLOAD ALL
+       DOWNLOAD ALL FILES
     ===================================================== */
 
     if (
@@ -2172,78 +3432,162 @@ async function init() {
     ) {
 
       /*
-        Avoid accidentally adding the event listener
-        more than once if init() is ever called again.
+        Prevent duplicate listeners if init() is ever
+        accidentally called more than once.
       */
 
       if (
-        els.all._boztikDownloadAllHandler
+        els.all.dataset.bound !== "true"
       ) {
 
-        els.all.removeEventListener(
+        els.all.dataset.bound =
+          "true";
+
+
+        els.all.addEventListener(
           "click",
-          els.all._boztikDownloadAllHandler
-        );
+          async () => {
 
-      }
-
-
-      const downloadAllHandler =
-        async () => {
-
-          if (
-            els.all.disabled
-          ) {
-            return;
-          }
-
-
-          els.all.disabled =
-            true;
-
-
-          const original =
-            els.all.innerHTML;
-
-
-          els.all.textContent =
-            "Preparing All Files…";
-
-
-          try {
-
-            for (
-              const file of files
+            if (
+              els.all.disabled
             ) {
 
-              await download(
-                file
-              );
+              return;
 
             }
 
-          } finally {
+
+            /*
+              Re-check expiry immediately before starting
+              a bulk download.
+            */
+
+            const currentExpiry =
+              countdown(
+                delivery.expires_at
+              );
+
+
+            if (
+              currentExpiry.expired
+            ) {
+
+              updateCountdown();
+
+
+              return;
+
+            }
+
 
             els.all.disabled =
-              false;
+              true;
 
 
-            els.all.innerHTML =
-              original;
+            els.all.setAttribute(
+              "aria-busy",
+              "true"
+            );
+
+
+            const originalHTML =
+              els.all.innerHTML;
+
+
+            /*
+              Preserve the button icon and change the
+              visible label where possible.
+            */
+
+            const label =
+              els.all.querySelector(
+                "span:last-child"
+              );
+
+
+            if (
+              label
+            ) {
+
+              label.textContent =
+                "Preparing…";
+
+            } else {
+
+              els.all.textContent =
+                "Preparing…";
+
+            }
+
+
+            try {
+
+              /*
+                Download sequentially.
+
+                Sequential downloads are intentional:
+                they reduce the chance of browsers blocking
+                multiple simultaneous downloads.
+              */
+
+              for (
+                const file of validFiles
+              ) {
+
+                await download(
+                  file
+                );
+
+              }
+
+
+            } catch (
+              error
+            ) {
+
+              /*
+                Individual download() calls already handle
+                their own failures.
+
+                Keep this as a final safety net.
+              */
+
+              console.error(
+                "[Boztik Deliver] Download-all failed:",
+                error
+              );
+
+
+              toast(
+                "Some files could not be downloaded. Please try them individually.",
+                "error"
+              );
+
+
+            } finally {
+
+              els.all.disabled =
+                false;
+
+
+              els.all.removeAttribute(
+                "aria-busy"
+              );
+
+
+              /*
+                Restore the original button markup.
+              */
+
+              els.all.innerHTML =
+                originalHTML;
+
+            }
 
           }
+        );
 
-        };
-
-
-      els.all._boztikDownloadAllHandler =
-        downloadAllHandler;
-
-
-      els.all.addEventListener(
-        "click",
-        downloadAllHandler
-      );
+      }
 
     }
 
@@ -2255,7 +3599,16 @@ async function init() {
     updateCountdown();
 
 
-    if (timer) {
+    /*
+      Update every 30 seconds.
+
+      The countdown function itself determines whether
+      the delivery has expired.
+    */
+
+    if (
+      timer
+    ) {
 
       clearInterval(
         timer
@@ -2271,15 +3624,9 @@ async function init() {
       );
 
 
-    /*
-      IMPORTANT:
-
-      Mark initialization complete BEFORE entering
-      active state.
-
-      This prevents the safety timeout from incorrectly
-      treating slow previews as an initialization failure.
-    */
+    /* =====================================================
+       DELIVERY IS READY
+    ===================================================== */
 
     initializationComplete =
       true;
@@ -2290,17 +3637,24 @@ async function init() {
     );
 
 
-  } catch (error) {
-
-    initializationComplete =
-      true;
-
+  } catch (
+    error
+  ) {
 
     console.error(
-      "Boztik Deliver client initialization failed:",
+      "[Boztik Deliver] Client initialization failed:",
       error
     );
 
+
+    /*
+      Only initialization failures reach the full-page
+      error state.
+
+      Individual preview failures, metadata failures,
+      analytics failures, and download failures are
+      handled independently.
+    */
 
     showError(
       error
@@ -2318,6 +3672,14 @@ async function init() {
 function showError(
   error
 ) {
+
+  /*
+    Do not reveal sensitive backend information to the
+    client.
+
+    The browser console retains the detailed error for
+    debugging.
+  */
 
   if (
     els.errorDetail
@@ -2351,9 +3713,7 @@ function showError(
 
     els.errorDetail.textContent =
       parts.length
-
         ? `Diagnostic: ${parts.join(" ")}`
-
         : "Diagnostic: no error details were available.";
 
 
@@ -2371,7 +3731,7 @@ function showError(
 
 
 /* =========================================================
-   SAFETY NET
+   SAFETY NET — UNCAUGHT JAVASCRIPT ERRORS
 ========================================================= */
 
 window.addEventListener(
@@ -2379,19 +3739,22 @@ window.addEventListener(
   event => {
 
     console.error(
-      "Boztik Deliver: uncaught error:",
+      "[Boztik Deliver] Uncaught error:",
       event.error ||
-      event.message
+        event.message
     );
 
 
     /*
-      Only show the global error state while the
-      actual delivery initialization is still running.
+      IMPORTANT:
 
-      Once the page is active, an individual preview
-      failure must NOT replace the whole delivery page
-      with an error screen.
+      Only show the full-page error if the delivery is
+      still in its initial loading state.
+
+      Once the delivery is active, a random UI error,
+      image error, browser extension error, or other
+      non-critical exception should NOT replace the
+      working delivery page with an error screen.
     */
 
     if (
@@ -2404,7 +3767,8 @@ window.addEventListener(
         event.error || {
           message:
             String(
-              event.message
+              event.message ||
+              "Unknown script error"
             )
         }
       );
@@ -2416,7 +3780,7 @@ window.addEventListener(
 
 
 /* =========================================================
-   UNHANDLED PROMISE SAFETY NET
+   SAFETY NET — UNHANDLED PROMISE REJECTIONS
 ========================================================= */
 
 window.addEventListener(
@@ -2424,17 +3788,17 @@ window.addEventListener(
   event => {
 
     console.error(
-      "Boztik Deliver: unhandled promise rejection:",
+      "[Boztik Deliver] Unhandled promise rejection:",
       event.reason
     );
 
 
     /*
-      Do not turn asynchronous preview/metadata failures
-      into a global delivery error.
+      Again, do NOT destroy an already-working delivery
+      because some unrelated promise failed.
 
-      Only initialization errors are allowed to control
-      the global state.
+      Only initialization failures before the delivery
+      becomes active should use the full-page error state.
     */
 
     if (
@@ -2446,7 +3810,7 @@ window.addEventListener(
       showError(
         event.reason || {
           message:
-            "An unexpected error occurred while loading the delivery."
+            "Unknown unhandled rejection"
         }
       );
 
@@ -2457,7 +3821,56 @@ window.addEventListener(
 
 
 /* =========================================================
-   START
+   PAGE CLEANUP
+========================================================= */
+
+window.addEventListener(
+  "beforeunload",
+  () => {
+
+    /*
+      Stop the countdown timer when the page is
+      being unloaded.
+    */
+
+    if (
+      timer
+    ) {
+
+      clearInterval(
+        timer
+      );
+
+
+      timer =
+        null;
+
+    }
+
+
+    /*
+      Remove the temporary full-resolution image URL
+      reference from the DOM.
+
+      The signed URL itself will naturally expire.
+    */
+
+    if (
+      fullResolutionImage
+    ) {
+
+      fullResolutionImage.removeAttribute(
+        "src"
+      );
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   START DELIVERY
 ========================================================= */
 
 init();
