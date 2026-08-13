@@ -208,6 +208,21 @@ set allowed_mime_types = array[
 ]
 where id = 'deliveries';
 
+-- Extend the signed-download policy to every file in a multi-file delivery.
+drop policy if exists "Anonymous can read files for active deliveries" on storage.objects;
+create policy "Anonymous can read files for active deliveries"
+  on storage.objects for select to anon
+  using (
+    bucket_id = 'deliveries' and (
+      exists (select 1 from public.deliveries d where d.file_path = storage.objects.name and d.expires_at > now())
+      or exists (
+        select 1 from public.delivery_files f
+        join public.deliveries d on d.id = f.delivery_id
+        where f.file_path = storage.objects.name and d.expires_at > now()
+      )
+    )
+  );
+
 -- =========================================================
 -- V3 UPGRADE: DELIVERY ACTIVITY
 -- These counters are deliberately non-blocking on the client. They provide

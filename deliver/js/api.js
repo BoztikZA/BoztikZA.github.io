@@ -4,6 +4,17 @@ import { supabase, safeFileName } from "./shared.js";
 const DELIVER_FILE_FUNCTION =
   `${config.supabaseUrl}/functions/v1/deliver-file`;
 
+async function requestStorageSignedUrl(file, mode) {
+  const options = mode === "download"
+    ? { download: file.file_name || file.file_path.split("/").pop() }
+    : undefined;
+  const { data, error } = await supabase().storage
+    .from(config.storageBucket)
+    .createSignedUrl(file.file_path, mode === "preview" ? 300 : 60, options);
+  if (error || !data?.signedUrl) throw error || new Error("Could not prepare this file.");
+  return data.signedUrl;
+}
+
 async function requestServerSignedUrl(file, mode) {
   if (!file?.file_path) {
     const error = new Error(
@@ -49,6 +60,14 @@ async function requestServerSignedUrl(file, mode) {
   }
 
   if (!response.ok) {
+    /*
+      A private Storage policy remains the fallback trust boundary. This
+      keeps previously deployed delivery pages working while the optional
+      Edge Function is being deployed or updated.
+    */
+    if (response.status === 404 || response.status >= 500) {
+      return requestStorageSignedUrl(file, mode);
+    }
     const message =
       result?.message ||
       result?.error ||
@@ -57,11 +76,7 @@ async function requestServerSignedUrl(file, mode) {
     throw new Error(message);
   }
 
-  if (!result?.signedUrl) {
-    throw new Error(
-      "The server did not return a signed download URL."
-    );
-  }
+  if (!result?.signedUrl) return requestStorageSignedUrl(file, mode);
 
   return result.signedUrl;
 }

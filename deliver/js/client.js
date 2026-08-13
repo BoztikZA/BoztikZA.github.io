@@ -2972,15 +2972,9 @@ async function download(
     );
 
     /*
-      Start the browser download while the original click gesture is still
-      active. Waiting for a modal here caused browsers to treat downloads as
-      pop-ups and block them. The optional support prompt is deliberately
-      deferred until after the file hand-off.
+      Keep the delivery action focused. Support remains available below the
+      files, but never interrupts or competes with a client's download.
     */
-    if (!hasSeenSupportPopup()) {
-      markSupportPopupSeen();
-      window.setTimeout(showSupportPopup, 250);
-    }
 
     return true;
 
