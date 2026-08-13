@@ -5165,3 +5165,38 @@ a:focus-visible {
     var(--deliver-text-muted);
 
 }
+
+/* Interaction polish: make every primary action consistently discoverable
+   without relying on colour alone, including keyboard and touch use. */
+.btn-primary-deliver:focus-visible,
+.btn-secondary-deliver:focus-visible,
+.deliver-file-download:focus-visible,
+.deliver-file-view:focus-visible,
+.dash-btn:focus-visible {
+  outline: 3px solid rgba(142, 255, 61, 0.65);
+  outline-offset: 3px;
+}
+
+.btn-primary-deliver:disabled,
+.deliver-file-download:disabled,
+.deliver-file-view:disabled {
+  cursor: wait;
+  opacity: 0.68;
+  transform: none;
+}
+
+.deliver-file-actions button,
+.deliver-file-actions a {
+  min-height: 42px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

@@ -2966,44 +2966,23 @@ async function download(
       - download errors
     */
 
-    if (
-      !hasSeenSupportPopup()
-    ) {
-
-      markSupportPopupSeen();
-
-
-      showSupportPopup();
-
-
-      /*
-        Give the support message a brief moment to be
-        seen before the browser potentially opens its
-        download UI.
-
-        If the browser blocks or delays downloads,
-        the user still has the support dialog available.
-      */
-
-      await new Promise(
-        resolve =>
-          setTimeout(
-            resolve,
-            1200
-          )
-      );
-
-    }
-
-
-    /* =====================================================
-       START FILE DOWNLOAD
-    ===================================================== */
-
     triggerFileSave(
       url,
       file.file_name
     );
+
+    /*
+      Start the browser download while the original click gesture is still
+      active. Waiting for a modal here caused browsers to treat downloads as
+      pop-ups and block them. The optional support prompt is deliberately
+      deferred until after the file hand-off.
+    */
+    if (!hasSeenSupportPopup()) {
+      markSupportPopupSeen();
+      window.setTimeout(showSupportPopup, 250);
+    }
+
+    return true;
 
 
   } catch (
@@ -3028,6 +3007,8 @@ async function download(
       "The download could not be prepared. Please refresh and try again.",
       "error"
     );
+
+    return false;
 
 
   } finally {
@@ -3530,14 +3511,26 @@ async function init() {
                 multiple simultaneous downloads.
               */
 
+              let succeeded = 0;
+
               for (
                 const file of validFiles
               ) {
 
-                await download(
+                const downloaded = await download(
                   file
                 );
 
+                if (downloaded) {
+                  succeeded += 1;
+                }
+
+              }
+
+              if (succeeded === validFiles.length) {
+                toast(`Preparing ${succeeded} file${succeeded === 1 ? "" : "s"} for download.`);
+              } else if (succeeded > 0) {
+                toast(`${succeeded} of ${validFiles.length} files were prepared. Please retry the remaining files individually.`, "error");
               }
 
 
@@ -3777,6 +3770,8 @@ window.addEventListener(
 
   }
 );
+
+document.querySelector("[data-delivery-retry]")?.addEventListener("click", () => location.reload());
 
 
 /* =========================================================

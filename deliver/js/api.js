@@ -35,6 +35,7 @@ async function requestServerSignedUrl(file, mode) {
     body: JSON.stringify({
       deliveryId,
       filePath: file.file_path,
+      fileName: file.file_name,
       mode
     })
   });
@@ -307,23 +308,37 @@ export async function duplicateDelivery(delivery) {
       .slice(2, 6)
       .toUpperCase()}`;
 
-  const { error } =
-    await supabase()
-      .from("deliveries")
-      .insert({
-        ...copy,
-        id: newId,
-        project_name:
-          `${copy.project_name} (copy)`,
-        expires_at:
-          new Date(
-            Date.now() +
-            24 * 3600000
-          ).toISOString()
-      });
+  const sourceFiles = delivery_files?.length
+    ? delivery_files
+    : [{ file_path: delivery.file_path, file_name: delivery.file_name, file_size: delivery.file_size }];
+  const copiedFiles = [];
 
-  if (error)
+  try {
+    for (const source of sourceFiles) {
+      const filePath = `${newId}/${crypto.randomUUID()}-${safeFileName(source.file_name)}`;
+      const { error: copyError } = await supabase().storage.from(config.storageBucket).copy(source.file_path, filePath);
+      if (copyError) throw copyError;
+      copiedFiles.push({ delivery_id: newId, file_path: filePath, file_name: source.file_name, file_size: source.file_size });
+    }
+
+    const { error } = await supabase().from("deliveries").insert({
+      ...copy,
+      id: newId,
+      file_path: copiedFiles[0].file_path,
+      file_name: copiedFiles[0].file_name,
+      file_size: copiedFiles.reduce((total, file) => total + Number(file.file_size || 0), 0),
+      project_name: `${copy.project_name} (copy)`,
+      expires_at: new Date(Date.now() + 24 * 3600000).toISOString()
+    });
+    if (error) throw error;
+
+    const { error: filesError } = await supabase().from("delivery_files").insert(copiedFiles);
+    if (filesError) throw filesError;
+  } catch (error) {
+    if (copiedFiles.length) await supabase().storage.from(config.storageBucket).remove(copiedFiles.map(file => file.file_path));
+    await supabase().from("deliveries").delete().eq("id", newId);
     throw error;
+  }
 
   return newId;
 }
@@ -394,8 +409,10 @@ export async function recordView(id) {
       error
     );
 
-    throw error;
+    return false;
   }
+
+  return true;
 }
 
 /*
@@ -422,8 +439,10 @@ export async function recordDownload(id) {
       error
     );
 
-    throw error;
+    return false;
   }
+
+  return true;
 }
 
 export async function signedDownload(file) {

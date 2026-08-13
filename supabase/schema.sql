@@ -207,3 +207,52 @@ set allowed_mime_types = array[
   'application/postscript', 'application/octet-stream'
 ]
 where id = 'deliveries';
+
+-- =========================================================
+-- V3 UPGRADE: DELIVERY ACTIVITY
+-- These counters are deliberately non-blocking on the client. They provide
+-- dashboard analytics without ever affecting a customer's download.
+-- =========================================================
+alter table public.deliveries
+  add column if not exists view_count integer not null default 0,
+  add column if not exists last_viewed_at timestamptz,
+  add column if not exists last_downloaded_at timestamptz;
+
+create table if not exists public.delivery_analytics (
+  delivery_id text not null references public.deliveries(id) on delete cascade,
+  month_start date not null,
+  view_count integer not null default 0,
+  download_count integer not null default 0,
+  primary key (delivery_id, month_start)
+);
+
+alter table public.delivery_analytics enable row level security;
+create policy "Admins can view delivery analytics"
+  on public.delivery_analytics for select to authenticated using (true);
+
+create or replace function public.record_delivery_view(p_delivery_id text)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  update public.deliveries set view_count = view_count + 1, last_viewed_at = now()
+  where id = p_delivery_id and expires_at > now();
+  insert into public.delivery_analytics (delivery_id, month_start, view_count)
+  select id, date_trunc('month', now())::date, 1 from public.deliveries
+  where id = p_delivery_id and expires_at > now()
+  on conflict (delivery_id, month_start) do update set view_count = public.delivery_analytics.view_count + 1;
+end;
+$$;
+
+create or replace function public.record_delivery_download(p_delivery_id text)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  update public.deliveries set download_count = download_count + 1, last_downloaded_at = now()
+  where id = p_delivery_id and expires_at > now();
+  insert into public.delivery_analytics (delivery_id, month_start, download_count)
+  select id, date_trunc('month', now())::date, 1 from public.deliveries
+  where id = p_delivery_id and expires_at > now()
+  on conflict (delivery_id, month_start) do update set download_count = public.delivery_analytics.download_count + 1;
+end;
+$$;
+
+revoke all on function public.record_delivery_view(text), public.record_delivery_download(text) from public;
+grant execute on function public.record_delivery_view(text), public.record_delivery_download(text) to anon, authenticated;
