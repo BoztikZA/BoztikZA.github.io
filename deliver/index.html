@@ -58,9 +58,11 @@
 
     <!-- ACTIVE DELIVERY -->
     <section id="deliver-active" class="deliver-section" hidden>
-      <span class="deliver-eyebrow">Project Ready</span>
-      <h1 id="deliver-project-name" class="deliver-hero-title">Your finished work is ready</h1>
-      <p id="deliver-client-name" class="deliver-hero-subtitle"></p>
+      <div class="deliver-hero-refined">
+        <span class="deliver-eyebrow">Project Ready</span>
+        <h1 id="deliver-project-name" class="deliver-hero-title">Your finished work is ready</h1>
+        <p id="deliver-client-name" class="deliver-hero-subtitle"></p>
+      </div>
 
       <div class="deliver-status-bar">
         <div class="status-pill">
@@ -104,15 +106,20 @@
           </div>
         </div>
 
+        <div class="deliver-gallery-header">
+          <span class="deliver-eyebrow">Deliverables</span>
+          <h2>Project Files</h2>
+        </div>
+
         <!-- Files Gallery -->
         <div id="deliver-gallery" class="deliver-gallery-refined"></div>
 
-        <div style="display: flex; flex-direction: column; align-items: center; gap: 16px; margin-top: 24px;">
-          <button id="deliver-download-all" class="btn-primary-deliver" type="button">
+        <div class="deliver-primary-action-wrap">
+          <button id="deliver-download-all" class="deliver-download-all" type="button">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Download All Files
           </button>
-          <p style="color: var(--text-muted-deliver); font-size: 0.85rem; font-weight: 500;">
+          <p class="deliver-action-hint">
             Your files are prepared securely and available for a limited time.
           </p>
         </div>
@@ -120,11 +127,13 @@
 
       <!-- GRATITUDE & SUPPORT -->
       <div id="deliver-support" class="deliver-gratitude" hidden>
-        <span class="deliver-eyebrow">Gratitude</span>
-        <h2 class="gratitude-title">Enjoyed the finished work?</h2>
-        <p class="gratitude-copy">
-          If you're happy with the result and would like to support independent creative work, you're welcome to leave a small tip. There is absolutely no obligation — your support simply helps me continue improving my tools and building things like Boztik Deliver.
-        </p>
+        <div class="deliver-support-hero">
+          <span class="deliver-eyebrow">Support Creator</span>
+          <h2 class="gratitude-title">Enjoyed the finished work?</h2>
+          <p class="gratitude-copy">
+            If you're happy with the result and would like to support independent creative work, you're welcome to leave a small tip. There is absolutely no obligation — your support simply helps me continue improving my tools and building things like Boztik Deliver.
+          </p>
+        </div>
 
         <div class="support-options-refined">
           <!-- Ko-fi -->
@@ -158,55 +167,59 @@
 
       <!-- TOOLKIT DISCOVERY -->
       <div id="deliver-discover" class="toolkit-showcase-refined" hidden>
-        <div class="toolkit-features-refined">
-          <span class="deliver-eyebrow" style="text-align: left; margin-bottom: 8px;">Product Discovery</span>
-          <h2 style="font-family: var(--font-heading); font-size: 2.4rem; line-height: 1.1; margin-bottom: 16px;">Meet Boztik Creative Toolkit</h2>
-          <p style="color: var(--text-muted-deliver); margin-bottom: 32px; font-size: 1.05rem;">A practical browser toolkit for photographers, designers and creators who work with images every day.</p>
-          
-          <div class="toolkit-feature-item">
-            <div class="toolkit-feature-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-            </div>
-            <div class="toolkit-feature-text">
-              <h4>Understand your images</h4>
-              <p>Analyse resolution, dimensions and image information directly in your browser.</p>
-            </div>
-          </div>
+        <div class="toolkit-content">
+          <div class="toolkit-text">
+            <span class="deliver-eyebrow">Creative Toolkit</span>
+            <h2 class="toolkit-title">Meet Boztik Creative Toolkit</h2>
+            <p class="toolkit-subtitle">A practical browser toolkit for photographers, designers and creators who work with images every day.</p>
+            
+            <div class="toolkit-features-list">
+              <div class="toolkit-feature-item">
+                <div class="toolkit-feature-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                </div>
+                <div class="toolkit-feature-text">
+                  <h4>Understand your images</h4>
+                  <p>Analyse resolution, dimensions and image information directly in your browser.</p>
+                </div>
+              </div>
 
-          <div class="toolkit-feature-item">
-            <div class="toolkit-feature-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-            </div>
-            <div class="toolkit-feature-text">
-              <h4>Extract useful colours</h4>
-              <p>Quickly pull colour palettes from images for design and creative work reference.</p>
-            </div>
-          </div>
+              <div class="toolkit-feature-item">
+                <div class="toolkit-feature-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                </div>
+                <div class="toolkit-feature-text">
+                  <h4>Extract useful colours</h4>
+                  <p>Quickly pull colour palettes from images for design and creative work reference.</p>
+                </div>
+              </div>
 
-          <div class="toolkit-feature-item">
-            <div class="toolkit-feature-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <div class="toolkit-feature-item">
+                <div class="toolkit-feature-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </div>
+                <div class="toolkit-feature-text">
+                  <h4>Find image sources</h4>
+                  <p>Use reverse image search tools when researching visual references or origins.</p>
+                </div>
+              </div>
             </div>
-            <div class="toolkit-feature-text">
-              <h4>Find image sources</h4>
-              <p>Use reverse image search tools when researching visual references or origins.</p>
-            </div>
-          </div>
 
-          <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px;">
-            <a href="https://chromewebstore.google.com/detail/boztik-creative-toolkit/maaebbajegilfcpmljlpcclebdpngign" target="_blank" rel="noopener noreferrer" class="btn-secondary-deliver" style="gap: 12px;">
-              <img src="../images/chrome.png" width="20" height="20" alt=""> Get for Chrome
-            </a>
-            <a href="https://microsoftedge.microsoft.com/addons/detail/ajpnibmfjlajpgijgaionelkdjgiemfi" target="_blank" rel="noopener noreferrer" class="btn-secondary-deliver" style="gap: 12px;">
-              <img src="../images/edge.png" width="20" height="20" alt=""> Get for Edge
-            </a>
-            <a href="../index.html" class="btn-secondary-deliver" style="background: transparent; border-color: transparent; text-decoration: underline;">
-              Full Website
-            </a>
+            <div class="toolkit-actions">
+              <a href="https://chromewebstore.google.com/detail/boztik-creative-toolkit/maaebbajegilfcpmljlpcclebdpngign" target="_blank" rel="noopener noreferrer" class="deliver-action-btn">
+                <img src="../images/chrome.png" width="20" height="20" alt=""> Get for Chrome
+              </a>
+              <a href="https://microsoftedge.microsoft.com/addons/detail/ajpnibmfjlajpgijgaionelkdjgiemfi" target="_blank" rel="noopener noreferrer" class="deliver-action-btn">
+                <img src="../images/edge.png" width="20" height="20" alt=""> Get for Edge
+              </a>
+              <a href="../index.html" class="toolkit-link-plain">
+                Full Website
+              </a>
+            </div>
           </div>
-        </div>
-        <div class="toolkit-visual-premium">
-          <img src="../images/extension-preview.png" alt="Boztik Creative Toolkit Preview">
+          <div class="toolkit-visual">
+            <img src="../images/extension-preview.png" alt="Boztik Creative Toolkit Preview">
+          </div>
         </div>
       </div>
 

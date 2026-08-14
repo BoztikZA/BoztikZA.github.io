@@ -104,43 +104,42 @@
 
       <p>
         Sign in with the administrator account created
-        in this Deliver Supabase project.
+        in this Deliver project.
       </p>
 
       <form id="dash-login-form">
 
-        <label class="dash-field">
-          Email
-
+        <div class="dash-field">
+          <label for="dash-email">Email</label>
           <input
             id="dash-email"
             type="email"
             autocomplete="username"
             required
           >
-        </label>
+        </div>
 
-        <label class="dash-field">
-          Password
-
+        <div class="dash-field">
+          <label for="dash-password">Password</label>
           <input
             id="dash-password"
             type="password"
             autocomplete="current-password"
             required
           >
-        </label>
+        </div>
 
         <button
           type="submit"
-          class="dash-btn"
+          class="dash-btn primary"
           id="dash-login-btn"
+          style="width: 100%; margin-top: 10px;"
         >
           Sign in
         </button>
 
         <p
-          class="dash-error"
+          class="dash-login-error"
           id="dash-login-error"
           hidden
           role="alert"
@@ -176,17 +175,16 @@
           </h1>
 
           <p>
-            Manage your client hand-offs, monitor activity
-            and keep your delivery workflow organised.
+            Manage your client hand-offs and monitor activity.
           </p>
         </div>
 
         <button
           type="button"
-          class="dash-btn dash-btn--ghost dash-compact"
+          class="dash-btn dash-compact"
           id="dash-refresh"
         >
-          Refresh
+          Refresh Data
         </button>
 
       </div>

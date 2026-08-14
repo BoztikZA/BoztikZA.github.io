@@ -2756,6 +2756,12 @@ function setupSuccessDialog() {
     }
   );
 
+  /* Opening the client page is a completed hand-off. Close the success
+     dialog immediately so it cannot remain layered over the dashboard. */
+  els.successOpen?.addEventListener("click", () => {
+    if (els.successDialog.open) els.successDialog.close();
+  });
+
 }
 
 
@@ -2906,6 +2912,12 @@ function setupSuccessCopy() {
         toast(
           "Client download link copied."
         );
+
+        /* Keep feedback visible briefly, then return the creator to the
+           command centre without leaving a stale modal on screen. */
+        window.setTimeout(() => {
+          if (els.successDialog?.open) els.successDialog.close();
+        }, 550);
 
 
       } else {
