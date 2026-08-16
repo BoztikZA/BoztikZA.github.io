@@ -58,6 +58,9 @@ const els = {
   title:
     $("deliver-project-name"),
 
+  projectNameDisplay:
+    $("display-project-name"),
+
   client:
     $("deliver-client-name"),
 
@@ -3174,6 +3177,17 @@ async function init() {
       els.title.textContent =
         delivery.project_name ||
         "Your delivery";
+
+    }
+
+
+    if (
+      els.projectNameDisplay
+    ) {
+
+      els.projectNameDisplay.textContent =
+        delivery.project_name ||
+        "-";
 
     }
 
