@@ -1987,6 +1987,82 @@ html { scroll-padding-top: 96px; }
 
 .nav-toggle { display: none; }
 
+/* V3.1 New Styles */
+.v3-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  background: var(--primary);
+  color: #041107;
+  font-size: 0.75rem;
+  font-weight: 800;
+  border-radius: 999px;
+  margin-bottom: 12px;
+  letter-spacing: 0.05em;
+}
+
+.whats-new-section {
+  padding: 60px 30px;
+  background: rgba(142, 255, 61, 0.03);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.whats-new-container {
+  max-width: 1250px;
+  margin: 0 auto;
+}
+
+.whats-new-header {
+  margin-bottom: 40px;
+}
+
+.v3-pill {
+  display: inline-block;
+  padding: 4px 10px;
+  border: 1px solid var(--primary);
+  color: var(--primary);
+  font-size: 0.7rem;
+  font-weight: 800;
+  border-radius: 999px;
+  margin-bottom: 12px;
+}
+
+.whats-new-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 30px;
+}
+
+.whats-new-item strong {
+  display: block;
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  color: var(--primary);
+}
+
+.whats-new-item p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.feature-card-hero {
+  grid-column: span 2;
+  background: linear-gradient(145deg, rgba(142, 255, 61, 0.1), rgba(142, 255, 61, 0.03));
+  border-width: 2px;
+}
+
+.feature-card-hero .feature-badge {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: var(--primary);
+  color: #041107;
+  padding: 4px 10px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  border-radius: 4px;
+}
+
 .browser-card:hover,
 .download-card-large:hover,
 .featured-card:hover,
