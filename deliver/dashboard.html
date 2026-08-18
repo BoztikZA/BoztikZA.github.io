@@ -21,1413 +21,6 @@
 
   <link rel="stylesheet" href="../styles-premium.css">
   <link rel="stylesheet" href="css/deliver.css?v=7">
-
-  <!--
-    ==========================================================
-    BOZTIK DELIVER — COMMAND CENTRE POLISH
-    ==========================================================
-    This stylesheet intentionally lives on the dashboard page
-    so the client-facing delivery page is not affected.
-
-    IMPORTANT:
-    Existing JavaScript hooks and IDs have been preserved.
-    Do not remove IDs used by dashboard.js.
-  -->
-  <style id="dashboard-command-centre-polish">
-
-    /* ========================================================
-       COMMAND CENTRE DESIGN SYSTEM
-    ======================================================== */
-
-    .deliver-dashboard-body {
-      background:
-        radial-gradient(
-          circle at 50% -15%,
-          rgba(142,255,61,.055),
-          transparent 34%
-        ),
-        #05070a;
-    }
-
-    .deliver-dashboard-body::selection {
-      background: rgba(142,255,61,.25);
-      color: #fff;
-    }
-
-    .deliver-dashboard-body main {
-      width: min(1320px, calc(100% - 48px));
-      margin: 0 auto;
-    }
-
-    @media (max-width: 760px) {
-      .deliver-dashboard-body main {
-        width: min(100% - 24px, 1320px);
-      }
-    }
-
-
-    /* ========================================================
-       TOP NAVIGATION
-    ======================================================== */
-
-    .deliver-dashboard-body header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: rgba(5,7,10,.88);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      border-bottom: 1px solid rgba(255,255,255,.055);
-    }
-
-    .deliver-dashboard-body .navbar {
-      width: min(1320px, calc(100% - 48px));
-      min-height: 72px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-    }
-
-    .deliver-dashboard-body .logo-area {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 0;
-      text-decoration: none;
-    }
-
-    .deliver-dashboard-body .logo-area img {
-      width: 40px;
-      height: 40px;
-      object-fit: contain;
-      flex: 0 0 40px;
-    }
-
-    .deliver-dashboard-body .logo-title {
-      display: block;
-      color: #fff;
-      font-family: "Plus Jakarta Sans", Inter, sans-serif;
-      font-size: .95rem;
-      font-weight: 800;
-      letter-spacing: -.02em;
-    }
-
-    .deliver-dashboard-body .logo-subtitle {
-      display: block;
-      margin-top: 2px;
-      color: #64748b;
-      font-size: .64rem;
-      font-weight: 700;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-    }
-
-    .deliver-dashboard-body .nav-links {
-      display: flex !important;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .deliver-dashboard-body .nav-links a {
-      min-height: 38px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 8px 13px;
-      border: 1px solid rgba(255,255,255,.07);
-      border-radius: 10px;
-      background: rgba(255,255,255,.025);
-      color: #94a3b8;
-      font-size: .73rem;
-      font-weight: 750;
-      text-decoration: none;
-      transition: .2s ease;
-    }
-
-    .deliver-dashboard-body .nav-links a:hover {
-      color: #fff;
-      border-color: rgba(142,255,61,.25);
-      background: rgba(142,255,61,.055);
-      transform: translateY(-1px);
-    }
-
-    .deliver-dashboard-body .nav-links #dash-logout-link {
-      border-color: rgba(255,107,107,.16);
-      color: #ff9a9a;
-    }
-
-    .deliver-dashboard-body .nav-links #dash-logout-link:hover {
-      border-color: rgba(255,107,107,.35);
-      background: rgba(255,107,107,.07);
-    }
-
-    @media (max-width: 560px) {
-      .deliver-dashboard-body .navbar {
-        width: min(100% - 24px, 1320px);
-        min-height: 64px;
-      }
-
-      .deliver-dashboard-body .logo-subtitle {
-        display: none;
-      }
-
-      .deliver-dashboard-body .nav-links a:first-child {
-        display: none;
-      }
-    }
-
-
-    /* ========================================================
-       LOGIN
-    ======================================================== */
-
-    .deliver-dashboard-body .dash-login-wrap {
-      min-height: calc(100vh - 72px);
-      padding: 70px 20px;
-    }
-
-    .deliver-dashboard-body .dash-login-wrap > .deliver-eyebrow {
-      margin-bottom: 6px;
-    }
-
-    .deliver-dashboard-body .dash-login-wrap h1 {
-      font-family: "Plus Jakarta Sans", Inter, sans-serif;
-      font-size: clamp(2.1rem, 5vw, 3.2rem);
-      letter-spacing: -.045em;
-    }
-
-    .deliver-dashboard-body .dash-login-wrap > p {
-      max-width: 440px;
-      margin-bottom: 28px;
-      line-height: 1.65;
-    }
-
-    .deliver-dashboard-body #dash-login-form {
-      padding: 30px;
-      border-color: rgba(142,255,61,.12);
-      background:
-        linear-gradient(
-          145deg,
-          rgba(255,255,255,.045),
-          rgba(255,255,255,.018)
-        );
-      box-shadow:
-        0 30px 90px rgba(0,0,0,.5),
-        0 0 60px rgba(142,255,61,.025);
-    }
-
-
-    /* ========================================================
-       MAIN COMMAND CENTRE
-    ======================================================== */
-
-    .deliver-dashboard-body #dash-main-view {
-      padding: 46px 0 100px;
-    }
-
-    .deliver-dashboard-body .dash-header {
-      position: relative;
-      align-items: center;
-      margin-bottom: 26px;
-      padding: 28px 30px;
-      border: 1px solid rgba(255,255,255,.065);
-      border-radius: 22px;
-      background:
-        radial-gradient(
-          circle at 90% 0%,
-          rgba(142,255,61,.075),
-          transparent 34%
-        ),
-        linear-gradient(
-          145deg,
-          rgba(255,255,255,.045),
-          rgba(255,255,255,.018)
-        );
-      box-shadow: 0 24px 70px rgba(0,0,0,.22);
-    }
-
-    .deliver-dashboard-body .dash-header::after {
-      content: "";
-      position: absolute;
-      left: 30px;
-      bottom: -1px;
-      width: 90px;
-      height: 2px;
-      background: linear-gradient(
-        90deg,
-        #8eff3d,
-        transparent
-      );
-    }
-
-    .deliver-dashboard-body .dash-header h1 {
-      margin: 7px 0 5px;
-      font-family: "Plus Jakarta Sans", Inter, sans-serif;
-      font-size: clamp(1.9rem, 4vw, 2.65rem);
-      line-height: 1.05;
-      letter-spacing: -.045em;
-    }
-
-    .deliver-dashboard-body .dash-header p {
-      margin: 0;
-      color: #7f8da2;
-      font-size: .84rem;
-    }
-
-    .deliver-dashboard-body #dash-refresh {
-      min-width: 120px;
-    }
-
-    .deliver-dashboard-body #dash-refresh::before {
-      content: "↻";
-      font-size: 1rem;
-    }
-
-
-    /* ========================================================
-       TABS
-    ======================================================== */
-
-    .deliver-dashboard-body .dash-tabs {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0,1fr));
-      gap: 8px;
-      margin-bottom: 34px;
-      padding: 7px;
-      border: 1px solid rgba(255,255,255,.06);
-      border-radius: 17px;
-      background: rgba(255,255,255,.018);
-      overflow: visible;
-    }
-
-    .deliver-dashboard-body .dash-tab {
-      min-height: 68px;
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      justify-content: flex-start;
-      gap: 12px;
-      padding: 12px 15px;
-      border: 1px solid transparent;
-      border-radius: 12px;
-      background: transparent;
-      color: #64748b;
-      text-align: left;
-      white-space: normal;
-    }
-
-    .deliver-dashboard-body .dash-tab:hover {
-      background: rgba(255,255,255,.035);
-      color: #e2e8f0;
-      transform: none;
-    }
-
-    .deliver-dashboard-body .dash-tab.is-active {
-      border-color: rgba(142,255,61,.18);
-      background:
-        linear-gradient(
-          145deg,
-          rgba(142,255,61,.10),
-          rgba(142,255,61,.035)
-        );
-      color: #8eff3d;
-    }
-
-    .deliver-dashboard-body .dash-tab.is-active::after {
-      display: none;
-    }
-
-    .deliver-dashboard-body .dash-tab-icon {
-      width: 36px;
-      height: 36px;
-      flex: 0 0 36px;
-      display: grid;
-      place-items: center;
-      margin: 0;
-      border: 1px solid rgba(255,255,255,.07);
-      border-radius: 10px;
-      background: rgba(255,255,255,.025);
-      color: #94a3b8;
-      font-size: .95rem;
-    }
-
-    .deliver-dashboard-body .dash-tab.is-active .dash-tab-icon {
-      border-color: rgba(142,255,61,.18);
-      background: rgba(142,255,61,.08);
-      color: #8eff3d;
-    }
-
-    .deliver-dashboard-body .dash-tab strong {
-      margin: 0 0 2px;
-      color: #dbe3ee;
-      font-size: .78rem;
-      font-weight: 800;
-    }
-
-    .deliver-dashboard-body .dash-tab.is-active strong {
-      color: #8eff3d;
-    }
-
-    .deliver-dashboard-body .dash-tab small {
-      display: block;
-      color: #5f6d80;
-      font-size: .64rem;
-      line-height: 1.25;
-    }
-
-    @media (max-width: 900px) {
-      .deliver-dashboard-body .dash-tabs {
-        grid-template-columns: repeat(2,minmax(0,1fr));
-      }
-    }
-
-    @media (max-width: 560px) {
-      .deliver-dashboard-body .dash-tabs {
-        grid-template-columns: 1fr;
-      }
-
-      .deliver-dashboard-body .dash-tab {
-        min-height: 60px;
-      }
-    }
-
-
-    /* ========================================================
-       SECTION HEADINGS
-    ======================================================== */
-
-    .deliver-dashboard-body .dash-section-heading {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: 20px;
-      margin-bottom: 22px;
-    }
-
-    .deliver-dashboard-body .dash-section-heading h2 {
-      margin: 5px 0 4px;
-      font-family: "Plus Jakarta Sans", Inter, sans-serif;
-      font-size: clamp(1.35rem, 3vw, 1.8rem);
-      letter-spacing: -.035em;
-    }
-
-    .deliver-dashboard-body .dash-section-heading p {
-      margin: 0;
-      max-width: 650px;
-      color: #68778c;
-      line-height: 1.6;
-    }
-
-    .deliver-dashboard-body .dash-section-eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      color: #8eff3d;
-      font-size: .62rem;
-      font-weight: 850;
-      letter-spacing: .15em;
-      text-transform: uppercase;
-    }
-
-    .deliver-dashboard-body .dash-section-eyebrow::before {
-      content: "";
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: #8eff3d;
-      box-shadow: 0 0 12px rgba(142,255,61,.55);
-    }
-
-
-    /* ========================================================
-       PRIMARY STAT CARDS
-    ======================================================== */
-
-    .deliver-dashboard-body .dash-stats {
-      display: grid;
-      grid-template-columns: repeat(4,minmax(0,1fr));
-      gap: 14px;
-      margin-bottom: 22px;
-    }
-
-    .deliver-dashboard-body .dash-stat-card {
-      position: relative;
-      min-width: 0;
-      min-height: 145px;
-      overflow: hidden;
-      padding: 21px;
-      gap: 15px;
-      align-items: flex-start;
-      border: 1px solid rgba(255,255,255,.065);
-      border-radius: 17px;
-      background:
-        linear-gradient(
-          145deg,
-          rgba(255,255,255,.045),
-          rgba(255,255,255,.018)
-        );
-      box-shadow: 0 15px 40px rgba(0,0,0,.16);
-    }
-
-    .deliver-dashboard-body .dash-stat-card:hover {
-      border-color: rgba(142,255,61,.16);
-      transform: translateY(-2px);
-    }
-
-    .deliver-dashboard-body .dash-stat-card::after {
-      position: absolute;
-      pointer-events: none;
-    }
-
-    .deliver-dashboard-body .dash-stat-card--featured {
-      border-color: rgba(142,255,61,.18);
-      background:
-        radial-gradient(
-          circle at 100% 0,
-          rgba(142,255,61,.09),
-          transparent 45%
-        ),
-        linear-gradient(
-          145deg,
-          rgba(142,255,61,.065),
-          rgba(255,255,255,.018)
-        );
-    }
-
-    .deliver-dashboard-body .dash-stat-icon {
-      width: 42px;
-      height: 42px;
-      flex: 0 0 42px;
-      border-radius: 11px;
-      background: rgba(142,255,61,.06);
-      border-color: rgba(142,255,61,.14);
-      color: #8eff3d;
-      font-size: .95rem;
-    }
-
-    .deliver-dashboard-body .dash-stat-card span {
-      margin-bottom: 6px;
-      color: #718096;
-      font-size: .61rem;
-      letter-spacing: .095em;
-    }
-
-    .deliver-dashboard-body .dash-stat-card strong {
-      font-family: "Plus Jakarta Sans", Inter, sans-serif;
-      font-size: clamp(1.55rem, 3vw, 2.05rem);
-      letter-spacing: -.045em;
-    }
-
-    .deliver-dashboard-body .dash-stat-card small {
-      display: block;
-      margin-top: 6px;
-      color: #526174;
-      line-height: 1.35;
-    }
-
-    @media (max-width: 1050px) {
-      .deliver-dashboard-body .dash-stats {
-        grid-template-columns: repeat(2,minmax(0,1fr));
-      }
-    }
-
-    @media (max-width: 540px) {
-      .deliver-dashboard-body .dash-stats {
-        grid-template-columns: 1fr;
-      }
-    }
-
-
-    /* ========================================================
-       OVERVIEW CARDS
-    ======================================================== */
-
-    .deliver-dashboard-body .dash-overview-grid {
-      grid-template-columns: minmax(0,1.15fr) minmax(300px,.85fr);
-      gap: 14px;
-      margin-bottom: 14px;
-    }
-
-    .deliver-dashboard-body .dash-overview-card {
-      min-width: 0;
-      padding: 24px;
-      gap: 20px;
-      border: 1px solid rgba(255,255,255,.065);
-      border-radius: 17px;
-      background:
-        linear-gradient(
-          145deg,
-          rgba(255,255,255,.042),
-          rgba(255,255,255,.017)
-        );
-    }
-
-    .deliver-dashboard-body .dash-overview-card-header {
-      gap: 15px;
-    }
-
-    .deliver-dashboard-body .dash-overview-card h3 {
-      margin: 5px 0 0;
-      font-family: "Plus Jakarta Sans", Inter, sans-serif;
-      font-size: 1.05rem;
-      letter-spacing: -.025em;
-    }
-
-    .deliver-dashboard-body .dash-overview-card p {
-      color: #718096;
-      line-height: 1.65;
-    }
-
-    .deliver-dashboard-body .dash-text-button {
-      border: 0;
-      background: transparent;
-      color: #8eff3d;
-      font: inherit;
-      font-size: .7rem;
-      font-weight: 800;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-
-    .deliver-dashboard-body .dash-text-button:hover {
-      color: #b0ff76;
-    }
-
-    .deliver-dashboard-body .dash-mini-stats {
-      gap: 10px;
-    }
-
-    .deliver-dashboard-body .dash-mini-stat {
-      padding: 17px;
-      border-color: rgba(255,255,255,.055);
-      border-radius: 12px;
-      background: rgba(0,0,0,.13);
-    }
-
-    .deliver-dashboard-body .dash-mini-stat span {
-      margin-bottom: 6px;
-      color: #68778c;
-      font-size: .6rem;
-      letter-spacing: .08em;
-    }
-
-    .deliver-dashboard-body .dash-mini-stat strong {
-      font-family: "Plus Jakarta Sans", Inter, sans-serif;
-      font-size: 1.45rem;
-      letter-spacing: -.035em;
-    }
-
-    .deliver-dashboard-body .dash-recent-overview {
-      margin-bottom: 14px;
-    }
-
-    @media (max-width: 900px) {
-      .deliver-dashboard-body .dash-overview-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-
-    /* ========================================================
-       BUTTON SYSTEM
-    ======================================================== */
-
-    .deliver-dashboard-body .dash-btn {
-      min-height: 42px;
-      border-radius: 10px;
-      border-color: rgba(255,255,255,.09);
-      background: rgba(255,255,255,.035);
-      font-size: .75rem;
-      font-weight: 800;
-      letter-spacing: .005em;
-      box-shadow: none;
-    }
-
-    .deliver-dashboard-body .dash-btn:hover {
-      border-color: rgba(255,255,255,.18);
-      background: rgba(255,255,255,.065);
-      transform: translateY(-1px);
-    }
-
-    .deliver-dashboard-body .dash-btn.primary,
-    .deliver-dashboard-body .dash-btn--large {
-      border-color: rgba(142,255,61,.35);
-      background: linear-gradient(
-        135deg,
-        #9dff57,
-        #8eff3d
-      );
-      color: #071006;
-      box-shadow: 0 12px 28px rgba(142,255,61,.11);
-    }
-
-    .deliver-dashboard-body .dash-btn.primary:hover,
-    .deliver-dashboard-body .dash-btn--large:hover {
-      border-color: #8eff3d;
-      background: #a6ff67;
-      box-shadow: 0 15px 34px rgba(142,255,61,.18);
-    }
-
-    .deliver-dashboard-body .dash-btn--large {
-      width: 100%;
-      min-height: 52px;
-      font-size: .86rem;
-    }
-
-
-    /* ========================================================
-       CREATE DELIVERY
-    ======================================================== */
-
-    .deliver-dashboard-body .dash-create-layout {
-      grid-template-columns: minmax(0,1fr) 320px;
-      gap: 16px;
-      align-items: start;
-    }
-
-    .deliver-dashboard-body .dash-panel {
-      border-color: rgba(255,255,255,.065);
-      border-radius: 18px;
-      background:
-        linear-gradient(
-          145deg,
-          rgba(255,255,255,.043),
-          rgba(255,255,255,.016)
-        );
-      box-shadow: 0 20px 55px rgba(0,0,0,.14);
-    }
-
-    .deliver-dashboard-body .dash-create-panel {
-      padding: 28px;
-    }
-
-    .deliver-dashboard-body .dash-form-section {
-      padding-bottom: 26px;
-      margin-bottom: 26px;
-      border-bottom-color: rgba(255,255,255,.055);
-    }
-
-    .deliver-dashboard-body .dash-form-section-title {
-      margin-bottom: 20px;
-    }
-
-    .deliver-dashboard-body .dash-form-section-title > span {
-      width: 30px;
-      height: 30px;
-      background: rgba(142,255,61,.10);
-      border: 1px solid rgba(142,255,61,.22);
-      color: #8eff3d;
-      box-shadow: 0 0 20px rgba(142,255,61,.04);
-    }
-
-    .deliver-dashboard-body .dash-form-section-title h3 {
-      margin: 0 0 4px;
-      font-family: "Plus Jakarta Sans", Inter, sans-serif;
-      font-size: .95rem;
-      letter-spacing: -.02em;
-    }
-
-    .deliver-dashboard-body .dash-form-section-title p {
-      margin: 0;
-      color: #68778c;
-      font-size: .72rem;
-      line-height: 1.5;
-    }
-
-    .deliver-dashboard-body .dash-field {
-      margin-bottom: 17px;
-      color: #cbd5e1;
-      font-size: .72rem;
-    }
-
-    .deliver-dashboard-body .dash-field input,
-    .deliver-dashboard-body .dash-field textarea,
-    .deliver-dashboard-body .dash-field select {
-      min-height: 44px;
-      padding: 11px 13px;
-      border-color: rgba(255,255,255,.085);
-      border-radius: 10px;
-      background: rgba(0,0,0,.16);
-      font-size: .8rem;
-    }
-
-    .deliver-dashboard-body .dash-field textarea {
-      min-height: 105px;
-    }
-
-    .deliver-dashboard-body .dash-field input:hover,
-    .deliver-dashboard-body .dash-field textarea:hover,
-    .deliver-dashboard-body .dash-field select:hover {
-      border-color: rgba(255,255,255,.17);
-    }
-
-    .deliver-dashboard-body .dash-field input:focus,
-    .deliver-dashboard-body .dash-field textarea:focus,
-    .deliver-dashboard-body .dash-field select:focus {
-      border-color: rgba(142,255,61,.4);
-      box-shadow: 0 0 0 3px rgba(142,255,61,.055);
-    }
-
-
-    /* ========================================================
-       DROPZONE
-    ======================================================== */
-
-    .deliver-dashboard-body .dash-dropzone {
-      min-height: 245px;
-      padding: 34px;
-      border: 1px dashed rgba(255,255,255,.16);
-      border-radius: 16px;
-      background:
-        radial-gradient(
-          circle at 50% 0,
-          rgba(142,255,61,.05),
-          transparent 55%
-        ),
-        rgba(0,0,0,.14);
-    }
-
-    .deliver-dashboard-body .dash-dropzone:hover,
-    .deliver-dashboard-body .dash-dropzone:focus-within {
-      border-color: rgba(142,255,61,.48);
-      background:
-        radial-gradient(
-          circle at 50% 0,
-          rgba(142,255,61,.085),
-          transparent 55%
-        ),
-        rgba(142,255,61,.018);
-      box-shadow: inset 0 0 40px rgba(142,255,61,.025);
-    }
-
-    .deliver-dashboard-body .dash-dropzone.is-dragover,
-    .deliver-dashboard-body .dash-dropzone.dragover {
-      border-color: #8eff3d;
-      background: rgba(142,255,61,.075);
-      box-shadow:
-        inset 0 0 45px rgba(142,255,61,.045),
-        0 0 30px rgba(142,255,61,.055);
-    }
-
-    .deliver-dashboard-body .dash-dropzone-icon {
-      width: 62px;
-      height: 62px;
-      margin-bottom: 17px;
-      border-radius: 16px;
-      background: rgba(142,255,61,.075);
-      border-color: rgba(142,255,61,.18);
-      font-size: 1.6rem;
-    }
-
-    .deliver-dashboard-body .dash-dropzone strong {
-      margin-bottom: 5px;
-      font-family: "Plus Jakarta Sans", Inter, sans-serif;
-      font-size: .95rem;
-    }
-
-    .deliver-dashboard-body .dash-dropzone > span {
-      max-width: 390px;
-      color: #64748b;
-      font-size: .69rem;
-      line-height: 1.6;
-    }
-
-
-    /* ========================================================
-       SELECTED FILES
-    ======================================================== */
-
-    .deliver-dashboard-body .dash-file-list {
-      margin: 12px 0 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .deliver-dashboard-body .dash-file-item {
-      min-height: 54px;
-      padding: 9px 11px;
-      border-color: rgba(255,255,255,.055);
-      background: rgba(255,255,255,.018);
-    }
-
-    .deliver-dashboard-body .dash-file-item:hover {
-      border-color: rgba(142,255,61,.12);
-      background: rgba(142,255,61,.025);
-    }
-
-    .deliver-dashboard-body .dash-file-item-icon {
-      width: 34px;
-      height: 34px;
-      background: rgba(142,255,61,.07);
-      border: 1px solid rgba(142,255,61,.12);
-    }
-
-
-    /* ========================================================
-       CREATE SIDEBAR
-    ======================================================== */
-
-    .deliver-dashboard-body .dash-create-info {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .deliver-dashboard-body .dash-info-card {
-      padding: 22px;
-      border: 1px solid rgba(255,255,255,.065);
-      border-radius: 17px;
-      background:
-        linear-gradient(
-          145deg,
-          rgba(255,255,255,.042),
-          rgba(255,255,255,.016)
-        );
-    }
-
-    .deliver-dashboard-body .dash-info-card h3 {
-      margin: 9px 0 13px;
-      font-family: "Plus Jakarta Sans", Inter, sans-serif;
-      font-size: 1rem;
-      letter-spacing: -.025em;
-      line-height: 1.35;
-    }
-
-    .deliver-dashboard-body .dash-info-card ul {
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .deliver-dashboard-body .dash-info-card li {
-      position: relative;
-      padding: 9px 0 9px 22px;
-      border-bottom: 1px solid rgba(255,255,255,.045);
-      color: #8190a4;
-      font-size: .7rem;
-      line-height: 1.45;
-    }
-
-    .deliver-dashboard-body .dash-info-card li:last-child {
-      border-bottom: 0;
-    }
-
-    .deliver-dashboard-body .dash-info-card li::before {
-      content: "✓";
-      position: absolute;
-      left: 0;
-      top: 9px;
-      color: #8eff3d;
-      font-weight: 900;
-    }
-
-    .deliver-dashboard-body .dash-info-card--accent {
-      border-color: rgba(142,255,61,.12);
-      background:
-        linear-gradient(
-          145deg,
-          rgba(142,255,61,.065),
-          rgba(142,255,61,.018)
-        );
-    }
-
-    .deliver-dashboard-body .dash-info-card--accent > span {
-      color: #8eff3d;
-      font-size: .61rem;
-      font-weight: 850;
-      letter-spacing: .12em;
-    }
-
-    .deliver-dashboard-body .dash-info-card--accent p {
-      margin: 9px 0 0;
-      color: #7c8ba0;
-      font-size: .71rem;
-      line-height: 1.65;
-    }
-
-    @media (max-width: 900px) {
-      .deliver-dashboard-body .dash-create-layout {
-        grid-template-columns: 1fr;
-      }
-
-      .deliver-dashboard-body .dash-create-info {
-        display: grid;
-        grid-template-columns: repeat(2,minmax(0,1fr));
-      }
-    }
-
-    @media (max-width: 600px) {
-      .deliver-dashboard-body .dash-create-info {
-        grid-template-columns: 1fr;
-      }
-
-      .deliver-dashboard-body .dash-create-panel {
-        padding: 20px;
-      }
-
-      .deliver-dashboard-body .dash-dropzone {
-        min-height: 210px;
-        padding: 24px 15px;
-      }
-    }
-
-
-    /* ========================================================
-       PROGRESS
-    ======================================================== */
-
-    .deliver-dashboard-body .dash-progress {
-      height: 8px;
-      margin: 4px 0 17px;
-      border-radius: 99px;
-      background: rgba(255,255,255,.065);
-      box-shadow: inset 0 1px 2px rgba(0,0,0,.25);
-    }
-
-    .deliver-dashboard-body .dash-progress-bar {
-      background: linear-gradient(
-        90deg,
-        #65e91e,
-        #b1ff68
-      );
-      box-shadow: 0 0 15px rgba(142,255,61,.35);
-    }
-
-
-    /* ========================================================
-       DELIVERY LIBRARY
-    ======================================================== */
-
-    .deliver-dashboard-body .dash-panel--list {
-      padding: 22px;
-    }
-
-    .deliver-dashboard-body .dash-list-toolbar {
-      display: grid;
-      grid-template-columns: minmax(160px,1fr) minmax(180px,300px) 150px 150px;
-      gap: 9px;
-      align-items: center;
-      margin-bottom: 17px;
-      padding-bottom: 17px;
-      border-bottom: 1px solid rgba(255,255,255,.055);
-    }
-
-    .deliver-dashboard-body .dash-list-toolbar h2 {
-      margin: 0;
-      font-family: "Plus Jakarta Sans", Inter, sans-serif;
-      font-size: .95rem;
-      letter-spacing: -.02em;
-    }
-
-    .deliver-dashboard-body .dash-list-toolbar input,
-    .deliver-dashboard-body .dash-list-toolbar select {
-      min-height: 42px;
-      width: 100%;
-      padding: 9px 12px;
-      border: 1px solid rgba(255,255,255,.08);
-      border-radius: 10px;
-      background: rgba(0,0,0,.16);
-      color: #dbe3ee;
-      font: inherit;
-      font-size: .72rem;
-    }
-
-    .deliver-dashboard-body .dash-list-toolbar input:focus,
-    .deliver-dashboard-body .dash-list-toolbar select:focus {
-      outline: none;
-      border-color: rgba(142,255,61,.35);
-      box-shadow: 0 0 0 3px rgba(142,255,61,.045);
-    }
-
-    .deliver-dashboard-body .dash-deliveries-list {
-      grid-template-columns: repeat(2,minmax(0,1fr));
-      gap: 13px;
-    }
-
-    .deliver-dashboard-body .delivery-card {
-      position: relative;
-      overflow: hidden;
-      padding: 20px;
-      border-color: rgba(255,255,255,.065);
-      border-radius: 16px;
-      background:
-        linear-gradient(
-          145deg,
-          rgba(255,255,255,.04),
-          rgba(255,255,255,.015)
-        );
-    }
-
-    .deliver-dashboard-body .delivery-card:hover {
-      border-color: rgba(142,255,61,.16);
-      box-shadow: 0 18px 45px rgba(0,0,0,.22);
-    }
-
-    .deliver-dashboard-body .delivery-card-title {
-      font-family: "Plus Jakarta Sans", Inter, sans-serif;
-      font-size: .9rem;
-    }
-
-    .deliver-dashboard-body .delivery-card-client {
-      color: #65758a;
-    }
-
-    .deliver-dashboard-body .delivery-status {
-      padding: 5px 8px;
-      font-size: .58rem;
-    }
-
-    .deliver-dashboard-body .delivery-card-meta {
-      gap: 7px;
-    }
-
-    .deliver-dashboard-body .delivery-card-meta-item,
-    .deliver-dashboard-body .delivery-analytics-item {
-      border-color: rgba(255,255,255,.05);
-      background: rgba(0,0,0,.14);
-    }
-
-    .deliver-dashboard-body .delivery-card-meta-item {
-      padding: 10px;
-    }
-
-    .deliver-dashboard-body .delivery-analytics-item {
-      padding: 10px;
-    }
-
-    .deliver-dashboard-body .delivery-analytics-value {
-      font-family: "Plus Jakarta Sans", Inter, sans-serif;
-    }
-
-    .deliver-dashboard-body .delivery-card-actions {
-      gap: 7px;
-    }
-
-    .deliver-dashboard-body .delivery-card-actions .dash-btn {
-      min-height: 38px;
-      padding: 8px 10px;
-      font-size: .67rem;
-    }
-
-    @media (max-width: 1000px) {
-      .deliver-dashboard-body .dash-list-toolbar {
-        grid-template-columns: 1fr 1fr;
-      }
-
-      .deliver-dashboard-body .dash-list-toolbar h2 {
-        grid-column: 1 / -1;
-      }
-
-      .deliver-dashboard-body .dash-list-toolbar input {
-        grid-column: 1 / -1;
-      }
-
-      .deliver-dashboard-body .dash-deliveries-list {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 540px) {
-      .deliver-dashboard-body .dash-list-toolbar {
-        grid-template-columns: 1fr;
-      }
-
-      .deliver-dashboard-body .dash-list-toolbar h2,
-      .deliver-dashboard-body .dash-list-toolbar input {
-        grid-column: auto;
-      }
-
-      .deliver-dashboard-body .dash-panel--list {
-        padding: 16px;
-      }
-    }
-
-
-    /* ========================================================
-       EMPTY STATE
-    ======================================================== */
-
-    .deliver-dashboard-body .dash-empty {
-      min-height: 300px;
-      padding: 35px;
-      border-color: rgba(142,255,61,.12);
-      background:
-        radial-gradient(
-          circle at 50% 0,
-          rgba(142,255,61,.04),
-          transparent 55%
-        ),
-        rgba(255,255,255,.012);
-    }
-
-    .deliver-dashboard-body .dash-empty-icon {
-      border: 1px solid rgba(142,255,61,.14);
-      background: rgba(142,255,61,.06);
-      color: #8eff3d;
-    }
-
-    .deliver-dashboard-body .dash-empty h3 {
-      font-family: "Plus Jakarta Sans", Inter, sans-serif;
-    }
-
-
-    /* ========================================================
-       ANALYTICS
-    ======================================================== */
-
-    .deliver-dashboard-body .analytics-period-card {
-      position: relative;
-      overflow: hidden;
-      margin-bottom: 14px;
-      padding: 24px;
-      border-color: rgba(255,255,255,.065);
-      border-radius: 17px;
-      background:
-        radial-gradient(
-          circle at 100% 0,
-          rgba(142,255,61,.045),
-          transparent 34%
-        ),
-        linear-gradient(
-          145deg,
-          rgba(255,255,255,.042),
-          rgba(255,255,255,.016)
-        );
-    }
-
-    .deliver-dashboard-body .analytics-period-heading {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-      margin-bottom: 17px;
-    }
-
-    .deliver-dashboard-body .analytics-period-heading h3 {
-      margin: 6px 0 0;
-      font-family: "Plus Jakarta Sans", Inter, sans-serif;
-      font-size: 1.02rem;
-      letter-spacing: -.025em;
-    }
-
-    .deliver-dashboard-body .analytics-period-badge {
-      display: inline-flex;
-      align-items: center;
-      min-height: 29px;
-      padding: 5px 9px;
-      border: 1px solid rgba(255,255,255,.07);
-      border-radius: 99px;
-      background: rgba(255,255,255,.025);
-      color: #718096;
-      font-size: .58rem;
-      font-weight: 800;
-      white-space: nowrap;
-    }
-
-    .deliver-dashboard-body .analytics-summary-grid {
-      display: grid;
-      grid-template-columns: repeat(2,minmax(0,1fr));
-      gap: 10px;
-    }
-
-    .deliver-dashboard-body .analytics-summary-card {
-      display: flex;
-      align-items: center;
-      gap: 13px;
-      min-width: 0;
-      padding: 17px;
-      border: 1px solid rgba(255,255,255,.055);
-      border-radius: 13px;
-      background: rgba(0,0,0,.13);
-    }
-
-    .deliver-dashboard-body .analytics-summary-icon {
-      width: 40px;
-      height: 40px;
-      flex: 0 0 40px;
-      display: grid;
-      place-items: center;
-      border-radius: 11px;
-      background: rgba(142,255,61,.065);
-      border: 1px solid rgba(142,255,61,.12);
-      color: #8eff3d;
-      font-size: .95rem;
-    }
-
-    .deliver-dashboard-body .analytics-summary-card span {
-      display: block;
-      margin-bottom: 4px;
-      color: #708095;
-      font-size: .61rem;
-      font-weight: 800;
-      letter-spacing: .075em;
-      text-transform: uppercase;
-    }
-
-    .deliver-dashboard-body .analytics-summary-card strong {
-      display: block;
-      font-family: "Plus Jakarta Sans", Inter, sans-serif;
-      font-size: 1.7rem;
-      letter-spacing: -.045em;
-      line-height: 1;
-    }
-
-    .deliver-dashboard-body .analytics-summary-card small {
-      display: block;
-      margin-top: 5px;
-      color: #526174;
-      font-size: .62rem;
-    }
-
-    .deliver-dashboard-body .dash-analytics-note {
-      display: flex;
-      align-items: flex-start;
-      gap: 13px;
-      padding: 18px;
-      border: 1px solid rgba(142,255,61,.11);
-      border-radius: 14px;
-      background: rgba(142,255,61,.025);
-    }
-
-    .deliver-dashboard-body .dash-analytics-note-icon {
-      width: 34px;
-      height: 34px;
-      flex: 0 0 34px;
-      display: grid;
-      place-items: center;
-      border-radius: 9px;
-      background: rgba(142,255,61,.08);
-      color: #8eff3d;
-    }
-
-    .deliver-dashboard-body .dash-analytics-note strong {
-      display: block;
-      margin-bottom: 5px;
-      font-size: .76rem;
-    }
-
-    .deliver-dashboard-body .dash-analytics-note p {
-      margin: 0;
-      color: #718096;
-      font-size: .69rem;
-      line-height: 1.6;
-    }
-
-    @media (max-width: 600px) {
-      .deliver-dashboard-body .analytics-summary-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .deliver-dashboard-body .analytics-period-heading {
-        align-items: flex-start;
-        flex-direction: column;
-      }
-    }
-
-
-    /* ========================================================
-       DIALOGS
-    ======================================================== */
-
-    .deliver-dashboard-body dialog.dash-dialog {
-      width: min(560px, calc(100vw - 28px));
-      max-height: min(760px, calc(100vh - 28px));
-      padding: 27px;
-      border-color: rgba(142,255,61,.12);
-      border-radius: 20px;
-      background:
-        radial-gradient(
-          circle at 100% 0,
-          rgba(142,255,61,.06),
-          transparent 38%
-        ),
-        #12161d;
-      box-shadow:
-        0 35px 110px rgba(0,0,0,.68),
-        0 0 60px rgba(142,255,61,.025);
-    }
-
-    .deliver-dashboard-body dialog.dash-dialog h2 {
-      margin-bottom: 9px;
-      font-family: "Plus Jakarta Sans", Inter, sans-serif;
-      font-size: 1.3rem;
-      letter-spacing: -.035em;
-    }
-
-    .deliver-dashboard-body dialog.dash-dialog > p {
-      color: #7d8ba0;
-      font-size: .75rem;
-    }
-
-    .deliver-dashboard-body dialog.dash-dialog form[method="dialog"] button {
-      min-height: 42px;
-      border-radius: 10px;
-      font-size: .72rem;
-    }
-
-    .deliver-dashboard-body dialog.dash-dialog form[method="dialog"] button:last-child {
-      border-color: rgba(142,255,61,.22);
-      background: rgba(142,255,61,.075);
-      color: #8eff3d;
-    }
-
-    .deliver-dashboard-body .dash-success-actions {
-      gap: 8px;
-    }
-
-
-    /* ========================================================
-       GENERAL RESPONSIVE POLISH
-    ======================================================== */
-
-    @media (max-width: 700px) {
-      .deliver-dashboard-body #dash-main-view {
-        padding-top: 28px;
-      }
-
-      .deliver-dashboard-body .dash-header {
-        align-items: flex-start;
-        padding: 22px;
-      }
-
-      .deliver-dashboard-body .dash-header button {
-        width: 100%;
-      }
-
-      .deliver-dashboard-body .dash-section-heading {
-        align-items: flex-start;
-        flex-direction: column;
-      }
-    }
-
-
-    /* ========================================================
-       ACCESSIBILITY / REDUCED MOTION
-    ======================================================== */
-
-    .deliver-dashboard-body button:focus-visible,
-    .deliver-dashboard-body input:focus-visible,
-    .deliver-dashboard-body textarea:focus-visible,
-    .deliver-dashboard-body select:focus-visible,
-    .deliver-dashboard-body a:focus-visible {
-      outline: 2px solid rgba(142,255,61,.78);
-      outline-offset: 3px;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .deliver-dashboard-body *,
-      .deliver-dashboard-body *::before,
-      .deliver-dashboard-body *::after {
-        scroll-behavior: auto !important;
-        animation-duration: .01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: .01ms !important;
-      }
-    }
-
-  </style>
 </head>
 
 <body class="deliver-dashboard-body">
@@ -1441,10 +34,9 @@
     <div class="glow2"></div>
   </div>
 
-
-  <!-- ======================================================
+  <!-- =====================================================
        NAVIGATION
-  ======================================================= -->
+  ====================================================== -->
 
   <header>
     <nav class="navbar" aria-label="Primary navigation">
@@ -1468,7 +60,7 @@
 
       </a>
 
-      <div class="nav-links">
+      <div class="nav-links" style="display:flex">
 
         <a href="../index.html">
           Back to site
@@ -1487,17 +79,15 @@
     </nav>
   </header>
 
-
-  <!-- ======================================================
+  <!-- =====================================================
        MAIN
-  ======================================================= -->
+  ====================================================== -->
 
   <main id="main-content">
 
-
-    <!-- ====================================================
+    <!-- ===================================================
          LOGIN
-    ===================================================== -->
+    ==================================================== -->
 
     <section
       id="dash-login-view"
@@ -1520,46 +110,33 @@
       <form id="dash-login-form">
 
         <div class="dash-field">
-
-          <label for="dash-email">
-            Email
-          </label>
-
+          <label for="dash-email">Email</label>
           <input
             id="dash-email"
             type="email"
             autocomplete="username"
             required
           >
-
         </div>
 
-
         <div class="dash-field">
-
-          <label for="dash-password">
-            Password
-          </label>
-
+          <label for="dash-password">Password</label>
           <input
             id="dash-password"
             type="password"
             autocomplete="current-password"
             required
           >
-
         </div>
-
 
         <button
           type="submit"
           class="dash-btn primary"
           id="dash-login-btn"
-          style="width:100%;margin-top:10px;"
+          style="width: 100%; margin-top: 10px;"
         >
           Sign in
         </button>
-
 
         <p
           class="dash-login-error"
@@ -1572,10 +149,9 @@
 
     </section>
 
-
-    <!-- ====================================================
+    <!-- ===================================================
          DASHBOARD
-    ===================================================== -->
+    ==================================================== -->
 
     <section
       id="dash-main-view"
@@ -1583,15 +159,13 @@
       hidden
     >
 
-
-      <!-- ==================================================
-           HEADER
-      =================================================== -->
+      <!-- =================================================
+           DASHBOARD HEADER
+      ================================================== -->
 
       <div class="dash-header">
 
         <div>
-
           <span class="deliver-eyebrow">
             Delivery command centre
           </span>
@@ -1601,12 +175,9 @@
           </h1>
 
           <p>
-            Upload finished work, create secure client hand-offs
-            and monitor delivery activity.
+            Manage your client hand-offs and monitor activity.
           </p>
-
         </div>
-
 
         <button
           type="button"
@@ -1618,10 +189,9 @@
 
       </div>
 
-
-      <!-- ==================================================
+      <!-- =================================================
            DASHBOARD TABS
-      =================================================== -->
+      ================================================== -->
 
       <div
         class="dash-tabs"
@@ -1639,23 +209,12 @@
           tabindex="0"
           data-tab="overview"
         >
-
-          <span class="dash-tab-icon">
-            ◉
-          </span>
-
+          <span class="dash-tab-icon">◉</span>
           <span>
-            <strong>
-              Overview
-            </strong>
-
-            <small>
-              Command centre
-            </small>
+            <strong>Overview</strong>
+            <small>Command centre</small>
           </span>
-
         </button>
-
 
         <button
           type="button"
@@ -1667,23 +226,12 @@
           tabindex="-1"
           data-tab="create"
         >
-
-          <span class="dash-tab-icon">
-            ＋
-          </span>
-
+          <span class="dash-tab-icon">＋</span>
           <span>
-            <strong>
-              Create Delivery
-            </strong>
-
-            <small>
-              New client hand-off
-            </small>
+            <strong>Create Delivery</strong>
+            <small>New client hand-off</small>
           </span>
-
         </button>
-
 
         <button
           type="button"
@@ -1695,23 +243,12 @@
           tabindex="-1"
           data-tab="deliveries"
         >
-
-          <span class="dash-tab-icon">
-            ▣
-          </span>
-
+          <span class="dash-tab-icon">▣</span>
           <span>
-            <strong>
-              Deliveries
-            </strong>
-
-            <small>
-              Manage projects
-            </small>
+            <strong>Deliveries</strong>
+            <small>Manage projects</small>
           </span>
-
         </button>
-
 
         <button
           type="button"
@@ -1723,29 +260,18 @@
           tabindex="-1"
           data-tab="analytics"
         >
-
-          <span class="dash-tab-icon">
-            ↗
-          </span>
-
+          <span class="dash-tab-icon">↗</span>
           <span>
-            <strong>
-              Analytics
-            </strong>
-
-            <small>
-              Views & downloads
-            </small>
+            <strong>Analytics</strong>
+            <small>Views & downloads</small>
           </span>
-
         </button>
 
       </div>
 
-
-      <!-- ==================================================
-           OVERVIEW
-      =================================================== -->
+      <!-- =================================================
+           TAB: OVERVIEW
+      ================================================== -->
 
       <section
         id="panel-overview"
@@ -1758,7 +284,6 @@
         <div class="dash-section-heading">
 
           <div>
-
             <span class="dash-section-eyebrow">
               COMMAND CENTRE
             </span>
@@ -1770,16 +295,13 @@
             <p>
               A quick snapshot of your current delivery operation.
             </p>
-
           </div>
 
         </div>
 
-
-        <!-- PRIMARY STATISTICS -->
+        <!-- PRIMARY STATS -->
 
         <div class="dash-stats dash-stats--premium">
-
 
           <article class="dash-stat-card dash-stat-card--featured">
 
@@ -1788,7 +310,6 @@
             </div>
 
             <div>
-
               <span>
                 Active deliveries
               </span>
@@ -1800,11 +321,9 @@
               <small>
                 Currently available to clients
               </small>
-
             </div>
 
           </article>
-
 
           <article class="dash-stat-card">
 
@@ -1813,9 +332,8 @@
             </div>
 
             <div>
-
               <span>
-                Lifetime downloads
+                Total downloads
               </span>
 
               <strong id="stat-download-count">
@@ -1825,11 +343,9 @@
               <small>
                 Across all deliveries
               </small>
-
             </div>
 
           </article>
-
 
           <article class="dash-stat-card">
 
@@ -1838,7 +354,6 @@
             </div>
 
             <div>
-
               <span>
                 Storage used
               </span>
@@ -1850,11 +365,9 @@
               <small>
                 Delivery files
               </small>
-
             </div>
 
           </article>
-
 
           <article class="dash-stat-card">
 
@@ -1863,7 +376,6 @@
             </div>
 
             <div>
-
               <span>
                 All deliveries
               </span>
@@ -1875,25 +387,21 @@
               <small>
                 Created in your workspace
               </small>
-
             </div>
 
           </article>
 
         </div>
 
-
-        <!-- MONTHLY ACTIVITY + QUICK ACTION -->
+        <!-- QUICK ANALYTICS -->
 
         <div class="dash-overview-grid">
-
 
           <article class="dash-overview-card">
 
             <div class="dash-overview-card-header">
 
               <div>
-
                 <span class="dash-section-eyebrow">
                   THIS MONTH
                 </span>
@@ -1901,7 +409,6 @@
                 <h3>
                   Client activity
                 </h3>
-
               </div>
 
               <button
@@ -1913,7 +420,6 @@
               </button>
 
             </div>
-
 
             <div class="dash-mini-stats">
 
@@ -1928,7 +434,6 @@
                 </strong>
 
               </div>
-
 
               <div class="dash-mini-stat">
 
@@ -1952,7 +457,6 @@
             <div class="dash-overview-card-header">
 
               <div>
-
                 <span class="dash-section-eyebrow">
                   QUICK ACTION
                 </span>
@@ -1960,7 +464,6 @@
                 <h3>
                   Ready to send a project?
                 </h3>
-
               </div>
 
             </div>
@@ -1982,15 +485,13 @@
 
         </div>
 
-
-        <!-- RECENT DELIVERY AREA -->
+        <!-- RECENT ACTIVITY -->
 
         <div class="dash-overview-card dash-recent-overview">
 
           <div class="dash-overview-card-header">
 
             <div>
-
               <span class="dash-section-eyebrow">
                 WORKSPACE
               </span>
@@ -1998,7 +499,6 @@
               <h3>
                 Recent deliveries
               </h3>
-
             </div>
 
             <button
@@ -2013,26 +513,17 @@
 
           <p>
             Your latest client deliveries are available in the
-            Deliveries section, where you can search, filter,
-            duplicate and manage each project.
+            Deliveries section.
           </p>
-
-          <button
-            type="button"
-            class="dash-btn dash-compact"
-            data-open-tab="deliveries"
-          >
-            Open delivery library
-          </button>
 
         </div>
 
       </section>
 
 
-      <!-- ==================================================
-           CREATE DELIVERY
-      =================================================== -->
+      <!-- =================================================
+           TAB: CREATE DELIVERY
+      ================================================== -->
 
       <section
         id="panel-create"
@@ -2046,7 +537,6 @@
         <div class="dash-section-heading">
 
           <div>
-
             <span class="dash-section-eyebrow">
               NEW DELIVERY
             </span>
@@ -2056,10 +546,8 @@
             </h2>
 
             <p>
-              Upload your finished work, add client details
-              and generate the private delivery link.
+              Prepare a secure client hand-off for your finished project.
             </p>
-
           </div>
 
         </div>
@@ -2067,36 +555,24 @@
 
         <div class="dash-create-layout">
 
-
-          <!-- MAIN UPLOAD FORM -->
-
           <section class="dash-panel dash-create-panel">
 
             <form id="dash-upload-form">
 
-
-              <!-- STEP 01 -->
-
               <div class="dash-form-section">
 
                 <div class="dash-form-section-title">
-
-                  <span>
-                    01
-                  </span>
+                  <span>01</span>
 
                   <div>
-
                     <h3>
                       Project files
                     </h3>
 
                     <p>
-                      Add the finished files you want to deliver.
+                      Upload up to 30 supported files.
                     </p>
-
                   </div>
-
                 </div>
 
 
@@ -2141,18 +617,12 @@
               </div>
 
 
-              <!-- STEP 02 -->
-
               <div class="dash-form-section">
 
                 <div class="dash-form-section-title">
-
-                  <span>
-                    02
-                  </span>
+                  <span>02</span>
 
                   <div>
-
                     <h3>
                       Client information
                     </h3>
@@ -2160,9 +630,7 @@
                     <p>
                       These details appear on the client delivery page.
                     </p>
-
                   </div>
-
                 </div>
 
 
@@ -2209,18 +677,12 @@
               </div>
 
 
-              <!-- STEP 03 -->
-
               <div class="dash-form-section">
 
                 <div class="dash-form-section-title">
-
-                  <span>
-                    03
-                  </span>
+                  <span>03</span>
 
                   <div>
-
                     <h3>
                       Security & expiry
                     </h3>
@@ -2228,9 +690,7 @@
                     <p>
                       Choose how long the client link remains available.
                     </p>
-
                   </div>
-
                 </div>
 
 
@@ -2263,8 +723,6 @@
               </div>
 
 
-              <!-- UPLOAD PROGRESS -->
-
               <div
                 id="dash-progress"
                 class="dash-progress"
@@ -2292,10 +750,7 @@
           </section>
 
 
-          <!-- INFORMATION SIDEBAR -->
-
           <aside class="dash-create-info">
-
 
             <div class="dash-info-card">
 
@@ -2322,7 +777,7 @@
                 </li>
 
                 <li>
-                  Monthly and lifetime analytics
+                  View analytics
                 </li>
 
                 <li>
@@ -2332,26 +787,6 @@
               </ul>
 
             </div>
-
-
-            <div class="dash-info-card">
-
-              <span class="dash-section-eyebrow">
-                WORKFLOW
-              </span>
-
-              <h3>
-                Keep your delivery process simple.
-              </h3>
-
-              <p style="margin:0;color:#7c8ba0;font-size:.71rem;line-height:1.65;">
-                Upload your completed work, enter the client
-                details and generate the private delivery page.
-                The client receives one clean link.
-              </p>
-
-            </div>
-
 
             <div class="dash-info-card dash-info-card--accent">
 
@@ -2374,9 +809,9 @@
       </section>
 
 
-      <!-- ==================================================
-           DELIVERY LIBRARY
-      =================================================== -->
+      <!-- =================================================
+           TAB: DELIVERIES
+      ================================================== -->
 
       <section
         id="panel-deliveries"
@@ -2390,7 +825,6 @@
         <div class="dash-section-heading">
 
           <div>
-
             <span class="dash-section-eyebrow">
               DELIVERY LIBRARY
             </span>
@@ -2402,9 +836,7 @@
             <p>
               Search, monitor and manage every client hand-off.
             </p>
-
           </div>
-
 
           <button
             type="button"
@@ -2418,7 +850,6 @@
 
 
         <section class="dash-panel dash-panel--list">
-
 
           <div class="dash-list-toolbar">
 
@@ -2494,9 +925,9 @@
       </section>
 
 
-      <!-- ==================================================
-           ANALYTICS
-      =================================================== -->
+      <!-- =================================================
+           TAB: ANALYTICS
+      ================================================== -->
 
       <section
         id="panel-analytics"
@@ -2510,7 +941,6 @@
         <div class="dash-section-heading">
 
           <div>
-
             <span class="dash-section-eyebrow">
               DELIVERY ANALYTICS
             </span>
@@ -2522,7 +952,6 @@
             <p>
               Understand how clients interact with your delivery links.
             </p>
-
           </div>
 
         </div>
@@ -2535,7 +964,6 @@
           <div class="analytics-period-heading">
 
             <div>
-
               <span class="dash-section-eyebrow">
                 THIS MONTH
               </span>
@@ -2543,7 +971,6 @@
               <h3>
                 Monthly performance
               </h3>
-
             </div>
 
             <span class="analytics-period-badge">
@@ -2555,7 +982,6 @@
 
           <div class="analytics-summary-grid">
 
-
             <div class="analytics-summary-card">
 
               <div class="analytics-summary-icon">
@@ -2563,7 +989,6 @@
               </div>
 
               <div>
-
                 <span>
                   Link Views
                 </span>
@@ -2573,9 +998,8 @@
                 </strong>
 
                 <small>
-                  Client page visits this month
+                  Client page visits
                 </small>
-
               </div>
 
             </div>
@@ -2588,7 +1012,6 @@
               </div>
 
               <div>
-
                 <span>
                   Downloads
                 </span>
@@ -2598,9 +1021,8 @@
                 </strong>
 
                 <small>
-                  Files downloaded this month
+                  Files downloaded
                 </small>
-
               </div>
 
             </div>
@@ -2617,7 +1039,6 @@
           <div class="analytics-period-heading">
 
             <div>
-
               <span class="dash-section-eyebrow">
                 LIFETIME
               </span>
@@ -2625,7 +1046,6 @@
               <h3>
                 All-time performance
               </h3>
-
             </div>
 
             <span class="analytics-period-badge">
@@ -2637,7 +1057,6 @@
 
           <div class="analytics-summary-grid">
 
-
             <div class="analytics-summary-card">
 
               <div class="analytics-summary-icon">
@@ -2645,7 +1064,6 @@
               </div>
 
               <div>
-
                 <span>
                   Link Views
                 </span>
@@ -2657,7 +1075,6 @@
                 <small>
                   Total client page visits
                 </small>
-
               </div>
 
             </div>
@@ -2670,7 +1087,6 @@
               </div>
 
               <div>
-
                 <span>
                   Downloads
                 </span>
@@ -2682,7 +1098,6 @@
                 <small>
                   Total files downloaded
                 </small>
-
               </div>
 
             </div>
@@ -2692,7 +1107,7 @@
         </div>
 
 
-        <!-- PERFORMANCE NOTE -->
+        <!-- PERFORMANCE INSIGHT -->
 
         <div class="dash-analytics-note">
 
@@ -2707,10 +1122,10 @@
             </strong>
 
             <p>
-              Monthly figures represent the current calendar
-              month, while lifetime figures remain cumulative.
-              Use the Deliveries section to see performance
-              for individual projects.
+              Use these figures to see which projects are
+              being viewed and downloaded by clients. More
+              detailed per-delivery analytics remain available
+              inside each delivery card.
             </p>
 
           </div>
@@ -2724,9 +1139,9 @@
   </main>
 
 
-  <!-- ======================================================
+  <!-- =====================================================
        CONFIRMATION DIALOG
-  ======================================================= -->
+  ====================================================== -->
 
   <dialog
     id="dash-confirm"
@@ -2758,9 +1173,9 @@
   </dialog>
 
 
-  <!-- ======================================================
+  <!-- =====================================================
        SUCCESS DIALOG
-  ======================================================= -->
+  ====================================================== -->
 
   <dialog
     id="dash-success"
@@ -2829,18 +1244,18 @@
   </dialog>
 
 
-  <!-- ======================================================
+  <!-- =====================================================
        SUPABASE
-  ======================================================= -->
+  ====================================================== -->
 
   <script
     src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"
   ></script>
 
 
-  <!-- ======================================================
+  <!-- =====================================================
        DASHBOARD JAVASCRIPT
-  ======================================================= -->
+  ====================================================== -->
 
   <script
     type="module"

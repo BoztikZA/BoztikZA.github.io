@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /deliver/
+
+Sitemap: https://boztik.dev/sitemap.xml
