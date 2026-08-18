@@ -63,7 +63,7 @@
 
       gap: 24px;
 
-      align-items: start;
+      align-items: stretch;
 
       margin-top: 4px;
     }
@@ -75,7 +75,7 @@
 
 
     /* =====================================================
-       COMPACT SUPPORT CREATOR
+       PREMIUM SIDEBAR SUPPORT CREATOR
     ====================================================== */
 
     #deliver-support.boztik-support-compact {
@@ -83,9 +83,9 @@
 
       margin: 0;
 
-      padding: 24px 22px;
+      padding: 28px 24px;
 
-      border-radius: 18px;
+      border-radius: 20px;
 
       border:
         1px solid
@@ -104,6 +104,11 @@
         inset 0 1px 0 rgba(255,255,255,0.035);
 
       overflow: hidden;
+
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      box-sizing: border-box;
     }
 
 
@@ -112,18 +117,18 @@
 
       position: absolute;
 
-      width: 150px;
-      height: 150px;
+      width: 200px;
+      height: 200px;
 
-      top: -85px;
-      right: -70px;
+      top: -100px;
+      right: -80px;
 
       border-radius: 50%;
 
       background:
-        rgba(142, 255, 61, 0.09);
+        rgba(142, 255, 61, 0.08);
 
-      filter: blur(18px);
+      filter: blur(24px);
 
       pointer-events: none;
     }
@@ -144,7 +149,7 @@
         linear-gradient(
           90deg,
           transparent,
-          rgba(142,255,61,0.55),
+          rgba(142,255,61,0.45),
           transparent
         );
     }
@@ -153,22 +158,44 @@
     .boztik-support-inner {
       position: relative;
       z-index: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      justify-content: space-between;
     }
 
+    .boztik-support-section {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .deliver-section-label {
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--deliver-accent);
+      opacity: 0.95;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
 
     .boztik-support-heading {
-      margin-bottom: 16px;
+      margin-bottom: 0;
     }
 
 
     .boztik-support-heading .gratitude-title {
-      margin: 7px 0 8px;
+      margin: 7px 0 10px;
 
       font-family:
         "Plus Jakarta Sans",
         sans-serif;
 
-      font-size: 1.28rem;
+      font-size: 1.35rem;
 
       line-height: 1.2;
 
@@ -180,11 +207,11 @@
       margin: 0;
 
       color:
-        var(--deliver-text-muted);
+        var(--deliver-text-soft);
 
       font-size: 0.78rem;
 
-      line-height: 1.55;
+      line-height: 1.6;
     }
 
 
@@ -195,18 +222,16 @@
 
       gap: 8px;
 
-      margin: 14px 0 17px;
-
-      padding: 10px 11px;
+      padding: 10px 12px;
 
       border:
         1px solid
-        rgba(255,255,255,0.055);
+        rgba(142, 255, 61, 0.15);
 
       border-radius: 10px;
 
       background:
-        rgba(255,255,255,0.025);
+        rgba(142, 255, 61, 0.02);
 
       color:
         var(--deliver-text-muted);
@@ -231,29 +256,23 @@
     }
 
 
-    .boztik-support-options {
-      display: grid;
-
-      grid-template-columns: 1fr;
-
-      gap: 9px;
+    .boztik-support-options-stacked {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
 
 
-    .boztik-support-option {
-      display: grid;
+    .boztik-support-card {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
 
-      grid-template-columns: auto 1fr;
-
-      align-items: center;
-
-      gap: 11px;
-
-      padding: 11px;
+      padding: 14px;
 
       border:
         1px solid
-        rgba(255,255,255,0.065);
+        rgba(255,255,255,0.06);
 
       border-radius: 12px;
 
@@ -267,14 +286,21 @@
     }
 
 
-    .boztik-support-option:hover {
+    .boztik-support-card:hover {
       transform: translateY(-1px);
 
       border-color:
-        rgba(142,255,61,0.2);
+        rgba(142,255,61,0.22);
 
       background:
-        rgba(142,255,61,0.035);
+        rgba(142,255,61,0.03);
+    }
+
+
+    .boztik-support-card-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
 
@@ -284,10 +310,10 @@
       align-items: center;
       justify-content: center;
 
-      width: 34px;
-      height: 34px;
+      width: 32px;
+      height: 32px;
 
-      border-radius: 9px;
+      border-radius: 8px;
 
       background:
         rgba(255,255,255,0.04);
@@ -302,12 +328,12 @@
     .boztik-support-details strong {
       display: block;
 
-      margin-bottom: 2px;
+      margin-bottom: 1px;
 
       color:
         var(--deliver-text);
 
-      font-size: 0.76rem;
+      font-size: 0.78rem;
 
       font-weight: 750;
     }
@@ -319,7 +345,7 @@
       color:
         var(--deliver-text-muted);
 
-      font-size: 0.65rem;
+      font-size: 0.68rem;
     }
 
 
@@ -329,13 +355,13 @@
       align-items: center;
       justify-content: center;
 
-      min-height: 35px;
+      min-height: 38px;
 
-      padding: 7px 10px;
+      padding: 8px 12px;
 
       border-radius: 8px;
 
-      font-size: 0.66rem;
+      font-size: 0.72rem;
 
       font-weight: 800;
 
@@ -345,7 +371,8 @@
 
       transition:
         transform 180ms ease,
-        box-shadow 180ms ease;
+        box-shadow 180ms ease,
+        opacity 180ms ease;
     }
 
 
@@ -360,7 +387,7 @@
       background: #ff5e5b;
 
       box-shadow:
-        0 7px 18px rgba(255,94,91,0.14);
+        0 6px 14px rgba(255,94,91,0.14);
     }
 
 
@@ -375,14 +402,39 @@
         );
 
       box-shadow:
-        0 7px 18px rgba(0,48,135,0.16);
+        0 6px 14px rgba(0,48,135,0.16);
     }
 
+    .why-copy {
+      margin: 0;
+      color: var(--deliver-text-muted);
+      font-size: 0.72rem;
+      line-height: 1.55;
+    }
+
+    .value-copy {
+      margin: 0;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border-left: 3px solid var(--deliver-accent);
+      background: rgba(142, 255, 61, 0.035);
+      color: var(--deliver-text-soft);
+      font-size: 0.72rem;
+      line-height: 1.5;
+    }
+
+    .closing-line {
+      margin: 0 0 10px;
+      color: var(--deliver-text-muted);
+      font-size: 0.68rem;
+      text-align: center;
+      font-style: italic;
+    }
 
     .boztik-support-goal {
       display: block;
 
-      margin-top: 13px;
+      margin-top: 2px;
 
       color:
         var(--deliver-text-muted);
@@ -908,6 +960,13 @@
       #deliver-support.boztik-support-compact {
         position: relative;
         top: auto;
+        height: auto;
+      }
+
+      .boztik-support-inner {
+        height: auto;
+        gap: 20px;
+        justify-content: flex-start;
       }
 
 
@@ -1407,7 +1466,7 @@
 
 
           <!-- =================================================
-               COMPACT SUPPORT CREATOR
+               PREMIUM SIDEBAR SUPPORT CREATOR
           ================================================== -->
 
           <aside
@@ -1419,10 +1478,11 @@
             <div class="boztik-support-inner">
 
 
-              <div class="boztik-support-heading">
+              <!-- HEADER -->
+              <div class="boztik-support-section header-section">
 
-                <span class="deliver-eyebrow">
-                  Support Creator
+                <span class="deliver-section-label">
+                  • SUPPORT CREATOR
                 </span>
 
                 <h2 class="gratitude-title">
@@ -1436,141 +1496,201 @@
               </div>
 
 
-              <div class="boztik-support-note">
+              <!-- OPTIONAL NOTE -->
+              <div class="boztik-support-section optional-section">
 
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.4"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-
-                  <path d="M20 6L9 17l-5-5"/>
-
-                </svg>
-
-                <span>
-                  Completely optional — your support is genuinely appreciated.
+                <span class="deliver-section-label">
+                  • OPTIONAL SUPPORT
                 </span>
 
-              </div>
+                <div class="boztik-support-note">
 
-
-              <div class="boztik-support-options">
-
-
-                <!-- KO-FI -->
-
-                <div class="boztik-support-option">
-
-                  <div class="boztik-support-icon">
-
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="#ff5e5b"
-                    >
-
-                      <path d="M2.5 4A1.5 1.5 0 0 1 4 2.5h11A1.5 1.5 0 0 1 16.5 4v1H17a3.5 3.5 0 0 1 0 7h-.86A5.5 5.5 0 0 1 11 16H7a5.5 5.5 0 0 1-5.5-5.5V4Zm14 3v5a2 2 0 0 0 0-5Z"/>
-
-                    </svg>
-
-                  </div>
-
-
-                  <div class="boztik-support-details">
-
-                    <strong>
-                      Ko-fi
-                    </strong>
-
-                    <span>
-                      Quick one-time support
-                    </span>
-
-                  </div>
-
-
-                  <a
-                    href="https://ko-fi.com/boztik"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="boztik-support-button kofi"
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.4"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
                   >
-                    Support
-                    <span aria-hidden="true">↗</span>
-                  </a>
 
-                </div>
+                    <path d="M20 6L9 17l-5-5"/>
 
+                  </svg>
 
-                <!-- PAYPAL -->
-
-                <div class="boztik-support-option">
-
-                  <div class="boztik-support-icon">
-
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                    >
-
-                      <path
-                        d="M8.2 4.3h5c2.6 0 4.1 1.4 3.7 3.8-.5 3.2-2.5 4.7-5.4 4.7H9.9l-.8 5H6.4l1.8-13.5Z"
-                        fill="#009cde"
-                      />
-
-                      <path
-                        d="M6.3 4.3h5c2.6 0 4.1 1.4 3.7 3.8-.5 3.2-2.5 4.7-5.4 4.7H8l-.8 5H4.5l1.8-13.5Z"
-                        fill="#003087"
-                      />
-
-                    </svg>
-
-                  </div>
-
-
-                  <div class="boztik-support-details">
-
-                    <strong>
-                      PayPal
-                    </strong>
-
-                    <span>
-                      Flexible support
-                    </span>
-
-                  </div>
-
-
-                  <a
-                    href="http://paypal.me/angry5p1c3"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="boztik-support-button paypal"
-                  >
-                    Support
-                    <span aria-hidden="true">↗</span>
-                  </a>
+                  <span>
+                    Completely optional — every contribution is genuinely appreciated.
+                  </span>
 
                 </div>
 
               </div>
 
 
-              <a
-                href="https://ko-fi.com/boztik/goal?g=9"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="boztik-support-goal"
-              >
-                See what I'm currently working toward →
-              </a>
+              <!-- WAYS TO SUPPORT -->
+              <div class="boztik-support-section ways-section">
+
+                <span class="deliver-section-label">
+                  • WAYS TO SUPPORT
+                </span>
+
+                <div class="boztik-support-options-stacked">
+
+
+                  <!-- KO-FI CARD -->
+
+                  <div class="boztik-support-card">
+
+                    <div class="boztik-support-card-info">
+
+                      <div class="boztik-support-icon">
+
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="#ff5e5b"
+                        >
+
+                          <path d="M2.5 4A1.5 1.5 0 0 1 4 2.5h11A1.5 1.5 0 0 1 16.5 4v1H17a3.5 3.5 0 0 1 0 7h-.86A5.5 5.5 0 0 1 11 16H7a5.5 5.5 0 0 1-5.5-5.5V4Zm14 3v5a2 2 0 0 0 0-5Z"/>
+
+                        </svg>
+
+                      </div>
+
+
+                      <div class="boztik-support-details">
+
+                        <strong>
+                          Ko-fi
+                        </strong>
+
+                        <span>
+                          Quick one-time support
+                        </span>
+
+                      </div>
+
+                    </div>
+
+
+                    <a
+                      href="https://ko-fi.com/boztik"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="boztik-support-button kofi"
+                    >
+                      Support on Ko-fi
+                      <span aria-hidden="true">↗</span>
+                    </a>
+
+                  </div>
+
+
+                  <!-- PAYPAL CARD -->
+
+                  <div class="boztik-support-card">
+
+                    <div class="boztik-support-card-info">
+
+                      <div class="boztik-support-icon">
+
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                        >
+
+                          <path
+                            d="M8.2 4.3h5c2.6 0 4.1 1.4 3.7 3.8-.5 3.2-2.5 4.7-5.4 4.7H9.9l-.8 5H6.4l1.8-13.5Z"
+                            fill="#009cde"
+                          />
+
+                          <path
+                            d="M6.3 4.3h5c2.6 0 4.1 1.4 3.7 3.8-.5 3.2-2.5 4.7-5.4 4.7H8l-.8 5H4.5l1.8-13.5Z"
+                            fill="#003087"
+                          />
+
+                        </svg>
+
+                      </div>
+
+
+                      <div class="boztik-support-details">
+
+                        <strong>
+                          PayPal
+                        </strong>
+
+                        <span>
+                          Flexible support
+                        </span>
+
+                      </div>
+
+                    </div>
+
+
+                    <a
+                      href="http://paypal.me/angry5p1c3"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="boztik-support-button paypal"
+                    >
+                      Support with PayPal
+                      <span aria-hidden="true">↗</span>
+                    </a>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+
+              <!-- WHY IT HELPS -->
+              <div class="boztik-support-section why-section">
+
+                <span class="deliver-section-label">
+                  • WHY IT HELPS
+                </span>
+
+                <p class="why-copy">
+                  Your support helps me keep improving my photo editing services, creative tools and Boztik Deliver — while keeping this delivery experience simple and accessible for clients.
+                </p>
+
+              </div>
+
+
+              <!-- PAY WHAT YOU WANT -->
+              <div class="boztik-support-section value-section">
+
+                <p class="value-copy">
+                  Prefer to support based on the value you received? Any amount you choose is appreciated.
+                </p>
+
+              </div>
+
+
+              <!-- FOOTER / CLOSING -->
+              <div class="boztik-support-section footer-section">
+
+                <p class="closing-line">
+                  Thank you for supporting independent creative work.
+                </p>
+
+
+                <a
+                  href="https://ko-fi.com/boztik/goal?g=9"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="boztik-support-goal"
+                >
+                  See what I'm currently working toward →
+                </a>
+
+              </div>
 
             </div>
 
