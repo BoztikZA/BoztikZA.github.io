@@ -21,6 +21,48 @@
 
   <link rel="stylesheet" href="../styles-premium.css">
   <link rel="stylesheet" href="css/deliver.css?v=7">
+
+  <style>
+    /* =====================================================
+       LOGIN PASSWORD RECOVERY
+    ====================================================== */
+
+    .dash-password-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: -6px;
+      margin-bottom: 4px;
+    }
+
+    .dash-forgot-password {
+      color: var(--deliver-accent, #8eff3d);
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      transition:
+        color 0.2s ease,
+        opacity 0.2s ease;
+    }
+
+    .dash-forgot-password:hover {
+      color: var(--deliver-accent-hover, #a1ff63);
+      text-decoration: underline;
+    }
+
+    .dash-forgot-password:focus-visible {
+      outline: 2px solid var(--deliver-accent, #8eff3d);
+      outline-offset: 4px;
+      border-radius: 4px;
+    }
+
+    .dash-login-help {
+      margin: 14px 0 0;
+      color: var(--deliver-text-muted, #94a3b8);
+      font-size: 12px;
+      line-height: 1.5;
+      text-align: center;
+    }
+  </style>
 </head>
 
 <body class="deliver-dashboard-body">
@@ -33,6 +75,7 @@
     <div class="glow1"></div>
     <div class="glow2"></div>
   </div>
+
 
   <!-- =====================================================
        NAVIGATION
@@ -79,11 +122,13 @@
     </nav>
   </header>
 
+
   <!-- =====================================================
        MAIN
   ====================================================== -->
 
   <main id="main-content">
+
 
     <!-- ===================================================
          LOGIN
@@ -107,27 +152,60 @@
         in this Deliver project.
       </p>
 
+
       <form id="dash-login-form">
 
+        <!-- EMAIL -->
+
         <div class="dash-field">
-          <label for="dash-email">Email</label>
+
+          <label for="dash-email">
+            Email
+          </label>
+
           <input
             id="dash-email"
             type="email"
             autocomplete="username"
             required
           >
+
         </div>
 
+
+        <!-- PASSWORD -->
+
         <div class="dash-field">
-          <label for="dash-password">Password</label>
+
+          <label for="dash-password">
+            Password
+          </label>
+
           <input
             id="dash-password"
             type="password"
             autocomplete="current-password"
             required
           >
+
         </div>
+
+
+        <!-- FORGOT PASSWORD -->
+
+        <div class="dash-password-row">
+
+          <a
+            href="./reset-password.html"
+            class="dash-forgot-password"
+          >
+            Forgot your password?
+          </a>
+
+        </div>
+
+
+        <!-- LOGIN BUTTON -->
 
         <button
           type="submit"
@@ -138,6 +216,9 @@
           Sign in
         </button>
 
+
+        <!-- LOGIN ERROR -->
+
         <p
           class="dash-login-error"
           id="dash-login-error"
@@ -145,9 +226,16 @@
           role="alert"
         ></p>
 
+
+        <p class="dash-login-help">
+          Password reset is handled securely through
+          your Boztik Deliver account.
+        </p>
+
       </form>
 
     </section>
+
 
     <!-- ===================================================
          DASHBOARD
@@ -166,6 +254,7 @@
       <div class="dash-header">
 
         <div>
+
           <span class="deliver-eyebrow">
             Delivery command centre
           </span>
@@ -177,6 +266,7 @@
           <p>
             Manage your client hand-offs and monitor activity.
           </p>
+
         </div>
 
         <button
@@ -188,6 +278,7 @@
         </button>
 
       </div>
+
 
       <!-- =================================================
            DASHBOARD TABS
@@ -210,11 +301,14 @@
           data-tab="overview"
         >
           <span class="dash-tab-icon">◉</span>
+
           <span>
             <strong>Overview</strong>
             <small>Command centre</small>
           </span>
+
         </button>
+
 
         <button
           type="button"
@@ -227,11 +321,14 @@
           data-tab="create"
         >
           <span class="dash-tab-icon">＋</span>
+
           <span>
             <strong>Create Delivery</strong>
             <small>New client hand-off</small>
           </span>
+
         </button>
+
 
         <button
           type="button"
@@ -244,11 +341,14 @@
           data-tab="deliveries"
         >
           <span class="dash-tab-icon">▣</span>
+
           <span>
             <strong>Deliveries</strong>
             <small>Manage projects</small>
           </span>
+
         </button>
+
 
         <button
           type="button"
@@ -261,13 +361,16 @@
           data-tab="analytics"
         >
           <span class="dash-tab-icon">↗</span>
+
           <span>
             <strong>Analytics</strong>
             <small>Views & downloads</small>
           </span>
+
         </button>
 
       </div>
+
 
       <!-- =================================================
            TAB: OVERVIEW
@@ -284,6 +387,7 @@
         <div class="dash-section-heading">
 
           <div>
+
             <span class="dash-section-eyebrow">
               COMMAND CENTRE
             </span>
@@ -295,9 +399,11 @@
             <p>
               A quick snapshot of your current delivery operation.
             </p>
+
           </div>
 
         </div>
+
 
         <!-- PRIMARY STATS -->
 
@@ -310,6 +416,7 @@
             </div>
 
             <div>
+
               <span>
                 Active deliveries
               </span>
@@ -321,9 +428,11 @@
               <small>
                 Currently available to clients
               </small>
+
             </div>
 
           </article>
+
 
           <article class="dash-stat-card">
 
@@ -332,6 +441,7 @@
             </div>
 
             <div>
+
               <span>
                 Total downloads
               </span>
@@ -343,9 +453,11 @@
               <small>
                 Across all deliveries
               </small>
+
             </div>
 
           </article>
+
 
           <article class="dash-stat-card">
 
@@ -354,6 +466,7 @@
             </div>
 
             <div>
+
               <span>
                 Storage used
               </span>
@@ -365,9 +478,11 @@
               <small>
                 Delivery files
               </small>
+
             </div>
 
           </article>
+
 
           <article class="dash-stat-card">
 
@@ -376,6 +491,7 @@
             </div>
 
             <div>
+
               <span>
                 All deliveries
               </span>
@@ -387,11 +503,13 @@
               <small>
                 Created in your workspace
               </small>
+
             </div>
 
           </article>
 
         </div>
+
 
         <!-- QUICK ANALYTICS -->
 
@@ -402,6 +520,7 @@
             <div class="dash-overview-card-header">
 
               <div>
+
                 <span class="dash-section-eyebrow">
                   THIS MONTH
                 </span>
@@ -409,6 +528,7 @@
                 <h3>
                   Client activity
                 </h3>
+
               </div>
 
               <button
@@ -420,6 +540,7 @@
               </button>
 
             </div>
+
 
             <div class="dash-mini-stats">
 
@@ -434,6 +555,7 @@
                 </strong>
 
               </div>
+
 
               <div class="dash-mini-stat">
 
@@ -457,6 +579,7 @@
             <div class="dash-overview-card-header">
 
               <div>
+
                 <span class="dash-section-eyebrow">
                   QUICK ACTION
                 </span>
@@ -464,14 +587,17 @@
                 <h3>
                   Ready to send a project?
                 </h3>
+
               </div>
 
             </div>
+
 
             <p>
               Upload your finished client files and generate
               a secure delivery page in seconds.
             </p>
+
 
             <button
               type="button"
@@ -485,6 +611,7 @@
 
         </div>
 
+
         <!-- RECENT ACTIVITY -->
 
         <div class="dash-overview-card dash-recent-overview">
@@ -492,6 +619,7 @@
           <div class="dash-overview-card-header">
 
             <div>
+
               <span class="dash-section-eyebrow">
                 WORKSPACE
               </span>
@@ -499,6 +627,7 @@
               <h3>
                 Recent deliveries
               </h3>
+
             </div>
 
             <button
@@ -510,6 +639,7 @@
             </button>
 
           </div>
+
 
           <p>
             Your latest client deliveries are available in the
@@ -537,6 +667,7 @@
         <div class="dash-section-heading">
 
           <div>
+
             <span class="dash-section-eyebrow">
               NEW DELIVERY
             </span>
@@ -548,6 +679,7 @@
             <p>
               Prepare a secure client hand-off for your finished project.
             </p>
+
           </div>
 
         </div>
@@ -562,9 +694,11 @@
               <div class="dash-form-section">
 
                 <div class="dash-form-section-title">
+
                   <span>01</span>
 
                   <div>
+
                     <h3>
                       Project files
                     </h3>
@@ -572,7 +706,9 @@
                     <p>
                       Upload up to 30 supported files.
                     </p>
+
                   </div>
+
                 </div>
 
 
@@ -620,9 +756,11 @@
               <div class="dash-form-section">
 
                 <div class="dash-form-section-title">
+
                   <span>02</span>
 
                   <div>
+
                     <h3>
                       Client information
                     </h3>
@@ -630,7 +768,9 @@
                     <p>
                       These details appear on the client delivery page.
                     </p>
+
                   </div>
+
                 </div>
 
 
@@ -680,9 +820,11 @@
               <div class="dash-form-section">
 
                 <div class="dash-form-section-title">
+
                   <span>03</span>
 
                   <div>
+
                     <h3>
                       Security & expiry
                     </h3>
@@ -690,7 +832,9 @@
                     <p>
                       Choose how long the client link remains available.
                     </p>
+
                   </div>
+
                 </div>
 
 
@@ -788,6 +932,7 @@
 
             </div>
 
+
             <div class="dash-info-card dash-info-card--accent">
 
               <span>
@@ -825,6 +970,7 @@
         <div class="dash-section-heading">
 
           <div>
+
             <span class="dash-section-eyebrow">
               DELIVERY LIBRARY
             </span>
@@ -836,7 +982,9 @@
             <p>
               Search, monitor and manage every client hand-off.
             </p>
+
           </div>
+
 
           <button
             type="button"
@@ -941,6 +1089,7 @@
         <div class="dash-section-heading">
 
           <div>
+
             <span class="dash-section-eyebrow">
               DELIVERY ANALYTICS
             </span>
@@ -952,6 +1101,7 @@
             <p>
               Understand how clients interact with your delivery links.
             </p>
+
           </div>
 
         </div>
@@ -964,6 +1114,7 @@
           <div class="analytics-period-heading">
 
             <div>
+
               <span class="dash-section-eyebrow">
                 THIS MONTH
               </span>
@@ -971,6 +1122,7 @@
               <h3>
                 Monthly performance
               </h3>
+
             </div>
 
             <span class="analytics-period-badge">
@@ -989,6 +1141,7 @@
               </div>
 
               <div>
+
                 <span>
                   Link Views
                 </span>
@@ -1000,6 +1153,7 @@
                 <small>
                   Client page visits
                 </small>
+
               </div>
 
             </div>
@@ -1012,6 +1166,7 @@
               </div>
 
               <div>
+
                 <span>
                   Downloads
                 </span>
@@ -1023,6 +1178,7 @@
                 <small>
                   Files downloaded
                 </small>
+
               </div>
 
             </div>
@@ -1039,6 +1195,7 @@
           <div class="analytics-period-heading">
 
             <div>
+
               <span class="dash-section-eyebrow">
                 LIFETIME
               </span>
@@ -1046,6 +1203,7 @@
               <h3>
                 All-time performance
               </h3>
+
             </div>
 
             <span class="analytics-period-badge">
@@ -1064,6 +1222,7 @@
               </div>
 
               <div>
+
                 <span>
                   Link Views
                 </span>
@@ -1075,6 +1234,7 @@
                 <small>
                   Total client page visits
                 </small>
+
               </div>
 
             </div>
@@ -1087,6 +1247,7 @@
               </div>
 
               <div>
+
                 <span>
                   Downloads
                 </span>
@@ -1098,6 +1259,7 @@
                 <small>
                   Total files downloaded
                 </small>
+
               </div>
 
             </div>
@@ -1261,6 +1423,7 @@
       Update the client-facing details or extend availability.
       The delivery link stays exactly the same.
     </p>
+
 
     <form id="dash-edit-form">
 
