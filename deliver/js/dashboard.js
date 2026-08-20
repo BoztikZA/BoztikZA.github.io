@@ -2,6 +2,7 @@ import {
   supabase,
   formatBytes,
   formatDate,
+  countdown,
   toast,
   escapeHtml,
   deliveryId,
@@ -11,6 +12,7 @@ import {
 import {
   listDeliveries,
   createDelivery,
+  updateDelivery,
   deleteDelivery,
   duplicateDelivery
 } from "./api.js";
@@ -111,7 +113,18 @@ const els = {
   successLink: $("dash-success-link"),
   successCopy: $("dash-success-copy"),
   successCopyStatus: $("dash-success-copy-status"),
-  successOpen: $("dash-success-open")
+  successOpen: $("dash-success-open"),
+
+  /* Edit delivery */
+  editDialog: $("dash-edit"),
+  editForm: $("dash-edit-form"),
+  editProjectName: $("edit-project-name"),
+  editClientName: $("edit-client-name"),
+  editNotes: $("edit-notes"),
+  editExpiry: $("edit-expiry"),
+  editError: $("dash-edit-error"),
+  editSave: $("dash-edit-save"),
+  editCancel: $("dash-edit-cancel")
 
 };
 
@@ -124,6 +137,8 @@ let deliveries = [];
 let selectedFiles = [];
 let pendingConfirmAction = null;
 let authListener = null;
+let editingDelivery = null;
+let editSaving = false;
 
 
 /* =========================================================
@@ -548,6 +563,36 @@ function isExpired(delivery) {
 
 
   return timestamp <= Date.now();
+
+}
+
+
+/*
+ * Three-state status used for the Command Centre badge:
+ * "active" (base styling), "warn" (expiring within 6 hours),
+ * "expired". Always derived live from the backend expires_at
+ * timestamp — never a stored/cached flag.
+ */
+const EXPIRING_SOON_WINDOW_MS = 6 * 3600000;
+
+function getDeliveryStatus(delivery) {
+
+  if (!delivery?.expires_at) {
+    return { key: "active", label: "Active" };
+  }
+
+  const remainingMs =
+    new Date(delivery.expires_at).getTime() - Date.now();
+
+  if (!Number.isFinite(remainingMs) || remainingMs <= 0) {
+    return { key: "expired", label: "Expired" };
+  }
+
+  if (remainingMs <= EXPIRING_SOON_WINDOW_MS) {
+    return { key: "warn", label: "Expiring Soon" };
+  }
+
+  return { key: "active", label: "Active" };
 
 }
 
@@ -1249,8 +1294,16 @@ function getVisibleDeliveries() {
 
 function renderDelivery(delivery) {
 
+  const status =
+    getDeliveryStatus(delivery);
+
   const expired =
-    isExpired(delivery);
+    status.key === "expired";
+
+  const remainingLabel =
+    !expired && delivery.expires_at
+      ? countdown(delivery.expires_at).label
+      : null;
 
 
   const monthlyViews =
@@ -1285,7 +1338,7 @@ function renderDelivery(delivery) {
     Array.isArray(
       delivery.delivery_files
     )
-      ? delivery.delivery_files.length
+      ? (delivery.delivery_files.length || 1)
       : 1;
 
 
@@ -1296,205 +1349,161 @@ function renderDelivery(delivery) {
 
 
   card.className =
-    "delivery-card";
+    `delivery-card${expired ? " is-expired" : ""}`;
 
 
   card.innerHTML = `
 
-    <div class="delivery-card-main">
+    <div class="delivery-card-header">
 
       <div class="delivery-card-heading">
 
-        <div>
-
-          <h3>
-            ${escapeHtml(
-              delivery.project_name ||
-              "Untitled delivery"
-            )}
-          </h3>
-
-          <p>
-            ${escapeHtml(
-              delivery.client_name ||
-              "Client"
-            )}
-          </p>
-
-        </div>
-
-        <span class="
-          delivery-status
-          ${expired ? "expired" : "active"}
-        ">
-          ${expired ? "Expired" : "Active"}
-        </span>
-
-      </div>
-
-
-      <div class="delivery-meta">
-
-        <span>
-          Created:
-          <strong>
-            ${formatDate(
-              delivery.created_at
-            )}
-          </strong>
-        </span>
-
-        <span>
-          Expires:
-          <strong>
-            ${formatDate(
-              delivery.expires_at
-            )}
-          </strong>
-        </span>
-
-      </div>
-
-
-      <div class="delivery-analytics">
-
-        <div class="analytics-section">
-
-          <h4>
-            This Month
-          </h4>
-
-          <div class="analytics-grid">
-
-            <div class="analytics-stat">
-
-              <span class="analytics-label">
-                Link Views
-              </span>
-
-              <strong>
-                ${monthlyViews}
-              </strong>
-
-            </div>
-
-
-            <div class="analytics-stat">
-
-              <span class="analytics-label">
-                Downloads
-              </span>
-
-              <strong>
-                ${monthlyDownloads}
-              </strong>
-
-            </div>
-
-          </div>
-
-        </div>
-
-
-        <div class="analytics-section">
-
-          <h4>
-            Lifetime
-          </h4>
-
-          <div class="analytics-grid">
-
-            <div class="analytics-stat">
-
-              <span class="analytics-label">
-                Link Views
-              </span>
-
-              <strong>
-                ${lifetimeViews}
-              </strong>
-
-            </div>
-
-
-            <div class="analytics-stat">
-
-              <span class="analytics-label">
-                Downloads
-              </span>
-
-              <strong>
-                ${lifetimeDownloads}
-              </strong>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <div class="delivery-files">
-
-        <strong>
-          Files:
-        </strong>
-
-        <span>
-          ${fileCount}
-        </span>
-
-        <span>
-          ${formatBytes(
-            delivery.file_size || 0
+        <h3 class="delivery-card-title">
+          ${escapeHtml(
+            delivery.project_name ||
+            "Untitled delivery"
           )}
-        </span>
+        </h3>
+
+        <p class="delivery-card-client">
+          ${escapeHtml(
+            delivery.client_name ||
+            "Client"
+          )}
+        </p>
 
       </div>
 
+      <span class="delivery-status${status.key !== "active" ? ` ${status.key}` : ""}">
+        <span class="status-dot" aria-hidden="true"></span>
+        ${status.label}
+      </span>
 
-      <div class="delivery-actions">
-
-        <button
-          type="button"
-          class="btn-open-delivery"
-          ${expired ? "disabled" : ""}
-        >
-          Open Delivery
-        </button>
+    </div>
 
 
-        <button
-          type="button"
-          class="btn-copy-link"
-          ${expired ? "disabled" : ""}
-        >
-          Copy Link
-        </button>
+    <div class="delivery-card-meta">
 
+      <div class="delivery-card-meta-item">
+        <span class="delivery-card-meta-label">Created</span>
+        <span class="delivery-card-meta-value" title="${formatDate(delivery.created_at)}">
+          ${formatDate(delivery.created_at)}
+        </span>
+      </div>
 
-        <button
-          type="button"
-          class="btn-duplicate"
-        >
-          Duplicate
-        </button>
+      <div class="delivery-card-meta-item">
+        <span class="delivery-card-meta-label">${expired ? "Expired" : "Expires"}</span>
+        <span class="delivery-card-meta-value" title="${formatDate(delivery.expires_at)}">
+          ${expired ? formatDate(delivery.expires_at) : (remainingLabel || formatDate(delivery.expires_at))}
+        </span>
+      </div>
 
-
-        <button
-          type="button"
-          class="btn-delete danger"
-        >
-          Delete
-        </button>
-
+      <div class="delivery-card-meta-item">
+        <span class="delivery-card-meta-label">Files</span>
+        <span class="delivery-card-meta-value">
+          ${fileCount} &middot; ${formatBytes(delivery.file_size || 0)}
+        </span>
       </div>
 
     </div>
 
+
+    <div class="delivery-card-analytics">
+
+      <div class="delivery-analytics-item">
+        <span class="delivery-analytics-label">Views (Month)</span>
+        <span class="delivery-analytics-value">${monthlyViews}</span>
+      </div>
+
+      <div class="delivery-analytics-item">
+        <span class="delivery-analytics-label">Downloads (Month)</span>
+        <span class="delivery-analytics-value">${monthlyDownloads}</span>
+      </div>
+
+      <div class="delivery-analytics-item">
+        <span class="delivery-analytics-label">Views (Lifetime)</span>
+        <span class="delivery-analytics-value">${lifetimeViews}</span>
+      </div>
+
+      <div class="delivery-analytics-item">
+        <span class="delivery-analytics-label">Downloads (Lifetime)</span>
+        <span class="delivery-analytics-value">${lifetimeDownloads}</span>
+      </div>
+
+    </div>
+
+
+    <div class="delivery-card-actions">
+
+      <button
+        type="button"
+        class="dash-btn small btn-edit-delivery"
+      >
+        Edit
+      </button>
+
+      <button
+        type="button"
+        class="dash-btn small btn-open-delivery"
+        ${expired ? "disabled" : ""}
+      >
+        Open
+      </button>
+
+
+      <button
+        type="button"
+        class="dash-btn small btn-copy-link"
+        ${expired ? "disabled" : ""}
+      >
+        Copy Link
+      </button>
+
+
+      <button
+        type="button"
+        class="dash-btn small btn-duplicate"
+      >
+        Duplicate
+      </button>
+
+
+      <button
+        type="button"
+        class="dash-btn small danger btn-delete"
+      >
+        Delete
+      </button>
+
+    </div>
+
   `;
+
+
+  /* -------------------------------------------------------
+     EDIT DELIVERY
+  ------------------------------------------------------- */
+
+  const editButton =
+    card.querySelector(
+      ".btn-edit-delivery"
+    );
+
+
+  if (editButton) {
+
+    editButton.addEventListener(
+      "click",
+      () => {
+
+        openEditDialog(
+          delivery
+        );
+
+      }
+    );
+
+  }
 
 
   /* -------------------------------------------------------
@@ -1844,13 +1853,24 @@ function renderDeliveries() {
 
 
     empty.className =
-      "delivery-empty";
+      "dash-empty";
 
 
-    empty.textContent =
+    const heading =
       deliveries.length
         ? "No deliveries match your search."
         : "No deliveries created yet.";
+
+    const detail =
+      deliveries.length
+        ? "Try adjusting your search or filters."
+        : "Create your first delivery using the form above.";
+
+
+    empty.innerHTML = `
+      <h3>${escapeHtml(heading)}</h3>
+      <p>${escapeHtml(detail)}</p>
+    `;
 
 
     els.deliveriesList.append(
@@ -2608,6 +2628,339 @@ async function handleUpload(event) {
 
 
 /* =========================================================
+   EDIT DELIVERY DIALOG
+========================================================= */
+
+/*
+ * Converts an ISO timestamp into the local "YYYY-MM-DDTHH:mm"
+ * string a <input type="datetime-local"> expects. Uses local
+ * getters (not UTC) so it round-trips through the same Date +
+ * toISOString() pattern already used by the create-delivery form —
+ * no second timezone system is introduced.
+ */
+function toDatetimeLocalValue(isoString) {
+
+  const date =
+    new Date(isoString);
+
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+
+  const pad =
+    value => String(value).padStart(2, "0");
+
+
+  return (
+    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
+    `T${pad(date.getHours())}:${pad(date.getMinutes())}`
+  );
+
+}
+
+
+function setEditError(message = "") {
+
+  if (!els.editError) {
+    return;
+  }
+
+  els.editError.textContent = message;
+  els.editError.hidden = !message;
+
+}
+
+
+function setEditSaving(saving) {
+
+  editSaving = saving;
+
+  if (els.editSave) {
+
+    els.editSave.disabled = saving;
+
+    els.editSave.textContent =
+      saving ? "Saving…" : "Save Changes";
+
+  }
+
+  if (els.editCancel) {
+    els.editCancel.disabled = saving;
+  }
+
+}
+
+
+function closeEditDialog() {
+
+  if (els.editDialog?.open) {
+    els.editDialog.close();
+  }
+
+  editingDelivery = null;
+
+}
+
+
+function openEditDialog(delivery) {
+
+  if (!els.editDialog || !delivery) {
+    return;
+  }
+
+  editingDelivery = delivery;
+
+  setEditError("");
+  setEditSaving(false);
+
+  if (els.editProjectName) {
+    els.editProjectName.value = delivery.project_name || "";
+  }
+
+  if (els.editClientName) {
+    els.editClientName.value = delivery.client_name || "";
+  }
+
+  if (els.editNotes) {
+    els.editNotes.value = delivery.notes || "";
+  }
+
+  if (els.editExpiry) {
+    els.editExpiry.value = toDatetimeLocalValue(delivery.expires_at);
+  }
+
+  if (typeof els.editDialog.showModal === "function") {
+    els.editDialog.showModal();
+  }
+
+}
+
+
+async function handleEditSubmit(event) {
+
+  event.preventDefault();
+
+
+  /* Guard against duplicate submissions (double-click, Enter + click). */
+  if (editSaving || !editingDelivery) {
+    return;
+  }
+
+
+  const projectName =
+    els.editProjectName?.value.trim() || "";
+
+  const clientName =
+    els.editClientName?.value.trim() || "";
+
+  const notes =
+    els.editNotes?.value.trim() || "";
+
+  const expiryRaw =
+    els.editExpiry?.value || "";
+
+
+  setEditError("");
+
+
+  if (!projectName) {
+    setEditError("Please enter a delivery name.");
+    return;
+  }
+
+  if (!clientName) {
+    setEditError("Please enter a client name.");
+    return;
+  }
+
+  if (!expiryRaw) {
+    setEditError("Please choose an expiry date and time.");
+    return;
+  }
+
+
+  const expiryDate =
+    new Date(expiryRaw);
+
+
+  if (Number.isNaN(expiryDate.getTime())) {
+    setEditError("That expiry date/time isn't valid.");
+    return;
+  }
+
+
+  const expiresAtIso =
+    expiryDate.toISOString();
+
+  const isPastExpiry =
+    expiryDate.getTime() <= Date.now();
+
+  const targetId =
+    editingDelivery.id;
+
+
+  const applyUpdate = async () => {
+
+    setEditSaving(true);
+
+    try {
+
+      const updated =
+        await updateDelivery(
+          targetId,
+          {
+            project_name: projectName,
+            client_name: clientName,
+            notes: notes || null,
+            expires_at: expiresAtIso
+          }
+        );
+
+
+      const index =
+        deliveries.findIndex(
+          d => d.id === targetId
+        );
+
+
+      if (index !== -1) {
+
+        deliveries[index] = {
+          ...deliveries[index],
+          ...updated
+        };
+
+      }
+
+
+      renderSummary();
+      renderDeliveries();
+
+
+      toast(
+        "Delivery updated successfully."
+      );
+
+
+      closeEditDialog();
+
+
+    } catch (error) {
+
+      console.error(
+        "[Boztik Deliver] Update failed:",
+        error
+      );
+
+
+      const message =
+        String(error?.message || "").toLowerCase();
+
+
+      if (
+        message.includes("jwt") ||
+        message.includes("token") ||
+        message.includes("unauthorized") ||
+        message.includes("401")
+      ) {
+
+        toast(
+          "Your session has expired. Please sign in again.",
+          "error"
+        );
+
+
+        closeEditDialog();
+        showLogin();
+
+        return;
+
+      }
+
+
+      setEditError(
+        error?.message ||
+        "Could not save changes. Please try again."
+      );
+
+
+      setEditSaving(false);
+
+    }
+
+  };
+
+
+  if (isPastExpiry) {
+
+    /*
+      Confirm before letting an edit silently expire the delivery —
+      the dash-edit dialog stays open underneath so the person lands
+      back on the form (with the error, if any) if this is cancelled.
+    */
+
+    openConfirm(
+      "This expiry date/time is in the past, so the delivery will " +
+      "expire immediately once saved. Continue?",
+      applyUpdate
+    );
+
+    return;
+
+  }
+
+
+  await applyUpdate();
+
+}
+
+
+function setupEditDialog() {
+
+  if (els.editForm) {
+
+    els.editForm.addEventListener(
+      "submit",
+      handleEditSubmit
+    );
+
+  }
+
+
+  if (els.editCancel) {
+
+    els.editCancel.addEventListener(
+      "click",
+      () => {
+
+        if (!editSaving) {
+          closeEditDialog();
+        }
+
+      }
+    );
+
+  }
+
+
+  /* Prevent Esc from closing the dialog mid-save. */
+  els.editDialog?.addEventListener(
+    "cancel",
+    event => {
+
+      if (editSaving) {
+        event.preventDefault();
+      }
+
+    }
+  );
+
+}
+
+
+/* =========================================================
    CONFIRMATION DIALOG
 ========================================================= */
 
@@ -3053,6 +3406,8 @@ function initialiseDashboard() {
   setupSuccessDialog();
 
   setupSuccessCopy();
+
+  setupEditDialog();
 
   setupEventListeners();
 

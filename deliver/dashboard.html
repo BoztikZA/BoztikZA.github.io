@@ -1245,6 +1245,111 @@
 
 
   <!-- =====================================================
+       EDIT DELIVERY DIALOG
+  ====================================================== -->
+
+  <dialog
+    id="dash-edit"
+    class="dash-dialog dash-dialog--wide"
+  >
+
+    <h2>
+      Edit Delivery
+    </h2>
+
+    <p>
+      Update the client-facing details or extend availability.
+      The delivery link stays exactly the same.
+    </p>
+
+    <form id="dash-edit-form">
+
+      <label class="dash-field">
+
+        Delivery name
+
+        <input
+          id="edit-project-name"
+          maxlength="160"
+          required
+        >
+
+      </label>
+
+
+      <label class="dash-field">
+
+        Client name
+
+        <input
+          id="edit-client-name"
+          maxlength="120"
+          required
+        >
+
+      </label>
+
+
+      <label class="dash-field">
+
+        Client message / description
+
+        <textarea
+          id="edit-notes"
+          rows="4"
+          maxlength="2000"
+          placeholder="Optional message or delivery notes for your client."
+        ></textarea>
+
+      </label>
+
+
+      <label class="dash-field">
+
+        Expires
+
+        <input
+          id="edit-expiry"
+          type="datetime-local"
+          required
+        >
+
+      </label>
+
+
+      <p
+        id="dash-edit-error"
+        class="dash-edit-error"
+        hidden
+      ></p>
+
+
+      <div class="dash-dialog-actions">
+
+        <button
+          type="button"
+          id="dash-edit-cancel"
+          class="dash-btn dash-btn--ghost"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          id="dash-edit-save"
+          class="dash-btn primary"
+        >
+          Save Changes
+        </button>
+
+      </div>
+
+    </form>
+
+  </dialog>
+
+
+  <!-- =====================================================
        SUPABASE
   ====================================================== -->
 
