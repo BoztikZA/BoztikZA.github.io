@@ -762,16 +762,55 @@
                   <div>
 
                     <h3>
-                      Client information
+                      Source &amp; client information
                     </h3>
 
                     <p>
-                      These details appear on the client delivery page.
+                      Pick where this job came from — Reddit jobs can
+                      auto-fill the project title below.
                     </p>
 
                   </div>
 
                 </div>
+
+
+                <div
+                  id="dash-source-picker"
+                  class="dash-source-picker"
+                  role="group"
+                  aria-label="Delivery source"
+                >
+
+                  <button type="button" class="dash-source-btn is-active" data-source="reddit">Reddit</button>
+                  <button type="button" class="dash-source-btn" data-source="private">Private Client</button>
+                  <button type="button" class="dash-source-btn" data-source="paid">Paid Client</button>
+                  <button type="button" class="dash-source-btn" data-source="free">Free Edit</button>
+                  <button type="button" class="dash-source-btn" data-source="returning">Returning Client</button>
+                  <button type="button" class="dash-source-btn" data-source="other">Other</button>
+
+                </div>
+
+
+                <label class="dash-field" id="dash-reddit-field">
+
+                  Reddit thread URL
+
+                  <input
+                    id="dash-reddit-url"
+                    type="url"
+                    placeholder="https://www.reddit.com/r/OldPhotos/comments/..."
+                    autocomplete="off"
+                  >
+
+                </label>
+
+                <p
+                  id="dash-reddit-status"
+                  class="dash-reddit-status"
+                  aria-live="polite"
+                  hidden
+                ></p>
 
 
                 <label class="dash-field">
@@ -782,7 +821,6 @@
                     id="dash-client-name"
                     maxlength="120"
                     autocomplete="name"
-                    required
                   >
 
                 </label>
@@ -1463,6 +1501,36 @@
           maxlength="2000"
           placeholder="Optional message or delivery notes for your client."
         ></textarea>
+
+      </label>
+
+
+      <label class="dash-field">
+
+        Source
+
+        <select id="edit-source">
+          <option value="reddit">Reddit</option>
+          <option value="private">Private Client</option>
+          <option value="paid">Paid Client</option>
+          <option value="free">Free Edit</option>
+          <option value="returning">Returning Client</option>
+          <option value="other">Other</option>
+        </select>
+
+      </label>
+
+
+      <label class="dash-field" id="edit-reddit-field">
+
+        Reddit thread URL
+
+        <input
+          id="edit-reddit-url"
+          type="url"
+          placeholder="https://www.reddit.com/r/OldPhotos/comments/..."
+          autocomplete="off"
+        >
 
       </label>
 

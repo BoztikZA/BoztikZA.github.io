@@ -14,7 +14,8 @@ import {
   createDelivery,
   updateDelivery,
   deleteDelivery,
-  duplicateDelivery
+  duplicateDelivery,
+  fetchRedditMetadata
 } from "./api.js";
 
 import {
@@ -92,6 +93,11 @@ const els = {
   notes: $("dash-notes"),
   expiry: $("dash-expiry"),
 
+  sourcePicker: $("dash-source-picker"),
+  redditField: $("dash-reddit-field"),
+  redditUrl: $("dash-reddit-url"),
+  redditStatus: $("dash-reddit-status"),
+
   progress: $("dash-progress"),
   progressBar: $("dash-progress-bar"),
   uploadButton: $("dash-upload-btn"),
@@ -121,6 +127,9 @@ const els = {
   editProjectName: $("edit-project-name"),
   editClientName: $("edit-client-name"),
   editNotes: $("edit-notes"),
+  editSource: $("edit-source"),
+  editRedditField: $("edit-reddit-field"),
+  editRedditUrl: $("edit-reddit-url"),
   editExpiry: $("edit-expiry"),
   editError: $("dash-edit-error"),
   editSave: $("dash-edit-save"),
@@ -139,6 +148,19 @@ let pendingConfirmAction = null;
 let authListener = null;
 let editingDelivery = null;
 let editSaving = false;
+
+let selectedSource = "reddit";
+let redditMeta = null;
+let redditFetchToken = 0;
+
+const SOURCE_LABELS = {
+  reddit: "Reddit",
+  private: "Private Client",
+  paid: "Paid Client",
+  free: "Free Edit",
+  returning: "Returning Client",
+  other: "Other"
+};
 
 
 /* =========================================================
@@ -1372,6 +1394,18 @@ function renderDelivery(delivery) {
           )}
         </p>
 
+        ${
+          delivery.source
+            ? `<p class="delivery-card-source">
+                ${
+                  delivery.source === "reddit"
+                    ? `Reddit${delivery.source_meta?.subreddit ? ` &middot; r/${escapeHtml(delivery.source_meta.subreddit)}` : ""}`
+                    : escapeHtml(SOURCE_LABELS[delivery.source] || "Other")
+                }
+              </p>`
+            : ""
+        }
+
       </div>
 
       <span class="delivery-status${status.key !== "active" ? ` ${status.key}` : ""}">
@@ -1457,6 +1491,33 @@ function renderDelivery(delivery) {
         ${expired ? "disabled" : ""}
       >
         Copy Link
+      </button>
+
+
+      <details class="delivery-extend">
+
+        <summary class="dash-btn small" ${expired ? "aria-disabled=\"true\"" : ""}>
+          Extend
+        </summary>
+
+        <div class="delivery-extend-menu">
+
+          <button type="button" class="delivery-extend-option" data-hours="24">+24 hours</button>
+          <button type="button" class="delivery-extend-option" data-hours="48">+48 hours</button>
+          <button type="button" class="delivery-extend-option" data-hours="168">+7 days</button>
+          <button type="button" class="delivery-extend-option" data-custom="1">Custom…</button>
+
+        </div>
+
+      </details>
+
+
+      <button
+        type="button"
+        class="dash-btn small btn-disable-now"
+        ${expired ? "disabled" : ""}
+      >
+        Disable Now
       </button>
 
 
@@ -1673,6 +1734,156 @@ function renderDelivery(delivery) {
           );
 
         }
+
+      }
+    );
+
+  }
+
+
+  /* -------------------------------------------------------
+     EXTEND EXPIRY
+  ------------------------------------------------------- */
+
+  const extendDetails =
+    card.querySelector(
+      ".delivery-extend"
+    );
+
+
+  const applyExtend = async expiresAtIso => {
+
+    try {
+
+      const updated =
+        await updateDelivery(
+          delivery.id,
+          { expires_at: expiresAtIso }
+        );
+
+
+      const index =
+        deliveries.findIndex(
+          d => d.id === delivery.id
+        );
+
+
+      if (index !== -1) {
+
+        deliveries[index] = {
+          ...deliveries[index],
+          ...updated
+        };
+
+      }
+
+
+      renderSummary();
+      renderDeliveries();
+
+
+      toast(
+        "Delivery expiry updated."
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        "[Boztik Deliver] Extend failed:",
+        error
+      );
+
+
+      toast(
+        error?.message ||
+        "Could not update expiry.",
+        "error"
+      );
+
+    }
+
+  };
+
+
+  if (extendDetails && !expired) {
+
+    extendDetails.querySelectorAll(
+      ".delivery-extend-option"
+    ).forEach(option => {
+
+      option.addEventListener(
+        "click",
+        () => {
+
+          extendDetails.open = false;
+
+
+          if (option.dataset.custom) {
+            openEditDialog(delivery);
+            return;
+          }
+
+
+          const hours =
+            Number(option.dataset.hours) || 0;
+
+          if (hours <= 0) {
+            return;
+          }
+
+
+          const currentExpiry =
+            delivery.expires_at
+              ? new Date(delivery.expires_at).getTime()
+              : Date.now();
+
+
+          const base =
+            Math.max(Date.now(), currentExpiry);
+
+
+          const newExpiry =
+            new Date(
+              base + hours * 60 * 60 * 1000
+            ).toISOString();
+
+
+          applyExtend(newExpiry);
+
+        }
+      );
+
+    });
+
+  }
+
+
+  /* -------------------------------------------------------
+     DISABLE NOW
+  ------------------------------------------------------- */
+
+  const disableButton =
+    card.querySelector(
+      ".btn-disable-now"
+    );
+
+
+  if (disableButton && !expired) {
+
+    disableButton.addEventListener(
+      "click",
+      () => {
+
+        const projectName =
+          delivery.project_name ||
+          "this delivery";
+
+
+        openConfirm(
+          `Disable "${projectName}" now? Clients will immediately lose access — this can't be undone.`,
+          () => applyExtend(new Date().toISOString())
+        );
 
       }
     );
@@ -2346,6 +2557,183 @@ function setupDropzone() {
    UPLOAD
 ========================================================= */
 
+/* =========================================================
+   DELIVERY SOURCE PICKER + REDDIT AUTO-FILL
+   -----------------------------------------------------
+   "Reduce data-entry friction, not information." Selecting
+   a source toggles the Reddit URL field on/off. Reddit
+   fetch is best-effort and NEVER blocks delivery creation —
+   any failure just leaves the fields for manual entry.
+========================================================= */
+
+function setRedditStatus(message, tone = "muted") {
+
+  if (!els.redditStatus) {
+    return;
+  }
+
+  if (!message) {
+    els.redditStatus.hidden = true;
+    els.redditStatus.textContent = "";
+    els.redditStatus.className = "dash-reddit-status";
+    return;
+  }
+
+  els.redditStatus.hidden = false;
+  els.redditStatus.textContent = message;
+  els.redditStatus.className = `dash-reddit-status ${tone}`;
+
+}
+
+
+function setSelectedSource(source) {
+
+  selectedSource = source;
+
+  if (els.sourcePicker) {
+
+    els.sourcePicker
+      .querySelectorAll(".dash-source-btn")
+      .forEach(btn => {
+
+        btn.classList.toggle(
+          "is-active",
+          btn.dataset.source === source
+        );
+
+      });
+
+  }
+
+  if (els.redditField) {
+    els.redditField.hidden = source !== "reddit";
+  }
+
+  if (source !== "reddit") {
+    redditMeta = null;
+    setRedditStatus("");
+  }
+
+}
+
+
+function resetSourcePicker() {
+
+  setSelectedSource("reddit");
+  redditMeta = null;
+  setRedditStatus("");
+
+  if (els.redditUrl) {
+    els.redditUrl.value = "";
+  }
+
+}
+
+
+function initSourcePicker() {
+
+  if (!els.sourcePicker) {
+    return;
+  }
+
+  els.sourcePicker.addEventListener("click", event => {
+
+    const btn = event.target.closest(".dash-source-btn");
+
+    if (!btn) {
+      return;
+    }
+
+    setSelectedSource(btn.dataset.source || "other");
+
+  });
+
+  setSelectedSource(selectedSource);
+
+}
+
+
+async function runRedditAutofill() {
+
+  const url = els.redditUrl?.value.trim() || "";
+
+  if (!url) {
+    setRedditStatus("");
+    return;
+  }
+
+  const token = ++redditFetchToken;
+
+  setRedditStatus("Fetching thread title…", "loading");
+
+  try {
+
+    const meta = await fetchRedditMetadata(url);
+
+    /*
+     * A newer request may have started while this one was
+     * in flight (fast paste + edit) — ignore stale results.
+     */
+    if (token !== redditFetchToken) {
+      return;
+    }
+
+    redditMeta = meta;
+
+    if (els.projectName && !els.projectName.value.trim()) {
+      els.projectName.value = meta.title;
+    }
+
+    if (els.clientName && !els.clientName.value.trim()) {
+      els.clientName.value =
+        meta.subreddit
+          ? `r/${meta.subreddit}`
+          : "Reddit Client";
+    }
+
+    setRedditStatus(
+      `Auto-filled from r/${meta.subreddit || "reddit"} — title is editable.`,
+      "success"
+    );
+
+  } catch (error) {
+
+    if (token !== redditFetchToken) {
+      return;
+    }
+
+    redditMeta = null;
+
+    setRedditStatus(
+      `${error?.message || "Couldn't auto-fill from Reddit."} Enter the title manually.`,
+      "error"
+    );
+
+  }
+
+}
+
+
+function initRedditAutofill() {
+
+  if (!els.redditUrl) {
+    return;
+  }
+
+  els.redditUrl.addEventListener("blur", runRedditAutofill);
+
+  els.redditUrl.addEventListener("keydown", event => {
+
+    if (event.key === "Enter") {
+      event.preventDefault();
+      runRedditAutofill();
+    }
+
+  });
+
+}
+
+
 async function handleUpload(event) {
 
   event.preventDefault();
@@ -2431,6 +2819,17 @@ async function handleUpload(event) {
     ).toISOString();
 
 
+  const source = selectedSource;
+
+  const sourceMeta =
+    source === "reddit" && redditMeta
+      ? {
+          redditUrl: redditMeta.redditUrl,
+          subreddit: redditMeta.subreddit
+        }
+      : null;
+
+
   const metadata = {
 
     id,
@@ -2444,7 +2843,12 @@ async function handleUpload(event) {
     notes,
 
     expires_at:
-      expiresAt
+      expiresAt,
+
+    source,
+
+    source_meta:
+      sourceMeta
 
   };
 
@@ -2573,6 +2977,7 @@ async function handleUpload(event) {
 
 
     renderFileList();
+    resetSourcePicker();
 
 
     await load();
@@ -2727,6 +3132,20 @@ function openEditDialog(delivery) {
     els.editNotes.value = delivery.notes || "";
   }
 
+  const source = delivery.source || "private";
+
+  if (els.editSource) {
+    els.editSource.value = source;
+  }
+
+  if (els.editRedditUrl) {
+    els.editRedditUrl.value = delivery.source_meta?.redditUrl || "";
+  }
+
+  if (els.editRedditField) {
+    els.editRedditField.hidden = source !== "reddit";
+  }
+
   if (els.editExpiry) {
     els.editExpiry.value = toDatetimeLocalValue(delivery.expires_at);
   }
@@ -2757,6 +3176,23 @@ async function handleEditSubmit(event) {
 
   const notes =
     els.editNotes?.value.trim() || "";
+
+  const source =
+    els.editSource?.value || "private";
+
+  const redditUrl =
+    els.editRedditUrl?.value.trim() || "";
+
+  const sourceMeta =
+    source === "reddit" && redditUrl
+      ? {
+          redditUrl,
+          subreddit:
+            editingDelivery.source_meta?.subreddit ||
+            redditUrl.match(/\/r\/([A-Za-z0-9_]+)/i)?.[1] ||
+            null
+        }
+      : null;
 
   const expiryRaw =
     els.editExpiry?.value || "";
@@ -2814,6 +3250,8 @@ async function handleEditSubmit(event) {
             project_name: projectName,
             client_name: clientName,
             notes: notes || null,
+            source,
+            source_meta: sourceMeta,
             expires_at: expiresAtIso
           }
         );
@@ -2924,6 +3362,21 @@ function setupEditDialog() {
     els.editForm.addEventListener(
       "submit",
       handleEditSubmit
+    );
+
+  }
+
+
+  if (els.editSource && els.editRedditField) {
+
+    els.editSource.addEventListener(
+      "change",
+      () => {
+
+        els.editRedditField.hidden =
+          els.editSource.value !== "reddit";
+
+      }
     );
 
   }
@@ -3352,6 +3805,10 @@ function setupEventListeners() {
     );
 
   }
+
+
+  initSourcePicker();
+  initRedditAutofill();
 
 
   if (els.search) {

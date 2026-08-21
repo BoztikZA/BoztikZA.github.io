@@ -271,3 +271,18 @@ $$;
 
 revoke all on function public.record_delivery_view(text), public.record_delivery_download(text) from public;
 grant execute on function public.record_delivery_view(text), public.record_delivery_download(text) to anon, authenticated;
+
+-- =========================================================
+-- V4 UPGRADE: DELIVERY SOURCE TRACKING (Reddit / Private clients)
+-- Nullable, additive only — existing rows are unaffected (source = NULL
+-- is treated as "Private/Other" everywhere it's read). Safe to run more
+-- than once. Not exposed on deliveries_public — admin-only, dashboard use.
+-- =========================================================
+alter table public.deliveries
+  add column if not exists source text,
+  add column if not exists source_meta jsonb;
+
+comment on column public.deliveries.source is
+  'Origin of the delivery: reddit | private | paid | free | returning | other. NULL = unknown/legacy row.';
+comment on column public.deliveries.source_meta is
+  'Extra source-specific data, e.g. {"redditUrl": "...", "subreddit": "OldPhotos"}. Free-form JSON so future source types need no further migrations.';

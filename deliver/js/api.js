@@ -4,6 +4,23 @@ import { supabase, safeFileName } from "./shared.js";
 const DELIVER_FILE_FUNCTION =
   `${config.supabaseUrl}/functions/v1/deliver-file`;
 
+const REDDIT_METADATA_FUNCTION =
+  `${config.supabaseUrl}/functions/v1/reddit-metadata`;
+
+/*
+ * Known delivery source values. "other" and legacy rows with no
+ * source at all are both treated as a generic/private delivery
+ * wherever this list is consulted — nothing breaks for old rows.
+ */
+export const DELIVERY_SOURCES = Object.freeze([
+  "reddit",
+  "private",
+  "paid",
+  "free",
+  "returning",
+  "other"
+]);
+
 
 /* =========================================================
    SIGNED STORAGE URL HELPERS
@@ -459,7 +476,11 @@ export async function updateDelivery(
 
   const allowed = [
     "project_name",
-    "expires_at"
+    "client_name",
+    "notes",
+    "expires_at",
+    "source",
+    "source_meta"
   ];
 
   const payload = {};
@@ -526,6 +547,127 @@ export async function updateDelivery(
     ) {
       throw new Error(
         "Delivery name cannot exceed 200 characters."
+      );
+    }
+  }
+
+
+  /*
+   * Validate client name.
+   */
+
+  if (
+    Object.prototype.hasOwnProperty.call(
+      payload,
+      "client_name"
+    )
+  ) {
+    if (
+      typeof payload.client_name !==
+      "string"
+    ) {
+      throw new Error(
+        "Client name must be text."
+      );
+    }
+
+    payload.client_name =
+      payload.client_name.trim();
+
+    if (!payload.client_name) {
+      throw new Error(
+        "Client name cannot be empty."
+      );
+    }
+
+    if (
+      payload.client_name.length >
+      120
+    ) {
+      throw new Error(
+        "Client name cannot exceed 120 characters."
+      );
+    }
+  }
+
+
+  /*
+   * Validate notes. Empty string / null both mean
+   * "no notes" — normalise to null so the column
+   * matches how createDelivery treats an empty field.
+   */
+
+  if (
+    Object.prototype.hasOwnProperty.call(
+      payload,
+      "notes"
+    )
+  ) {
+    if (
+      payload.notes !== null &&
+      typeof payload.notes !== "string"
+    ) {
+      throw new Error(
+        "Notes must be text."
+      );
+    }
+
+    const trimmed =
+      (payload.notes || "").trim();
+
+    if (trimmed.length > 2000) {
+      throw new Error(
+        "Notes cannot exceed 2000 characters."
+      );
+    }
+
+    payload.notes = trimmed || null;
+  }
+
+
+  /*
+   * Validate source. Must be one of the known values,
+   * or null to clear it back to "unknown/private".
+   */
+
+  if (
+    Object.prototype.hasOwnProperty.call(
+      payload,
+      "source"
+    )
+  ) {
+    if (
+      payload.source !== null &&
+      !DELIVERY_SOURCES.includes(payload.source)
+    ) {
+      throw new Error(
+        `Delivery source must be one of: ${DELIVERY_SOURCES.join(", ")}.`
+      );
+    }
+  }
+
+
+  /*
+   * Validate source_meta. Kept as a plain object/null —
+   * never trust it blindly since it can carry data pulled
+   * from an external Reddit fetch.
+   */
+
+  if (
+    Object.prototype.hasOwnProperty.call(
+      payload,
+      "source_meta"
+    )
+  ) {
+    if (
+      payload.source_meta !== null &&
+      (
+        typeof payload.source_meta !== "object" ||
+        Array.isArray(payload.source_meta)
+      )
+    ) {
+      throw new Error(
+        "source_meta must be a plain object or null."
       );
     }
   }
@@ -958,4 +1100,89 @@ export async function signedPreview(
     file,
     "preview"
   );
+}
+
+
+/* =========================================================
+   REDDIT METADATA
+   Best-effort only. Callers must treat any thrown error as
+   "auto-fill unavailable" and fall back to manual entry —
+   never block delivery creation on this.
+========================================================= */
+
+export async function fetchRedditMetadata(
+  url
+) {
+  const trimmedUrl =
+    (url || "").trim();
+
+  if (!trimmedUrl) {
+    throw new Error(
+      "No Reddit URL supplied."
+    );
+  }
+
+  const controller =
+    new AbortController();
+
+  const timeout =
+    setTimeout(
+      () => controller.abort(),
+      8000
+    );
+
+  let response;
+
+  try {
+    response = await fetch(
+      REDDIT_METADATA_FUNCTION,
+      {
+        method: "POST",
+        signal: controller.signal,
+
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": config.supabaseAnonKey,
+          "Authorization":
+            `Bearer ${config.supabaseAnonKey}`
+        },
+
+        body: JSON.stringify({
+          url: trimmedUrl
+        })
+      }
+    );
+  } catch (error) {
+    const timedOut =
+      error?.name === "AbortError";
+
+    throw new Error(
+      timedOut
+        ? "Reddit took too long to respond."
+        : "Could not reach the metadata service."
+    );
+  } finally {
+    clearTimeout(timeout);
+  }
+
+  let result = null;
+
+  try {
+    result = await response.json();
+  } catch {
+    result = null;
+  }
+
+  if (!response.ok || !result?.title) {
+    throw new Error(
+      result?.message ||
+      "Could not read this Reddit thread's title."
+    );
+  }
+
+  return {
+    title: result.title,
+    subreddit: result.subreddit || null,
+    redditUrl: result.redditUrl || trimmedUrl
+  };
 }
