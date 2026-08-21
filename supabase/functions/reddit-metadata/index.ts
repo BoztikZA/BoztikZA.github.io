@@ -15,10 +15,52 @@ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body),
   headers: { ...corsHeaders, "Content-Type": "application/json" }
 });
 
-// Matches reddit.com and redd.it thread URLs and pulls the subreddit + post id.
-// Accepts www./old./np. subdomains, with or without a trailing slug/query string.
-const REDDIT_THREAD_RE =
-  /^https?:\/\/(?:www\.|old\.|np\.)?reddit\.com\/r\/([A-Za-z0-9_]+)\/comments\/([A-Za-z0-9]+)/i;
+const USER_AGENT = "BoztikDeliver/1.0 (Command Centre metadata fetch)";
+
+// Classic thread URL: reddit.com/r/<sub>/comments/<id>/...
+const COMMENTS_RE = /\/r\/([A-Za-z0-9_]+)\/comments\/([A-Za-z0-9]+)/i;
+
+// "Share" shortlink from the Reddit app/website: reddit.com/r/<sub>/s/<code>
+const SHARE_RE = /\/r\/([A-Za-z0-9_]+)\/s\/([A-Za-z0-9]+)/i;
+
+// redd.it/<id> shortlink (no subreddit in the URL at all)
+const REDDIT_IT_RE = /^https?:\/\/redd\.it\/([A-Za-z0-9]+)/i;
+
+function isRedditHost(url: string): boolean {
+  try {
+    const host = new URL(url).hostname.toLowerCase();
+    return host === "reddit.com" || host.endsWith(".reddit.com") || host === "redd.it";
+  } catch {
+    return false;
+  }
+}
+
+// Reddit share shortlinks (and redd.it) are HTTP redirects to the canonical
+// /comments/ URL. We can't follow redirects transparently from a browser
+// fetch on the client, but a server-side edge function can — so on a
+// shortlink we manually walk up to a few redirect hops to resolve it.
+async function resolveRedirect(url: string): Promise<string> {
+  let current = url;
+
+  for (let hop = 0; hop < 5; hop++) {
+    const response = await fetch(current, {
+      method: "GET",
+      redirect: "manual",
+      headers: { "User-Agent": USER_AGENT }
+    });
+
+    if (response.status >= 300 && response.status < 400) {
+      const location = response.headers.get("location");
+      if (!location) break;
+      current = location.startsWith("http") ? location : new URL(location, current).toString();
+      continue;
+    }
+
+    break;
+  }
+
+  return current;
+}
 
 Deno.serve(async request => {
   if (request.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -28,24 +70,62 @@ Deno.serve(async request => {
   try { input = await request.json(); } catch { return json({ error: "invalid_request" }, 400); }
 
   const rawUrl = (input.url ?? "").trim();
-  const match = rawUrl.match(REDDIT_THREAD_RE);
-  if (!match) {
-    return json({ error: "not_a_reddit_thread", message: "That doesn't look like a Reddit thread URL." }, 400);
+
+  if (!rawUrl || !isRedditHost(rawUrl)) {
+    return json({ error: "not_a_reddit_thread", message: "That doesn't look like a Reddit link." }, 400);
   }
 
-  const [, subreddit, postId] = match;
-  const jsonUrl = `https://www.reddit.com/comments/${postId}.json?raw_json=1`;
-
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 6000);
+  const timeout = setTimeout(() => controller.abort(), 8000);
 
   try {
+    let subreddit: string | null = null;
+    let postId: string | null = null;
+
+    let directMatch = rawUrl.match(COMMENTS_RE);
+
+    if (directMatch) {
+      subreddit = directMatch[1];
+      postId = directMatch[2];
+    } else {
+      // Share shortlink or redd.it link — resolve the redirect chain first,
+      // then try to read the canonical URL it landed on.
+      const resolvedUrl = await resolveRedirect(rawUrl);
+      const resolvedMatch = resolvedUrl.match(COMMENTS_RE);
+
+      if (resolvedMatch) {
+        subreddit = resolvedMatch[1];
+        postId = resolvedMatch[2];
+      } else {
+        // Redirect chain didn't land on a comments URL for some reason —
+        // fall back to whatever we can read out of the original link.
+        const shareMatch = rawUrl.match(SHARE_RE);
+        const reddItMatch = rawUrl.match(REDDIT_IT_RE);
+
+        if (shareMatch) {
+          subreddit = shareMatch[1];
+        } else if (reddItMatch) {
+          postId = reddItMatch[1];
+        }
+      }
+    }
+
+    if (!postId && !subreddit) {
+      return json({
+        error: "not_a_reddit_thread",
+        message: "Could not resolve that link to a Reddit thread."
+      }, 400);
+    }
+
+    const jsonUrl = postId
+      ? `https://www.reddit.com/comments/${postId}.json?raw_json=1`
+      // We only have a subreddit with no real post id (rare fallback) —
+      // ask Reddit's own resolver for the canonical .json directly.
+      : `${rawUrl.replace(/\/?$/, "")}.json?raw_json=1`;
+
     const redditResponse = await fetch(jsonUrl, {
       signal: controller.signal,
-      headers: {
-        // Reddit rejects requests with no/blank User-Agent.
-        "User-Agent": "BoztikDeliver/1.0 (Command Centre metadata fetch)"
-      }
+      headers: { "User-Agent": USER_AGENT }
     });
 
     if (!redditResponse.ok) {
@@ -56,7 +136,10 @@ Deno.serve(async request => {
     }
 
     const payload = await redditResponse.json();
-    const postData = payload?.[0]?.data?.children?.[0]?.data;
+    const postData = Array.isArray(payload)
+      ? payload?.[0]?.data?.children?.[0]?.data
+      : payload?.data?.children?.[0]?.data?.data;
+
     const title = typeof postData?.title === "string" ? postData.title.trim() : "";
 
     if (!title) {
@@ -65,7 +148,7 @@ Deno.serve(async request => {
 
     return json({
       title,
-      subreddit: postData?.subreddit || subreddit,
+      subreddit: postData?.subreddit || subreddit || null,
       redditUrl: rawUrl
     });
 
