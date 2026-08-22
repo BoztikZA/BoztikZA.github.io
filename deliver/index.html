@@ -259,7 +259,7 @@
     .boztik-support-options-stacked {
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 12px;
     }
 
 
@@ -268,13 +268,13 @@
       flex-direction: column;
       gap: 14px;
 
-      padding: 17px;
+      padding: 16px;
 
       border:
         1px solid
-        rgba(255,255,255,0.07);
+        rgba(255,255,255,0.06);
 
-      border-radius: 13px;
+      border-radius: 12px;
 
       background:
         rgba(255,255,255,0.025);
@@ -310,8 +310,8 @@
       align-items: center;
       justify-content: center;
 
-      width: 36px;
-      height: 36px;
+      width: 38px;
+      height: 38px;
 
       border-radius: 9px;
 
@@ -333,7 +333,7 @@
       color:
         var(--deliver-text);
 
-      font-size: 0.83rem;
+      font-size: 0.78rem;
 
       font-weight: 750;
     }
@@ -345,7 +345,7 @@
       color:
         var(--deliver-text-muted);
 
-      font-size: 0.7rem;
+      font-size: 0.68rem;
     }
 
 
@@ -354,16 +354,19 @@
 
       align-items: center;
       justify-content: center;
+      gap: 6px;
 
-      min-height: 43px;
+      min-height: 46px;
 
-      padding: 10px 14px;
+      padding: 12px 18px;
 
-      border-radius: 9px;
+      border-radius: 10px;
 
-      font-size: 0.77rem;
+      font-size: 0.82rem;
 
       font-weight: 800;
+
+      letter-spacing: 0.01em;
 
       text-decoration: none;
 
@@ -381,13 +384,19 @@
     }
 
 
+    .boztik-support-button:focus-visible {
+      outline: 2px solid var(--deliver-accent);
+      outline-offset: 2px;
+    }
+
+
     .boztik-support-button.kofi {
       color: #fff;
 
       background: #ff5e5b;
 
       box-shadow:
-        0 6px 14px rgba(255,94,91,0.14);
+        0 8px 18px rgba(255,94,91,0.22);
     }
 
 
@@ -402,7 +411,7 @@
         );
 
       box-shadow:
-        0 6px 14px rgba(0,48,135,0.16);
+        0 8px 18px rgba(0,48,135,0.24);
     }
 
     .why-copy {
