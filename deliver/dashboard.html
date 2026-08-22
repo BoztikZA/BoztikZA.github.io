@@ -401,132 +401,378 @@
             </p>
 
           </div>
+                  <div class="dash-section-actions">
+
+            <button
+              type="button"
+              class="dash-btn dash-compact"
+              id="dash-overview-create"
+            >
+              + New Delivery
+            </button>
+
+          </div>
 
         </div>
 
 
-        <!-- PRIMARY STATS -->
+        <!-- ===============================================
+             STAT CARDS
+        ================================================ -->
 
-        <div class="dash-stats dash-stats--premium">
+        <div class="dash-stat-grid">
 
-          <article class="dash-stat-card dash-stat-card--featured">
+          <!-- ACTIVE DELIVERIES -->
 
-            <div class="dash-stat-icon">
-              ◉
-            </div>
+          <article class="dash-stat-card">
 
-            <div>
+            <div class="dash-stat-top">
 
-              <span>
+              <span class="dash-stat-label">
                 Active deliveries
               </span>
 
-              <strong id="stat-active-count">
-                0
-              </strong>
-
-              <small>
-                Currently available to clients
-              </small>
+              <span class="dash-stat-icon">
+                ▣
+              </span>
 
             </div>
+
+            <strong
+              class="dash-stat-value"
+              id="stat-active"
+            >
+              0
+            </strong>
+
+            <span class="dash-stat-meta">
+              Currently available
+            </span>
 
           </article>
 
 
+          <!-- MONTHLY VIEWS -->
+
           <article class="dash-stat-card">
 
-            <div class="dash-stat-icon">
-              ↓
-            </div>
+            <div class="dash-stat-top">
 
-            <div>
-
-              <span>
-                Total downloads
+              <span class="dash-stat-label">
+                Views this month
               </span>
 
-              <strong id="stat-download-count">
-                0
-              </strong>
-
-              <small>
-                Across all deliveries
-              </small>
+              <span class="dash-stat-icon">
+                ◉
+              </span>
 
             </div>
+
+            <strong
+              class="dash-stat-value"
+              id="stat-monthly-views"
+            >
+              0
+            </strong>
+
+            <span class="dash-stat-meta">
+              Across all deliveries
+            </span>
 
           </article>
 
 
+          <!-- MONTHLY DOWNLOADS -->
+
           <article class="dash-stat-card">
 
-            <div class="dash-stat-icon">
-              ◫
-            </div>
+            <div class="dash-stat-top">
 
-            <div>
-
-              <span>
-                Storage used
+              <span class="dash-stat-label">
+                Downloads this month
               </span>
 
-              <strong id="stat-storage-used">
-                0 B
-              </strong>
-
-              <small>
-                Delivery files
-              </small>
+              <span class="dash-stat-icon">
+                ↓
+              </span>
 
             </div>
+
+            <strong
+              class="dash-stat-value"
+              id="stat-monthly-downloads"
+            >
+              0
+            </strong>
+
+            <span class="dash-stat-meta">
+              Across all deliveries
+            </span>
 
           </article>
 
 
+          <!-- LIFETIME VIEWS -->
+
           <article class="dash-stat-card">
 
-            <div class="dash-stat-icon">
-              #
-            </div>
+            <div class="dash-stat-top">
 
-            <div>
-
-              <span>
-                All deliveries
+              <span class="dash-stat-label">
+                Lifetime views
               </span>
 
-              <strong id="stat-total-count">
-                0
-              </strong>
-
-              <small>
-                Created in your workspace
-              </small>
+              <span class="dash-stat-icon">
+                ↗
+              </span>
 
             </div>
+
+            <strong
+              class="dash-stat-value"
+              id="stat-lifetime-views"
+            >
+              0
+            </strong>
+
+            <span class="dash-stat-meta">
+              All-time activity
+            </span>
+
+          </article>
+
+
+          <!-- LIFETIME DOWNLOADS -->
+
+          <article class="dash-stat-card">
+
+            <div class="dash-stat-top">
+
+              <span class="dash-stat-label">
+                Lifetime downloads
+              </span>
+
+              <span class="dash-stat-icon">
+                ⇩
+              </span>
+
+            </div>
+
+            <strong
+              class="dash-stat-value"
+              id="stat-lifetime-downloads"
+            >
+              0
+            </strong>
+
+            <span class="dash-stat-meta">
+              All-time activity
+            </span>
 
           </article>
 
         </div>
 
 
-        <!-- QUICK ANALYTICS -->
+        <!-- ===============================================
+             QUICK ACTIONS
+        ================================================ -->
 
         <div class="dash-overview-grid">
 
-          <article class="dash-overview-card">
+          <article class="dash-panel dash-quick-actions">
 
-            <div class="dash-overview-card-header">
+            <div class="dash-panel-header">
 
               <div>
 
                 <span class="dash-section-eyebrow">
-                  THIS MONTH
+                  QUICK ACTIONS
                 </span>
 
                 <h3>
-                  Client activity
+                  Start something new
+                </h3>
+
+              </div>
+
+            </div>
+
+
+            <div class="dash-action-grid">
+
+              <button
+                type="button"
+                class="dash-action-card"
+                data-create-source="private"
+              >
+
+                <span class="dash-action-icon">
+                  🔒
+                </span>
+
+                <span>
+
+                  <strong>
+                    Private Client
+                  </strong>
+
+                  <small>
+                    Secure client delivery
+                  </small>
+
+                </span>
+
+              </button>
+
+
+              <button
+                type="button"
+                class="dash-action-card"
+                data-create-source="paid"
+              >
+
+                <span class="dash-action-icon">
+                  💳
+                </span>
+
+                <span>
+
+                  <strong>
+                    Paid Client
+                  </strong>
+
+                  <small>
+                    Completed paid project
+                  </small>
+
+                </span>
+
+              </button>
+
+
+              <button
+                type="button"
+                class="dash-action-card"
+                data-create-source="free"
+              >
+
+                <span class="dash-action-icon">
+                  ✨
+                </span>
+
+                <span>
+
+                  <strong>
+                    Free Edit
+                  </strong>
+
+                  <small>
+                    Complimentary edit
+                  </small>
+
+                </span>
+
+              </button>
+
+
+              <!-- PHOTOSHOPBATTLES -->
+
+              <button
+                type="button"
+                class="dash-action-card dash-action-card-battle"
+                data-create-source="photoshop_battles"
+              >
+
+                <span class="dash-action-icon">
+                  ⚔
+                </span>
+
+                <span>
+
+                  <strong>
+                    PhotoshopBattles
+                  </strong>
+
+                  <small>
+                    Direct Reddit image
+                  </small>
+
+                </span>
+
+              </button>
+
+
+              <button
+                type="button"
+                class="dash-action-card"
+                data-create-source="returning"
+              >
+
+                <span class="dash-action-icon">
+                  ↻
+                </span>
+
+                <span>
+
+                  <strong>
+                    Returning Client
+                  </strong>
+
+                  <small>
+                    Repeat client delivery
+                  </small>
+
+                </span>
+
+              </button>
+
+
+              <button
+                type="button"
+                class="dash-action-card"
+                data-create-source="other"
+              >
+
+                <span class="dash-action-icon">
+                  +
+                </span>
+
+                <span>
+
+                  <strong>
+                    Other
+                  </strong>
+
+                  <small>
+                    Custom delivery
+                  </small>
+
+                </span>
+
+              </button>
+
+            </div>
+
+          </article>
+
+
+          <!-- =============================================
+               RECENT DELIVERIES
+          ============================================== -->
+
+          <article class="dash-panel">
+
+            <div class="dash-panel-header">
+
+              <div>
+
+                <span class="dash-section-eyebrow">
+                  RECENT
+                </span>
+
+                <h3>
+                  Recent deliveries
                 </h3>
 
               </div>
@@ -534,119 +780,86 @@
               <button
                 type="button"
                 class="dash-text-button"
-                data-open-tab="analytics"
+                data-go-tab="deliveries"
               >
-                View analytics →
+                View all
               </button>
 
             </div>
 
-
-            <div class="dash-mini-stats">
-
-              <div class="dash-mini-stat">
-
-                <span>
-                  Link views
-                </span>
-
-                <strong id="overview-monthly-views">
-                  0
-                </strong>
-
-              </div>
-
-
-              <div class="dash-mini-stat">
-
-                <span>
-                  Downloads
-                </span>
-
-                <strong id="overview-monthly-downloads">
-                  0
-                </strong>
-
-              </div>
-
-            </div>
-
-          </article>
-
-
-          <article class="dash-overview-card">
-
-            <div class="dash-overview-card-header">
-
-              <div>
-
-                <span class="dash-section-eyebrow">
-                  QUICK ACTION
-                </span>
-
-                <h3>
-                  Ready to send a project?
-                </h3>
-
-              </div>
-
-            </div>
-
-
-            <p>
-              Upload your finished client files and generate
-              a secure delivery page in seconds.
-            </p>
-
-
-            <button
-              type="button"
-              class="dash-btn dash-compact"
-              data-open-tab="create"
+            <div
+              id="overview-recent-deliveries"
+              class="dash-recent-list"
             >
-              Create a delivery
-            </button>
+
+              <div class="dash-empty-state compact">
+
+                <span class="dash-empty-icon">
+                  ▣
+                </span>
+
+                <p>
+                  Loading deliveries…
+                </p>
+
+              </div>
+
+            </div>
 
           </article>
 
         </div>
 
 
-        <!-- RECENT ACTIVITY -->
+        <!-- ===============================================
+             RECENT ACTIVITY
+        ================================================ -->
 
-        <div class="dash-overview-card dash-recent-overview">
+        <article class="dash-panel dash-activity-panel">
 
-          <div class="dash-overview-card-header">
+          <div class="dash-panel-header">
 
             <div>
 
               <span class="dash-section-eyebrow">
-                WORKSPACE
+                ACTIVITY
               </span>
 
               <h3>
-                Recent deliveries
+                Recent activity
               </h3>
 
             </div>
 
-            <button
-              type="button"
-              class="dash-text-button"
-              data-open-tab="deliveries"
+            <span
+              class="dash-live-indicator"
+              id="dash-activity-status"
             >
-              View all →
-            </button>
+              Live
+            </span>
 
           </div>
 
+          <div
+            id="overview-activity-list"
+            class="dash-activity-list"
+          >
 
-          <p>
-            Your latest client deliveries are available in the
-            Deliveries section.
-          </p>
+            <div class="dash-empty-state compact">
 
-        </div>
+              <span class="dash-empty-icon">
+                ◉
+              </span>
+
+              <p>
+                Loading activity…
+              </p>
+
+            </div>
+
+          </div>
+
+        </article>
 
       </section>
 
@@ -677,7 +890,8 @@
             </h2>
 
             <p>
-              Prepare a secure client hand-off for your finished project.
+              Upload your finished work and generate a secure
+              delivery link.
             </p>
 
           </div>
@@ -685,314 +899,684 @@
         </div>
 
 
-        <div class="dash-create-layout">
+        <!-- =============================================
+             CREATE FORM
+        ============================================== -->
 
-          <section class="dash-panel dash-create-panel">
+        <form
+          id="dash-create-form"
+          class="dash-create-layout"
+        >
 
-            <form id="dash-upload-form">
+          <div class="dash-create-main">
 
-              <div class="dash-form-section">
+            <article class="dash-panel">
 
-                <div class="dash-form-section-title">
+              <div class="dash-panel-header">
 
-                  <span>01</span>
+                <div>
 
-                  <div>
-
-                    <h3>
-                      Project files
-                    </h3>
-
-                    <p>
-                      Upload up to 30 supported files.
-                    </p>
-
-                  </div>
-
-                </div>
-
-
-                <div
-                  id="dash-dropzone"
-                  class="dash-dropzone"
-                  tabindex="0"
-                  role="button"
-                  aria-label="Choose files or drag files here"
-                >
-
-                  <div class="dash-dropzone-icon">
-                    ↑
-                  </div>
-
-                  <strong>
-                    Drop files here
-                  </strong>
-
-                  <span>
-                    or choose ZIP, JPG, PNG, PSD, TIFF,
-                    WEBP, PDF, AI or EPS
+                  <span class="dash-section-eyebrow">
+                    DELIVERY TYPE
                   </span>
 
-                  <input
-                    id="dash-file-input"
-                    type="file"
-                    multiple
-                    accept=".zip,.jpg,.jpeg,.png,.psd,.tif,.tiff,.webp,.pdf,.ai,.eps"
-                    hidden
-                  >
+                  <h3>
+                    Choose how this work will be delivered
+                  </h3>
 
                 </div>
-
-
-                <ul
-                  id="dash-file-list"
-                  class="dash-file-list"
-                  aria-live="polite"
-                ></ul>
 
               </div>
 
 
+              <!-- SOURCE OPTIONS -->
+
+              <div
+                class="dash-source-grid"
+                role="radiogroup"
+                aria-label="Delivery type"
+              >
+
+                <!-- PRIVATE CLIENT -->
+
+                <button
+                  type="button"
+                  class="dash-source-option"
+                  data-source="private"
+                  role="radio"
+                  aria-checked="false"
+                >
+
+                  <span class="dash-source-icon">
+                    🔒
+                  </span>
+
+                  <span>
+
+                    <strong>
+                      Private Client
+                    </strong>
+
+                    <small>
+                      Standard private delivery
+                    </small>
+
+                  </span>
+
+                </button>
+
+
+                <!-- PAID CLIENT -->
+
+                <button
+                  type="button"
+                  class="dash-source-option"
+                  data-source="paid"
+                  role="radio"
+                  aria-checked="false"
+                >
+
+                  <span class="dash-source-icon">
+                    💳
+                  </span>
+
+                  <span>
+
+                    <strong>
+                      Paid Client
+                    </strong>
+
+                    <small>
+                      Completed paid project
+                    </small>
+
+                  </span>
+
+                </button>
+
+
+                <!-- FREE EDIT -->
+
+                <button
+                  type="button"
+                  class="dash-source-option"
+                  data-source="free"
+                  role="radio"
+                  aria-checked="false"
+                >
+
+                  <span class="dash-source-icon">
+                    ✨
+                  </span>
+
+                  <span>
+
+                    <strong>
+                      Free Edit
+                    </strong>
+
+                    <small>
+                      Complimentary work
+                    </small>
+
+                  </span>
+
+                </button>
+
+
+                <!-- PHOTOSHOPBATTLES -->
+
+                <button
+                  type="button"
+                  class="dash-source-option dash-source-option-battle"
+                  data-source="photoshop_battles"
+                  role="radio"
+                  aria-checked="false"
+                >
+
+                  <span class="dash-source-icon">
+                    ⚔
+                  </span>
+
+                  <span>
+
+                    <strong>
+                      PhotoshopBattles
+                    </strong>
+
+                    <small>
+                      Direct image URL for Reddit
+                    </small>
+
+                  </span>
+
+                </button>
+
+
+                <!-- RETURNING CLIENT -->
+
+                <button
+                  type="button"
+                  class="dash-source-option"
+                  data-source="returning"
+                  role="radio"
+                  aria-checked="false"
+                >
+
+                  <span class="dash-source-icon">
+                    ↻
+                  </span>
+
+                  <span>
+
+                    <strong>
+                      Returning Client
+                    </strong>
+
+                    <small>
+                      Repeat client
+                    </small>
+
+                  </span>
+
+                </button>
+
+
+                <!-- OTHER -->
+
+                <button
+                  type="button"
+                  class="dash-source-option"
+                  data-source="other"
+                  role="radio"
+                  aria-checked="false"
+                >
+
+                  <span class="dash-source-icon">
+                    +
+                  </span>
+
+                  <span>
+
+                    <strong>
+                      Other
+                    </strong>
+
+                    <small>
+                      Custom delivery
+                    </small>
+
+                  </span>
+
+                </button>
+
+              </div>
+
+
+              <input
+                type="hidden"
+                id="dash-source"
+                name="source"
+                value="private"
+              >
+
+
+              <!-- =========================================
+                   PHOTOSHOPBATTLES NOTICE
+              ========================================== -->
+
+              <div
+                id="dash-photoshop-battles-notice"
+                class="dash-battle-notice"
+                hidden
+              >
+
+                <div class="dash-battle-notice-icon">
+                  ⚔
+                </div>
+
+                <div>
+
+                  <strong>
+                    PhotoshopBattles mode
+                  </strong>
+
+                  <p>
+                    Upload one JPG or PNG. Boztik will create
+                    a direct image URL that can be pasted
+                    directly into Reddit.
+                  </p>
+
+                </div>
+
+              </div>
+
+
+              <!-- =========================================
+                   CLIENT INFORMATION
+              ========================================== -->
+
               <div class="dash-form-section">
 
-                <div class="dash-form-section-title">
+                <div class="dash-form-section-heading">
 
-                  <span>02</span>
+                  <span class="dash-section-eyebrow">
+                    CLIENT INFORMATION
+                  </span>
 
-                  <div>
+                  <span
+                    class="dash-form-section-note"
+                    id="dash-client-fields-note"
+                  >
+                    Required for delivery
+                  </span>
 
-                    <h3>
-                      Source &amp; client information
-                    </h3>
+                </div>
 
-                    <p>
-                      Pick where this job came from — Reddit jobs can
-                      auto-fill the project title below.
-                    </p>
+
+                <div class="dash-form-grid">
+
+                  <!-- CLIENT NAME -->
+
+                  <div class="dash-field">
+
+                    <label for="dash-client-name">
+                      Client name
+                    </label>
+
+                    <input
+                      id="dash-client-name"
+                      name="client_name"
+                      type="text"
+                      autocomplete="off"
+                      placeholder="e.g. Sarah"
+                      required
+                    >
+
+                  </div>
+
+
+                  <!-- PROJECT NAME -->
+
+                  <div class="dash-field">
+
+                    <label for="dash-project-name">
+                      Project name
+                    </label>
+
+                    <input
+                      id="dash-project-name"
+                      name="project_name"
+                      type="text"
+                      autocomplete="off"
+                      placeholder="e.g. Wedding Restoration"
+                      required
+                    >
 
                   </div>
 
                 </div>
 
+              </div>
 
-                <div
-                  id="dash-source-picker"
-                  class="dash-source-picker"
-                  role="group"
-                  aria-label="Delivery source"
-                >
 
-                  <button type="button" class="dash-source-btn is-active" data-source="reddit">Reddit</button>
-                  <button type="button" class="dash-source-btn" data-source="private">Private Client</button>
-                  <button type="button" class="dash-source-btn" data-source="paid">Paid Client</button>
-                  <button type="button" class="dash-source-btn" data-source="free">Free Edit</button>
-                  <button type="button" class="dash-source-btn" data-source="returning">Returning Client</button>
-                  <button type="button" class="dash-source-btn" data-source="other">Other</button>
+              <!-- =========================================
+                   REDDIT SOURCE
+              ========================================== -->
+
+              <div
+                id="dash-reddit-fields"
+                class="dash-form-section"
+                hidden
+              >
+
+                <div class="dash-form-section-heading">
+
+                  <span class="dash-section-eyebrow">
+                    REDDIT
+                  </span>
+
+                  <span class="dash-form-section-note">
+                    Optional
+                  </span>
 
                 </div>
 
 
-                <label class="dash-field" id="dash-reddit-field">
+                <div class="dash-field">
 
-                  Reddit thread URL
+                  <label for="dash-reddit-url">
+                    Reddit thread URL
+                  </label>
 
                   <input
                     id="dash-reddit-url"
+                    name="reddit_url"
                     type="url"
-                    placeholder="https://www.reddit.com/r/OldPhotos/comments/..."
+                    inputmode="url"
                     autocomplete="off"
+                    placeholder="https://www.reddit.com/r/..."
                   >
 
-                </label>
+                  <small class="dash-field-help">
+                    Paste the Reddit thread URL if you want
+                    Boztik to save the source information.
+                  </small>
 
-                <p
-                  id="dash-reddit-status"
-                  class="dash-reddit-status"
-                  aria-live="polite"
-                  hidden
-                ></p>
-
-
-                <label class="dash-field">
-
-                  Client name
-
-                  <input
-                    id="dash-client-name"
-                    maxlength="120"
-                    autocomplete="name"
-                  >
-
-                </label>
-
-
-                <label class="dash-field">
-
-                  Project title
-
-                  <input
-                    id="dash-project-name"
-                    maxlength="160"
-                    required
-                  >
-
-                </label>
-
-
-                <label class="dash-field">
-
-                  Project notes
-
-                  <textarea
-                    id="dash-notes"
-                    rows="4"
-                    maxlength="2000"
-                    placeholder="Optional message or delivery notes for your client."
-                  ></textarea>
-
-                </label>
+                </div>
 
               </div>
 
 
+              <!-- =========================================
+                   NOTES
+              ========================================== -->
+
               <div class="dash-form-section">
 
-                <div class="dash-form-section-title">
+                <div class="dash-form-section-heading">
 
-                  <span>03</span>
+                  <span class="dash-section-eyebrow">
+                    NOTES
+                  </span>
 
-                  <div>
-
-                    <h3>
-                      Security & expiry
-                    </h3>
-
-                    <p>
-                      Choose how long the client link remains available.
-                    </p>
-
-                  </div>
+                  <span class="dash-form-section-note">
+                    Optional
+                  </span>
 
                 </div>
 
+                <div class="dash-field">
 
-                <label class="dash-field">
+                  <label for="dash-notes">
+                    Delivery notes
+                  </label>
 
-                  Expires in
+                  <textarea
+                    id="dash-notes"
+                    name="notes"
+                    rows="5"
+                    placeholder="Anything the client should know…"
+                  ></textarea>
 
-                  <select id="dash-expiry">
+                </div>
 
-                    <option value="24">
-                      24 hours
-                    </option>
+              </div>
 
-                    <option value="48">
-                      48 hours
-                    </option>
+            </article>
 
-                    <option value="72">
-                      72 hours
-                    </option>
 
-                    <option value="168">
-                      7 days
-                    </option>
+            <!-- ===========================================
+                 FILE UPLOAD
+            ============================================ -->
 
-                  </select>
+            <article class="dash-panel">
 
-                </label>
+              <div class="dash-panel-header">
+
+                <div>
+
+                  <span class="dash-section-eyebrow">
+                    FILE
+                  </span>
+
+                  <h3>
+                    Upload finished work
+                  </h3>
+
+                </div>
 
               </div>
 
 
               <div
-                id="dash-progress"
-                class="dash-progress"
-                hidden
+                id="dash-upload-zone"
+                class="dash-upload-zone"
+                tabindex="0"
+                role="button"
+                aria-label="Choose a file to upload"
               >
 
-                <div
-                  id="dash-progress-bar"
-                  class="dash-progress-bar"
-                ></div>
+                <input
+                  id="dash-file"
+                  name="file"
+                  type="file"
+                  hidden
+                  accept=".zip,.jpg,.jpeg,.png,.webp,.pdf"
+                >
+
+                <div class="dash-upload-icon">
+                  ↑
+                </div>
+
+                <strong>
+                  Drop your file here
+                </strong>
+
+                <span>
+                  or click to browse
+                </span>
+
+                <small>
+                  ZIP, JPG, PNG, WEBP or PDF
+                </small>
 
               </div>
 
 
-              <button
-                type="submit"
-                class="dash-btn dash-btn--large"
-                id="dash-upload-btn"
+              <!-- FILE PREVIEW -->
+
+              <div
+                id="dash-file-preview"
+                class="dash-file-preview"
+                hidden
               >
-                Generate secure delivery
-              </button>
 
-            </form>
+                <div class="dash-file-preview-icon">
+                  ▣
+                </div>
 
-          </section>
+                <div class="dash-file-preview-info">
 
+                  <strong
+                    id="dash-file-name"
+                  >
+                    —
+                  </strong>
 
-          <aside class="dash-create-info">
+                  <span
+                    id="dash-file-size"
+                  >
+                    —
+                  </span>
 
-            <div class="dash-info-card">
+                </div>
 
-              <span class="dash-section-eyebrow">
-                SECURE HAND-OFF
-              </span>
+                <button
+                  type="button"
+                  class="dash-icon-button"
+                  id="dash-file-remove"
+                  aria-label="Remove selected file"
+                >
+                  ×
+                </button>
 
-              <h3>
-                Built for professional client delivery.
-              </h3>
-
-              <ul>
-
-                <li>
-                  Secure client-facing delivery page
-                </li>
-
-                <li>
-                  Automatic expiry timer
-                </li>
-
-                <li>
-                  Download tracking
-                </li>
-
-                <li>
-                  View analytics
-                </li>
-
-                <li>
-                  Professional Boztik branding
-                </li>
-
-              </ul>
-
-            </div>
+              </div>
 
 
-            <div class="dash-info-card dash-info-card--accent">
+              <!-- =========================================
+                   DIRECT IMAGE PREVIEW
+              ========================================== -->
 
-              <span>
-                TIP
-              </span>
+              <div
+                id="dash-battle-image-preview"
+                class="dash-battle-image-preview"
+                hidden
+              >
+
+                <div class="dash-battle-image-preview-header">
+
+                  <span class="dash-section-eyebrow">
+                    PHOTOSHOPBATTLES PREVIEW
+                  </span>
+
+                </div>
+
+                <div
+                  id="dash-battle-image-preview-frame"
+                  class="dash-battle-image-preview-frame"
+                >
+
+                  <img
+                    id="dash-battle-image-preview-img"
+                    src=""
+                    alt="PhotoshopBattles image preview"
+                  >
+
+                </div>
+
+              </div>
+
+            </article>
+
+          </div>
+
+
+          <!-- =============================================
+               CREATE SIDEBAR
+          ============================================== -->
+
+          <aside class="dash-create-sidebar">
+
+            <article class="dash-panel">
+
+              <div class="dash-panel-header">
+
+                <div>
+
+                  <span class="dash-section-eyebrow">
+                    DELIVERY SETTINGS
+                  </span>
+
+                  <h3>
+                    Expiry
+                  </h3>
+
+                </div>
+
+              </div>
+
+
+              <div class="dash-field">
+
+                <label for="dash-expiry">
+                  Link expires
+                </label>
+
+                <select
+                  id="dash-expiry"
+                  name="expiry"
+                >
+
+                  <option value="24">
+                    24 hours
+                  </option>
+
+                  <option value="48">
+                    48 hours
+                  </option>
+
+                  <option value="72">
+                    72 hours
+                  </option>
+
+                  <option value="168">
+                    7 days
+                  </option>
+
+                </select>
+
+              </div>
+
+
+              <div
+                id="dash-battle-expiry-note"
+                class="dash-field-help"
+                hidden
+              >
+                The direct PhotoshopBattles image will stop
+                working when this delivery expires.
+              </div>
+
+            </article>
+
+
+            <!-- ===========================================
+                 SUPPORT
+            ============================================ -->
+
+            <article class="dash-panel dash-support-panel">
+
+              <div class="dash-panel-header">
+
+                <div>
+
+                  <span class="dash-section-eyebrow">
+                    SUPPORT
+                  </span>
+
+                  <h3>
+                    Client support
+                  </h3>
+
+                </div>
+
+              </div>
 
               <p>
-                ZIP files are ideal for delivering large
-                batches of edited images while keeping the
-                client experience simple.
+                Your existing support options remain available
+                on normal client delivery pages.
               </p>
 
-            </div>
+            </article>
+
+
+            <!-- ===========================================
+                 CREATE BUTTON
+            ============================================ -->
+
+            <button
+              type="submit"
+              class="dash-btn primary dash-create-submit"
+              id="dash-create-submit"
+            >
+
+              <span id="dash-create-submit-label">
+                Create Delivery
+              </span>
+
+              <span
+                id="dash-create-submit-spinner"
+                class="dash-spinner"
+                hidden
+              ></span>
+
+            </button>
+
+
+            <p
+              id="dash-create-error"
+              class="dash-form-error"
+              hidden
+              role="alert"
+            ></p>
 
           </aside>
 
-        </div>
+        </form>
 
-      </section>
-
-
-      <!-- =================================================
+      </section>  
+            <!-- =================================================
            TAB: DELIVERIES
       ================================================== -->
 
@@ -1018,95 +1602,190 @@
             </h2>
 
             <p>
-              Search, monitor and manage every client hand-off.
+              View, edit, duplicate, and manage your delivery links.
             </p>
 
           </div>
 
+          <div class="dash-section-actions">
 
-          <button
-            type="button"
-            class="dash-btn dash-compact"
-            data-open-tab="create"
-          >
-            + New delivery
-          </button>
+            <button
+              type="button"
+              class="dash-btn dash-compact"
+              id="dash-deliveries-refresh"
+            >
+              Refresh
+            </button>
+
+            <button
+              type="button"
+              class="dash-btn primary dash-compact"
+              id="dash-deliveries-create"
+            >
+              + New Delivery
+            </button>
+
+          </div>
 
         </div>
 
 
-        <section class="dash-panel dash-panel--list">
+        <!-- ===============================================
+             DELIVERY FILTERS
+        ================================================ -->
 
-          <div class="dash-list-toolbar">
+        <article class="dash-panel dash-filter-panel">
 
-            <h2>
-              Delivery library
-            </h2>
+          <div class="dash-filter-row">
+
+            <div class="dash-field dash-filter-search">
+
+              <label for="dash-delivery-search">
+                Search
+              </label>
+
+              <input
+                id="dash-delivery-search"
+                type="search"
+                placeholder="Search client, project or delivery ID…"
+                autocomplete="off"
+              >
+
+            </div>
 
 
-            <label
-              class="sr-only"
-              for="dash-search"
+            <div class="dash-field dash-filter-source">
+
+              <label for="dash-delivery-source-filter">
+                Type
+              </label>
+
+              <select id="dash-delivery-source-filter">
+
+                <option value="all">
+                  All types
+                </option>
+
+                <option value="private">
+                  Private Client
+                </option>
+
+                <option value="paid">
+                  Paid Client
+                </option>
+
+                <option value="free">
+                  Free Edit
+                </option>
+
+                <option value="photoshop_battles">
+                  PhotoshopBattles
+                </option>
+
+                <option value="returning">
+                  Returning Client
+                </option>
+
+                <option value="other">
+                  Other
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <div class="dash-field dash-filter-status">
+
+              <label for="dash-delivery-status-filter">
+                Status
+              </label>
+
+              <select id="dash-delivery-status-filter">
+
+                <option value="all">
+                  All statuses
+                </option>
+
+                <option value="active">
+                  Active
+                </option>
+
+                <option value="expired">
+                  Expired
+                </option>
+
+              </select>
+
+            </div>
+
+          </div>
+
+        </article>
+
+
+        <!-- ===============================================
+             DELIVERY LIST
+        ================================================ -->
+
+        <article class="dash-panel">
+
+          <div class="dash-panel-header">
+
+            <div>
+
+              <span class="dash-section-eyebrow">
+                ALL DELIVERIES
+              </span>
+
+              <h3>
+                Delivery library
+              </h3>
+
+            </div>
+
+            <span
+              id="dash-delivery-count"
+              class="dash-count-badge"
             >
-              Search deliveries
-            </label>
-
-            <input
-              id="dash-search"
-              type="search"
-              placeholder="Search projects or clients"
-            >
-
-
-            <select
-              id="dash-filter"
-              aria-label="Filter deliveries"
-            >
-
-              <option value="all">
-                All status
-              </option>
-
-              <option value="active">
-                Active
-              </option>
-
-              <option value="expired">
-                Expired
-              </option>
-
-            </select>
-
-
-            <select
-              id="dash-sort"
-              aria-label="Sort deliveries"
-            >
-
-              <option value="recent">
-                Newest first
-              </option>
-
-              <option value="name">
-                Project name
-              </option>
-
-              <option value="downloads">
-                Downloads
-              </option>
-
-            </select>
+              0
+            </span>
 
           </div>
 
 
           <div
-            id="dash-deliveries-list"
-            class="dash-deliveries-list"
-            aria-live="polite"
-          ></div>
+            id="dash-delivery-list"
+            class="dash-delivery-list"
+          >
 
-        </section>
+            <div class="dash-empty-state">
+
+              <span class="dash-empty-icon">
+                ▣
+              </span>
+
+              <h4>
+                No deliveries yet
+              </h4>
+
+              <p>
+                Create your first delivery to get started.
+              </p>
+
+              <button
+                type="button"
+                class="dash-btn primary"
+                data-go-tab="create"
+              >
+                Create Delivery
+              </button>
+
+            </div>
+
+          </div>
+
+        </article>
 
       </section>
 
@@ -1129,15 +1808,15 @@
           <div>
 
             <span class="dash-section-eyebrow">
-              DELIVERY ANALYTICS
+              PERFORMANCE
             </span>
 
             <h2>
-              Client activity
+              Delivery analytics
             </h2>
 
             <p>
-              Understand how clients interact with your delivery links.
+              Track views and downloads across all your deliveries.
             </p>
 
           </div>
@@ -1145,194 +1824,824 @@
         </div>
 
 
-        <!-- MONTHLY -->
+        <!-- ===============================================
+             ANALYTICS SUMMARY
+        ================================================ -->
 
-        <div class="analytics-period-card">
+        <div class="dash-stat-grid dash-stat-grid-analytics">
 
-          <div class="analytics-period-heading">
+          <article class="dash-stat-card">
 
-            <div>
+            <div class="dash-stat-top">
 
-              <span class="dash-section-eyebrow">
-                THIS MONTH
+              <span class="dash-stat-label">
+                Monthly views
               </span>
 
-              <h3>
-                Monthly performance
-              </h3>
-
-            </div>
-
-            <span class="analytics-period-badge">
-              Current period
-            </span>
-
-          </div>
-
-
-          <div class="analytics-summary-grid">
-
-            <div class="analytics-summary-card">
-
-              <div class="analytics-summary-icon">
-                👁
-              </div>
-
-              <div>
-
-                <span>
-                  Link Views
-                </span>
-
-                <strong id="delivery-monthly-views">
-                  0
-                </strong>
-
-                <small>
-                  Client page visits
-                </small>
-
-              </div>
-
-            </div>
-
-
-            <div class="analytics-summary-card">
-
-              <div class="analytics-summary-icon">
-                ↓
-              </div>
-
-              <div>
-
-                <span>
-                  Downloads
-                </span>
-
-                <strong id="delivery-monthly-downloads">
-                  0
-                </strong>
-
-                <small>
-                  Files downloaded
-                </small>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-
-        <!-- LIFETIME -->
-
-        <div class="analytics-period-card">
-
-          <div class="analytics-period-heading">
-
-            <div>
-
-              <span class="dash-section-eyebrow">
-                LIFETIME
+              <span class="dash-stat-icon">
+                ◉
               </span>
 
-              <h3>
-                All-time performance
-              </h3>
-
             </div>
 
-            <span class="analytics-period-badge">
-              All deliveries
-            </span>
-
-          </div>
-
-
-          <div class="analytics-summary-grid">
-
-            <div class="analytics-summary-card">
-
-              <div class="analytics-summary-icon">
-                👁
-              </div>
-
-              <div>
-
-                <span>
-                  Link Views
-                </span>
-
-                <strong id="delivery-lifetime-views">
-                  0
-                </strong>
-
-                <small>
-                  Total client page visits
-                </small>
-
-              </div>
-
-            </div>
-
-
-            <div class="analytics-summary-card">
-
-              <div class="analytics-summary-icon">
-                ↓
-              </div>
-
-              <div>
-
-                <span>
-                  Downloads
-                </span>
-
-                <strong id="delivery-lifetime-downloads">
-                  0
-                </strong>
-
-                <small>
-                  Total files downloaded
-                </small>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-
-        <!-- PERFORMANCE INSIGHT -->
-
-        <div class="dash-analytics-note">
-
-          <div class="dash-analytics-note-icon">
-            ↗
-          </div>
-
-          <div>
-
-            <strong>
-              Delivery performance
+            <strong
+              class="dash-stat-value"
+              id="analytics-monthly-views"
+            >
+              0
             </strong>
 
+            <span class="dash-stat-meta">
+              Current calendar month
+            </span>
+
+          </article>
+
+
+          <article class="dash-stat-card">
+
+            <div class="dash-stat-top">
+
+              <span class="dash-stat-label">
+                Monthly downloads
+              </span>
+
+              <span class="dash-stat-icon">
+                ↓
+              </span>
+
+            </div>
+
+            <strong
+              class="dash-stat-value"
+              id="analytics-monthly-downloads"
+            >
+              0
+            </strong>
+
+            <span class="dash-stat-meta">
+              Current calendar month
+            </span>
+
+          </article>
+
+
+          <article class="dash-stat-card">
+
+            <div class="dash-stat-top">
+
+              <span class="dash-stat-label">
+                Lifetime views
+              </span>
+
+              <span class="dash-stat-icon">
+                ↗
+              </span>
+
+            </div>
+
+            <strong
+              class="dash-stat-value"
+              id="analytics-lifetime-views"
+            >
+              0
+            </strong>
+
+            <span class="dash-stat-meta">
+              All-time delivery views
+            </span>
+
+          </article>
+
+
+          <article class="dash-stat-card">
+
+            <div class="dash-stat-top">
+
+              <span class="dash-stat-label">
+                Lifetime downloads
+              </span>
+
+              <span class="dash-stat-icon">
+                ⇩
+              </span>
+
+            </div>
+
+            <strong
+              class="dash-stat-value"
+              id="analytics-lifetime-downloads"
+            >
+              0
+            </strong>
+
+            <span class="dash-stat-meta">
+              All-time delivery downloads
+            </span>
+
+          </article>
+
+        </div>
+
+
+        <!-- ===============================================
+             PHOTOSHOPBATTLES ANALYTICS
+        ================================================ -->
+
+        <article class="dash-panel dash-battle-analytics-panel">
+
+          <div class="dash-panel-header">
+
+            <div>
+
+              <span class="dash-section-eyebrow">
+                PHOTOSHOPBATTLES
+              </span>
+
+              <h3>
+                Reddit image performance
+              </h3>
+
+              <p>
+                Direct image requests are counted as views in
+                the same analytics system as your client deliveries.
+              </p>
+
+            </div>
+
+            <span class="dash-battle-badge">
+              Reddit
+            </span>
+
+          </div>
+
+
+          <div class="dash-battle-analytics-grid">
+
+            <div class="dash-mini-stat">
+
+              <span>
+                Monthly views
+              </span>
+
+              <strong
+                id="battle-monthly-views"
+              >
+                0
+              </strong>
+
+            </div>
+
+
+            <div class="dash-mini-stat">
+
+              <span>
+                Lifetime views
+              </span>
+
+              <strong
+                id="battle-lifetime-views"
+              >
+                0
+              </strong>
+
+            </div>
+
+
+            <div class="dash-mini-stat">
+
+              <span>
+                Monthly downloads
+              </span>
+
+              <strong
+                id="battle-monthly-downloads"
+              >
+                0
+              </strong>
+
+            </div>
+
+
+            <div class="dash-mini-stat">
+
+              <span>
+                Lifetime downloads
+              </span>
+
+              <strong
+                id="battle-lifetime-downloads"
+              >
+                0
+              </strong>
+
+            </div>
+
+          </div>
+
+        </article>
+
+
+        <!-- ===============================================
+             ANALYTICS TABLE
+        ================================================ -->
+
+        <article class="dash-panel">
+
+          <div class="dash-panel-header">
+
+            <div>
+
+              <span class="dash-section-eyebrow">
+                DELIVERY PERFORMANCE
+              </span>
+
+              <h3>
+                Performance by delivery
+              </h3>
+
+            </div>
+
+            <div class="dash-analytics-month">
+
+              <span>
+                Month
+              </span>
+
+              <strong id="dash-analytics-month-label">
+                —
+              </strong>
+
+            </div>
+
+          </div>
+
+
+          <div class="dash-table-wrap">
+
+            <table class="dash-table">
+
+              <thead>
+
+                <tr>
+
+                  <th>
+                    Delivery
+                  </th>
+
+                  <th>
+                    Type
+                  </th>
+
+                  <th>
+                    Views
+                  </th>
+
+                  <th>
+                    Downloads
+                  </th>
+
+                  <th>
+                    Last viewed
+                  </th>
+
+                  <th>
+                    Last downloaded
+                  </th>
+
+                </tr>
+
+              </thead>
+
+              <tbody id="dash-analytics-table-body">
+
+                <tr>
+
+                  <td
+                    colspan="6"
+                    class="dash-table-empty"
+                  >
+                    Loading analytics…
+                  </td>
+
+                </tr>
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+        </article>
+
+      </section>
+
+
+      <!-- =================================================
+           GLOBAL LOADING OVERLAY
+      ================================================== -->
+
+      <div
+        id="dash-loading-overlay"
+        class="dash-loading-overlay"
+        hidden
+        aria-hidden="true"
+      >
+
+        <div class="dash-loading-card">
+
+          <span class="dash-spinner large"></span>
+
+          <strong id="dash-loading-title">
+            Working…
+          </strong>
+
+          <span id="dash-loading-message">
+            Please wait.
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <!-- =================================================
+           CREATE SUCCESS MODAL
+      ================================================== -->
+
+      <div
+        id="dash-success-modal"
+        class="dash-modal"
+        hidden
+        aria-hidden="true"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="dash-success-title"
+      >
+
+        <div class="dash-modal-backdrop"></div>
+
+        <div class="dash-modal-card">
+
+          <button
+            type="button"
+            class="dash-modal-close"
+            id="dash-success-close"
+            aria-label="Close"
+          >
+            ×
+          </button>
+
+
+          <div class="dash-success-icon">
+            ✓
+          </div>
+
+
+          <span class="dash-section-eyebrow">
+            DELIVERY READY
+          </span>
+
+          <h2 id="dash-success-title">
+            Delivery created
+          </h2>
+
+          <p id="dash-success-message">
+            Your delivery is ready to share.
+          </p>
+
+
+          <!-- =============================================
+               NORMAL DELIVERY URL
+          ============================================== -->
+
+          <div
+            id="dash-success-normal-url"
+            class="dash-success-url-block"
+          >
+
+            <label for="dash-success-url">
+              Client delivery URL
+            </label>
+
+            <div class="dash-copy-row">
+
+              <input
+                id="dash-success-url"
+                type="text"
+                readonly
+                spellcheck="false"
+              >
+
+              <button
+                type="button"
+                class="dash-btn"
+                id="dash-success-copy"
+              >
+                Copy
+              </button>
+
+            </div>
+
+          </div>
+
+
+          <!-- =============================================
+               PHOTOSHOPBATTLES DIRECT IMAGE URL
+          ============================================== -->
+
+          <div
+            id="dash-success-battle-url"
+            class="dash-success-url-block dash-success-battle"
+            hidden
+          >
+
+            <div class="dash-battle-success-heading">
+
+              <span class="dash-battle-badge">
+                PhotoshopBattles
+              </span>
+
+              <strong>
+                Direct image URL
+              </strong>
+
+            </div>
+
             <p>
-              Use these figures to see which projects are
-              being viewed and downloaded by clients. More
-              detailed per-delivery analytics remain available
-              inside each delivery card.
+              Paste this URL directly into Reddit.
+              It points to the actual JPG/PNG image,
+              not a Boztik webpage.
             </p>
+
+            <div class="dash-copy-row">
+
+              <input
+                id="dash-success-battle-direct-url"
+                type="text"
+                readonly
+                spellcheck="false"
+              >
+
+              <button
+                type="button"
+                class="dash-btn primary"
+                id="dash-success-battle-copy"
+              >
+                Copy URL
+              </button>
+
+            </div>
+
+            <div class="dash-success-battle-actions">
+
+              <a
+                id="dash-success-battle-open"
+                class="dash-text-button"
+                href="#"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Open image
+              </a>
+
+            </div>
+
+          </div>
+
+
+          <!-- =============================================
+               SUCCESS ACTIONS
+          ============================================== -->
+
+          <div class="dash-modal-actions">
+
+            <button
+              type="button"
+              class="dash-btn"
+              id="dash-success-view"
+            >
+              View Delivery
+            </button>
+
+            <button
+              type="button"
+              class="dash-btn primary"
+              id="dash-success-done"
+            >
+              Done
+            </button>
 
           </div>
 
         </div>
 
-      </section>
+      </div>
+
+
+      <!-- =================================================
+           EDIT DELIVERY MODAL
+      ================================================== -->
+
+      <div
+        id="dash-edit-modal"
+        class="dash-modal"
+        hidden
+        aria-hidden="true"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="dash-edit-title"
+      >
+
+        <div class="dash-modal-backdrop"></div>
+
+        <div class="dash-modal-card dash-edit-modal-card">
+
+          <button
+            type="button"
+            class="dash-modal-close"
+            id="dash-edit-close"
+            aria-label="Close"
+          >
+            ×
+          </button>
+
+
+          <span class="dash-section-eyebrow">
+            EDIT DELIVERY
+          </span>
+
+          <h2 id="dash-edit-title">
+            Update delivery
+          </h2>
+
+          <p>
+            Update the delivery details without changing
+            the existing delivery ID.
+          </p>
+
+
+          <form id="dash-edit-form">
+
+            <input
+              type="hidden"
+              id="dash-edit-id"
+            >
+
+
+            <div class="dash-form-grid">
+
+              <div class="dash-field">
+
+                <label for="dash-edit-client-name">
+                  Client name
+                </label>
+
+                <input
+                  id="dash-edit-client-name"
+                  type="text"
+                  required
+                >
+
+              </div>
+
+
+              <div class="dash-field">
+
+                <label for="dash-edit-project-name">
+                  Project name
+                </label>
+
+                <input
+                  id="dash-edit-project-name"
+                  type="text"
+                  required
+                >
+
+              </div>
+
+            </div>
+
+
+            <div class="dash-field">
+
+              <label for="dash-edit-source">
+                Delivery type
+              </label>
+
+              <select id="dash-edit-source">
+
+                <option value="private">
+                  Private Client
+                </option>
+
+                <option value="paid">
+                  Paid Client
+                </option>
+
+                <option value="free">
+                  Free Edit
+                </option>
+
+                <option value="photoshop_battles">
+                  PhotoshopBattles
+                </option>
+
+                <option value="returning">
+                  Returning Client
+                </option>
+
+                <option value="other">
+                  Other
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <div
+              id="dash-edit-reddit-fields"
+              class="dash-field"
+              hidden
+            >
+
+              <label for="dash-edit-reddit-url">
+                Reddit thread URL
+              </label>
+
+              <input
+                id="dash-edit-reddit-url"
+                type="url"
+                placeholder="https://www.reddit.com/r/..."
+              >
+
+            </div>
+
+
+            <div class="dash-field">
+
+              <label for="dash-edit-notes">
+                Notes
+              </label>
+
+              <textarea
+                id="dash-edit-notes"
+                rows="5"
+              ></textarea>
+
+            </div>
+
+
+            <div
+              id="dash-edit-error"
+              class="dash-form-error"
+              hidden
+              role="alert"
+            ></div>
+
+
+            <div class="dash-modal-actions">
+
+              <button
+                type="button"
+                class="dash-btn"
+                id="dash-edit-cancel"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                class="dash-btn primary"
+                id="dash-edit-save"
+              >
+                Save Changes
+              </button>
+
+            </div>
+
+          </form>
+
+        </div>
+
+      </div>
+
+
+      <!-- =================================================
+           DELETE CONFIRMATION MODAL
+      ================================================== -->
+
+      <div
+        id="dash-delete-modal"
+        class="dash-modal"
+        hidden
+        aria-hidden="true"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="dash-delete-title"
+      >
+
+        <div class="dash-modal-backdrop"></div>
+
+        <div class="dash-modal-card">
+
+          <button
+            type="button"
+            class="dash-modal-close"
+            id="dash-delete-close"
+            aria-label="Close"
+          >
+            ×
+          </button>
+
+
+          <div class="dash-danger-icon">
+            !
+          </div>
+
+
+          <span class="dash-section-eyebrow">
+            DELETE DELIVERY
+          </span>
+
+          <h2 id="dash-delete-title">
+            Delete this delivery?
+          </h2>
+
+          <p>
+            This action cannot be undone. The delivery record
+            and associated files will be removed.
+          </p>
+
+
+          <div
+            class="dash-delete-summary"
+            id="dash-delete-summary"
+          >
+            —
+          </div>
+
+
+          <div
+            id="dash-delete-error"
+            class="dash-form-error"
+            hidden
+            role="alert"
+          ></div>
+
+
+          <div class="dash-modal-actions">
+
+            <button
+              type="button"
+              class="dash-btn"
+              id="dash-delete-cancel"
+            >
+              Cancel
+            </button>
+
+            <button
+              type="button"
+              class="dash-btn danger"
+              id="dash-delete-confirm"
+            >
+              Delete Delivery
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- =================================================
+           TOAST
+      ================================================== -->
+
+      <div
+        id="dash-toast"
+        class="dash-toast"
+        hidden
+        role="status"
+        aria-live="polite"
+      >
+
+        <span
+          id="dash-toast-icon"
+          class="dash-toast-icon"
+        >
+          ✓
+        </span>
+
+        <span
+          id="dash-toast-message"
+        >
+          Done
+        </span>
+
+      </div>
 
     </section>
 
@@ -1340,262 +2649,33 @@
 
 
   <!-- =====================================================
-       CONFIRMATION DIALOG
+       FOOTER
   ====================================================== -->
 
-  <dialog
-    id="dash-confirm"
-    class="dash-dialog"
-  >
+  <footer class="deliver-footer">
 
-    <h2>
-      Confirm action
-    </h2>
+    <div class="deliver-footer-inner">
 
-    <p id="dash-confirm-text"></p>
+      <span>
+        Boztik Deliver
+      </span>
 
-    <form method="dialog">
-
-      <button type="button">
-        Cancel
-      </button>
-
-      <button
-        id="dash-confirm-action"
-        type="button"
-        class="is-danger"
-      >
-        Continue
-      </button>
-
-    </form>
-
-  </dialog>
-
-
-  <!-- =====================================================
-       SUCCESS DIALOG
-  ====================================================== -->
-
-  <dialog
-    id="dash-success"
-    class="dash-dialog dash-dialog--wide"
-  >
-
-    <h2>
-      Delivery created successfully
-    </h2>
-
-    <p id="dash-success-meta"></p>
-
-
-    <label class="dash-field">
-
-      Client download link
-
-      <input
-        id="dash-success-link"
-        type="text"
-        readonly
-        onclick="this.select()"
-      >
-
-    </label>
-
-
-    <p
-      id="dash-success-copy-status"
-      class="dash-success-status"
-      hidden
-    ></p>
-
-
-    <div class="dash-success-actions">
-
-      <button
-        type="button"
-        id="dash-success-copy"
-        class="dash-btn dash-btn--ghost dash-compact"
-      >
-        Copy Link
-      </button>
-
-
-      <a
-        id="dash-success-open"
-        class="dash-btn dash-compact"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Open Client Page
-      </a>
+      <span>
+        Private workspace
+      </span>
 
     </div>
 
-
-    <form method="dialog">
-
-      <button type="submit">
-        Done
-      </button>
-
-    </form>
-
-  </dialog>
+  </footer>
 
 
   <!-- =====================================================
-       EDIT DELIVERY DIALOG
-  ====================================================== -->
-
-  <dialog
-    id="dash-edit"
-    class="dash-dialog dash-dialog--wide"
-  >
-
-    <h2>
-      Edit Delivery
-    </h2>
-
-    <p>
-      Update the client-facing details or extend availability.
-      The delivery link stays exactly the same.
-    </p>
-
-
-    <form id="dash-edit-form">
-
-      <label class="dash-field">
-
-        Delivery name
-
-        <input
-          id="edit-project-name"
-          maxlength="160"
-          required
-        >
-
-      </label>
-
-
-      <label class="dash-field">
-
-        Client name
-
-        <input
-          id="edit-client-name"
-          maxlength="120"
-          required
-        >
-
-      </label>
-
-
-      <label class="dash-field">
-
-        Client message / description
-
-        <textarea
-          id="edit-notes"
-          rows="4"
-          maxlength="2000"
-          placeholder="Optional message or delivery notes for your client."
-        ></textarea>
-
-      </label>
-
-
-      <label class="dash-field">
-
-        Source
-
-        <select id="edit-source">
-          <option value="reddit">Reddit</option>
-          <option value="private">Private Client</option>
-          <option value="paid">Paid Client</option>
-          <option value="free">Free Edit</option>
-          <option value="returning">Returning Client</option>
-          <option value="other">Other</option>
-        </select>
-
-      </label>
-
-
-      <label class="dash-field" id="edit-reddit-field">
-
-        Reddit thread URL
-
-        <input
-          id="edit-reddit-url"
-          type="url"
-          placeholder="https://www.reddit.com/r/OldPhotos/comments/..."
-          autocomplete="off"
-        >
-
-      </label>
-
-
-      <label class="dash-field">
-
-        Expires
-
-        <input
-          id="edit-expiry"
-          type="datetime-local"
-          required
-        >
-
-      </label>
-
-
-      <p
-        id="dash-edit-error"
-        class="dash-edit-error"
-        hidden
-      ></p>
-
-
-      <div class="dash-dialog-actions">
-
-        <button
-          type="button"
-          id="dash-edit-cancel"
-          class="dash-btn dash-btn--ghost"
-        >
-          Cancel
-        </button>
-
-        <button
-          type="submit"
-          id="dash-edit-save"
-          class="dash-btn primary"
-        >
-          Save Changes
-        </button>
-
-      </div>
-
-    </form>
-
-  </dialog>
-
-
-  <!-- =====================================================
-       SUPABASE
-  ====================================================== -->
-
-  <script
-    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"
-  ></script>
-
-
-  <!-- =====================================================
-       DASHBOARD JAVASCRIPT
+       SCRIPTS
   ====================================================== -->
 
   <script
     type="module"
-    src="js/dashboard.js"
+    src="js/dashboard.js?v=photoshop-battles-1"
   ></script>
 
 </body>
