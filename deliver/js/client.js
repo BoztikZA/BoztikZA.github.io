@@ -269,6 +269,28 @@ let initializationComplete =
   false;
 
 
+/*
+  "preview=1" is added ONLY by the Command Centre's own Open
+  actions (see dashboard.js) to mark an authenticated admin
+  opening a delivery to check/verify it — not a real client
+  visit. It is never present on the link a client actually
+  receives (Copy Link / the post-upload share link), so a
+  genuine external open is always counted normally.
+
+  This is checked here — the moment a view would otherwise be
+  recorded — rather than gated on auth/session state, because
+  the admin may be logged into Supabase in another tab while a
+  real client opens the public link in this one; that visit must
+  still count.
+*/
+const isAdminPreview =
+  new URLSearchParams(
+    location.search
+  ).get(
+    "preview"
+  ) === "1";
+
+
 /* =========================================================
    PREVIEW CACHE
 =========================================================
@@ -3303,10 +3325,17 @@ async function init() {
 
       The client can receive their files even if the
       analytics endpoint is unavailable.
+
+      Admin previews opened from the Command Centre (see
+      isAdminPreview above) are skipped entirely so they never
+      reach the database — this is not just hidden in the UI,
+      the view_count / delivery_analytics rows are never touched
+      for these opens.
     */
 
     if (
-      delivery.id
+      delivery.id &&
+      !isAdminPreview
     ) {
 
       recordView(
