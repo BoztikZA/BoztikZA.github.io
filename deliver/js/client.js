@@ -104,6 +104,9 @@ const els = {
   explore:
     $("deliver-explore"),
 
+  explorePanel:
+    $("deliver-explore-panel"),
+
   adSlot:
     $("deliver-adsense-slot"),
 
@@ -579,14 +582,13 @@ function state(
     els.adSlot.hidden =
       !showPromo;
 
-
-    if (
-      showPromo
-    ) {
-
-      loadAd();
-
-    }
+    /*
+      The ad no longer auto-loads here — it now loads lazily the
+      first time the "Explore More" panel is opened (see
+      setupExplorePanel), since the ad slot lives inside that
+      panel and starts visually collapsed. Loading it while
+      collapsed risked AdSense measuring a 0-height container.
+    */
 
   }
 
@@ -657,6 +659,97 @@ function loadAd() {
   }
 
 }
+
+
+/* =========================================================
+   EXPLORE MORE PANEL
+========================================================= */
+
+/*
+  Toggles the secondary/promotional content (services, the
+  Creative Toolkit promo, and the ad slot) between a collapsed
+  and expanded state. The panel's own visibility (shown only for
+  an active delivery) is already handled by state() via
+  els.explore.hidden — this only wires the open/close interaction.
+*/
+
+function setupExplorePanel() {
+
+  const toggle =
+    els.explore;
+
+  const panel =
+    els.explorePanel;
+
+
+  if (
+    !toggle ||
+    !panel
+  ) {
+
+    return;
+
+  }
+
+
+  const label =
+    toggle.querySelector(
+      ".deliver-explore-toggle-label"
+    );
+
+
+  toggle.addEventListener(
+    "click",
+    () => {
+
+      const nextOpen =
+        toggle.getAttribute(
+          "aria-expanded"
+        ) !== "true";
+
+
+      toggle.setAttribute(
+        "aria-expanded",
+        String(nextOpen)
+      );
+
+
+      panel.classList.toggle(
+        "is-open",
+        nextOpen
+      );
+
+
+      if (label) {
+
+        label.textContent =
+          nextOpen
+            ? "Show Less"
+            : "Explore More";
+
+      }
+
+
+      /*
+        Lazy-load the AdSense slot the first time the panel is
+        opened, since it lives inside this panel and starts
+        visually collapsed (see the CSS grid-rows collapse).
+        loadAd() is already idempotent via the adLoaded flag.
+      */
+
+      if (nextOpen) {
+
+        loadAd();
+
+      }
+
+    }
+  );
+
+}
+
+
+setupExplorePanel();
 /* =========================================================
    FULL RESOLUTION IMAGE VIEWER
 ========================================================= */

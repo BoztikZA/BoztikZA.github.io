@@ -161,14 +161,20 @@ a:focus-visible {
 ========================================================= */
 
 .deliver-page {
-  width: min(1000px, calc(100% - 48px));
+  width: min(1320px, calc(100% - 64px));
   margin: 0 auto;
   padding: 60px 0 100px;
 }
 
+@media (max-width: 900px) {
+  .deliver-page {
+    width: min(100% - 48px, 1320px);
+  }
+}
+
 @media (max-width: 700px) {
   .deliver-page {
-    width: min(100% - 32px, 1000px);
+    width: min(100% - 32px, 1320px);
     padding: 40px 0 60px;
   }
 }
@@ -2844,187 +2850,6 @@ a:focus-visible {
 }
 
 
-/* =========================================================
-   DELIVERY SOURCE PICKER (fast-create)
-========================================================= */
-
-.dash-source-picker {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 20px;
-}
-
-.dash-source-btn {
-  padding: 9px 14px;
-  border-radius: 999px;
-  border: 1px solid var(--deliver-border-strong);
-  background: var(--deliver-bg-soft);
-  color: var(--deliver-text-muted);
-  font-size: 0.78rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all var(--deliver-transition);
-}
-
-.dash-source-btn:hover {
-  border-color: var(--deliver-text-dim);
-  color: var(--deliver-text-soft);
-}
-
-.dash-source-btn.is-active {
-  border-color: var(--deliver-accent-border);
-  background: var(--deliver-accent-soft);
-  color: var(--deliver-accent);
-}
-
-.dash-reddit-status {
-  margin: -10px 0 20px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--deliver-text-muted);
-}
-
-.dash-reddit-status.loading {
-  color: var(--deliver-text-muted);
-}
-
-.dash-reddit-status.success {
-  color: var(--deliver-accent);
-}
-
-.dash-reddit-status.error {
-  color: #ff9696;
-}
-
-
-/* =========================================================
-   DELIVERY CARD — SOURCE BADGE
-========================================================= */
-
-.delivery-card-source {
-
-  margin: 4px 0 0;
-
-  color: var(--deliver-accent);
-
-  font-size: 0.68rem;
-  font-weight: 750;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-
-}
-
-
-/* =========================================================
-   DELIVERY CARD — EXTEND MENU
-========================================================= */
-
-.delivery-extend {
-  position: relative;
-  flex: 1 1 auto;
-}
-
-.delivery-extend > summary {
-  list-style: none;
-  text-align: center;
-}
-
-.delivery-extend > summary::-webkit-details-marker {
-  display: none;
-}
-
-.delivery-extend > summary::marker {
-  display: none;
-  content: "";
-}
-
-.delivery-extend[open] > summary {
-  border-color: var(--deliver-accent-border);
-  color: var(--deliver-accent);
-}
-
-.delivery-extend-menu {
-  position: absolute;
-  z-index: 20;
-  bottom: calc(100% + 6px);
-  left: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 160px;
-  padding: 6px;
-  background: var(--deliver-surface-2);
-  border: 1px solid var(--deliver-border-strong);
-  border-radius: 10px;
-  box-shadow: var(--deliver-shadow-soft);
-}
-
-.delivery-extend-option {
-  padding: 9px 10px;
-  border: none;
-  border-radius: 7px;
-  background: transparent;
-  color: var(--deliver-text-soft);
-  font-size: 0.78rem;
-  font-weight: 650;
-  text-align: left;
-  cursor: pointer;
-  transition: all var(--deliver-transition);
-}
-
-.delivery-extend-option:hover {
-  background: rgba(255,255,255,0.06);
-  color: var(--deliver-text);
-}
-
-
-/* =========================================================
-   DELIVERY STATUS — EXPIRING SOON
-========================================================= */
-
-.delivery-status.warn {
-
-  border-color:
-    rgba(255,184,92,0.25);
-
-  background:
-    rgba(255,184,92,0.07);
-
-  color:
-    #ffb85c;
-
-}
-
-
-/* =========================================================
-   DELIVERY CARD — DISABLE NOW
-========================================================= */
-
-.btn-disable-now {
-
-  border-color:
-    rgba(255,184,92,0.22);
-
-  background:
-    rgba(255,184,92,0.05);
-
-  color:
-    #ffb85c;
-
-}
-
-.btn-disable-now:hover {
-
-  border-color:
-    rgba(255,184,92,0.42);
-
-  background:
-    rgba(255,184,92,0.10);
-
-}
-
-
 @media (max-width: 700px) {
 
   .dash-form-grid {
@@ -3842,6 +3667,73 @@ a:focus-visible {
 
   color:
     #ff9696;
+
+}
+
+
+.delivery-status.warn {
+
+  border-color:
+    rgba(251,191,36,0.28);
+
+  background:
+    rgba(251,191,36,0.08);
+
+  color:
+    var(--deliver-warning);
+
+}
+
+
+.delivery-status .status-dot {
+
+  width:
+    6px;
+
+  height:
+    6px;
+
+  flex:
+    0 0 auto;
+
+  border-radius:
+    50%;
+
+  background:
+    currentColor;
+
+}
+
+
+/* =========================================================
+   EDIT DELIVERY DIALOG
+========================================================= */
+
+.dash-edit-error {
+
+  margin:
+    0 0 16px;
+
+  padding:
+    10px 14px;
+
+  border:
+    1px solid rgba(255,107,107,0.25);
+
+  border-radius:
+    10px;
+
+  background:
+    rgba(255,107,107,0.06);
+
+  color:
+    #ff9696;
+
+  font-size:
+    0.8rem;
+
+  line-height:
+    1.5;
 
 }
 

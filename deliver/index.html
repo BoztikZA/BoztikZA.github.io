@@ -467,6 +467,148 @@
 
 
     /* =====================================================
+       EXPLORE MORE TOGGLE
+    ====================================================== */
+
+    .deliver-explore-toggle-wrap {
+      display: flex;
+      justify-content: center;
+      margin: 40px 0;
+    }
+
+    .deliver-explore-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+
+      padding: 0;
+      border: none;
+      background: none;
+
+      color: var(--deliver-text-muted);
+      cursor: pointer;
+
+      transition:
+        color 200ms ease;
+    }
+
+    .deliver-explore-toggle:hover,
+    .deliver-explore-toggle:focus-visible {
+      color: var(--deliver-accent);
+    }
+
+    .deliver-explore-toggle-line {
+      width: 44px;
+      height: 1px;
+      background:
+        linear-gradient(
+          90deg,
+          transparent,
+          currentColor
+        );
+      opacity: 0.35;
+      transition: opacity 200ms ease;
+    }
+
+    .deliver-explore-toggle-line:last-child {
+      background:
+        linear-gradient(
+          90deg,
+          currentColor,
+          transparent
+        );
+    }
+
+    .deliver-explore-toggle:hover .deliver-explore-toggle-line,
+    .deliver-explore-toggle:focus-visible .deliver-explore-toggle-line {
+      opacity: 0.7;
+    }
+
+    .deliver-explore-toggle-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .deliver-explore-toggle-icon {
+      width: 16px;
+      height: 16px;
+      flex: 0 0 auto;
+      transition: transform 320ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .deliver-explore-toggle[aria-expanded="true"] .deliver-explore-toggle-icon {
+      transform: rotate(180deg);
+    }
+
+
+    /*
+      Grid-based collapse: animating grid-template-rows between
+      0fr and 1fr gives a smooth height transition without ever
+      measuring or hardcoding a pixel height, so it can't break
+      on tablets/mobile or when content length changes.
+    */
+
+    .deliver-explore-panel {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 480ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .deliver-explore-panel.is-open {
+      grid-template-rows: 1fr;
+    }
+
+    .deliver-explore-panel-inner {
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    /*
+      Staggered reveal: each direct section inside the panel
+      fades/slides in with an increasing delay once opened, so
+      the secondary content cascades rather than appearing at once.
+    */
+
+    .deliver-explore-panel-inner > * {
+      opacity: 0;
+      transform: translateY(10px);
+      transition:
+        opacity 380ms ease,
+        transform 380ms ease;
+    }
+
+    .deliver-explore-panel.is-open .deliver-explore-panel-inner > * {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .deliver-explore-panel.is-open .deliver-explore-panel-inner > *:nth-child(1) {
+      transition-delay: 80ms;
+    }
+
+    .deliver-explore-panel.is-open .deliver-explore-panel-inner > *:nth-child(2) {
+      transition-delay: 160ms;
+    }
+
+    .deliver-explore-panel.is-open .deliver-explore-panel-inner > *:nth-child(3) {
+      transition-delay: 240ms;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+      .deliver-explore-panel,
+      .deliver-explore-toggle-icon,
+      .deliver-explore-panel-inner > * {
+        transition-duration: 1ms !important;
+      }
+
+    }
+
+
+    /* =====================================================
        SERVICES SECTION
     ====================================================== */
 
@@ -948,6 +1090,21 @@
         grid-template-columns:
           minmax(0, 1fr)
           minmax(285px, 0.42fr);
+      }
+
+    }
+
+
+    /* =====================================================
+       WIDE DESKTOP
+    ====================================================== */
+
+    @media (min-width: 1300px) {
+
+      .boztik-files-support-layout {
+        grid-template-columns:
+          minmax(0, 1fr)
+          minmax(320px, 400px);
       }
 
     }
@@ -1711,6 +1868,54 @@
 
 
       <!-- =====================================================
+           EXPLORE MORE TOGGLE
+      ====================================================== -->
+
+      <div class="deliver-explore-toggle-wrap">
+
+        <button
+          type="button"
+          id="deliver-explore"
+          class="deliver-explore-toggle"
+          aria-expanded="false"
+          aria-controls="deliver-explore-panel"
+          hidden
+        >
+
+          <span class="deliver-explore-toggle-line"></span>
+
+          <span class="deliver-explore-toggle-label">
+            Explore More
+          </span>
+
+          <svg
+            class="deliver-explore-toggle-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+
+          <span class="deliver-explore-toggle-line"></span>
+
+        </button>
+
+      </div>
+
+
+      <div
+        id="deliver-explore-panel"
+        class="deliver-explore-panel"
+      >
+
+        <div class="deliver-explore-panel-inner">
+
+
+      <!-- =====================================================
            SERVICES / ADDITIONAL EDITS
       ====================================================== -->
 
@@ -2247,6 +2452,11 @@
             data-ad-format="auto"
             data-full-width-responsive="true"
           ></ins>
+
+        </div>
+
+      </div>
+
 
         </div>
 
