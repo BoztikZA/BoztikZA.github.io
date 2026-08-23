@@ -5702,3 +5702,164 @@ body.dash-modal-open {
 .dash-copy-row .dash-btn {
   flex: 0 0 auto;
 }
+
+/* =========================================================
+   CREATE FORM — FILE UPLOAD ZONE
+   Added: the redesign shipped this markup with zero CSS, so the
+   dropzone rendered as plain unstyled text with no visible
+   clickable area — this is what made uploading a photo look
+   broken/impossible on the Create Delivery page.
+========================================================= */
+
+.dash-upload-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+  padding: 40px 24px;
+  border: 1.5px dashed var(--deliver-border-strong);
+  border-radius: var(--deliver-radius);
+  background: var(--deliver-bg-soft);
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+.dash-upload-zone:hover,
+.dash-upload-zone:focus-visible {
+  border-color: var(--deliver-accent-border);
+  background: var(--deliver-accent-soft);
+  outline: none;
+}
+
+.dash-upload-zone.is-dragover {
+  border-color: var(--deliver-accent);
+  background: var(--deliver-accent-soft);
+}
+
+.dash-upload-icon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--deliver-surface-2);
+  color: var(--deliver-accent);
+  font-size: 1.2rem;
+  margin-bottom: 4px;
+}
+
+.dash-upload-zone strong {
+  font-size: 0.95rem;
+  color: var(--deliver-text);
+}
+
+.dash-upload-zone span {
+  font-size: 0.82rem;
+  color: var(--deliver-text-muted);
+}
+
+.dash-upload-zone small {
+  font-size: 0.72rem;
+  color: var(--deliver-text-dim);
+  margin-top: 4px;
+}
+
+
+/* ---- Selected-file preview row ---- */
+
+.dash-file-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--deliver-border);
+  border-radius: var(--deliver-radius-small);
+  background: var(--deliver-bg-soft);
+}
+
+.dash-file-preview-icon {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--deliver-surface-2);
+  color: var(--deliver-accent);
+  font-size: 1rem;
+}
+
+.dash-file-preview-info {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dash-file-preview-info strong {
+  font-size: 0.85rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dash-file-preview-info span {
+  font-size: 0.75rem;
+  color: var(--deliver-text-muted);
+}
+
+.dash-icon-button {
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--deliver-border);
+  border-radius: 8px;
+  background: var(--deliver-surface-2);
+  color: var(--deliver-text-muted);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.dash-icon-button:hover {
+  color: var(--deliver-text);
+  border-color: var(--deliver-border-strong);
+}
+
+
+/* ---- PhotoshopBattles image preview ---- */
+
+.dash-battle-image-preview {
+  margin-top: 14px;
+}
+
+.dash-battle-image-preview-header {
+  margin-bottom: 8px;
+}
+
+.dash-battle-image-preview-frame {
+  border: 1px solid var(--deliver-border);
+  border-radius: var(--deliver-radius-small);
+  overflow: hidden;
+  background: var(--deliver-bg);
+  max-height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dash-battle-image-preview-frame img {
+  width: 100%;
+  max-height: 320px;
+  object-fit: contain;
+  display: block;
+}
