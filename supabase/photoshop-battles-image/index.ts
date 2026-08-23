@@ -1,3 +1,6 @@
+// Boztik Deliver: serves PhotoshopBattles direct image URLs (stable, no
+// expiry-window signed URL) for pasting directly into Reddit.
+// Deploy with: supabase functions deploy photoshop-battles-image
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {

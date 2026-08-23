@@ -1,3457 +1,1298 @@
-import {
-  supabase,
-  formatBytes,
-  formatDate,
-  countdown,
-  toast,
-  escapeHtml,
-  deliveryId,
-  isValidFile
-} from "./shared.js";
+// Boztik Deliver — Command Centre
+// Drives the tabbed dashboard (Overview / Create / Deliveries / Analytics),
+// including the Photoshop Battles delivery type. Talks to Supabase only
+// through auth.js / api.js / shared.js — no direct Supabase calls here.
 
+import { getSession, signIn, signOut, onAuthChange } from "./auth.js";
 import {
   listDeliveries,
   createDelivery,
   updateDelivery,
   deleteDelivery,
-  duplicateDelivery
+  duplicateDelivery,
+  DELIVERY_SOURCES
 } from "./api.js";
-
+import { config } from "./config.js";
 import {
-  config
-} from "./config.js";
-
-
-/* =========================================================
-   BOZTIK DELIVER — DASHBOARD
-   =========================================================
-   This file is designed to work with the current dashboard
-   HTML structure using:
-
-     data-tab
-     data-panel
-
-   It intentionally does not depend on the old:
-
-     data-dash-tab
-     data-dash-panel
-========================================================= */
-
-
-/* =========================================================
-   DOM HELPER
-========================================================= */
+  escapeHtml,
+  formatBytes,
+  formatDate,
+  countdown,
+  deliveryId,
+  deliveryLink,
+  isValidFile
+} from "./shared.js";
+import { getImageDimensions } from "./fileinfo.js";
 
 const $ = id => document.getElementById(id);
-
 
 /* =========================================================
    ELEMENTS
 ========================================================= */
 
 const els = {
+  logoutLink: $("dash-logout-link"),
 
-  /* Authentication */
   loginView: $("dash-login-view"),
-  mainView: $("dash-main-view"),
-
   loginForm: $("dash-login-form"),
   email: $("dash-email"),
   password: $("dash-password"),
-  loginButton: $("dash-login-btn"),
+  loginBtn: $("dash-login-btn"),
   loginError: $("dash-login-error"),
-  logout: $("dash-logout-link"),
 
-  /* Dashboard */
-  refresh: $("dash-refresh"),
+  mainView: $("dash-main-view"),
+  refreshBtn: $("dash-refresh"),
 
-  /* Main statistics */
-  activeCount: $("stat-active-count"),
-  downloadCount: $("stat-download-count"),
-  storageUsed: $("stat-storage-used"),
-  totalCount: $("stat-total-count"),
+  tabButtons: Array.from(document.querySelectorAll(".dash-tab[data-tab]")),
+  panels: Array.from(document.querySelectorAll(".dash-tab-panel[data-panel]")),
+  goTabButtons: Array.from(document.querySelectorAll("[data-go-tab]")),
 
-  /* Analytics */
-  monthlyViews: $("delivery-monthly-views"),
-  monthlyDownloads: $("delivery-monthly-downloads"),
-  lifetimeViews: $("delivery-lifetime-views"),
-  lifetimeDownloads: $("delivery-lifetime-downloads"),
+  overviewCreateBtn: $("dash-overview-create"),
+  statActive: $("stat-active"),
+  statMonthlyViews: $("stat-monthly-views"),
+  statMonthlyDownloads: $("stat-monthly-downloads"),
+  statLifetimeViews: $("stat-lifetime-views"),
+  statLifetimeDownloads: $("stat-lifetime-downloads"),
+  overviewRecent: $("overview-recent-deliveries"),
+  activityStatus: $("dash-activity-status"),
+  overviewActivity: $("overview-activity-list"),
+  actionCards: Array.from(document.querySelectorAll(".dash-action-card[data-create-source]")),
 
-  /* Overview analytics */
-  overviewMonthlyViews: $("overview-monthly-views"),
-  overviewMonthlyDownloads: $("overview-monthly-downloads"),
-
-  /* Upload */
-  uploadForm: $("dash-upload-form"),
-  dropzone: $("dash-dropzone"),
-  fileInput: $("dash-file-input"),
-  fileList: $("dash-file-list"),
-
+  createForm: $("dash-create-form"),
+  sourceOptions: Array.from(document.querySelectorAll(".dash-source-option[data-source]")),
+  sourceInput: $("dash-source"),
+  photoshopNotice: $("dash-photoshop-battles-notice"),
+  clientFieldsNote: $("dash-client-fields-note"),
   clientName: $("dash-client-name"),
   projectName: $("dash-project-name"),
+  redditFields: $("dash-reddit-fields"),
+  redditUrl: $("dash-reddit-url"),
   notes: $("dash-notes"),
-  expiry: $("dash-expiry"),
+  uploadZone: $("dash-upload-zone"),
+  fileInput: $("dash-file"),
+  filePreview: $("dash-file-preview"),
+  fileName: $("dash-file-name"),
+  fileSize: $("dash-file-size"),
+  fileRemove: $("dash-file-remove"),
+  battleImagePreview: $("dash-battle-image-preview"),
+  battleImagePreviewFrame: $("dash-battle-image-preview-frame"),
+  battleImagePreviewImg: $("dash-battle-image-preview-img"),
+  expirySelect: $("dash-expiry"),
+  battleExpiryNote: $("dash-battle-expiry-note"),
+  createSubmit: $("dash-create-submit"),
+  createSubmitLabel: $("dash-create-submit-label"),
+  createSubmitSpinner: $("dash-create-submit-spinner"),
+  createError: $("dash-create-error"),
 
-  progress: $("dash-progress"),
-  progressBar: $("dash-progress-bar"),
-  uploadButton: $("dash-upload-btn"),
+  deliveriesRefresh: $("dash-deliveries-refresh"),
+  deliveriesCreate: $("dash-deliveries-create"),
+  deliverySearch: $("dash-delivery-search"),
+  sourceFilter: $("dash-delivery-source-filter"),
+  statusFilter: $("dash-delivery-status-filter"),
+  deliveryCount: $("dash-delivery-count"),
+  deliveryList: $("dash-delivery-list"),
 
-  /* Deliveries */
-  deliveriesList: $("dash-deliveries-list"),
-  search: $("dash-search"),
-  filter: $("dash-filter"),
-  sort: $("dash-sort"),
+  analyticsMonthlyViews: $("analytics-monthly-views"),
+  analyticsMonthlyDownloads: $("analytics-monthly-downloads"),
+  analyticsLifetimeViews: $("analytics-lifetime-views"),
+  analyticsLifetimeDownloads: $("analytics-lifetime-downloads"),
+  battleMonthlyViews: $("battle-monthly-views"),
+  battleLifetimeViews: $("battle-lifetime-views"),
+  battleMonthlyDownloads: $("battle-monthly-downloads"),
+  battleLifetimeDownloads: $("battle-lifetime-downloads"),
+  analyticsMonthLabel: $("dash-analytics-month-label"),
+  analyticsTableBody: $("dash-analytics-table-body"),
 
-  /* Confirmation */
-  confirmDialog: $("dash-confirm"),
-  confirmText: $("dash-confirm-text"),
-  confirmAction: $("dash-confirm-action"),
+  loadingOverlay: $("dash-loading-overlay"),
+  loadingTitle: $("dash-loading-title"),
+  loadingMessage: $("dash-loading-message"),
 
-  /* Success */
-  successDialog: $("dash-success"),
-  successMeta: $("dash-success-meta"),
-  successLink: $("dash-success-link"),
+  successModal: $("dash-success-modal"),
+  successClose: $("dash-success-close"),
+  successMessage: $("dash-success-message"),
+  successNormalUrl: $("dash-success-normal-url"),
+  successUrl: $("dash-success-url"),
   successCopy: $("dash-success-copy"),
-  successCopyStatus: $("dash-success-copy-status"),
-  successOpen: $("dash-success-open"),
+  successBattleUrl: $("dash-success-battle-url"),
+  successBattleDirectUrl: $("dash-success-battle-direct-url"),
+  successBattleCopy: $("dash-success-battle-copy"),
+  successBattleOpen: $("dash-success-battle-open"),
+  successView: $("dash-success-view"),
+  successDone: $("dash-success-done"),
 
-  /* Edit delivery */
-  editDialog: $("dash-edit"),
+  editModal: $("dash-edit-modal"),
+  editClose: $("dash-edit-close"),
   editForm: $("dash-edit-form"),
-  editProjectName: $("edit-project-name"),
-  editClientName: $("edit-client-name"),
-  editNotes: $("edit-notes"),
-  editExpiry: $("edit-expiry"),
+  editId: $("dash-edit-id"),
+  editClientName: $("dash-edit-client-name"),
+  editProjectName: $("dash-edit-project-name"),
+  editSource: $("dash-edit-source"),
+  editRedditFields: $("dash-edit-reddit-fields"),
+  editRedditUrl: $("dash-edit-reddit-url"),
+  editNotes: $("dash-edit-notes"),
   editError: $("dash-edit-error"),
+  editCancel: $("dash-edit-cancel"),
   editSave: $("dash-edit-save"),
-  editCancel: $("dash-edit-cancel")
 
+  deleteModal: $("dash-delete-modal"),
+  deleteClose: $("dash-delete-close"),
+  deleteSummary: $("dash-delete-summary"),
+  deleteError: $("dash-delete-error"),
+  deleteCancel: $("dash-delete-cancel"),
+  deleteConfirm: $("dash-delete-confirm"),
+
+  toast: $("dash-toast"),
+  toastIcon: $("dash-toast-icon"),
+  toastMessage: $("dash-toast-message")
 };
-
 
 /* =========================================================
    STATE
 ========================================================= */
 
 let deliveries = [];
-let selectedFiles = [];
-let pendingConfirmAction = null;
-let authListener = null;
-let editingDelivery = null;
+let currentTab = "overview";
+let editingId = null;
+let pendingDeleteId = null;
+let createSaving = false;
 let editSaving = false;
+let deleteWorking = false;
+let selectedFile = null;
+let toastTimer = null;
 
+const SOURCE_LABELS = {
+  private: "Private Client",
+  paid: "Paid Client",
+  free: "Free Edit",
+  returning: "Returning Client",
+  other: "Other",
+  reddit: "Reddit",
+  photoshop_battles: "PhotoshopBattles"
+};
+
+const BATTLE_EXTENSIONS = ["jpg", "jpeg", "png"];
 
 /* =========================================================
-   CONSTANTS
+   PHOTOSHOP BATTLES — source <-> UI value mapping
+   ---------------------------------------------------------
+   A battle delivery is stored as a completely ordinary row:
+   source = "reddit", source_meta = { type: "photoshop_battles",
+   direct_token, redditUrl? }. This is what the deployed
+   photoshop-battles-image edge function already checks for, so
+   the create/edit UI just needs to translate its single
+   "photoshop_battles" radio value to/from those two real columns.
 ========================================================= */
 
-const MAX_FILES = 30;
+function isBattle(delivery) {
+  return (
+    delivery?.source === "reddit" &&
+    delivery?.source_meta?.type === "photoshop_battles"
+  );
+}
 
-const TAB_STORAGE_KEY =
-  "boztik-deliver-dashboard-tab";
+function uiSourceOf(delivery) {
+  if (isBattle(delivery)) return "photoshop_battles";
+  return delivery?.source || "private";
+}
 
+function sourceLabelOf(delivery) {
+  return SOURCE_LABELS[uiSourceOf(delivery)] || "Other";
+}
+
+function battleDirectUrl(delivery) {
+  if (!isBattle(delivery)) return null;
+
+  const token = delivery.source_meta?.direct_token;
+  if (!token) return null;
+
+  const fileName =
+    delivery.file_name ||
+    delivery.delivery_files?.[0]?.file_name ||
+    "";
+
+  const rawExt = fileName.split(".").pop()?.toLowerCase() || "jpg";
+  const ext = rawExt === "jpeg" ? "jpg" : (BATTLE_EXTENSIONS.includes(rawExt) ? rawExt : "jpg");
+
+  return `${config.supabaseUrl}/functions/v1/photoshop-battles-image/${encodeURIComponent(delivery.id)}--${encodeURIComponent(token)}.${ext}`;
+}
 
 /* =========================================================
-   AUTHENTICATION UI
+   TOAST
 ========================================================= */
 
-function showLogin() {
+function showToast(message, kind = "success") {
+  if (!els.toast) return;
 
-  if (els.loginView) {
-    els.loginView.hidden = false;
-  }
+  clearTimeout(toastTimer);
 
-  if (els.mainView) {
-    els.mainView.hidden = true;
-  }
+  els.toast.hidden = false;
+  els.toast.classList.remove("is-error", "is-success");
+  els.toast.classList.add(kind === "error" ? "is-error" : "is-success");
 
-  if (els.logout) {
-    els.logout.hidden = true;
-  }
+  if (els.toastIcon) els.toastIcon.textContent = kind === "error" ? "!" : "✓";
+  if (els.toastMessage) els.toastMessage.textContent = message;
 
+  requestAnimationFrame(() => els.toast.classList.add("is-visible"));
+
+  toastTimer = setTimeout(() => {
+    els.toast.classList.remove("is-visible");
+    setTimeout(() => { els.toast.hidden = true; }, 250);
+  }, 4200);
 }
 
+/* =========================================================
+   LOADING OVERLAY
+========================================================= */
 
-function showDashboard() {
-
-  if (els.loginView) {
-    els.loginView.hidden = true;
-  }
-
-  if (els.mainView) {
-    els.mainView.hidden = false;
-  }
-
-  if (els.logout) {
-    els.logout.hidden = false;
-  }
-
+function showLoading(title = "Working…", message = "Please wait.") {
+  if (!els.loadingOverlay) return;
+  if (els.loadingTitle) els.loadingTitle.textContent = title;
+  if (els.loadingMessage) els.loadingMessage.textContent = message;
+  els.loadingOverlay.hidden = false;
+  els.loadingOverlay.setAttribute("aria-hidden", "false");
 }
 
+function hideLoading() {
+  if (!els.loadingOverlay) return;
+  els.loadingOverlay.hidden = true;
+  els.loadingOverlay.setAttribute("aria-hidden", "true");
+}
+
+/* =========================================================
+   MODAL HELPERS (plain div overlays, not <dialog>)
+========================================================= */
+
+function openModal(modalEl) {
+  if (!modalEl) return;
+  modalEl.hidden = false;
+  modalEl.setAttribute("aria-hidden", "false");
+  document.body.classList.add("dash-modal-open");
+}
+
+function closeModal(modalEl) {
+  if (!modalEl) return;
+  modalEl.hidden = true;
+  modalEl.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("dash-modal-open");
+}
+
+function wireModalDismiss(modalEl, closeBtn, onClose) {
+  if (!modalEl) return;
+
+  closeBtn?.addEventListener("click", () => onClose());
+
+  const backdrop = modalEl.querySelector(".dash-modal-backdrop");
+  backdrop?.addEventListener("click", () => onClose());
+
+  modalEl.addEventListener("keydown", event => {
+    if (event.key === "Escape") onClose();
+  });
+}
+
+/* =========================================================
+   AUTH
+========================================================= */
+
+function showLoginView() {
+  if (els.loginView) els.loginView.hidden = false;
+  if (els.mainView) els.mainView.hidden = true;
+  if (els.logoutLink) els.logoutLink.hidden = true;
+}
+
+function showDashboardView() {
+  if (els.loginView) els.loginView.hidden = true;
+  if (els.mainView) els.mainView.hidden = false;
+  if (els.logoutLink) els.logoutLink.hidden = false;
+}
 
 function setLoginError(message = "") {
-
-  if (!els.loginError) {
-    return;
-  }
-
+  if (!els.loginError) return;
   els.loginError.textContent = message;
   els.loginError.hidden = !message;
-
 }
 
-
-function setLoginLoading(loading) {
-
-  if (!els.loginButton) {
-    return;
-  }
-
-  els.loginButton.disabled = loading;
-
-  els.loginButton.textContent =
-    loading
-      ? "Signing in…"
-      : "Sign in";
-
-}
-
-
-/* =========================================================
-   AUTH ERROR HANDLING
-========================================================= */
-
-function friendlyAuthError(error) {
-
-  const message =
-    String(error?.message || "");
-
-  const normalized =
-    message.toLowerCase();
-
-
-  if (
-    normalized.includes("invalid login credentials") ||
-    normalized.includes("invalid credentials")
-  ) {
-
-    return (
-      "The email or password is incorrect. " +
-      "Please check your credentials and try again."
-    );
-
-  }
-
-
-  if (
-    normalized.includes("email not confirmed")
-  ) {
-
-    return (
-      "This administrator email has not been confirmed " +
-      "in Supabase."
-    );
-
-  }
-
-
-  if (
-    normalized.includes("failed to fetch") ||
-    normalized.includes("network") ||
-    normalized.includes("fetch")
-  ) {
-
-    return (
-      "Could not connect to Supabase. " +
-      "Please check your internet connection and try again."
-    );
-
-  }
-
-
-  if (
-    normalized.includes("rate limit")
-  ) {
-
-    return (
-      "Too many login attempts. Please wait a moment " +
-      "and try again."
-    );
-
-  }
-
-
-  return (
-    message ||
-    "Unable to sign in. Please try again."
-  );
-
-}
-
-
-/* =========================================================
-   LOGIN
-========================================================= */
-
-async function handleLogin(event) {
-
+async function handleLoginSubmit(event) {
   event.preventDefault();
+
+  const email = els.email?.value.trim() || "";
+  const password = els.password?.value || "";
 
   setLoginError("");
 
-  const email =
-    els.email?.value.trim() || "";
-
-  const password =
-    els.password?.value || "";
-
-
   if (!email || !password) {
-
-    setLoginError(
-      "Please enter your email and password."
-    );
-
+    setLoginError("Enter your email and password.");
     return;
-
   }
 
-
-  setLoginLoading(true);
-
+  if (els.loginBtn) {
+    els.loginBtn.disabled = true;
+    els.loginBtn.textContent = "Signing in…";
+  }
 
   try {
-
-    const client =
-      supabase();
-
-
-    const {
-      data,
-      error
-    } =
-      await client.auth.signInWithPassword({
-        email,
-        password
-      });
-
-
-    if (error) {
-      throw error;
-    }
-
-
-    if (!data?.session) {
-
-      throw new Error(
-        "Login succeeded but no active session was created."
-      );
-
-    }
-
-
-    setLoginError("");
-
-
-    if (els.password) {
-      els.password.value = "";
-    }
-
-
-    showDashboard();
-
-    await load();
-
-
+    await signIn(email, password);
+    if (els.password) els.password.value = "";
+    showDashboardView();
+    await bootstrapDashboard();
   } catch (error) {
-
-    console.error(
-      "[Boztik Deliver] Login failed:",
-      error
-    );
-
-
+    console.error("[Boztik Deliver] Sign-in failed:", error);
     setLoginError(
-      friendlyAuthError(error)
+      error?.message?.includes("Invalid login credentials")
+        ? "Incorrect email or password."
+        : (error?.message || "Sign-in failed. Please try again.")
     );
-
-
   } finally {
-
-    setLoginLoading(false);
-
+    if (els.loginBtn) {
+      els.loginBtn.disabled = false;
+      els.loginBtn.textContent = "Sign in";
+    }
   }
-
 }
-
-
-/* =========================================================
-   LOGOUT
-========================================================= */
 
 async function handleLogout(event) {
-
   event.preventDefault();
 
-
   try {
-
-    const client =
-      supabase();
-
-
-    const {
-      error
-    } =
-      await client.auth.signOut();
-
-
-    if (error) {
-      throw error;
-    }
-
-
-    deliveries = [];
-    selectedFiles = [];
-
-
-    renderFileList();
-    renderSummary();
-    renderDeliveries();
-
-
-    showLogin();
-
-    setLoginError("");
-
-
-    toast(
-      "You have been logged out."
-    );
-
-
+    await signOut();
   } catch (error) {
-
-    console.error(
-      "[Boztik Deliver] Logout failed:",
-      error
-    );
-
-
-    toast(
-      "Could not log out. Please try again.",
-      "error"
-    );
-
+    console.error("[Boztik Deliver] Sign-out failed:", error);
   }
 
+  deliveries = [];
+  showLoginView();
 }
 
+function setupAuth() {
+  els.loginForm?.addEventListener("submit", handleLoginSubmit);
+  els.logoutLink?.addEventListener("click", handleLogout);
+
+  // Session expiring/being revoked elsewhere (e.g. another tab signs out,
+  // or the token can no longer be refreshed) should return to the login
+  // screen rather than leaving a dead dashboard on screen.
+  onAuthChange(session => {
+    if (!session) {
+      showLoginView();
+    }
+  });
+}
 
 /* =========================================================
-   AUTH SESSION CHECK
+   TABS
 ========================================================= */
 
-async function initialiseAuthentication() {
+function switchTab(name) {
+  currentTab = name;
 
-  try {
+  els.tabButtons.forEach(btn => {
+    const active = btn.dataset.tab === name;
+    btn.classList.toggle("is-active", active);
+    btn.setAttribute("aria-selected", String(active));
+    btn.tabIndex = active ? 0 : -1;
+  });
 
-    const client =
-      supabase();
+  els.panels.forEach(panel => {
+    panel.hidden = panel.dataset.panel !== name;
+    panel.classList.toggle("is-active", panel.dataset.panel === name);
+  });
+}
 
+function setupTabs() {
+  els.tabButtons.forEach(btn => {
+    btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+  });
 
-    const {
-      data,
-      error
-    } =
-      await client.auth.getSession();
+  els.goTabButtons.forEach(btn => {
+    btn.addEventListener("click", () => switchTab(btn.dataset.goTab));
+  });
+}
 
+/* =========================================================
+   CREATE FORM — SOURCE SELECTION
+========================================================= */
 
-    if (error) {
-      throw error;
-    }
+function applySource(value) {
+  const known = new Set([...DELIVERY_SOURCES, "photoshop_battles"]);
+  const source = known.has(value) ? value : "private";
 
+  if (els.sourceInput) els.sourceInput.value = source;
 
-    if (data?.session) {
+  els.sourceOptions.forEach(btn => {
+    const active = btn.dataset.source === source;
+    btn.setAttribute("aria-checked", String(active));
+    btn.classList.toggle("is-selected", active);
+  });
 
-      showDashboard();
+  const isBattleMode = source === "photoshop_battles";
 
-      await load();
+  if (els.photoshopNotice) els.photoshopNotice.hidden = !isBattleMode;
+  if (els.redditFields) els.redditFields.hidden = !isBattleMode;
+  if (els.battleExpiryNote) els.battleExpiryNote.hidden = !isBattleMode;
 
-    } else {
-
-      showLogin();
-
-    }
-
-
-    /*
-      Prevent duplicate auth listeners if this function
-      is ever called again.
-    */
-
-    if (authListener) {
-      authListener.subscription.unsubscribe();
-      authListener = null;
-    }
-
-
-    authListener =
-      client.auth.onAuthStateChange(
-        async (_event, session) => {
-
-          if (session) {
-
-            showDashboard();
-
-          } else {
-
-            deliveries = [];
-
-            showLogin();
-
-            renderSummary();
-            renderDeliveries();
-
-          }
-
-        }
-      );
-
-
-  } catch (error) {
-
-    console.error(
-      "[Boztik Deliver] Authentication initialisation failed:",
-      error
-    );
-
-
-    showLogin();
-
-
-    setLoginError(
-      "Could not initialise secure login. " +
-      "Please refresh the page and try again."
-    );
-
+  if (els.clientFieldsNote) {
+    els.clientFieldsNote.textContent = isBattleMode
+      ? "Optional — for your own reference only"
+      : "Required for delivery";
   }
 
+  if (els.clientName) els.clientName.required = !isBattleMode;
+  if (els.projectName) {
+    els.projectName.required = !isBattleMode;
+    els.projectName.placeholder = isBattleMode
+      ? "e.g. Old car photo restoration (optional)"
+      : "e.g. Wedding Restoration";
+  }
+
+  // Re-validate the currently selected file against the new mode's rules.
+  if (selectedFile) validateSelectedFile(selectedFile, isBattleMode);
+
+  if (els.battleImagePreview && !isBattleMode) {
+    els.battleImagePreview.hidden = true;
+  } else if (isBattleMode && selectedFile) {
+    void renderBattlePreview(selectedFile);
+  }
 }
 
+function setupSourceSelection() {
+  const handlers = [...els.actionCards, ...els.sourceOptions];
+
+  els.actionCards.forEach(btn => {
+    btn.addEventListener("click", () => {
+      applySource(btn.dataset.createSource);
+      switchTab("create");
+    });
+  });
+
+  els.sourceOptions.forEach(btn => {
+    btn.addEventListener("click", () => applySource(btn.dataset.source));
+  });
+
+  applySource("private");
+}
 
 /* =========================================================
-   EXPIRY
+   CREATE FORM — FILE SELECTION
 ========================================================= */
 
-function isExpired(delivery) {
+function currentSource() {
+  return els.sourceInput?.value || "private";
+}
 
-  if (!delivery?.expires_at) {
+function setCreateError(message = "") {
+  if (!els.createError) return;
+  els.createError.textContent = message;
+  els.createError.hidden = !message;
+}
+
+function validateSelectedFile(file, isBattleMode) {
+  if (isBattleMode) {
+    const ext = file.name.split(".").pop()?.toLowerCase();
+    const mimeOk = !file.type || file.type === "image/jpeg" || file.type === "image/png";
+
+    if (!BATTLE_EXTENSIONS.includes(ext) || !mimeOk) {
+      setCreateError("PhotoshopBattles only supports JPG or PNG images.");
+      return false;
+    }
+
+    setCreateError("");
+    return true;
+  }
+
+  if (!isValidFile(file)) {
+    setCreateError("That file type isn't supported, or the file is too large.");
     return false;
   }
 
-
-  const timestamp =
-    new Date(
-      delivery.expires_at
-    ).getTime();
-
-
-  if (!Number.isFinite(timestamp)) {
-    return false;
-  }
-
-
-  return timestamp <= Date.now();
-
+  setCreateError("");
+  return true;
 }
 
-
-/*
- * Three-state status used for the Command Centre badge:
- * "active" (base styling), "warn" (expiring within 6 hours),
- * "expired". Always derived live from the backend expires_at
- * timestamp — never a stored/cached flag.
- */
-const EXPIRING_SOON_WINDOW_MS = 6 * 3600000;
-
-function getDeliveryStatus(delivery) {
-
-  if (!delivery?.expires_at) {
-    return { key: "active", label: "Active" };
-  }
-
-  const remainingMs =
-    new Date(delivery.expires_at).getTime() - Date.now();
-
-  if (!Number.isFinite(remainingMs) || remainingMs <= 0) {
-    return { key: "expired", label: "Expired" };
-  }
-
-  if (remainingMs <= EXPIRING_SOON_WINDOW_MS) {
-    return { key: "warn", label: "Expiring Soon" };
-  }
-
-  return { key: "active", label: "Active" };
-
-}
-
-
-/* =========================================================
-   ANALYTICS HELPERS
-========================================================= */
-
-function getMonthlyTotals(items) {
-
-  return items.reduce(
-    (totals, delivery) => {
-
-      totals.views += Number(
-        delivery.monthly_views || 0
-      );
-
-
-      totals.downloads += Number(
-        delivery.monthly_downloads || 0
-      );
-
-
-      return totals;
-
-    },
-    {
-      views: 0,
-      downloads: 0
-    }
-  );
-
-}
-
-
-function getLifetimeTotals(items) {
-
-  return items.reduce(
-    (totals, delivery) => {
-
-      totals.views += Number(
-        delivery.lifetime_views ??
-        delivery.view_count ??
-        0
-      );
-
-
-      totals.downloads += Number(
-        delivery.lifetime_downloads ??
-        delivery.download_count ??
-        0
-      );
-
-
-      return totals;
-
-    },
-    {
-      views: 0,
-      downloads: 0
-    }
-  );
-
-}
-
-
-/* =========================================================
-   SUMMARY
-========================================================= */
-
-function renderSummary() {
-
-  const total =
-    deliveries.length;
-
-
-  const expired =
-    deliveries.filter(
-      isExpired
-    ).length;
-
-
-  const active =
-    Math.max(
-      0,
-      total - expired
-    );
-
-
-  const downloads =
-    deliveries.reduce(
-      (sum, delivery) =>
-        sum +
-        Number(
-          delivery.download_count || 0
-        ),
-      0
-    );
-
-
-  const storage =
-    deliveries.reduce(
-      (sum, delivery) =>
-        sum +
-        Number(
-          delivery.file_size || 0
-        ),
-      0
-    );
-
-
-  const monthly =
-    getMonthlyTotals(
-      deliveries
-    );
-
-
-  const lifetime =
-    getLifetimeTotals(
-      deliveries
-    );
-
-
-  /* -------------------------------------------------------
-     MAIN STATISTICS
-  ------------------------------------------------------- */
-
-  if (els.activeCount) {
-    els.activeCount.textContent = active;
-  }
-
-
-  if (els.downloadCount) {
-    els.downloadCount.textContent = downloads;
-  }
-
-
-  if (els.storageUsed) {
-    els.storageUsed.textContent =
-      formatBytes(storage);
-  }
-
-
-  if (els.totalCount) {
-    els.totalCount.textContent = total;
-  }
-
-
-  /* -------------------------------------------------------
-     ANALYTICS
-  ------------------------------------------------------- */
-
-  if (els.monthlyViews) {
-    els.monthlyViews.textContent =
-      monthly.views;
-  }
-
-
-  if (els.monthlyDownloads) {
-    els.monthlyDownloads.textContent =
-      monthly.downloads;
-  }
-
-
-  if (els.lifetimeViews) {
-    els.lifetimeViews.textContent =
-      lifetime.views;
-  }
-
-
-  if (els.lifetimeDownloads) {
-    els.lifetimeDownloads.textContent =
-      lifetime.downloads;
-  }
-
-
-  /* -------------------------------------------------------
-     OVERVIEW
-  ------------------------------------------------------- */
-
-  if (els.overviewMonthlyViews) {
-    els.overviewMonthlyViews.textContent =
-      monthly.views;
-  }
-
-
-  if (els.overviewMonthlyDownloads) {
-    els.overviewMonthlyDownloads.textContent =
-      monthly.downloads;
-  }
-
-}
-
-
-/* =========================================================
-   DELIVERY URL
-========================================================= */
-
-function buildDeliveryUrl(id) {
-
-  if (!id) {
-    return "";
-  }
-
-
-  const url =
-    new URL(
-      "index.html",
-      window.location.href
-    );
-
-
-  url.searchParams.set(
-    "id",
-    id
-  );
-
-
-  return url.href;
-
-}
-
-
-/* =========================================================
-   DASHBOARD TABS
-========================================================= */
-
-function setupDashboardTabs() {
-
-  /*
-    IMPORTANT:
-
-    Current HTML uses:
-
-      data-tab="overview"
-      data-panel="overview"
-
-    NOT:
-
-      data-dash-tab
-      data-dash-panel
-  */
-
-  const tabs =
-    document.querySelectorAll(
-      "[data-tab]"
-    );
-
-
-  const panels =
-    document.querySelectorAll(
-      "[data-panel]"
-    );
-
-
-  if (!tabs.length) {
-
-    console.warn(
-      "[Boztik Deliver] No dashboard tabs found."
-    );
-
-    return;
-
-  }
-
-
-  function activateTab(tabName) {
-
-    const validTab =
-      [...tabs].some(
-        tab =>
-          tab.dataset.tab ===
-          tabName
-      );
-
-
-    if (!validTab) {
-      tabName = tabs[0]?.dataset.tab;
-    }
-
-
-    tabs.forEach(
-      tab => {
-
-        const active =
-          tab.dataset.tab ===
-          tabName;
-
-
-        tab.classList.toggle(
-          "is-active",
-          active
-        );
-
-
-        tab.setAttribute(
-          "aria-selected",
-          active
-            ? "true"
-            : "false"
-        );
-
-
-        tab.setAttribute(
-          "tabindex",
-          active
-            ? "0"
-            : "-1"
-        );
-
-      }
-    );
-
-
-    panels.forEach(
-      panel => {
-
-        const active =
-          panel.dataset.panel ===
-          tabName;
-
-
-        panel.hidden =
-          !active;
-
-
-        panel.classList.toggle(
-          "is-active",
-          active
-        );
-
-      }
-    );
-
-
-    try {
-
-      localStorage.setItem(
-        TAB_STORAGE_KEY,
-        tabName
-      );
-
-    } catch (error) {
-
-      console.warn(
-        "[Boztik Deliver] Could not save dashboard tab:",
-        error
-      );
-
-    }
-
-  }
-
-
-  tabs.forEach(
-    tab => {
-
-      tab.addEventListener(
-        "click",
-        () => {
-
-          activateTab(
-            tab.dataset.tab
-          );
-
-        }
-      );
-
-
-      /*
-        Keyboard support for the tab list.
-      */
-
-      tab.addEventListener(
-        "keydown",
-        event => {
-
-          if (
-            event.key !== "ArrowRight" &&
-            event.key !== "ArrowLeft" &&
-            event.key !== "Home" &&
-            event.key !== "End"
-          ) {
-            return;
-          }
-
-
-          event.preventDefault();
-
-
-          const tabArray =
-            [...tabs];
-
-
-          const currentIndex =
-            tabArray.indexOf(
-              tab
-            );
-
-
-          let nextIndex =
-            currentIndex;
-
-
-          if (
-            event.key ===
-            "ArrowRight"
-          ) {
-
-            nextIndex =
-              (currentIndex + 1) %
-              tabArray.length;
-
-          }
-
-
-          if (
-            event.key ===
-            "ArrowLeft"
-          ) {
-
-            nextIndex =
-              (
-                currentIndex -
-                1 +
-                tabArray.length
-              ) %
-              tabArray.length;
-
-          }
-
-
-          if (
-            event.key ===
-            "Home"
-          ) {
-
-            nextIndex = 0;
-
-          }
-
-
-          if (
-            event.key ===
-            "End"
-          ) {
-
-            nextIndex =
-              tabArray.length - 1;
-
-          }
-
-
-          const nextTab =
-            tabArray[nextIndex];
-
-
-          if (nextTab) {
-
-            activateTab(
-              nextTab.dataset.tab
-            );
-
-            nextTab.focus();
-
-          }
-
-        }
-      );
-
-    }
-  );
-
-
-  /*
-    Buttons such as:
-
-      View analytics →
-      Create a delivery
-      View all →
-      + New delivery
-
-    use data-open-tab.
-  */
-
-  document
-    .querySelectorAll(
-      "[data-open-tab]"
-    )
-    .forEach(
-      button => {
-
-        button.addEventListener(
-          "click",
-          () => {
-
-            activateTab(
-              button.dataset.openTab
-            );
-
-          }
-        );
-
-      }
-    );
-
-
-  let initialTab =
-    "overview";
-
+async function renderBattlePreview(file) {
+  if (!els.battleImagePreview || !els.battleImagePreviewImg) return;
+
+  const url = URL.createObjectURL(file);
+  els.battleImagePreviewImg.src = url;
+  els.battleImagePreview.hidden = false;
 
   try {
-
-    const savedTab =
-      localStorage.getItem(
-        TAB_STORAGE_KEY
-      );
-
-
-    if (
-      savedTab &&
-      [...tabs].some(
-        tab =>
-          tab.dataset.tab ===
-          savedTab
-      )
-    ) {
-
-      initialTab =
-        savedTab;
-
-    }
-
-  } catch (error) {
-
-    console.warn(
-      "[Boztik Deliver] Could not read saved dashboard tab:",
-      error
-    );
-
-  }
-
-
-  activateTab(
-    initialTab
-  );
-
-}
-
-
-/* =========================================================
-   FILTER / SORT
-========================================================= */
-
-function getVisibleDeliveries() {
-
-  let items =
-    [...deliveries];
-
-
-  const searchTerm =
-    els.search?.value
-      .trim()
-      .toLowerCase() ||
-    "";
-
-
-  const filter =
-    els.filter?.value ||
-    "all";
-
-
-  const sort =
-    els.sort?.value ||
-    "recent";
-
-
-  /* -------------------------------------------------------
-     SEARCH
-  ------------------------------------------------------- */
-
-  if (searchTerm) {
-
-    items =
-      items.filter(
-        delivery => {
-
-          const project =
-            String(
-              delivery.project_name || ""
-            ).toLowerCase();
-
-
-          const client =
-            String(
-              delivery.client_name || ""
-            ).toLowerCase();
-
-
-          return (
-            project.includes(
-              searchTerm
-            ) ||
-            client.includes(
-              searchTerm
-            )
-          );
-
-        }
-      );
-
-  }
-
-
-  /* -------------------------------------------------------
-     STATUS
-  ------------------------------------------------------- */
-
-  if (filter === "active") {
-
-    items =
-      items.filter(
-        delivery =>
-          !isExpired(delivery)
-      );
-
-  }
-
-
-  if (filter === "expired") {
-
-    items =
-      items.filter(
-        delivery =>
-          isExpired(delivery)
-      );
-
-  }
-
-
-  /* -------------------------------------------------------
-     SORT
-  ------------------------------------------------------- */
-
-  if (sort === "name") {
-
-    items.sort(
-      (a, b) =>
-        String(
-          a.project_name || ""
-        ).localeCompare(
-          String(
-            b.project_name || ""
-          )
-        )
-    );
-
-  }
-
-
-  if (sort === "downloads") {
-
-    items.sort(
-      (a, b) =>
-        Number(
-          b.download_count || 0
-        ) -
-        Number(
-          a.download_count || 0
-        )
-    );
-
-  }
-
-
-  if (sort === "recent") {
-
-    items.sort(
-      (a, b) =>
-        new Date(
-          b.created_at || 0
-        ).getTime() -
-        new Date(
-          a.created_at || 0
-        ).getTime()
-    );
-
-  }
-
-
-  return items;
-
-}
-
-
-/* =========================================================
-   DELIVERY CARD
-========================================================= */
-
-function renderDelivery(delivery) {
-
-  const status =
-    getDeliveryStatus(delivery);
-
-  const expired =
-    status.key === "expired";
-
-  const remainingLabel =
-    !expired && delivery.expires_at
-      ? countdown(delivery.expires_at).label
-      : null;
-
-
-  const monthlyViews =
-    Number(
-      delivery.monthly_views || 0
-    );
-
-
-  const monthlyDownloads =
-    Number(
-      delivery.monthly_downloads || 0
-    );
-
-
-  const lifetimeViews =
-    Number(
-      delivery.lifetime_views ??
-      delivery.view_count ??
-      0
-    );
-
-
-  const lifetimeDownloads =
-    Number(
-      delivery.lifetime_downloads ??
-      delivery.download_count ??
-      0
-    );
-
-
-  const fileCount =
-    Array.isArray(
-      delivery.delivery_files
-    )
-      ? (delivery.delivery_files.length || 1)
-      : 1;
-
-
-  const card =
-    document.createElement(
-      "article"
-    );
-
-
-  card.className =
-    `delivery-card${expired ? " is-expired" : ""}`;
-
-
-  card.innerHTML = `
-
-    <div class="delivery-card-header">
-
-      <div class="delivery-card-heading">
-
-        <h3 class="delivery-card-title">
-          ${escapeHtml(
-            delivery.project_name ||
-            "Untitled delivery"
-          )}
-        </h3>
-
-        <p class="delivery-card-client">
-          ${escapeHtml(
-            delivery.client_name ||
-            "Client"
-          )}
-        </p>
-
-      </div>
-
-      <span class="delivery-status${status.key !== "active" ? ` ${status.key}` : ""}">
-        <span class="status-dot" aria-hidden="true"></span>
-        ${status.label}
-      </span>
-
-    </div>
-
-
-    <div class="delivery-card-meta">
-
-      <div class="delivery-card-meta-item">
-        <span class="delivery-card-meta-label">Created</span>
-        <span class="delivery-card-meta-value" title="${formatDate(delivery.created_at)}">
-          ${formatDate(delivery.created_at)}
-        </span>
-      </div>
-
-      <div class="delivery-card-meta-item">
-        <span class="delivery-card-meta-label">${expired ? "Expired" : "Expires"}</span>
-        <span class="delivery-card-meta-value" title="${formatDate(delivery.expires_at)}">
-          ${expired ? formatDate(delivery.expires_at) : (remainingLabel || formatDate(delivery.expires_at))}
-        </span>
-      </div>
-
-      <div class="delivery-card-meta-item">
-        <span class="delivery-card-meta-label">Files</span>
-        <span class="delivery-card-meta-value">
-          ${fileCount} &middot; ${formatBytes(delivery.file_size || 0)}
-        </span>
-      </div>
-
-    </div>
-
-
-    <div class="delivery-card-analytics">
-
-      <div class="delivery-analytics-item">
-        <span class="delivery-analytics-label">Views (Month)</span>
-        <span class="delivery-analytics-value">${monthlyViews}</span>
-      </div>
-
-      <div class="delivery-analytics-item">
-        <span class="delivery-analytics-label">Downloads (Month)</span>
-        <span class="delivery-analytics-value">${monthlyDownloads}</span>
-      </div>
-
-      <div class="delivery-analytics-item">
-        <span class="delivery-analytics-label">Views (Lifetime)</span>
-        <span class="delivery-analytics-value">${lifetimeViews}</span>
-      </div>
-
-      <div class="delivery-analytics-item">
-        <span class="delivery-analytics-label">Downloads (Lifetime)</span>
-        <span class="delivery-analytics-value">${lifetimeDownloads}</span>
-      </div>
-
-    </div>
-
-
-    <div class="delivery-card-actions">
-
-      <button
-        type="button"
-        class="dash-btn small btn-edit-delivery"
-      >
-        Edit
-      </button>
-
-      <button
-        type="button"
-        class="dash-btn small btn-open-delivery"
-        ${expired ? "disabled" : ""}
-      >
-        Open
-      </button>
-
-
-      <button
-        type="button"
-        class="dash-btn small btn-copy-link"
-        ${expired ? "disabled" : ""}
-      >
-        Copy Link
-      </button>
-
-
-      <button
-        type="button"
-        class="dash-btn small btn-duplicate"
-      >
-        Duplicate
-      </button>
-
-
-      <button
-        type="button"
-        class="dash-btn small danger btn-delete"
-      >
-        Delete
-      </button>
-
-    </div>
-
-  `;
-
-
-  /* -------------------------------------------------------
-     EDIT DELIVERY
-  ------------------------------------------------------- */
-
-  const editButton =
-    card.querySelector(
-      ".btn-edit-delivery"
-    );
-
-
-  if (editButton) {
-
-    editButton.addEventListener(
-      "click",
-      () => {
-
-        openEditDialog(
-          delivery
-        );
-
-      }
-    );
-
-  }
-
-
-  /* -------------------------------------------------------
-     OPEN DELIVERY
-  ------------------------------------------------------- */
-
-  const openButton =
-    card.querySelector(
-      ".btn-open-delivery"
-    );
-
-
-  if (openButton && !expired) {
-
-    openButton.addEventListener(
-      "click",
-      () => {
-
-        const url =
-          buildDeliveryUrl(
-            delivery.id
-          );
-
-
-        if (!url) {
-          return;
-        }
-
-
-        /*
-          "preview=1" marks this as an internal Command Centre
-          open, not a genuine client visit. client.js checks this
-          flag and skips recordView() so admin previews never
-          inflate view analytics. This is added ONLY here — Copy
-          Link and the post-upload share link stay clean so a real
-          client's first open is always counted normally.
-        */
-
-        const previewUrl =
-          new URL(url);
-
-        previewUrl.searchParams.set(
-          "preview",
-          "1"
-        );
-
-
-        window.open(
-          previewUrl.href,
-          "_blank",
-          "noopener,noreferrer"
-        );
-
-      }
-    );
-
-  }
-
-
-  /* -------------------------------------------------------
-     COPY LINK
-  ------------------------------------------------------- */
-
-  const copyButton =
-    card.querySelector(
-      ".btn-copy-link"
-    );
-
-
-  if (copyButton && !expired) {
-
-    copyButton.addEventListener(
-      "click",
-      async event => {
-
-        const url =
-          buildDeliveryUrl(
-            delivery.id
-          );
-
-
-        if (!url) {
-          return;
-        }
-
-
-        try {
-
-          await navigator.clipboard.writeText(
-            url
-          );
-
-
-          const button =
-            event.currentTarget;
-
-
-          const original =
-            button.textContent;
-
-
-          button.textContent =
-            "Copied!";
-
-
-          setTimeout(
-            () => {
-
-              button.textContent =
-                original;
-
-            },
-            1500
-          );
-
-
-          toast(
-            "Delivery link copied."
-          );
-
-
-        } catch (error) {
-
-          console.error(
-            "[Boztik Deliver] Clipboard error:",
-            error
-          );
-
-
-          /*
-            Fallback for browsers where clipboard
-            permissions are unavailable.
-          */
-
-          const temporaryInput =
-            document.createElement(
-              "input"
-            );
-
-
-          temporaryInput.value =
-            url;
-
-
-          temporaryInput.style.position =
-            "fixed";
-
-          temporaryInput.style.opacity =
-            "0";
-
-
-          document.body.append(
-            temporaryInput
-          );
-
-
-          temporaryInput.select();
-
-
-          let copied = false;
-
-
-          try {
-
-            copied =
-              document.execCommand(
-                "copy"
-              );
-
-          } catch {
-            copied = false;
-          }
-
-
-          temporaryInput.remove();
-
-
-          toast(
-            copied
-              ? "Delivery link copied."
-              : "Could not copy the link.",
-            copied
-              ? "success"
-              : "error"
-          );
-
-        }
-
-      }
-    );
-
-  }
-
-
-  /* -------------------------------------------------------
-     DUPLICATE
-  ------------------------------------------------------- */
-
-  const duplicateButton =
-    card.querySelector(
-      ".btn-duplicate"
-    );
-
-
-  if (duplicateButton) {
-
-    duplicateButton.addEventListener(
-      "click",
-      async event => {
-
-        const button =
-          event.currentTarget;
-
-
-        button.disabled =
-          true;
-
-
-        button.textContent =
-          "Duplicating…";
-
-
-        try {
-
-          await duplicateDelivery(
-            delivery
-          );
-
-
-          toast(
-            "Delivery duplicated."
-          );
-
-
-          await load();
-
-
-        } catch (error) {
-
-          console.error(
-            "[Boztik Deliver] Duplicate failed:",
-            error
-          );
-
-
-          toast(
-            error?.message ||
-            "Could not duplicate delivery.",
-            "error"
-          );
-
-
-        } finally {
-
-          button.disabled =
-            false;
-
-
-          button.textContent =
-            "Duplicate";
-
-        }
-
-      }
-    );
-
-  }
-
-
-  /* -------------------------------------------------------
-     DELETE
-  ------------------------------------------------------- */
-
-  const deleteButton =
-    card.querySelector(
-      ".btn-delete"
-    );
-
-
-  if (deleteButton) {
-
-    deleteButton.addEventListener(
-      "click",
-      () => {
-
-        const projectName =
-          delivery.project_name ||
-          "this delivery";
-
-
-        openConfirm(
-          `Delete "${projectName}"? This cannot be undone.`,
-          async () => {
-
-            try {
-
-              await deleteDelivery(
-                delivery
-              );
-
-
-              toast(
-                "Delivery deleted."
-              );
-
-
-              await load();
-
-
-            } catch (error) {
-
-              console.error(
-                "[Boztik Deliver] Delete failed:",
-                error
-              );
-
-
-              toast(
-                error?.message ||
-                "Could not delete delivery.",
-                "error"
-              );
-
-            }
-
-          }
-        );
-
-      }
-    );
-
-  }
-
-
-  return card;
-
-}
-
-
-/* =========================================================
-   RENDER DELIVERIES
-========================================================= */
-
-function renderDeliveries() {
-
-  if (!els.deliveriesList) {
-    return;
-  }
-
-
-  els.deliveriesList.innerHTML =
-    "";
-
-
-  const visible =
-    getVisibleDeliveries();
-
-
-  if (!visible.length) {
-
-    const empty =
-      document.createElement(
-        "div"
-      );
-
-
-    empty.className =
-      "dash-empty";
-
-
-    const heading =
-      deliveries.length
-        ? "No deliveries match your search."
-        : "No deliveries created yet.";
-
-    const detail =
-      deliveries.length
-        ? "Try adjusting your search or filters."
-        : "Create your first delivery using the form above.";
-
-
-    empty.innerHTML = `
-      <h3>${escapeHtml(heading)}</h3>
-      <p>${escapeHtml(detail)}</p>
-    `;
-
-
-    els.deliveriesList.append(
-      empty
-    );
-
-
-    return;
-
-  }
-
-
-  const fragment =
-    document.createDocumentFragment();
-
-
-  visible.forEach(
-    delivery => {
-
-      fragment.append(
-        renderDelivery(
-          delivery
-        )
-      );
-
-    }
-  );
-
-
-  els.deliveriesList.append(
-    fragment
-  );
-
-}
-
-
-/* =========================================================
-   LOAD DELIVERIES
-========================================================= */
-
-async function load() {
-
-  try {
-
-    if (els.refresh) {
-
-      els.refresh.disabled =
-        true;
-
-
-      els.refresh.textContent =
-        "Refreshing…";
-
-    }
-
-
-    const result =
-      await listDeliveries();
-
-
-    /*
-      Protect the dashboard if the API unexpectedly
-      returns null instead of an array.
-    */
-
-    deliveries =
-      Array.isArray(result)
-        ? result
-        : [];
-
-
-    renderSummary();
-
-    renderDeliveries();
-
-
-  } catch (error) {
-
-    console.error(
-      "[Boztik Deliver] Failed to load deliveries:",
-      error
-    );
-
-
-    const message =
-      String(
-        error?.message || ""
-      ).toLowerCase();
-
-
-    if (
-      message.includes("jwt") ||
-      message.includes("token") ||
-      message.includes("unauthorized") ||
-      message.includes("401")
-    ) {
-
-      toast(
-        "Your session has expired. Please sign in again.",
-        "error"
-      );
-
-
-      showLogin();
-
-      return;
-
-    }
-
-
-    toast(
-      error?.message ||
-      "Could not load deliveries. Please refresh the page.",
-      "error"
-    );
-
-
+    await getImageDimensions(url);
+  } catch {
+    // Non-fatal — the thumbnail itself still renders fine.
   } finally {
-
-    if (els.refresh) {
-
-      els.refresh.disabled =
-        false;
-
-
-      els.refresh.textContent =
-        "Refresh";
-
-    }
-
+    // Release the object URL once the browser has decoded it; a short
+    // delay avoids revoking before the <img> paints.
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
   }
-
 }
 
+function setSelectedFile(file) {
+  selectedFile = file || null;
 
-/* =========================================================
-   FILE VALIDATION
-========================================================= */
-
-function validateSelectedFiles(files) {
-
-  const incoming =
-    Array.isArray(files)
-      ? files
-      : [...files];
-
-
-  if (!incoming.length) {
+  if (!file) {
+    if (els.filePreview) els.filePreview.hidden = true;
+    if (els.battleImagePreview) els.battleImagePreview.hidden = true;
+    if (els.fileInput) els.fileInput.value = "";
     return;
   }
 
+  const isBattleMode = currentSource() === "photoshop_battles";
+  const valid = validateSelectedFile(file, isBattleMode);
 
-  if (incoming.length > MAX_FILES) {
+  if (els.fileName) els.fileName.textContent = file.name;
+  if (els.fileSize) els.fileSize.textContent = formatBytes(file.size);
+  if (els.filePreview) els.filePreview.hidden = false;
 
-    toast(
-      `You can upload a maximum of ${MAX_FILES} files.`,
-      "error"
-    );
-
-    return;
-
+  if (isBattleMode && valid) {
+    void renderBattlePreview(file);
+  } else if (els.battleImagePreview) {
+    els.battleImagePreview.hidden = true;
   }
-
-
-  const invalid =
-    incoming.find(
-      file =>
-        !isValidFile(file)
-    );
-
-
-  if (invalid) {
-
-    toast(
-      `"${invalid.name}" is not a supported file or is too large.`,
-      "error"
-    );
-
-    return;
-
-  }
-
-
-  selectedFiles =
-    incoming;
-
-
-  renderFileList();
-
 }
 
-
-/* =========================================================
-   FILE LIST / PREVIEWS
-========================================================= */
-
-function renderFileList() {
-
-  if (!els.fileList) {
-    return;
-  }
-
-
-  els.fileList.innerHTML =
-    "";
-
-
-  if (!selectedFiles.length) {
-    return;
-  }
-
-
-  const fragment =
-    document.createDocumentFragment();
-
-
-  selectedFiles.forEach(
-    file => {
-
-      const item =
-        document.createElement(
-          "li"
-        );
-
-
-      item.className =
-        "dash-file-item";
-
-
-      const isImage =
-        String(
-          file.type || ""
-        ).startsWith(
-          "image/"
-        );
-
-
-      let preview =
-        "";
-
-
-      if (isImage) {
-
-        const url =
-          URL.createObjectURL(
-            file
-          );
-
-
-        preview = `
-          <img
-            src="${url}"
-            alt=""
-            class="dash-file-preview"
-            loading="lazy"
-          >
-        `;
-
-
-        /*
-          The URL is kept alive long enough for the
-          browser to display the thumbnail.
-        */
-
-        setTimeout(
-          () => {
-
-            try {
-
-              URL.revokeObjectURL(
-                url
-              );
-
-            } catch {
-              /* Ignore cleanup errors. */
-            }
-
-          },
-          60000
-        );
-
-      }
-
-
-      item.innerHTML = `
-
-        ${preview}
-
-        <div class="dash-file-info">
-
-          <strong>
-            ${escapeHtml(
-              file.name
-            )}
-          </strong>
-
-          <span>
-            ${formatBytes(
-              file.size
-            )}
-          </span>
-
-        </div>
-
-      `;
-
-
-      fragment.append(
-        item
-      );
-
-    }
-  );
-
-
-  els.fileList.append(
-    fragment
-  );
-
-}
-
-
-/* =========================================================
-   DROPZONE
-========================================================= */
-
-function setupDropzone() {
-
-  if (
-    !els.dropzone ||
-    !els.fileInput
-  ) {
-    return;
-  }
-
-
-  els.dropzone.addEventListener(
-    "click",
-    event => {
-
-      /*
-        Avoid reopening the picker if the actual input
-        somehow receives the click.
-      */
-
-      if (
-        event.target ===
-        els.fileInput
-      ) {
-        return;
-      }
-
-
-      els.fileInput.click();
-
-    }
-  );
-
-
-  els.dropzone.addEventListener(
-    "keydown",
-    event => {
-
-      if (
-        event.key === "Enter" ||
-        event.key === " "
-      ) {
-
-        event.preventDefault();
-
-        els.fileInput.click();
-
-      }
-
-    }
-  );
-
-
-  els.dropzone.addEventListener(
-    "dragover",
-    event => {
-
+function setupFileSelection() {
+  els.uploadZone?.addEventListener("click", () => els.fileInput?.click());
+
+  els.uploadZone?.addEventListener("keydown", event => {
+    if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-
-      event.dataTransfer.dropEffect =
-        "copy";
-
-
-      els.dropzone.classList.add(
-        "is-dragging"
-      );
-
+      els.fileInput?.click();
     }
-  );
+  });
 
+  els.uploadZone?.addEventListener("dragover", event => {
+    event.preventDefault();
+    els.uploadZone.classList.add("is-dragover");
+  });
 
-  els.dropzone.addEventListener(
-    "dragleave",
-    event => {
+  els.uploadZone?.addEventListener("dragleave", () => {
+    els.uploadZone.classList.remove("is-dragover");
+  });
 
-      /*
-        Only remove the state when the pointer
-        actually leaves the dropzone.
-      */
+  els.uploadZone?.addEventListener("drop", event => {
+    event.preventDefault();
+    els.uploadZone.classList.remove("is-dragover");
+    const file = event.dataTransfer?.files?.[0];
+    if (file) setSelectedFile(file);
+  });
 
-      if (
-        !els.dropzone.contains(
-          event.relatedTarget
-        )
-      ) {
+  els.fileInput?.addEventListener("change", () => {
+    const file = els.fileInput.files?.[0];
+    if (file) setSelectedFile(file);
+  });
 
-        els.dropzone.classList.remove(
-          "is-dragging"
-        );
-
-      }
-
-    }
-  );
-
-
-  els.dropzone.addEventListener(
-    "drop",
-    event => {
-
-      event.preventDefault();
-
-
-      els.dropzone.classList.remove(
-        "is-dragging"
-      );
-
-
-      const files =
-        [...(
-          event.dataTransfer?.files ||
-          []
-        )];
-
-
-      validateSelectedFiles(
-        files
-      );
-
-    }
-  );
-
-
-  els.fileInput.addEventListener(
-    "change",
-    () => {
-
-      validateSelectedFiles(
-        [...els.fileInput.files]
-      );
-
-
-      /*
-        Allows selecting the same file again
-        after removing/replacing it.
-      */
-
-      els.fileInput.value =
-        "";
-
-    }
-  );
-
+  els.fileRemove?.addEventListener("click", () => setSelectedFile(null));
 }
 
-
 /* =========================================================
-   UPLOAD
+   CREATE FORM — SUBMIT
 ========================================================= */
 
-async function handleUpload(event) {
+function setCreateSaving(saving) {
+  createSaving = saving;
 
+  if (els.createSubmit) els.createSubmit.disabled = saving;
+  if (els.createSubmitLabel) {
+    els.createSubmitLabel.textContent = saving ? "Creating…" : "Create Delivery";
+  }
+  if (els.createSubmitSpinner) els.createSubmitSpinner.hidden = !saving;
+}
+
+function resetCreateForm() {
+  els.createForm?.reset();
+  setSelectedFile(null);
+  setCreateError("");
+  applySource("private");
+}
+
+async function handleCreateSubmit(event) {
   event.preventDefault();
 
+  if (createSaving) return;
 
-  if (!selectedFiles.length) {
+  const source = currentSource();
+  const isBattleMode = source === "photoshop_battles";
 
-    toast(
-      "Please select at least one file.",
-      "error"
-    );
+  setCreateError("");
 
+  if (!selectedFile) {
+    setCreateError("Please choose a file to upload.");
     return;
-
   }
 
-
-  const clientName =
-    els.clientName?.value.trim() ||
-    "";
-
-
-  const projectName =
-    els.projectName?.value.trim() ||
-    "";
-
-
-  const notes =
-    els.notes?.value.trim() ||
-    "";
-
-
-  const expiryHours =
-    Number(
-      els.expiry?.value ||
-      config.defaultExpiryHours
-    );
-
-
-  if (
-    !clientName ||
-    !projectName
-  ) {
-
-    toast(
-      "Please enter the client name and project title.",
-      "error"
-    );
-
+  if (!validateSelectedFile(selectedFile, isBattleMode)) {
     return;
-
   }
 
+  const clientNameRaw = els.clientName?.value.trim() || "";
+  const projectNameRaw = els.projectName?.value.trim() || "";
+  const notesRaw = els.notes?.value.trim() || "";
+  const redditUrlRaw = els.redditUrl?.value.trim() || "";
+  const hours = Number(els.expirySelect?.value || config.defaultExpiryHours);
 
-  if (
-    !Number.isFinite(
-      expiryHours
-    ) ||
-    expiryHours <= 0
-  ) {
-
-    toast(
-      "Please select a valid expiry period.",
-      "error"
-    );
-
-    return;
-
+  if (!isBattleMode) {
+    if (!clientNameRaw) { setCreateError("Please enter a client name."); return; }
+    if (!projectNameRaw) { setCreateError("Please enter a project name."); return; }
   }
 
-
-  const id =
-    deliveryId();
-
-
-  const expiresAt =
-    new Date(
-      Date.now() +
-      expiryHours *
-      60 *
-      60 *
-      1000
-    ).toISOString();
-
+  const id = deliveryId();
 
   const metadata = {
-
     id,
-
-    client_name:
-      clientName,
-
-    project_name:
-      projectName,
-
-    notes,
-
-    expires_at:
-      expiresAt
-
+    client_name: clientNameRaw || "PhotoshopBattles",
+    project_name: projectNameRaw || selectedFile.name.replace(/\.[^.]+$/, ""),
+    notes: notesRaw || null,
+    expires_at: new Date(Date.now() + hours * 3600000).toISOString()
   };
 
+  if (isBattleMode) {
+    metadata.source = "reddit";
+    metadata.source_meta = {
+      type: "photoshop_battles",
+      direct_token: crypto.randomUUID().replace(/-/g, ""),
+      ...(redditUrlRaw ? { redditUrl: redditUrlRaw } : {})
+    };
+  } else {
+    metadata.source = source;
+    metadata.source_meta = null;
+  }
+
+  setCreateSaving(true);
+  showLoading("Uploading…", "Uploading your file — this may take a moment.");
 
   try {
+    await createDelivery(metadata, [selectedFile], () => {
+      showLoading("Finishing up…", "Saving delivery details.");
+    });
 
-    if (els.uploadButton) {
+    const created = { ...metadata, file_name: selectedFile.name, file_size: selectedFile.size };
+    showSuccessModal(created);
 
-      els.uploadButton.disabled =
-        true;
-
-
-      els.uploadButton.textContent =
-        "Uploading…";
-
-    }
-
-
-    if (els.progress) {
-
-      els.progress.hidden =
-        false;
-
-    }
-
-
-    if (els.progressBar) {
-
-      els.progressBar.style.width =
-        "0%";
-
-    }
-
-
-    await createDelivery(
-      metadata,
-      selectedFiles,
-      progress => {
-
-        const safeProgress =
-          Math.max(
-            0,
-            Math.min(
-              1,
-              Number(progress) || 0
-            )
-          );
-
-
-        if (els.progressBar) {
-
-          els.progressBar.style.width =
-            `${Math.round(
-              safeProgress * 100
-            )}%`;
-
-        }
-
-      }
-    );
-
-
-    const url =
-      buildDeliveryUrl(
-        id
-      );
-
-
-    if (els.successMeta) {
-
-      els.successMeta.textContent =
-        `${projectName} for ${clientName}`;
-
-    }
-
-
-    if (els.successLink) {
-
-      els.successLink.value =
-        url;
-
-    }
-
-
-    if (els.successOpen) {
-
-      /*
-        Same admin-preview marker as the delivery card's Open
-        button — this "Open" link is also an internal Command
-        Centre action (verifying the delivery you just created),
-        not a client visit, so it must not count as a view either.
-      */
-
-      const previewUrl =
-        new URL(url);
-
-      previewUrl.searchParams.set(
-        "preview",
-        "1"
-      );
-
-      els.successOpen.href =
-        previewUrl.href;
-
-    }
-
-
-    if (els.successCopyStatus) {
-
-      els.successCopyStatus.hidden =
-        true;
-
-      els.successCopyStatus.textContent =
-        "";
-
-    }
-
-
-    if (
-      els.successDialog &&
-      typeof els.successDialog.showModal ===
-        "function"
-    ) {
-
-      els.successDialog.showModal();
-
-    }
-
-
-    toast(
-      "Delivery created successfully."
-    );
-
-
-    if (els.uploadForm) {
-      els.uploadForm.reset();
-    }
-
-
-    selectedFiles = [];
-
-
-    renderFileList();
-
-
-    await load();
-
+    resetCreateForm();
+    await loadDeliveries();
 
   } catch (error) {
-
-    console.error(
-      "[Boztik Deliver] Upload failed:",
-      error
-    );
-
-
-    toast(
-      error?.message ||
-      "Could not create the delivery.",
-      "error"
-    );
-
-
+    console.error("[Boztik Deliver] createDelivery failed:", error);
+    setCreateError(error?.message || "Could not create this delivery. Please try again.");
   } finally {
-
-    if (els.progress) {
-
-      els.progress.hidden =
-        true;
-
-    }
-
-
-    if (els.progressBar) {
-
-      els.progressBar.style.width =
-        "0%";
-
-    }
-
-
-    if (els.uploadButton) {
-
-      els.uploadButton.disabled =
-        false;
-
-
-      els.uploadButton.textContent =
-        "Generate secure delivery";
-
-    }
-
+    setCreateSaving(false);
+    hideLoading();
   }
-
 }
 
+function setupCreateForm() {
+  els.createForm?.addEventListener("submit", handleCreateSubmit);
+  els.overviewCreateBtn?.addEventListener("click", () => switchTab("create"));
+  els.deliveriesCreate?.addEventListener("click", () => switchTab("create"));
+}
 
 /* =========================================================
-   EDIT DELIVERY DIALOG
+   SUCCESS MODAL
 ========================================================= */
 
-/*
- * Converts an ISO timestamp into the local "YYYY-MM-DDTHH:mm"
- * string a <input type="datetime-local"> expects. Uses local
- * getters (not UTC) so it round-trips through the same Date +
- * toISOString() pattern already used by the create-delivery form —
- * no second timezone system is introduced.
- */
-function toDatetimeLocalValue(isoString) {
+function showSuccessModal(delivery) {
+  const url = deliveryLink(delivery.id);
+  const battle = isBattle(delivery);
 
-  const date =
-    new Date(isoString);
-
-
-  if (Number.isNaN(date.getTime())) {
-    return "";
+  if (els.successMessage) {
+    els.successMessage.textContent = battle
+      ? "Your PhotoshopBattles image is ready. Copy the direct URL below into Reddit."
+      : "Your delivery is ready to share.";
   }
 
+  if (els.successUrl) els.successUrl.value = url;
+  if (els.successNormalUrl) els.successNormalUrl.hidden = false;
 
-  const pad =
-    value => String(value).padStart(2, "0");
+  if (battle) {
+    const directUrl = battleDirectUrl(delivery);
+    if (els.successBattleDirectUrl) els.successBattleDirectUrl.value = directUrl || "";
+    if (els.successBattleOpen) els.successBattleOpen.href = directUrl || "#";
+    if (els.successBattleUrl) els.successBattleUrl.hidden = false;
+  } else if (els.successBattleUrl) {
+    els.successBattleUrl.hidden = true;
+  }
 
+  if (els.successView) els.successView.onclick = () => window.open(url, "_blank", "noopener,noreferrer");
 
-  return (
-    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
-    `T${pad(date.getHours())}:${pad(date.getMinutes())}`
-  );
-
+  openModal(els.successModal);
 }
 
+async function copyToClipboard(value, label = "Link") {
+  if (!value) return;
+
+  try {
+    await navigator.clipboard.writeText(value);
+    showToast(`${label} copied.`);
+  } catch (error) {
+    console.error("[Boztik Deliver] Clipboard write failed:", error);
+    showToast("Could not copy — please copy it manually.", "error");
+  }
+}
+
+function setupSuccessModal() {
+  const close = () => closeModal(els.successModal);
+
+  wireModalDismiss(els.successModal, els.successClose, close);
+  els.successDone?.addEventListener("click", close);
+
+  els.successCopy?.addEventListener("click", () => copyToClipboard(els.successUrl?.value, "Delivery link"));
+  els.successBattleCopy?.addEventListener("click", () => copyToClipboard(els.successBattleDirectUrl?.value, "Direct image URL"));
+}
+
+/* =========================================================
+   OVERVIEW / STATS
+========================================================= */
+
+function computeTotals(list) {
+  return list.reduce((totals, delivery) => {
+    totals.monthlyViews += Number(delivery.monthly_views || 0);
+    totals.monthlyDownloads += Number(delivery.monthly_downloads || 0);
+    totals.lifetimeViews += Number(delivery.lifetime_views || 0);
+    totals.lifetimeDownloads += Number(delivery.lifetime_downloads || 0);
+    return totals;
+  }, { monthlyViews: 0, monthlyDownloads: 0, lifetimeViews: 0, lifetimeDownloads: 0 });
+}
+
+function activeCount(list) {
+  const now = Date.now();
+  return list.filter(d => d.expires_at && new Date(d.expires_at).getTime() > now).length;
+}
+
+function renderOverview() {
+  const totals = computeTotals(deliveries);
+
+  if (els.statActive) els.statActive.textContent = activeCount(deliveries);
+  if (els.statMonthlyViews) els.statMonthlyViews.textContent = totals.monthlyViews;
+  if (els.statMonthlyDownloads) els.statMonthlyDownloads.textContent = totals.monthlyDownloads;
+  if (els.statLifetimeViews) els.statLifetimeViews.textContent = totals.lifetimeViews;
+  if (els.statLifetimeDownloads) els.statLifetimeDownloads.textContent = totals.lifetimeDownloads;
+
+  renderRecentDeliveries();
+  renderActivity();
+}
+
+function emptyState(icon, title, body) {
+  const el = document.createElement("div");
+  el.className = "dash-empty-state compact";
+  el.innerHTML = `
+    <span class="dash-empty-icon">${icon}</span>
+    ${title ? `<h4>${escapeHtml(title)}</h4>` : ""}
+    <p>${escapeHtml(body)}</p>
+  `;
+  return el;
+}
+
+function renderRecentDeliveries() {
+  if (!els.overviewRecent) return;
+  els.overviewRecent.innerHTML = "";
+
+  if (!deliveries.length) {
+    els.overviewRecent.append(emptyState("▣", "", "No deliveries yet."));
+    return;
+  }
+
+  deliveries.slice(0, 5).forEach(delivery => {
+    const row = document.createElement("div");
+    row.className = "dash-recent-item";
+
+    const expired = delivery.expires_at && new Date(delivery.expires_at).getTime() <= Date.now();
+
+    row.innerHTML = `
+      <div class="dash-recent-item-main">
+        <strong>${escapeHtml(delivery.project_name || "Untitled")}</strong>
+        <span>${escapeHtml(delivery.client_name || "")}</span>
+      </div>
+      <span class="dash-status-pill ${expired ? "is-expired" : "is-active"}">
+        ${expired ? "Expired" : "Active"}
+      </span>
+    `;
+
+    row.addEventListener("click", () => {
+      switchTab("deliveries");
+      if (els.deliverySearch) {
+        els.deliverySearch.value = delivery.project_name || delivery.client_name || "";
+        renderDeliveryList();
+      }
+    });
+
+    els.overviewRecent.append(row);
+  });
+}
+
+function renderActivity() {
+  if (!els.overviewActivity) return;
+  els.overviewActivity.innerHTML = "";
+
+  const events = [];
+
+  for (const delivery of deliveries) {
+    if (delivery.last_viewed_at) {
+      events.push({ type: "view", delivery, at: delivery.last_viewed_at });
+    }
+    if (delivery.last_downloaded_at) {
+      events.push({ type: "download", delivery, at: delivery.last_downloaded_at });
+    }
+  }
+
+  events.sort((a, b) => new Date(b.at) - new Date(a.at));
+
+  if (els.activityStatus) els.activityStatus.textContent = "Live";
+
+  if (!events.length) {
+    els.overviewActivity.append(emptyState("◉", "", "No activity yet."));
+    return;
+  }
+
+  events.slice(0, 8).forEach(event => {
+    const row = document.createElement("div");
+    row.className = "dash-activity-item";
+    row.innerHTML = `
+      <span class="dash-activity-icon">${event.type === "download" ? "↓" : "◉"}</span>
+      <div class="dash-activity-item-main">
+        <strong>${escapeHtml(event.delivery.project_name || "Untitled")}</strong>
+        <span>${event.type === "download" ? "Downloaded" : "Viewed"} · ${formatDate(event.at)}</span>
+      </div>
+    `;
+    els.overviewActivity.append(row);
+  });
+}
+
+/* =========================================================
+   DELIVERIES TAB
+========================================================= */
+
+function filteredDeliveries() {
+  const query = (els.deliverySearch?.value || "").trim().toLowerCase();
+  const sourceFilter = els.sourceFilter?.value || "all";
+  const statusFilter = els.statusFilter?.value || "all";
+  const now = Date.now();
+
+  return deliveries.filter(delivery => {
+    if (query) {
+      const haystack = `${delivery.project_name || ""} ${delivery.client_name || ""} ${delivery.id || ""}`.toLowerCase();
+      if (!haystack.includes(query)) return false;
+    }
+
+    if (sourceFilter !== "all" && uiSourceOf(delivery) !== sourceFilter) return false;
+
+    if (statusFilter !== "all") {
+      const expired = delivery.expires_at && new Date(delivery.expires_at).getTime() <= now;
+      if (statusFilter === "active" && expired) return false;
+      if (statusFilter === "expired" && !expired) return false;
+    }
+
+    return true;
+  });
+}
+
+function renderDeliveryList() {
+  if (!els.deliveryList) return;
+
+  const list = filteredDeliveries();
+  if (els.deliveryCount) els.deliveryCount.textContent = String(list.length);
+
+  els.deliveryList.innerHTML = "";
+
+  if (!list.length) {
+    const empty = document.createElement("div");
+    empty.className = "dash-empty-state";
+    empty.innerHTML = `
+      <span class="dash-empty-icon">▣</span>
+      <h4>${deliveries.length ? "No matching deliveries" : "No deliveries yet"}</h4>
+      <p>${deliveries.length ? "Try adjusting your search or filters." : "Create your first delivery to get started."}</p>
+    `;
+
+    if (!deliveries.length) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "dash-btn primary";
+      btn.textContent = "Create Delivery";
+      btn.addEventListener("click", () => switchTab("create"));
+      empty.append(btn);
+    }
+
+    els.deliveryList.append(empty);
+    return;
+  }
+
+  list.forEach(delivery => els.deliveryList.append(renderDeliveryCard(delivery)));
+}
+
+function renderDeliveryCard(delivery) {
+  const expired = delivery.expires_at && new Date(delivery.expires_at).getTime() <= Date.now();
+  const battle = isBattle(delivery);
+  const cd = !expired && delivery.expires_at ? countdown(delivery.expires_at) : null;
+  const fileCount = Array.isArray(delivery.delivery_files) ? (delivery.delivery_files.length || 1) : 1;
+
+  const card = document.createElement("article");
+  card.className = `dash-delivery-card${expired ? " is-expired" : ""}${battle ? " is-battle" : ""}`;
+
+  card.innerHTML = `
+    <div class="dash-delivery-card-top">
+      <div class="dash-delivery-card-heading">
+        <strong>${escapeHtml(delivery.project_name || "Untitled delivery")}</strong>
+        <span>${escapeHtml(delivery.client_name || "")}</span>
+      </div>
+      <span class="dash-status-pill ${expired ? "is-expired" : "is-active"}">
+        ${expired ? "Expired" : "Active"}
+      </span>
+    </div>
+
+    <div class="dash-delivery-card-meta">
+      <span class="dash-source-tag${battle ? " is-battle" : ""}">${escapeHtml(sourceLabelOf(delivery))}</span>
+      <span>${fileCount} file${fileCount === 1 ? "" : "s"} · ${formatBytes(delivery.file_size || 0)}</span>
+      <span>${expired ? `Expired ${formatDate(delivery.expires_at)}` : (cd ? cd.label : formatDate(delivery.expires_at))}</span>
+    </div>
+
+    <div class="dash-delivery-card-stats">
+      <span>${Number(delivery.lifetime_views || 0)} views</span>
+      <span>${Number(delivery.lifetime_downloads || 0)} downloads</span>
+    </div>
+
+    <div class="dash-delivery-card-actions">
+      <button type="button" class="dash-btn dash-compact btn-edit">Edit</button>
+      <button type="button" class="dash-btn dash-compact btn-copy" ${expired ? "disabled" : ""}>Copy Link</button>
+      ${battle ? `<button type="button" class="dash-btn dash-compact btn-copy-direct" ${expired ? "disabled" : ""}>Copy Direct URL</button>` : ""}
+      <button type="button" class="dash-btn dash-compact btn-open" ${expired ? "disabled" : ""}>Open</button>
+      <button type="button" class="dash-btn dash-compact btn-duplicate">Duplicate</button>
+      <button type="button" class="dash-btn dash-compact danger btn-delete">Delete</button>
+    </div>
+  `;
+
+  card.querySelector(".btn-edit")?.addEventListener("click", () => openEditModal(delivery));
+
+  card.querySelector(".btn-copy")?.addEventListener("click", () => copyToClipboard(deliveryLink(delivery.id), "Delivery link"));
+
+  card.querySelector(".btn-copy-direct")?.addEventListener("click", () => copyToClipboard(battleDirectUrl(delivery), "Direct image URL"));
+
+  card.querySelector(".btn-open")?.addEventListener("click", () => {
+    const url = new URL(deliveryLink(delivery.id));
+    url.searchParams.set("preview", "1");
+    window.open(url.href, "_blank", "noopener,noreferrer");
+  });
+
+  card.querySelector(".btn-duplicate")?.addEventListener("click", async event => {
+    const btn = event.currentTarget;
+    btn.disabled = true;
+    try {
+      await duplicateDelivery(delivery);
+      showToast("Delivery duplicated.");
+      await loadDeliveries();
+    } catch (error) {
+      console.error("[Boztik Deliver] duplicateDelivery failed:", error);
+      showToast(error?.message || "Could not duplicate this delivery.", "error");
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  card.querySelector(".btn-delete")?.addEventListener("click", () => openDeleteModal(delivery));
+
+  return card;
+}
+
+function setupDeliveriesTab() {
+  els.deliverySearch?.addEventListener("input", renderDeliveryList);
+  els.sourceFilter?.addEventListener("change", renderDeliveryList);
+  els.statusFilter?.addEventListener("change", renderDeliveryList);
+  els.deliveriesRefresh?.addEventListener("click", () => loadDeliveries());
+}
+
+/* =========================================================
+   EDIT MODAL
+========================================================= */
 
 function setEditError(message = "") {
-
-  if (!els.editError) {
-    return;
-  }
-
+  if (!els.editError) return;
   els.editError.textContent = message;
   els.editError.hidden = !message;
-
 }
-
 
 function setEditSaving(saving) {
-
   editSaving = saving;
-
   if (els.editSave) {
-
     els.editSave.disabled = saving;
-
-    els.editSave.textContent =
-      saving ? "Saving…" : "Save Changes";
-
+    els.editSave.textContent = saving ? "Saving…" : "Save Changes";
   }
-
-  if (els.editCancel) {
-    els.editCancel.disabled = saving;
-  }
-
+  if (els.editCancel) els.editCancel.disabled = saving;
 }
 
-
-function closeEditDialog() {
-
-  if (els.editDialog?.open) {
-    els.editDialog.close();
-  }
-
-  editingDelivery = null;
-
+function applyEditSourceFieldVisibility() {
+  const battleMode = els.editSource?.value === "photoshop_battles";
+  if (els.editRedditFields) els.editRedditFields.hidden = !battleMode;
 }
 
-
-function openEditDialog(delivery) {
-
-  if (!els.editDialog || !delivery) {
-    return;
-  }
-
-  editingDelivery = delivery;
-
+function openEditModal(delivery) {
+  editingId = delivery.id;
   setEditError("");
   setEditSaving(false);
 
-  if (els.editProjectName) {
-    els.editProjectName.value = delivery.project_name || "";
-  }
+  if (els.editId) els.editId.value = delivery.id;
+  if (els.editClientName) els.editClientName.value = delivery.client_name || "";
+  if (els.editProjectName) els.editProjectName.value = delivery.project_name || "";
+  if (els.editSource) els.editSource.value = uiSourceOf(delivery);
+  if (els.editRedditUrl) els.editRedditUrl.value = delivery.source_meta?.redditUrl || "";
+  if (els.editNotes) els.editNotes.value = delivery.notes || "";
 
-  if (els.editClientName) {
-    els.editClientName.value = delivery.client_name || "";
-  }
-
-  if (els.editNotes) {
-    els.editNotes.value = delivery.notes || "";
-  }
-
-  if (els.editExpiry) {
-    els.editExpiry.value = toDatetimeLocalValue(delivery.expires_at);
-  }
-
-  if (typeof els.editDialog.showModal === "function") {
-    els.editDialog.showModal();
-  }
-
+  applyEditSourceFieldVisibility();
+  openModal(els.editModal);
 }
 
+function closeEditModal() {
+  closeModal(els.editModal);
+  editingId = null;
+}
 
 async function handleEditSubmit(event) {
-
   event.preventDefault();
+  if (editSaving || !editingId) return;
 
-
-  /* Guard against duplicate submissions (double-click, Enter + click). */
-  if (editSaving || !editingDelivery) {
-    return;
-  }
-
-
-  const projectName =
-    els.editProjectName?.value.trim() || "";
-
-  const clientName =
-    els.editClientName?.value.trim() || "";
-
-  const notes =
-    els.editNotes?.value.trim() || "";
-
-  const expiryRaw =
-    els.editExpiry?.value || "";
-
+  const clientNameRaw = els.editClientName?.value.trim() || "";
+  const projectNameRaw = els.editProjectName?.value.trim() || "";
+  const uiSource = els.editSource?.value || "private";
+  const notesRaw = els.editNotes?.value.trim() || "";
+  const redditUrlRaw = els.editRedditUrl?.value.trim() || "";
 
   setEditError("");
 
+  if (!clientNameRaw) { setEditError("Please enter a client name."); return; }
+  if (!projectNameRaw) { setEditError("Please enter a project name."); return; }
 
-  if (!projectName) {
-    setEditError("Please enter a delivery name.");
-    return;
-  }
+  const existing = deliveries.find(d => d.id === editingId);
 
-  if (!clientName) {
-    setEditError("Please enter a client name.");
-    return;
-  }
-
-  if (!expiryRaw) {
-    setEditError("Please choose an expiry date and time.");
-    return;
-  }
-
-
-  const expiryDate =
-    new Date(expiryRaw);
-
-
-  if (Number.isNaN(expiryDate.getTime())) {
-    setEditError("That expiry date/time isn't valid.");
-    return;
-  }
-
-
-  const expiresAtIso =
-    expiryDate.toISOString();
-
-  const isPastExpiry =
-    expiryDate.getTime() <= Date.now();
-
-  const targetId =
-    editingDelivery.id;
-
-
-  const applyUpdate = async () => {
-
-    setEditSaving(true);
-
-    try {
-
-      const updated =
-        await updateDelivery(
-          targetId,
-          {
-            project_name: projectName,
-            client_name: clientName,
-            notes: notes || null,
-            expires_at: expiresAtIso
-          }
-        );
-
-
-      const index =
-        deliveries.findIndex(
-          d => d.id === targetId
-        );
-
-
-      if (index !== -1) {
-
-        deliveries[index] = {
-          ...deliveries[index],
-          ...updated
-        };
-
-      }
-
-
-      renderSummary();
-      renderDeliveries();
-
-
-      toast(
-        "Delivery updated successfully."
-      );
-
-
-      closeEditDialog();
-
-
-    } catch (error) {
-
-      console.error(
-        "[Boztik Deliver] Update failed:",
-        error
-      );
-
-
-      const message =
-        String(error?.message || "").toLowerCase();
-
-
-      if (
-        message.includes("jwt") ||
-        message.includes("token") ||
-        message.includes("unauthorized") ||
-        message.includes("401")
-      ) {
-
-        toast(
-          "Your session has expired. Please sign in again.",
-          "error"
-        );
-
-
-        closeEditDialog();
-        showLogin();
-
-        return;
-
-      }
-
-
-      setEditError(
-        error?.message ||
-        "Could not save changes. Please try again."
-      );
-
-
-      setEditSaving(false);
-
-    }
-
+  const updates = {
+    client_name: clientNameRaw,
+    project_name: projectNameRaw,
+    notes: notesRaw || null
   };
 
-
-  if (isPastExpiry) {
-
-    /*
-      Confirm before letting an edit silently expire the delivery —
-      the dash-edit dialog stays open underneath so the person lands
-      back on the form (with the error, if any) if this is cancelled.
-    */
-
-    openConfirm(
-      "This expiry date/time is in the past, so the delivery will " +
-      "expire immediately once saved. Continue?",
-      applyUpdate
-    );
-
-    return;
-
+  if (uiSource === "photoshop_battles") {
+    updates.source = "reddit";
+    updates.source_meta = {
+      // Preserve the existing direct_token so the already-shared direct
+      // image URL keeps working — only ever generate a new one if this
+      // delivery wasn't a battle image before.
+      type: "photoshop_battles",
+      direct_token: isBattle(existing) ? existing.source_meta.direct_token : crypto.randomUUID().replace(/-/g, ""),
+      ...(redditUrlRaw ? { redditUrl: redditUrlRaw } : {})
+    };
+  } else {
+    updates.source = uiSource;
+    updates.source_meta = null;
   }
 
-
-  await applyUpdate();
-
-}
-
-
-function setupEditDialog() {
-
-  if (els.editForm) {
-
-    els.editForm.addEventListener(
-      "submit",
-      handleEditSubmit
-    );
-
-  }
-
-
-  if (els.editCancel) {
-
-    els.editCancel.addEventListener(
-      "click",
-      () => {
-
-        if (!editSaving) {
-          closeEditDialog();
-        }
-
-      }
-    );
-
-  }
-
-
-  /* Prevent Esc from closing the dialog mid-save. */
-  els.editDialog?.addEventListener(
-    "cancel",
-    event => {
-
-      if (editSaving) {
-        event.preventDefault();
-      }
-
-    }
-  );
-
-}
-
-
-/* =========================================================
-   CONFIRMATION DIALOG
-========================================================= */
-
-function openConfirm(
-  message,
-  action
-) {
-
-  if (
-    !els.confirmDialog ||
-    !els.confirmAction ||
-    typeof els.confirmDialog.showModal !==
-      "function"
-  ) {
-
-    const confirmed =
-      window.confirm(
-        message
-      );
-
-
-    if (confirmed) {
-
-      Promise.resolve(
-        action()
-      ).catch(
-        error => {
-
-          console.error(
-            "[Boztik Deliver] Confirmation action failed:",
-            error
-          );
-
-        }
-      );
-
-    }
-
-
-    return;
-
-  }
-
-
-  if (els.confirmText) {
-
-    els.confirmText.textContent =
-      message;
-
-  }
-
-
-  pendingConfirmAction =
-    action;
-
-
-  els.confirmDialog.showModal();
-
-}
-
-
-/* =========================================================
-   CONFIRM ACTION
-========================================================= */
-
-function setupConfirmation() {
-
-  if (!els.confirmAction) {
-    return;
-  }
-
-
-  els.confirmAction.addEventListener(
-    "click",
-    async () => {
-
-      const action =
-        pendingConfirmAction;
-
-
-      pendingConfirmAction =
-        null;
-
-
-      if (
-        els.confirmDialog &&
-        els.confirmDialog.open
-      ) {
-
-        els.confirmDialog.close();
-
-      }
-
-
-      if (!action) {
-        return;
-      }
-
-
-      try {
-
-        await action();
-
-      } catch (error) {
-
-        console.error(
-          "[Boztik Deliver] Confirmation action failed:",
-          error
-        );
-
-      }
-
-    }
-  );
-
-}
-
-
-/* =========================================================
-   SUCCESS DIALOG
-========================================================= */
-
-function setupSuccessDialog() {
-
-  if (!els.successDialog) {
-    return;
-  }
-
-
-  /*
-    Clicking outside the dialog should not accidentally
-    close it unless the browser handles that natively.
-  */
-
-  els.successDialog.addEventListener(
-    "close",
-    () => {
-
-      if (els.successCopyStatus) {
-
-        els.successCopyStatus.hidden =
-          true;
-
-      }
-
-    }
-  );
-
-  /* Opening the client page is a completed hand-off. Close the success
-     dialog immediately so it cannot remain layered over the dashboard. */
-  els.successOpen?.addEventListener("click", () => {
-    if (els.successDialog.open) els.successDialog.close();
-  });
-
-}
-
-
-/* =========================================================
-   COPY SUCCESS LINK
-========================================================= */
-
-async function copyText(value) {
-
-  if (!value) {
-    return false;
-  }
-
-
-  /*
-    Modern Clipboard API
-  */
-
-  if (
-    navigator.clipboard &&
-    window.isSecureContext
-  ) {
-
-    try {
-
-      await navigator.clipboard.writeText(
-        value
-      );
-
-      return true;
-
-    } catch (error) {
-
-      console.warn(
-        "[Boztik Deliver] Clipboard API failed:",
-        error
-      );
-
-    }
-
-  }
-
-
-  /*
-    Legacy browser fallback
-  */
-
-  const input =
-    document.createElement(
-      "input"
-    );
-
-
-  input.value =
-    value;
-
-
-  input.setAttribute(
-    "readonly",
-    ""
-  );
-
-
-  input.style.position =
-    "fixed";
-
-
-  input.style.left =
-    "-9999px";
-
-
-  document.body.append(
-    input
-  );
-
-
-  input.select();
-
-
-  let copied = false;
-
+  setEditSaving(true);
 
   try {
+    const updated = await updateDelivery(editingId, updates);
 
-    copied =
-      document.execCommand(
-        "copy"
-      );
+    const index = deliveries.findIndex(d => d.id === editingId);
+    if (index !== -1) deliveries[index] = { ...deliveries[index], ...updated };
+
+    renderOverview();
+    renderDeliveryList();
+    renderAnalytics();
+
+    showToast("Delivery updated.");
+    closeEditModal();
 
   } catch (error) {
-
-    console.warn(
-      "[Boztik Deliver] Legacy clipboard failed:",
-      error
-    );
-
+    console.error("[Boztik Deliver] updateDelivery failed:", error);
+    setEditError(error?.message || "Could not save changes. Please try again.");
+  } finally {
+    setEditSaving(false);
   }
-
-
-  input.remove();
-
-
-  return copied;
-
 }
 
+function setupEditModal() {
+  els.editForm?.addEventListener("submit", handleEditSubmit);
+  els.editSource?.addEventListener("change", applyEditSourceFieldVisibility);
+  wireModalDismiss(els.editModal, els.editClose, () => { if (!editSaving) closeEditModal(); });
+  els.editCancel?.addEventListener("click", () => { if (!editSaving) closeEditModal(); });
+}
 
-function setupSuccessCopy() {
+/* =========================================================
+   DELETE MODAL
+========================================================= */
 
-  if (!els.successCopy) {
+function setDeleteError(message = "") {
+  if (!els.deleteError) return;
+  els.deleteError.textContent = message;
+  els.deleteError.hidden = !message;
+}
+
+function openDeleteModal(delivery) {
+  pendingDeleteId = delivery.id;
+  setDeleteError("");
+
+  if (els.deleteSummary) {
+    els.deleteSummary.textContent =
+      `${delivery.project_name || "Untitled delivery"} — ${delivery.client_name || "no client name"}`;
+  }
+
+  if (els.deleteConfirm) {
+    els.deleteConfirm.disabled = false;
+    els.deleteConfirm.textContent = "Delete Delivery";
+  }
+
+  openModal(els.deleteModal);
+}
+
+function closeDeleteModal() {
+  closeModal(els.deleteModal);
+  pendingDeleteId = null;
+}
+
+async function handleDeleteConfirm() {
+  if (deleteWorking || !pendingDeleteId) return;
+
+  const delivery = deliveries.find(d => d.id === pendingDeleteId);
+  if (!delivery) { closeDeleteModal(); return; }
+
+  deleteWorking = true;
+  setDeleteError("");
+
+  if (els.deleteConfirm) {
+    els.deleteConfirm.disabled = true;
+    els.deleteConfirm.textContent = "Deleting…";
+  }
+
+  try {
+    await deleteDelivery(delivery);
+    showToast("Delivery deleted.");
+    closeDeleteModal();
+    await loadDeliveries();
+  } catch (error) {
+    console.error("[Boztik Deliver] deleteDelivery failed:", error);
+    setDeleteError(error?.message || "Could not delete this delivery. Please try again.");
+    if (els.deleteConfirm) {
+      els.deleteConfirm.disabled = false;
+      els.deleteConfirm.textContent = "Delete Delivery";
+    }
+  } finally {
+    deleteWorking = false;
+  }
+}
+
+function setupDeleteModal() {
+  els.deleteConfirm?.addEventListener("click", handleDeleteConfirm);
+  wireModalDismiss(els.deleteModal, els.deleteClose, () => { if (!deleteWorking) closeDeleteModal(); });
+  els.deleteCancel?.addEventListener("click", () => { if (!deleteWorking) closeDeleteModal(); });
+}
+
+/* =========================================================
+   ANALYTICS TAB
+========================================================= */
+
+function renderAnalytics() {
+  const totals = computeTotals(deliveries);
+
+  if (els.analyticsMonthlyViews) els.analyticsMonthlyViews.textContent = totals.monthlyViews;
+  if (els.analyticsMonthlyDownloads) els.analyticsMonthlyDownloads.textContent = totals.monthlyDownloads;
+  if (els.analyticsLifetimeViews) els.analyticsLifetimeViews.textContent = totals.lifetimeViews;
+  if (els.analyticsLifetimeDownloads) els.analyticsLifetimeDownloads.textContent = totals.lifetimeDownloads;
+
+  const battleDeliveries = deliveries.filter(isBattle);
+  const battleTotals = computeTotals(battleDeliveries);
+
+  if (els.battleMonthlyViews) els.battleMonthlyViews.textContent = battleTotals.monthlyViews;
+  if (els.battleLifetimeViews) els.battleLifetimeViews.textContent = battleTotals.lifetimeViews;
+  if (els.battleMonthlyDownloads) els.battleMonthlyDownloads.textContent = battleTotals.monthlyDownloads;
+  if (els.battleLifetimeDownloads) els.battleLifetimeDownloads.textContent = battleTotals.lifetimeDownloads;
+
+  if (els.analyticsMonthLabel) {
+    els.analyticsMonthLabel.textContent = new Date().toLocaleDateString(undefined, { month: "long", year: "numeric" });
+  }
+
+  renderAnalyticsTable();
+}
+
+function renderAnalyticsTable() {
+  if (!els.analyticsTableBody) return;
+
+  if (!deliveries.length) {
+    els.analyticsTableBody.innerHTML = `
+      <tr><td colspan="6" class="dash-table-empty">No deliveries yet.</td></tr>
+    `;
     return;
   }
 
+  const rows = [...deliveries]
+    .sort((a, b) => Number(b.lifetime_views || 0) - Number(a.lifetime_views || 0))
+    .map(delivery => `
+      <tr>
+        <td>${escapeHtml(delivery.project_name || "Untitled")}</td>
+        <td>${escapeHtml(sourceLabelOf(delivery))}</td>
+        <td>${Number(delivery.lifetime_views || 0)}</td>
+        <td>${Number(delivery.lifetime_downloads || 0)}</td>
+        <td>${delivery.last_viewed_at ? formatDate(delivery.last_viewed_at) : "—"}</td>
+        <td>${delivery.last_downloaded_at ? formatDate(delivery.last_downloaded_at) : "—"}</td>
+      </tr>
+    `)
+    .join("");
 
-  els.successCopy.addEventListener(
-    "click",
-    async () => {
-
-      const value =
-        els.successLink?.value ||
-        "";
-
-
-      if (!value) {
-        return;
-      }
-
-
-      const copied =
-        await copyText(
-          value
-        );
-
-
-      if (copied) {
-
-        if (els.successCopyStatus) {
-
-          els.successCopyStatus.textContent =
-            "Link copied to clipboard.";
-
-          els.successCopyStatus.hidden =
-            false;
-
-        }
-
-
-        toast(
-          "Client download link copied."
-        );
-
-        /* Keep feedback visible briefly, then return the creator to the
-           command centre without leaving a stale modal on screen. */
-        window.setTimeout(() => {
-          if (els.successDialog?.open) els.successDialog.close();
-        }, 550);
-
-
-      } else {
-
-        if (els.successLink) {
-
-          els.successLink.focus();
-
-          els.successLink.select();
-
-        }
-
-
-        if (els.successCopyStatus) {
-
-          els.successCopyStatus.textContent =
-            "Link selected. Press Ctrl+C to copy.";
-
-          els.successCopyStatus.hidden =
-            false;
-
-        }
-
-
-        toast(
-          "Link selected. Press Ctrl+C to copy.",
-          "error"
-        );
-
-      }
-
-    }
-  );
-
+  els.analyticsTableBody.innerHTML = rows;
 }
 
-
 /* =========================================================
-   EVENT LISTENERS
+   DATA LOADING
 ========================================================= */
 
-function setupEventListeners() {
-
-  if (els.loginForm) {
-
-    els.loginForm.addEventListener(
-      "submit",
-      handleLogin
-    );
-
+async function loadDeliveries() {
+  try {
+    deliveries = await listDeliveries();
+  } catch (error) {
+    console.error("[Boztik Deliver] listDeliveries failed:", error);
+    showToast("Could not load deliveries.", "error");
+    deliveries = [];
   }
 
-
-  if (els.logout) {
-
-    els.logout.addEventListener(
-      "click",
-      handleLogout
-    );
-
-  }
-
-
-  if (els.refresh) {
-
-    els.refresh.addEventListener(
-      "click",
-      load
-    );
-
-  }
-
-
-  if (els.uploadForm) {
-
-    els.uploadForm.addEventListener(
-      "submit",
-      handleUpload
-    );
-
-  }
-
-
-  if (els.search) {
-
-    els.search.addEventListener(
-      "input",
-      renderDeliveries
-    );
-
-  }
-
-
-  if (els.filter) {
-
-    els.filter.addEventListener(
-      "change",
-      renderDeliveries
-    );
-
-  }
-
-
-  if (els.sort) {
-
-    els.sort.addEventListener(
-      "change",
-      renderDeliveries
-    );
-
-  }
-
+  renderOverview();
+  renderDeliveryList();
+  renderAnalytics();
 }
 
-
 /* =========================================================
-   STARTUP
+   BOOTSTRAP
 ========================================================= */
 
-function initialiseDashboard() {
-
-  console.log(
-    "[Boztik Deliver] Dashboard initialising..."
-  );
-
-
-  setupDropzone();
-
-  setupDashboardTabs();
-
-  setupConfirmation();
-
-  setupSuccessDialog();
-
-  setupSuccessCopy();
-
-  setupEditDialog();
-
-  setupEventListeners();
-
-
-  initialiseAuthentication();
-
+function setupGlobalRefresh() {
+  els.refreshBtn?.addEventListener("click", () => loadDeliveries());
 }
 
+async function bootstrapDashboard() {
+  showLoading("Loading dashboard…", "Fetching your deliveries.");
+  try {
+    await loadDeliveries();
+  } finally {
+    hideLoading();
+  }
+}
 
-/* =========================================================
-   START
-========================================================= */
+async function init() {
+  setupAuth();
+  setupTabs();
+  setupSourceSelection();
+  setupFileSelection();
+  setupCreateForm();
+  setupSuccessModal();
+  setupDeliveriesTab();
+  setupEditModal();
+  setupDeleteModal();
+  setupGlobalRefresh();
 
-initialiseDashboard();
+  let session = null;
+
+  try {
+    session = await getSession();
+  } catch (error) {
+    console.error("[Boztik Deliver] getSession failed:", error);
+  }
+
+  if (session) {
+    showDashboardView();
+    await bootstrapDashboard();
+  } else {
+    showLoginView();
+  }
+}
+
+init();

@@ -5169,3 +5169,536 @@ dialog.dash-dialog--wide { width: min(620px, calc(100vw - 32px)); }
 .dash-success-actions .dash-btn { width: 100%; min-height: 43px; }
 
 @media (max-width: 520px) { dialog.dash-dialog { padding: 22px; }.dash-success-actions { grid-template-columns: 1fr; } }
+
+/* =========================================================
+   COMMAND CENTRE — REDESIGN GAP FILL
+   Added because the tabbed dashboard.html redesign shipped
+   these components (modals, toast, loading overlay, source
+   picker, dynamically-rendered lists) without corresponding
+   CSS. Reuses existing --deliver-* tokens and the .dash-btn /
+   .dash-stat-card visual language rather than inventing a new
+   style language.
+========================================================= */
+
+/* ---- Modals (plain overlay divs, not <dialog>) ---- */
+
+.dash-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.dash-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
+}
+
+.dash-modal-card {
+  position: relative;
+  z-index: 1;
+  width: min(560px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  background: var(--deliver-surface);
+  border: 1px solid var(--deliver-border-strong);
+  border-radius: var(--deliver-radius);
+  padding: 28px;
+  animation: dashPanelIn 180ms ease both;
+}
+
+.dash-modal-card h2,
+.dash-modal-card h3 {
+  margin: 0 0 8px;
+}
+
+.dash-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--deliver-border);
+  border-radius: 8px;
+  background: var(--deliver-bg-soft);
+  color: var(--deliver-text-muted);
+  cursor: pointer;
+}
+
+.dash-modal-close:hover {
+  color: var(--deliver-text);
+  border-color: var(--deliver-border-strong);
+}
+
+body.dash-modal-open {
+  overflow: hidden;
+}
+
+@media (max-width: 560px) {
+  .dash-modal-card { padding: 20px; }
+}
+
+
+/* ---- Loading overlay ---- */
+
+.dash-loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(5, 7, 10, 0.82);
+  backdrop-filter: blur(4px);
+}
+
+.dash-loading-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+  padding: 32px;
+}
+
+.dash-loading-card h3 {
+  margin: 0;
+}
+
+.dash-loading-card p {
+  margin: 0;
+  color: var(--deliver-text-muted);
+  font-size: 0.85rem;
+}
+
+
+/* ---- Spinner ---- */
+
+.dash-spinner {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 3px solid var(--deliver-border-strong);
+  border-top-color: var(--deliver-accent);
+  animation: dashSpin 700ms linear infinite;
+}
+
+.dash-spinner.small {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+}
+
+@keyframes dashSpin {
+  to { transform: rotate(360deg); }
+}
+
+
+/* ---- Toast ---- */
+
+.dash-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  z-index: 1200;
+  transform: translate(-50%, 12px);
+  opacity: 0;
+  transition: transform 220ms ease, opacity 220ms ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  border-radius: 12px;
+  border: 1px solid var(--deliver-border-strong);
+  background: var(--deliver-surface-2);
+  color: var(--deliver-text);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  max-width: calc(100vw - 32px);
+}
+
+.dash-toast.is-visible {
+  transform: translate(-50%, 0);
+  opacity: 1;
+}
+
+.dash-toast-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 0.7rem;
+  font-weight: 800;
+  flex: 0 0 auto;
+}
+
+.dash-toast.is-success .dash-toast-icon {
+  background: var(--deliver-accent-soft);
+  color: var(--deliver-accent);
+}
+
+.dash-toast.is-error .dash-toast-icon {
+  background: rgba(239, 68, 68, 0.12);
+  color: var(--deliver-danger);
+}
+
+.dash-toast-message {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+
+/* ---- Source picker (create form + action cards) ---- */
+
+.dash-action-card,
+.dash-source-option {
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+
+.dash-source-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--deliver-border);
+  border-radius: var(--deliver-radius-small);
+  background: var(--deliver-bg-soft);
+  text-align: left;
+}
+
+.dash-source-option:hover {
+  border-color: var(--deliver-border-strong);
+}
+
+.dash-source-option[aria-checked="true"],
+.dash-source-option.is-selected {
+  border-color: var(--deliver-accent-border);
+  background: var(--deliver-accent-soft);
+}
+
+.dash-source-option-battle[aria-checked="true"],
+.dash-source-option-battle.is-selected {
+  border-color: rgba(255, 94, 91, 0.35);
+  background: rgba(255, 94, 91, 0.08);
+}
+
+.dash-action-card:hover {
+  border-color: var(--deliver-border-strong);
+  transform: translateY(-2px);
+}
+
+
+/* ---- Empty states (dynamically rendered) ---- */
+
+.dash-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: 48px 24px;
+  color: var(--deliver-text-muted);
+}
+
+.dash-empty-state.compact {
+  padding: 28px 16px;
+}
+
+.dash-empty-icon {
+  font-size: 1.6rem;
+  color: var(--deliver-text-dim);
+}
+
+.dash-empty-state h4 {
+  margin: 4px 0 0;
+  color: var(--deliver-text-soft);
+}
+
+.dash-empty-state p {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+
+/* ---- Recent deliveries / activity rows (Overview tab) ---- */
+
+.dash-recent-item,
+.dash-activity-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--deliver-border);
+  border-radius: var(--deliver-radius-small);
+  background: var(--deliver-bg-soft);
+  margin-bottom: 8px;
+  cursor: default;
+}
+
+.dash-recent-item {
+  cursor: pointer;
+}
+
+.dash-recent-item:hover {
+  border-color: var(--deliver-border-strong);
+}
+
+.dash-recent-item-main,
+.dash-activity-item-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.dash-recent-item-main strong,
+.dash-activity-item-main strong {
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dash-recent-item-main span,
+.dash-activity-item-main span {
+  font-size: 0.78rem;
+  color: var(--deliver-text-muted);
+}
+
+.dash-activity-item {
+  align-items: flex-start;
+}
+
+.dash-activity-icon {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--deliver-accent-soft);
+  color: var(--deliver-accent);
+  font-size: 0.85rem;
+}
+
+
+/* ---- Status pill / source tag ---- */
+
+.dash-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+  border: 1px solid var(--deliver-border);
+}
+
+.dash-status-pill.is-active {
+  color: var(--deliver-accent);
+  border-color: var(--deliver-accent-border);
+  background: var(--deliver-accent-soft);
+}
+
+.dash-status-pill.is-expired {
+  color: #ff9696;
+  border-color: rgba(255, 107, 107, 0.22);
+  background: rgba(255, 107, 107, 0.06);
+}
+
+.dash-source-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: var(--deliver-surface-2);
+  color: var(--deliver-text-muted);
+  border: 1px solid var(--deliver-border);
+}
+
+.dash-source-tag.is-battle {
+  color: #ff5e5b;
+  border-color: rgba(255, 94, 91, 0.25);
+  background: rgba(255, 94, 91, 0.08);
+}
+
+
+/* ---- Delivery list cards (Deliveries tab) ---- */
+
+.dash-delivery-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+@media (max-width: 900px) {
+  .dash-delivery-list { grid-template-columns: 1fr; }
+}
+
+.dash-delivery-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px;
+  border: 1px solid var(--deliver-border);
+  border-radius: var(--deliver-radius);
+  background: var(--deliver-surface);
+  transition: border-color 160ms ease, transform 160ms ease;
+}
+
+.dash-delivery-card:hover {
+  border-color: var(--deliver-border-strong);
+}
+
+.dash-delivery-card.is-expired {
+  opacity: 0.72;
+}
+
+.dash-delivery-card.is-battle {
+  border-color: rgba(255, 94, 91, 0.18);
+}
+
+.dash-delivery-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dash-delivery-card-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.dash-delivery-card-heading strong {
+  font-size: 0.98rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dash-delivery-card-heading span {
+  font-size: 0.8rem;
+  color: var(--deliver-text-muted);
+}
+
+.dash-delivery-card-meta,
+.dash-delivery-card-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  font-size: 0.78rem;
+  color: var(--deliver-text-muted);
+}
+
+.dash-delivery-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.dash-delivery-card-actions .dash-btn {
+  flex: 1 1 auto;
+  min-height: 36px;
+  padding: 8px 12px;
+  font-size: 0.76rem;
+}
+
+
+/* ---- Analytics table ---- */
+
+.dash-table-wrap {
+  overflow-x: auto;
+}
+
+.dash-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.dash-table th,
+.dash-table td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--deliver-border);
+  white-space: nowrap;
+}
+
+.dash-table th {
+  color: var(--deliver-text-muted);
+  font-weight: 700;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.dash-table-empty {
+  text-align: center;
+  color: var(--deliver-text-muted);
+  padding: 24px !important;
+}
+
+
+/* ---- Remaining modal/form presentational gaps ---- */
+
+.dash-section-eyebrow {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--deliver-accent);
+  margin-bottom: 6px;
+}
+
+.dash-success-url-block {
+  margin-top: 18px;
+  text-align: left;
+}
+
+.dash-success-url-block label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--deliver-text-muted);
+  margin-bottom: 6px;
+}
+
+.dash-copy-row {
+  display: flex;
+  gap: 8px;
+}
+
+.dash-copy-row input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 42px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--deliver-border-strong);
+  background: var(--deliver-bg-soft);
+  color: var(--deliver-text-soft);
+  font-size: 0.8rem;
+}
+
+.dash-copy-row .dash-btn {
+  flex: 0 0 auto;
+}
