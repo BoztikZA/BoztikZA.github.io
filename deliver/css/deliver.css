@@ -714,6 +714,86 @@ a:focus-visible {
 }
 
 
+/* ---- Preview loading state ---- */
+
+.deliver-preview-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  height: 100%;
+  min-height: 220px;
+  color: var(--deliver-text-dim);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.deliver-preview-spinner {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 3px solid var(--deliver-border-strong);
+  border-top-color: var(--deliver-accent);
+  animation: dashSpin 700ms linear infinite;
+}
+
+
+/* ---- Preview error / unavailable state ---- */
+
+.deliver-file-preview.preview-error {
+  background: linear-gradient(135deg, var(--deliver-bg-soft), var(--deliver-surface));
+}
+
+.deliver-preview-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 32px 24px;
+  text-align: center;
+}
+
+.deliver-preview-fallback-icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-bottom: 4px;
+  border-radius: 50%;
+  border: 1px solid var(--deliver-warning);
+  color: var(--deliver-warning);
+  font-weight: 900;
+  font-size: 1.05rem;
+}
+
+.deliver-preview-fallback strong {
+  color: var(--deliver-text-soft);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.deliver-preview-fallback span {
+  max-width: 30ch;
+  color: var(--deliver-text-dim);
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.deliver-preview-fallback small {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--deliver-surface-3);
+  color: var(--deliver-text-muted);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+}
+
+
 /* =========================================================
    FILE TYPE FALLBACK
 ========================================================= */
@@ -797,6 +877,178 @@ a:focus-visible {
   color:
     var(--deliver-border-strong);
 
+}
+
+
+.deliver-file-eyebrow {
+  display: block;
+  color: var(--deliver-accent);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+
+.deliver-empty-files {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 48px 24px;
+  border: 1px dashed var(--deliver-border-strong);
+  border-radius: var(--deliver-radius);
+  background: var(--deliver-surface-2);
+  text-align: center;
+}
+
+.deliver-empty-files strong {
+  color: var(--deliver-text-soft);
+  font-size: 0.95rem;
+}
+
+.deliver-empty-files span {
+  color: var(--deliver-text-dim);
+  font-size: 0.8rem;
+}
+
+
+/* =========================================================
+   FILE INFO PANEL (chips / details / spec grid)
+========================================================= */
+
+.deliver-fileinfo-loading {
+  padding: 4px 0;
+  color: var(--deliver-text-dim);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.fileinfo-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.fileinfo-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border: 1px solid var(--deliver-accent-border);
+  border-radius: 999px;
+  background: var(--deliver-accent-soft);
+  color: var(--deliver-accent);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.fileinfo-details {
+  border: 1px solid var(--deliver-border);
+  border-radius: var(--deliver-radius-small);
+  background: var(--deliver-surface);
+  overflow: hidden;
+}
+
+.fileinfo-details summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 16px;
+  color: var(--deliver-text-soft);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.fileinfo-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.fileinfo-details summary::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  margin-left: 10px;
+  border-right: 2px solid var(--deliver-text-dim);
+  border-bottom: 2px solid var(--deliver-text-dim);
+  transform: rotate(45deg);
+  transition: transform var(--deliver-transition);
+}
+
+.fileinfo-details[open] summary::after {
+  transform: rotate(-135deg);
+}
+
+.fileinfo-details[open] summary {
+  border-bottom: 1px solid var(--deliver-border);
+}
+
+.fileinfo-body {
+  padding: 14px 16px 16px;
+}
+
+.fileinfo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px 20px;
+}
+
+.fileinfo-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.fileinfo-item span {
+  color: var(--deliver-text-dim);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.fileinfo-item strong {
+  color: var(--deliver-text-soft);
+  font-size: 0.85rem;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Longer sentence-style values (e.g. the "Best for" print-quality
+   summary) should wrap normally instead of being cut off mid-word. */
+.fileinfo-print .fileinfo-item strong {
+  overflow: visible;
+  white-space: normal;
+  line-height: 1.4;
+}
+
+.fileinfo-item-wide {
+  grid-column: 1 / -1;
+}
+
+.fileinfo-print {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--deliver-border);
+}
+
+.fileinfo-print h5 {
+  margin: 0 0 12px;
+  color: var(--deliver-text-muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 
@@ -6271,5 +6523,97 @@ body.dash-modal-open {
   .dash-action-grid,
   .dash-source-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================
+   HERO PREVIEW — single-file deliveries
+   The photograph becomes the primary visual element instead
+   of a small, fixed-aspect-ratio thumbnail. The image sizes
+   itself using its own natural aspect ratio (never stretched,
+   distorted, or forced into a crop) and is simply capped by
+   a generous max-height.
+========================================================= */
+
+#deliver-gallery.single-file,
+.deliver-gallery-refined.single-file {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.deliver-gallery-refined.single-file .deliver-file-card {
+  border-radius: var(--deliver-radius-large);
+}
+
+.deliver-gallery-refined.single-file .deliver-file-preview {
+  aspect-ratio: auto;
+  height: auto;
+  min-height: 320px;
+  padding: 20px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(142, 255, 61, 0.05), transparent 46%),
+    var(--deliver-bg-soft);
+}
+
+.deliver-gallery-refined.single-file .deliver-preview-button {
+  display: flex;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+}
+
+.deliver-gallery-refined.single-file .deliver-preview-image {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: min(72vh, 760px);
+  border-radius: 10px;
+  object-fit: contain;
+}
+
+.deliver-gallery-refined.single-file .deliver-file-content {
+  padding: 28px 32px 32px;
+  gap: 20px;
+}
+
+.deliver-gallery-refined.single-file .deliver-file-name {
+  font-size: 1.15rem;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.deliver-gallery-refined.single-file .deliver-file-eyebrow {
+  font-size: 0.68rem;
+}
+
+.deliver-gallery-refined.single-file .fileinfo-grid {
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+}
+
+@media (max-width: 700px) {
+  .deliver-gallery-refined.single-file .deliver-file-preview {
+    padding: 12px;
+    min-height: 240px;
+  }
+
+  .deliver-gallery-refined.single-file .deliver-preview-image {
+    max-height: 62vh;
+  }
+
+  .deliver-gallery-refined.single-file .deliver-file-content {
+    padding: 22px 18px 24px;
+  }
+}
+
+
+/* =========================================================
+   FILES / SUPPORT COLUMN BALANCE — give the photograph a
+   little more breathing room at mid-desktop widths while the
+   Support Creator column keeps its own footprint.
+========================================================= */
+
+@media (min-width: 1100px) and (max-width: 1299px) {
+  .boztik-files-support-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(270px, 0.38fr);
   }
 }

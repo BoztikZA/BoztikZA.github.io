@@ -2311,6 +2311,17 @@ function renderFiles(
       .join("");
 
 
+  /*
+    A single delivered file gets the large "hero" preview
+    treatment instead of the compact multi-file grid card.
+  */
+
+  els.gallery.classList.toggle(
+    "single-file",
+    files.length === 1
+  );
+
+
   /* =======================================================
      DOWNLOAD BUTTONS
   ======================================================= */

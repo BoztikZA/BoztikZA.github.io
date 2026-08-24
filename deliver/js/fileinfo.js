@@ -106,6 +106,7 @@ export async function estimatePdfPageCount(arrayBuffer) {
 }
 
 function row(label, value) { return value === undefined || value === null || value === "" ? "" : `<div class="fileinfo-item"><span>${label}</span><strong>${value}</strong></div>`; }
+function rowWide(label, value) { return value === undefined || value === null || value === "" ? "" : `<div class="fileinfo-item fileinfo-item-wide"><span>${label}</span><strong>${value}</strong></div>`; }
 function chip(value) { return value === undefined || value === null || value === "" ? "" : `<span class="fileinfo-chip">${value}</span>`; }
 
 // Compact glance row (format / dimensions / size) shown immediately, plus a
@@ -146,13 +147,13 @@ export function buildImageInfoHTML({ fileName, sizeLabel, format, mimeType, widt
         ${row("300 DPI", `${printSize(width, 300)} × ${printSize(height, 300)} in`)}
         ${row("240 DPI", `${printSize(width, 240)} × ${printSize(height, 240)} in`)}
         ${row("150 DPI", `${printSize(width, 150)} × ${printSize(height, 150)} in`)}
-        ${row("Best for", qualitySummary(megapixels))}
+        ${rowWide("Best for", qualitySummary(megapixels))}
       </div>
     </div>` : "";
 
   return `
     <div class="fileinfo-chips">${chips}</div>
-    <details class="fileinfo-details">
+    <details class="fileinfo-details" open>
       <summary>File details</summary>
       <div class="fileinfo-body">
         <div class="fileinfo-grid">${rows.join("")}</div>
