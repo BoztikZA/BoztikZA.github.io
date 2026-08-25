@@ -64,11 +64,13 @@ async function resolveRedirect(url: string): Promise<string> {
 
     if (response.status >= 300 && response.status < 400) {
       const location = response.headers.get("location");
+      await response.body?.cancel();
       if (!location) break;
       current = location.startsWith("http") ? location : new URL(location, current).toString();
       continue;
     }
 
+    await response.body?.cancel();
     break;
   }
 
