@@ -16,7 +16,8 @@ const allowedOrigin = Deno.env.get("ALLOWED_ORIGIN") ?? "https://boztikza.github
 const corsHeaders = {
   "Access-Control-Allow-Origin": allowedOrigin,
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS"
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Vary": "Origin"
 };
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
   status,
@@ -78,7 +79,7 @@ async function resolveRedirect(url: string): Promise<string> {
 }
 
 Deno.serve(async request => {
-  if (request.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders });
   if (request.method !== "POST") return json({ error: "method_not_allowed" }, 405);
 
   let input: { url?: string };
