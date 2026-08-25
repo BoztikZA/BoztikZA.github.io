@@ -1181,13 +1181,12 @@ export async function fetchRedditMetadata(
       }
     );
   } catch (error) {
-    const timedOut =
-      error?.name === "AbortError";
-
+    const timedOut = error?.name === "AbortError";
+    console.error("[Boztik Diagnostic] Reddit fetch failure:", error); // Diagnostic
     throw new Error(
       timedOut
         ? "Reddit took too long to respond."
-        : "Could not reach the metadata service."
+        : `Could not reach the metadata service: ${error.message || "Unknown error"}`
     );
   } finally {
     clearTimeout(timeout);
