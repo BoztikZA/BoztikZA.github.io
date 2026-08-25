@@ -1303,6 +1303,120 @@
 
               </div>
 
+
+              <!-- =========================================
+                   REDDIT SOURCE (OPTIONAL)
+                   Independent of Delivery Type above — attaches the
+                   original Reddit post this edit is based on, shown
+                   to the client as "Original Source". Available on
+                   every delivery type. Kept visually secondary so it
+                   doesn't dominate the create flow.
+              ========================================== -->
+
+              <div class="dash-form-section dash-reddit-source-section">
+
+                <div class="dash-form-section-heading">
+
+                  <span class="dash-section-eyebrow">
+                    Reddit Source
+                  </span>
+
+                  <span class="dash-form-section-note">
+                    Optional
+                  </span>
+
+                </div>
+
+                <p class="dash-field-help dash-reddit-source-intro">
+                  Attach the original Reddit post this edit is based on.
+                  Leave this blank and nothing changes about the delivery.
+                </p>
+
+                <div class="dash-field">
+
+                  <label for="dash-reddit-source-url">
+                    Reddit post URL
+                  </label>
+
+                  <div class="dash-reddit-source-input-row">
+
+                    <input
+                      id="dash-reddit-source-url"
+                      type="url"
+                      inputmode="url"
+                      autocomplete="off"
+                      placeholder="https://www.reddit.com/r/.../s/... or /comments/..."
+                    >
+
+                    <button
+                      type="button"
+                      id="dash-reddit-source-fetch"
+                      class="dash-btn--ghost dash-reddit-source-fetch-btn"
+                    >
+                      Fetch Post Details
+                    </button>
+
+                  </div>
+
+                  <small class="dash-field-help">
+                    Supports normal Reddit links and share (/s/) links.
+                  </small>
+
+                </div>
+
+                <div
+                  id="dash-reddit-source-status"
+                  class="dash-reddit-source-status"
+                  hidden
+                  role="alert"
+                ></div>
+
+                <div
+                  id="dash-reddit-source-preview"
+                  class="dash-reddit-source-preview"
+                  hidden
+                >
+
+                  <span
+                    id="dash-reddit-source-sub"
+                    class="dash-reddit-source-sub"
+                  ></span>
+
+                  <strong
+                    id="dash-reddit-source-title"
+                    class="dash-reddit-source-title"
+                  ></strong>
+
+                  <span
+                    id="dash-reddit-source-author"
+                    class="dash-reddit-source-author"
+                  ></span>
+
+                  <div class="dash-reddit-source-actions">
+
+                    <a
+                      id="dash-reddit-source-link"
+                      href="#"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      View Original Post ↗
+                    </a>
+
+                    <button
+                      type="button"
+                      id="dash-reddit-source-clear"
+                      class="dash-btn-text"
+                    >
+                      Remove
+                    </button>
+
+                  </div>
+
+                </div>
+
+              </div>
+
             </article>
 
 
@@ -2489,6 +2603,110 @@
                 id="dash-edit-notes"
                 rows="5"
               ></textarea>
+
+            </div>
+
+
+            <!-- =========================================
+                 REDDIT SOURCE (OPTIONAL)
+            ========================================== -->
+
+            <div class="dash-form-section dash-reddit-source-section">
+
+              <div class="dash-form-section-heading">
+
+                <span class="dash-section-eyebrow">
+                  Reddit Source
+                </span>
+
+                <span class="dash-form-section-note">
+                  Optional
+                </span>
+
+              </div>
+
+              <div class="dash-field">
+
+                <label for="dash-edit-reddit-source-url">
+                  Reddit post URL
+                </label>
+
+                <div class="dash-reddit-source-input-row">
+
+                  <input
+                    id="dash-edit-reddit-source-url"
+                    type="url"
+                    inputmode="url"
+                    autocomplete="off"
+                    placeholder="https://www.reddit.com/r/.../s/... or /comments/..."
+                  >
+
+                  <button
+                    type="button"
+                    id="dash-edit-reddit-source-fetch"
+                    class="dash-btn--ghost dash-reddit-source-fetch-btn"
+                  >
+                    Fetch Post Details
+                  </button>
+
+                </div>
+
+                <small class="dash-field-help">
+                  Supports normal Reddit links and share (/s/) links.
+                </small>
+
+              </div>
+
+              <div
+                id="dash-edit-reddit-source-status"
+                class="dash-reddit-source-status"
+                hidden
+                role="alert"
+              ></div>
+
+              <div
+                id="dash-edit-reddit-source-preview"
+                class="dash-reddit-source-preview"
+                hidden
+              >
+
+                <span
+                  id="dash-edit-reddit-source-sub"
+                  class="dash-reddit-source-sub"
+                ></span>
+
+                <strong
+                  id="dash-edit-reddit-source-title"
+                  class="dash-reddit-source-title"
+                ></strong>
+
+                <span
+                  id="dash-edit-reddit-source-author"
+                  class="dash-reddit-source-author"
+                ></span>
+
+                <div class="dash-reddit-source-actions">
+
+                  <a
+                    id="dash-edit-reddit-source-link"
+                    href="#"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    View Original Post ↗
+                  </a>
+
+                  <button
+                    type="button"
+                    id="dash-edit-reddit-source-clear"
+                    class="dash-btn-text"
+                  >
+                    Remove
+                  </button>
+
+                </div>
+
+              </div>
 
             </div>
 

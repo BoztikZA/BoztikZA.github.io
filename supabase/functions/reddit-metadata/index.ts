@@ -1,8 +1,16 @@
-// Boztik Deliver: fetches a Reddit thread's title + subreddit server-side so the
-// Command Centre can auto-fill a new delivery's project title. Reddit's public
-// JSON endpoint cannot be called directly from the browser (CORS), so this
-// function proxies it. It never blocks delivery creation — the dashboard
-// falls back to manual entry on any error, timeout, or malformed URL.
+// Boztik Deliver: fetches a Reddit thread's title, subreddit, original-poster
+// username, and canonical post URL server-side.
+//
+// Used for two things:
+//  1) Command Centre auto-fill (PhotoshopBattles delivery title/subreddit).
+//  2) The optional "Reddit Source" attribution attached to any delivery and
+//     shown to the client as "Original Source" (see deliveries.reddit_source).
+//
+// Reddit's public JSON endpoint cannot be called directly from the browser
+// (CORS), so this function proxies it. It never blocks delivery creation —
+// callers must treat any error response as "auto-fill unavailable" and fall
+// back to manual entry / saving the raw URL without metadata.
+//
 // Deploy with: supabase functions deploy reddit-metadata
 const allowedOrigin = Deno.env.get("ALLOWED_ORIGIN") ?? "https://boztikza.github.io";
 const corsHeaders = {
@@ -33,6 +41,11 @@ function isRedditHost(url: string): boolean {
   } catch {
     return false;
   }
+}
+
+function canonicalPostUrl(subreddit: string | null, postId: string | null, fallback: string): string {
+  if (subreddit && postId) return `https://www.reddit.com/r/${subreddit}/comments/${postId}/`;
+  return fallback;
 }
 
 // Reddit share shortlinks (and redd.it) are HTTP redirects to the canonical
@@ -71,8 +84,12 @@ Deno.serve(async request => {
 
   const rawUrl = (input.url ?? "").trim();
 
-  if (!rawUrl || !isRedditHost(rawUrl)) {
-    return json({ error: "not_a_reddit_thread", message: "That doesn't look like a Reddit link." }, 400);
+  if (!rawUrl) {
+    return json({ error: "invalid_url", message: "Please paste a Reddit URL." }, 400);
+  }
+
+  if (!isRedditHost(rawUrl)) {
+    return json({ error: "not_reddit", message: "That doesn't look like a Reddit link." }, 400);
   }
 
   const controller = new AbortController();
@@ -81,8 +98,9 @@ Deno.serve(async request => {
   try {
     let subreddit: string | null = null;
     let postId: string | null = null;
+    let resolvedUrl = rawUrl;
 
-    let directMatch = rawUrl.match(COMMENTS_RE);
+    const directMatch = rawUrl.match(COMMENTS_RE);
 
     if (directMatch) {
       subreddit = directMatch[1];
@@ -90,7 +108,7 @@ Deno.serve(async request => {
     } else {
       // Share shortlink or redd.it link — resolve the redirect chain first,
       // then try to read the canonical URL it landed on.
-      const resolvedUrl = await resolveRedirect(rawUrl);
+      resolvedUrl = await resolveRedirect(rawUrl);
       const resolvedMatch = resolvedUrl.match(COMMENTS_RE);
 
       if (resolvedMatch) {
@@ -112,8 +130,8 @@ Deno.serve(async request => {
 
     if (!postId && !subreddit) {
       return json({
-        error: "not_a_reddit_thread",
-        message: "Could not resolve that link to a Reddit thread."
+        error: "unresolvable_share_link",
+        message: "Could not resolve that share link to a Reddit thread."
       }, 400);
     }
 
@@ -121,12 +139,33 @@ Deno.serve(async request => {
       ? `https://www.reddit.com/comments/${postId}.json?raw_json=1`
       // We only have a subreddit with no real post id (rare fallback) —
       // ask Reddit's own resolver for the canonical .json directly.
-      : `${rawUrl.replace(/\/?$/, "")}.json?raw_json=1`;
+      : `${resolvedUrl.replace(/\/?$/, "")}.json?raw_json=1`;
 
     const redditResponse = await fetch(jsonUrl, {
       signal: controller.signal,
-      headers: { "User-Agent": USER_AGENT }
+      headers: { "User-Agent": USER_AGENT, Accept: "application/json" }
     });
+
+    if (redditResponse.status === 429) {
+      return json({
+        error: "rate_limited",
+        message: "Reddit is rate-limiting requests right now. Try again in a moment."
+      }, 429);
+    }
+
+    if (redditResponse.status === 403) {
+      return json({
+        error: "private_subreddit",
+        message: "That subreddit is private or restricted — its posts can't be read."
+      }, 403);
+    }
+
+    if (redditResponse.status === 404) {
+      return json({
+        error: "not_found",
+        message: "That Reddit post could not be found. It may have been deleted."
+      }, 404);
+    }
 
     if (!redditResponse.ok) {
       return json({
@@ -140,15 +179,34 @@ Deno.serve(async request => {
       ? payload?.[0]?.data?.children?.[0]?.data
       : payload?.data?.children?.[0]?.data?.data;
 
-    const title = typeof postData?.title === "string" ? postData.title.trim() : "";
-
-    if (!title) {
-      return json({ error: "no_title_found", message: "Could not read a title from that thread." }, 502);
+    if (!postData) {
+      return json({
+        error: "no_post_found",
+        message: "Could not read that thread. It may have been deleted or removed."
+      }, 502);
     }
 
+    const rawTitle = typeof postData.title === "string" ? postData.title.trim() : "";
+    const removed = Boolean(postData.removed_by_category) || rawTitle === "[deleted]" || rawTitle === "[removed]";
+
+    if (!rawTitle || removed) {
+      return json({
+        error: "post_removed",
+        message: "That Reddit post has been deleted or removed and no longer has readable details."
+      }, 404);
+    }
+
+    const rawAuthor = typeof postData.author === "string" ? postData.author.trim() : "";
+    const author = rawAuthor && rawAuthor !== "[deleted]" && rawAuthor !== "[removed]" ? rawAuthor : null;
+
+    const resolvedSubreddit = postData.subreddit || subreddit || null;
+    const resolvedPostId = postData.id || postId || null;
+
     return json({
-      title,
-      subreddit: postData?.subreddit || subreddit || null,
+      title: rawTitle,
+      subreddit: resolvedSubreddit,
+      author,
+      canonicalUrl: canonicalPostUrl(resolvedSubreddit, resolvedPostId, resolvedUrl),
       redditUrl: rawUrl
     });
 

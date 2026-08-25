@@ -2837,6 +2837,22 @@ a:focus-visible {
   border-color: var(--deliver-border);
 }
 
+.dash-btn-text {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: var(--deliver-text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.dash-btn-text:hover {
+  color: var(--deliver-text);
+}
+
 .dash-btn--large {
   padding: 16px 32px;
   font-size: 1rem;
@@ -6615,5 +6631,199 @@ body.dash-modal-open {
 @media (min-width: 1100px) and (max-width: 1299px) {
   .boztik-files-support-layout {
     grid-template-columns: minmax(0, 1fr) minmax(270px, 0.38fr);
+  }
+}
+
+/* =========================================================
+   REDDIT SOURCE (OPTIONAL) — Command Centre
+   Used in both the Create Delivery form and the Edit Delivery
+   modal. Deliberately muted/secondary so it never competes with
+   the primary Client Information / File Upload panels.
+========================================================= */
+
+.dash-reddit-source-section {
+  padding: 16px 18px;
+  border: 1px dashed var(--deliver-border);
+  border-radius: 12px;
+  background: var(--deliver-bg-soft);
+}
+
+.dash-reddit-source-intro {
+  margin: -2px 0 14px;
+}
+
+.dash-reddit-source-input-row {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.dash-reddit-source-input-row input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.dash-reddit-source-fetch-btn {
+  flex: 0 0 auto;
+  padding: 10px 18px;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+@media (max-width: 560px) {
+  .dash-reddit-source-input-row {
+    flex-direction: column;
+  }
+
+  .dash-reddit-source-fetch-btn {
+    width: 100%;
+  }
+}
+
+.dash-reddit-source-status {
+  margin-top: 12px;
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 107, 107, 0.25);
+  border-radius: 10px;
+  background: rgba(255, 107, 107, 0.06);
+  color: #ff9696;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.dash-reddit-source-status[data-tone="info"] {
+  border-color: var(--deliver-accent-border);
+  background: var(--deliver-accent-soft);
+  color: var(--deliver-accent);
+}
+
+.dash-reddit-source-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--deliver-border);
+  border-radius: 10px;
+  background: var(--deliver-surface);
+}
+
+.dash-reddit-source-sub {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--deliver-accent);
+}
+
+.dash-reddit-source-title {
+  font-size: 0.92rem;
+  line-height: 1.4;
+  color: var(--deliver-text);
+}
+
+.dash-reddit-source-author {
+  font-size: 0.78rem;
+  color: var(--deliver-text-muted);
+}
+
+.dash-reddit-source-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.dash-reddit-source-actions a {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--deliver-accent);
+  text-decoration: none;
+}
+
+.dash-reddit-source-actions a:hover {
+  text-decoration: underline;
+}
+
+
+/* =========================================================
+   ORIGINAL SOURCE — client-facing delivery page
+   Only rendered when a delivery has reddit_source attached.
+   Matches the existing .deliver-meta-refined card language so
+   it reads as part of the delivery page, not a bolted-on widget.
+========================================================= */
+
+.deliver-source-wrap {
+  margin-top: 20px;
+  padding: 18px 20px;
+  border: 1px solid var(--deliver-border);
+  border-radius: 14px;
+  background: var(--deliver-bg-soft);
+}
+
+.deliver-source-eyebrow {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--deliver-text-muted);
+  margin-bottom: 10px;
+}
+
+.deliver-source-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--deliver-text-muted);
+  margin-bottom: 6px;
+}
+
+.deliver-source-sub {
+  font-weight: 700;
+  color: var(--deliver-accent);
+}
+
+.deliver-source-title {
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--deliver-text);
+  margin: 4px 0 14px;
+}
+
+.deliver-source-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: 1px solid var(--deliver-border-strong);
+  background: var(--deliver-surface-3);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.84rem;
+  text-decoration: none;
+  transition: all var(--deliver-transition);
+}
+
+.deliver-source-open:hover {
+  background: var(--deliver-surface-2);
+  border-color: var(--deliver-text-dim);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 560px) {
+  .deliver-source-wrap {
+    padding: 16px;
+  }
+
+  .deliver-source-open {
+    width: 100%;
+    justify-content: center;
   }
 }

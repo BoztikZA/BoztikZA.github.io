@@ -81,6 +81,22 @@ const els = {
     $("deliver-notes-wrap"),
 
 
+  sourceWrap:
+    $("deliver-source-wrap"),
+
+  sourceSub:
+    $("deliver-source-sub"),
+
+  sourceAuthor:
+    $("deliver-source-author"),
+
+  sourceTitle:
+    $("deliver-source-title"),
+
+  sourceLink:
+    $("deliver-source-link"),
+
+
   count:
     $("deliver-countdown-label"),
 
@@ -3413,6 +3429,78 @@ async function init() {
 
 
         els.notesWrap.hidden =
+          true;
+
+      }
+
+    }
+
+
+    /* =====================================================
+       ORIGINAL SOURCE (Reddit)
+       Only rendered when this delivery has reddit_source attached.
+       Never shown, and never affects anything else on the page,
+       when it's absent (the normal case).
+    ===================================================== */
+
+    if (
+      els.sourceWrap
+    ) {
+
+      const source =
+        delivery.reddit_source;
+
+      const canonicalUrl =
+        source?.canonicalUrl ||
+        source?.url ||
+        "";
+
+      const isSafeHttpUrl =
+        /^https?:\/\//i.test(
+          canonicalUrl
+        );
+
+      if (
+        source &&
+        isSafeHttpUrl
+      ) {
+
+        if (els.sourceSub) {
+          els.sourceSub.textContent =
+            source.subreddit
+              ? `r/${source.subreddit}`
+              : "Reddit";
+        }
+
+        if (els.sourceAuthor) {
+          els.sourceAuthor.textContent =
+            source.author
+              ? `Posted by u/${source.author}`
+              : "";
+
+          els.sourceAuthor.hidden =
+            !source.author;
+        }
+
+        if (els.sourceTitle) {
+          els.sourceTitle.textContent =
+            source.title || "";
+
+          els.sourceTitle.hidden =
+            !source.title;
+        }
+
+        if (els.sourceLink) {
+          els.sourceLink.href =
+            canonicalUrl;
+        }
+
+        els.sourceWrap.hidden =
+          false;
+
+      } else {
+
+        els.sourceWrap.hidden =
           true;
 
       }

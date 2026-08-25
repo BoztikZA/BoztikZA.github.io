@@ -10,6 +10,7 @@ import {
   updateDelivery,
   deleteDelivery,
   duplicateDelivery,
+  fetchRedditMetadata,
   DELIVERY_SOURCES
 } from "./api.js";
 import { config } from "./config.js";
@@ -68,6 +69,20 @@ const els = {
   redditFields: $("dash-reddit-fields"),
   redditUrl: $("dash-reddit-url"),
   notes: $("dash-notes"),
+
+  // Reddit Source (Optional) — independent "original post" attribution,
+  // available on every delivery type. Not to be confused with
+  // `redditFields`/`redditUrl` above, which is the PhotoshopBattles-only
+  // reference-link note field.
+  redditSourceUrl: $("dash-reddit-source-url"),
+  redditSourceFetchBtn: $("dash-reddit-source-fetch"),
+  redditSourceStatus: $("dash-reddit-source-status"),
+  redditSourcePreview: $("dash-reddit-source-preview"),
+  redditSourceSub: $("dash-reddit-source-sub"),
+  redditSourceTitle: $("dash-reddit-source-title"),
+  redditSourceAuthor: $("dash-reddit-source-author"),
+  redditSourceLink: $("dash-reddit-source-link"),
+  redditSourceClearBtn: $("dash-reddit-source-clear"),
   uploadZone: $("dash-upload-zone"),
   fileInput: $("dash-file"),
   filePreview: $("dash-file-preview"),
@@ -130,6 +145,16 @@ const els = {
   editRedditFields: $("dash-edit-reddit-fields"),
   editRedditUrl: $("dash-edit-reddit-url"),
   editNotes: $("dash-edit-notes"),
+
+  editRedditSourceUrl: $("dash-edit-reddit-source-url"),
+  editRedditSourceFetchBtn: $("dash-edit-reddit-source-fetch"),
+  editRedditSourceStatus: $("dash-edit-reddit-source-status"),
+  editRedditSourcePreview: $("dash-edit-reddit-source-preview"),
+  editRedditSourceSub: $("dash-edit-reddit-source-sub"),
+  editRedditSourceTitle: $("dash-edit-reddit-source-title"),
+  editRedditSourceAuthor: $("dash-edit-reddit-source-author"),
+  editRedditSourceLink: $("dash-edit-reddit-source-link"),
+  editRedditSourceClearBtn: $("dash-edit-reddit-source-clear"),
   editError: $("dash-edit-error"),
   editCancel: $("dash-edit-cancel"),
   editSave: $("dash-edit-save"),
@@ -171,6 +196,198 @@ const SOURCE_LABELS = {
 };
 
 const BATTLE_EXTENSIONS = ["jpg", "jpeg", "png"];
+
+/* =========================================================
+   REDDIT SOURCE (OPTIONAL) — "original post" attribution
+   Independent of the `source` channel field and of the
+   PhotoshopBattles reference-link note (`redditFields`/`redditUrl`
+   above). Available on every delivery type. Server-side metadata
+   fetch only, via fetchRedditMetadata() — never blocks delivery
+   creation/editing on failure; the admin can always save the raw
+   URL with no metadata and retry later.
+
+   One controller instance is created for the create form and a
+   second for the edit modal so both stay independent, using the
+   same behaviour.
+========================================================= */
+
+function createRedditSourceController(refs) {
+  const {
+    urlInput,
+    fetchBtn,
+    statusEl,
+    previewEl,
+    subEl,
+    titleEl,
+    authorEl,
+    linkEl,
+    clearBtn
+  } = refs;
+
+  // The last successfully fetched/loaded metadata for whatever URL is
+  // currently in urlInput. Cleared whenever the URL is edited so a stale
+  // preview never gets saved against a different link.
+  let fetched = null;
+  let fetching = false;
+
+  function setStatus(message, tone = "error") {
+    if (!statusEl) return;
+    if (!message) {
+      statusEl.hidden = true;
+      statusEl.textContent = "";
+      return;
+    }
+    statusEl.hidden = false;
+    statusEl.textContent = message;
+    statusEl.dataset.tone = tone;
+  }
+
+  function renderPreview() {
+    if (!previewEl) return;
+
+    if (!fetched) {
+      previewEl.hidden = true;
+      return;
+    }
+
+    if (subEl) subEl.textContent = fetched.subreddit ? `r/${fetched.subreddit}` : "Reddit";
+    if (titleEl) titleEl.textContent = fetched.title || "(title unavailable)";
+    if (authorEl) authorEl.textContent = fetched.author ? `Posted by u/${fetched.author}` : "Poster unknown";
+    if (linkEl) linkEl.href = fetched.canonicalUrl || fetched.url;
+
+    previewEl.hidden = false;
+  }
+
+  function setFetching(state) {
+    fetching = state;
+    if (fetchBtn) {
+      fetchBtn.disabled = state;
+      fetchBtn.textContent = state ? "Fetching…" : "Fetch Post Details";
+    }
+  }
+
+  async function handleFetch() {
+    if (fetching) return;
+
+    const raw = urlInput?.value.trim() || "";
+
+    if (!raw) {
+      setStatus("Paste a Reddit URL first.");
+      return;
+    }
+
+    setStatus("");
+    setFetching(true);
+
+    try {
+      const meta = await fetchRedditMetadata(raw);
+
+      fetched = {
+        url: raw,
+        canonicalUrl: meta.canonicalUrl || raw,
+        subreddit: meta.subreddit || null,
+        author: meta.author || null,
+        title: meta.title || null
+      };
+
+      renderPreview();
+      setStatus("");
+
+    } catch (error) {
+      fetched = null;
+      renderPreview();
+      setStatus(
+        `${error?.message || "Unable to retrieve Reddit post details."} You can still save the delivery with the source link.`
+      );
+
+    } finally {
+      setFetching(false);
+    }
+  }
+
+  function handleClear() {
+    fetched = null;
+    if (urlInput) urlInput.value = "";
+    setStatus("");
+    renderPreview();
+  }
+
+  // If the admin edits the URL after a successful fetch, the old preview
+  // no longer matches — drop it rather than risk saving mismatched data.
+  function handleUrlInput() {
+    if (fetched && urlInput && urlInput.value.trim() !== fetched.url) {
+      fetched = null;
+      renderPreview();
+    }
+    setStatus("");
+  }
+
+  function reset() {
+    fetched = null;
+    if (urlInput) urlInput.value = "";
+    setStatus("");
+    if (previewEl) previewEl.hidden = true;
+  }
+
+  // Loads an existing delivery's reddit_source (or null) into the controls,
+  // used when opening the Edit Delivery modal.
+  function load(existing) {
+    fetched = existing ? { ...existing } : null;
+    if (urlInput) urlInput.value = existing?.url || "";
+    setStatus("");
+    renderPreview();
+  }
+
+  // Builds the value to persist. Returns null when the URL field is empty
+  // (no Reddit source attached — existing delivery behaviour is unaffected).
+  // If a URL is present but was never successfully fetched (or was edited
+  // since the last fetch), it still saves the raw link with no metadata,
+  // per the "save without metadata" requirement.
+  function get() {
+    const raw = urlInput?.value.trim() || "";
+    if (!raw) return null;
+
+    if (fetched && fetched.url === raw) return fetched;
+
+    return {
+      url: raw,
+      canonicalUrl: raw,
+      subreddit: null,
+      author: null,
+      title: null
+    };
+  }
+
+  fetchBtn?.addEventListener("click", handleFetch);
+  clearBtn?.addEventListener("click", handleClear);
+  urlInput?.addEventListener("input", handleUrlInput);
+
+  return { reset, load, get };
+}
+
+const createRedditSource = createRedditSourceController({
+  urlInput: els.redditSourceUrl,
+  fetchBtn: els.redditSourceFetchBtn,
+  statusEl: els.redditSourceStatus,
+  previewEl: els.redditSourcePreview,
+  subEl: els.redditSourceSub,
+  titleEl: els.redditSourceTitle,
+  authorEl: els.redditSourceAuthor,
+  linkEl: els.redditSourceLink,
+  clearBtn: els.redditSourceClearBtn
+});
+
+const editRedditSource = createRedditSourceController({
+  urlInput: els.editRedditSourceUrl,
+  fetchBtn: els.editRedditSourceFetchBtn,
+  statusEl: els.editRedditSourceStatus,
+  previewEl: els.editRedditSourcePreview,
+  subEl: els.editRedditSourceSub,
+  titleEl: els.editRedditSourceTitle,
+  authorEl: els.editRedditSourceAuthor,
+  linkEl: els.editRedditSourceLink,
+  clearBtn: els.editRedditSourceClearBtn
+});
 
 /* =========================================================
    PHOTOSHOP BATTLES — source <-> UI value mapping
@@ -601,6 +818,7 @@ function resetCreateForm() {
   setSelectedFile(null);
   setCreateError("");
   applySource("private");
+  createRedditSource.reset();
 }
 
 async function handleCreateSubmit(event) {
@@ -654,6 +872,11 @@ async function handleCreateSubmit(event) {
     metadata.source = source;
     metadata.source_meta = null;
   }
+
+  // Reddit Source (Optional) — independent of the channel/source fields
+  // above. null when the field was left empty, so a delivery created
+  // without it behaves exactly as before.
+  metadata.reddit_source = createRedditSource.get();
 
   setCreateSaving(true);
   showLoading("Uploading…", "Uploading your file — this may take a moment.");
@@ -1032,6 +1255,8 @@ function openEditModal(delivery) {
   if (els.editRedditUrl) els.editRedditUrl.value = delivery.source_meta?.redditUrl || "";
   if (els.editNotes) els.editNotes.value = delivery.notes || "";
 
+  editRedditSource.load(delivery.reddit_source || null);
+
   applyEditSourceFieldVisibility();
   openModal(els.editModal);
 }
@@ -1039,6 +1264,7 @@ function openEditModal(delivery) {
 function closeEditModal() {
   closeModal(els.editModal);
   editingId = null;
+  editRedditSource.reset();
 }
 
 async function handleEditSubmit(event) {
@@ -1078,6 +1304,10 @@ async function handleEditSubmit(event) {
     updates.source = uiSource;
     updates.source_meta = null;
   }
+
+  // Reddit Source (Optional) — null clears it, same as a normal delivery
+  // that never had one attached.
+  updates.reddit_source = editRedditSource.get();
 
   setEditSaving(true);
 

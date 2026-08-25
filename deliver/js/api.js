@@ -480,7 +480,8 @@ export async function updateDelivery(
     "notes",
     "expires_at",
     "source",
-    "source_meta"
+    "source_meta",
+    "reddit_source"
   ];
 
   const payload = {};
@@ -668,6 +669,33 @@ export async function updateDelivery(
     ) {
       throw new Error(
         "source_meta must be a plain object or null."
+      );
+    }
+  }
+
+
+  /*
+   * Validate reddit_source. Same shape rules as source_meta above —
+   * plain object or null. This is independent of source/source_meta:
+   * it is the optional "original Reddit post" attribution shown to
+   * clients, not the delivery channel.
+   */
+
+  if (
+    Object.prototype.hasOwnProperty.call(
+      payload,
+      "reddit_source"
+    )
+  ) {
+    if (
+      payload.reddit_source !== null &&
+      (
+        typeof payload.reddit_source !== "object" ||
+        Array.isArray(payload.reddit_source)
+      )
+    ) {
+      throw new Error(
+        "reddit_source must be a plain object or null."
       );
     }
   }
@@ -1183,6 +1211,8 @@ export async function fetchRedditMetadata(
   return {
     title: result.title,
     subreddit: result.subreddit || null,
+    author: result.author || null,
+    canonicalUrl: result.canonicalUrl || result.redditUrl || trimmedUrl,
     redditUrl: result.redditUrl || trimmedUrl
   };
 }
