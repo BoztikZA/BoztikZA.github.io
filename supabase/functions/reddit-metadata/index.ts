@@ -24,7 +24,7 @@ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body),
   headers: { ...corsHeaders, "Content-Type": "application/json" }
 });
 
-const USER_AGENT = "BoztikDeliver/1.0 (Command Centre metadata fetch)";
+const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 
 // Classic thread URL: reddit.com/r/<sub>/comments/<id>/...
 const COMMENTS_RE = /\/r\/([A-Za-z0-9_]+)\/comments\/([A-Za-z0-9]+)/i;
@@ -99,52 +99,17 @@ Deno.serve(async request => {
   const timeout = setTimeout(() => controller.abort(), 8000);
 
   try {
-    let subreddit: string | null = null;
-    let postId: string | null = null;
-    let resolvedUrl = rawUrl;
+    const resolvedUrl = await resolveRedirect(rawUrl);
+    console.log(`[Diagnostic] rawUrl: ${rawUrl}`);
+    console.log(`[Diagnostic] resolvedUrl: ${resolvedUrl}`);
 
-    const directMatch = rawUrl.match(COMMENTS_RE);
+    console.log(`[Diagnostic] oembedUrl: ${oembedUrl}`);
 
-    if (directMatch) {
-      subreddit = directMatch[1];
-      postId = directMatch[2];
-    } else {
-      // Share shortlink or redd.it link — resolve the redirect chain first,
-      // then try to read the canonical URL it landed on.
-      resolvedUrl = await resolveRedirect(rawUrl);
-      const resolvedMatch = resolvedUrl.match(COMMENTS_RE);
-
-      if (resolvedMatch) {
-        subreddit = resolvedMatch[1];
-        postId = resolvedMatch[2];
-      } else {
-        // Redirect chain didn't land on a comments URL for some reason —
-        // fall back to whatever we can read out of the original link.
-        const shareMatch = rawUrl.match(SHARE_RE);
-        const reddItMatch = rawUrl.match(REDDIT_IT_RE);
-
-        if (shareMatch) {
-          subreddit = shareMatch[1];
-        } else if (reddItMatch) {
-          postId = reddItMatch[1];
-        }
-      }
-    }
-
-    if (!postId && !subreddit) {
-      return json({
-        error: "unresolvable_share_link",
-        message: "Could not resolve that share link to a Reddit thread."
-      }, 400);
-    }
-
-    const jsonUrl = postId
-      ? `https://www.reddit.com/comments/${postId}.json?raw_json=1`
-      // We only have a subreddit with no real post id (rare fallback) —
-      // ask Reddit's own resolver for the canonical .json directly.
-      : `${resolvedUrl.replace(/\/?$/, "")}.json?raw_json=1`;
-
-    const redditResponse = await fetch(jsonUrl, {
+    
+    // Extract metadata using Reddit's oEmbed endpoint
+    const oembedUrl = `https://www.reddit.com/oembed?url=${encodeURIComponent(resolvedUrl)}`;
+    
+    const redditResponse = await fetch(oembedUrl, {
       signal: controller.signal,
       headers: { "User-Agent": USER_AGENT, Accept: "application/json" }
     });
@@ -156,20 +121,6 @@ Deno.serve(async request => {
       }, 429);
     }
 
-    if (redditResponse.status === 403) {
-      return json({
-        error: "private_subreddit",
-        message: "That subreddit is private or restricted — its posts can't be read."
-      }, 403);
-    }
-
-    if (redditResponse.status === 404) {
-      return json({
-        error: "not_found",
-        message: "That Reddit post could not be found. It may have been deleted."
-      }, 404);
-    }
-
     if (!redditResponse.ok) {
       return json({
         error: "reddit_unavailable",
@@ -177,39 +128,25 @@ Deno.serve(async request => {
       }, 502);
     }
 
-    const payload = await redditResponse.json();
-    const postData = Array.isArray(payload)
-      ? payload?.[0]?.data?.children?.[0]?.data
-      : payload?.data?.children?.[0]?.data?.data;
+    const oembed = await redditResponse.json();
 
-    if (!postData) {
+    if (!oembed || !oembed.title) {
       return json({
         error: "no_post_found",
         message: "Could not read that thread. It may have been deleted or removed."
       }, 502);
     }
 
-    const rawTitle = typeof postData.title === "string" ? postData.title.trim() : "";
-    const removed = Boolean(postData.removed_by_category) || rawTitle === "[deleted]" || rawTitle === "[removed]";
-
-    if (!rawTitle || removed) {
-      return json({
-        error: "post_removed",
-        message: "That Reddit post has been deleted or removed and no longer has readable details."
-      }, 404);
-    }
-
-    const rawAuthor = typeof postData.author === "string" ? postData.author.trim() : "";
-    const author = rawAuthor && rawAuthor !== "[deleted]" && rawAuthor !== "[removed]" ? rawAuthor : null;
-
-    const resolvedSubreddit = postData.subreddit || subreddit || null;
-    const resolvedPostId = postData.id || postId || null;
+    // Extract subreddit from canonical URL
+    const canonicalUrl = oembed.url || resolvedUrl;
+    const subMatch = canonicalUrl.match(COMMENTS_RE);
+    const subreddit = subMatch ? subMatch[1] : null;
 
     return json({
-      title: rawTitle,
-      subreddit: resolvedSubreddit,
-      author,
-      canonicalUrl: canonicalPostUrl(resolvedSubreddit, resolvedPostId, resolvedUrl),
+      title: oembed.title,
+      subreddit: subreddit,
+      author: oembed.author_name || null,
+      canonicalUrl: canonicalUrl,
       redditUrl: rawUrl
     });
 
