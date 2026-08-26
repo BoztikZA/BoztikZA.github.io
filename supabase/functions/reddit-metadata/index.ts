@@ -98,61 +98,101 @@ Deno.serve(async request => {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 8000);
 
+  let resolvedUrl;
   try {
-    const resolvedUrl = await resolveRedirect(rawUrl);
+    resolvedUrl = await resolveRedirect(rawUrl);
+  } catch (error) {
+    clearTimeout(timeout);
+    const timedOut = error instanceof Error && error.name === "AbortError";
+    console.error("[reddit-metadata] resolveRedirect failed:", rawUrl, error);
+    return json({
+      error: timedOut ? "timeout" : "redirect_failed",
+      message: timedOut
+        ? "Reddit took too long to respond while resolving that link."
+        : `Could not resolve that Reddit link (${error instanceof Error ? error.message : String(error)}).`
+    }, 502);
+  }
 
-    // Extract metadata using Reddit's oEmbed endpoint
-    const oembedUrl = `https://www.reddit.com/oembed?url=${encodeURIComponent(resolvedUrl)}`;
+  // Extract metadata using Reddit's oEmbed endpoint
+  const urlObj = new URL(resolvedUrl);
+  urlObj.search = ""; // Remove query parameters which cause 400 errors
+  const cleanUrl = urlObj.toString();
+  const oembedUrl = `https://www.reddit.com/oembed?url=${encodeURIComponent(cleanUrl)}`;
 
-    const redditResponse = await fetch(oembedUrl, {
+  let redditResponse;
+  try {
+    redditResponse = await fetch(oembedUrl, {
       signal: controller.signal,
       headers: { "User-Agent": USER_AGENT, Accept: "application/json" }
     });
-
-    if (redditResponse.status === 429) {
-      return json({
-        error: "rate_limited",
-        message: "Reddit is rate-limiting requests right now. Try again in a moment."
-      }, 429);
-    }
-
-    if (!redditResponse.ok) {
-      return json({
-        error: "reddit_unavailable",
-        message: `Reddit returned HTTP ${redditResponse.status}.`
-      }, 502);
-    }
-
-    const oembed = await redditResponse.json();
-
-    if (!oembed || !oembed.title) {
-      return json({
-        error: "no_post_found",
-        message: "Could not read that thread. It may have been deleted or removed."
-      }, 502);
-    }
-
-    // Extract subreddit from canonical URL
-    const canonicalUrl = oembed.url || resolvedUrl;
-    const subMatch = canonicalUrl.match(COMMENTS_RE);
-    const subreddit = subMatch ? subMatch[1] : null;
-
-    return json({
-      title: oembed.title,
-      subreddit: subreddit,
-      author: oembed.author_name || null,
-      canonicalUrl: canonicalUrl,
-      redditUrl: rawUrl
-    });
-
   } catch (error) {
+    clearTimeout(timeout);
     const timedOut = error instanceof Error && error.name === "AbortError";
+    console.error("[reddit-metadata] oEmbed fetch failed:", oembedUrl, error);
     return json({
       error: timedOut ? "timeout" : "fetch_failed",
-      message: timedOut ? "Reddit took too long to respond." : "Could not reach Reddit."
+      message: timedOut
+        ? "Reddit took too long to respond."
+        : `Could not reach Reddit (${error instanceof Error ? error.message : String(error)}).`
     }, 502);
-
-  } finally {
-    clearTimeout(timeout);
   }
+  clearTimeout(timeout);
+
+  if (redditResponse.status === 429) {
+    return json({
+      error: "rate_limited",
+      message: "Reddit is rate-limiting requests right now. Try again in a moment."
+    }, 429);
+  }
+
+  if (redditResponse.status === 403) {
+    const body = await redditResponse.text().catch(() => "");
+    console.error("[reddit-metadata] Reddit returned 403 for", oembedUrl, "body:", body.slice(0, 500));
+    return json({
+      error: "forbidden",
+      message: "Reddit blocked this request (HTTP 403). This is usually Reddit's own bot protection, not a bug in Deliver — try again in a moment, or save the raw link without metadata."
+    }, 502);
+  }
+
+  if (!redditResponse.ok) {
+    const body = await redditResponse.text().catch(() => "");
+    console.error("[reddit-metadata] Reddit returned", redditResponse.status, "for", oembedUrl, "body:", body.slice(0, 500));
+    return json({
+      error: "reddit_unavailable",
+      message: `Reddit returned HTTP ${redditResponse.status}.`
+    }, 502);
+  }
+
+  const rawBody = await redditResponse.text();
+  let oembed;
+  try {
+    oembed = JSON.parse(rawBody);
+  } catch (error) {
+    console.error("[reddit-metadata] Reddit response was not valid JSON for", oembedUrl, "body:", rawBody.slice(0, 500));
+    return json({
+      error: "invalid_response",
+      message: "Reddit returned an unexpected (non-JSON) response for that link."
+    }, 502);
+  }
+
+  if (!oembed || !oembed.title) {
+    console.error("[reddit-metadata] oEmbed response missing title for", oembedUrl, "body:", rawBody.slice(0, 500));
+    return json({
+      error: "no_post_found",
+      message: "Could not read that thread. It may have been deleted or removed."
+    }, 502);
+  }
+
+  // Extract subreddit from canonical URL
+  const canonicalUrl = oembed.url || resolvedUrl;
+  const subMatch = canonicalUrl.match(COMMENTS_RE);
+  const subreddit = subMatch ? subMatch[1] : null;
+
+  return json({
+    title: oembed.title,
+    subreddit: subreddit,
+    author: oembed.author_name || null,
+    canonicalUrl: canonicalUrl,
+    redditUrl: rawUrl
+  });
 });
