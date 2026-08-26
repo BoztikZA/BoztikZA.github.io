@@ -85,10 +85,9 @@ const els = {
   redditSourceClearBtn: $("dash-reddit-source-clear"),
   uploadZone: $("dash-upload-zone"),
   fileInput: $("dash-file"),
-  filePreview: $("dash-file-preview"),
-  fileName: $("dash-file-name"),
-  fileSize: $("dash-file-size"),
-  fileRemove: $("dash-file-remove"),
+  fileList: $("dash-file-list"),
+  fileRowTemplate: $("dash-file-row-template"),
+  fileSummary: $("dash-file-summary"),
   battleImagePreview: $("dash-battle-image-preview"),
   battleImagePreviewFrame: $("dash-battle-image-preview-frame"),
   battleImagePreviewImg: $("dash-battle-image-preview-img"),
@@ -182,7 +181,7 @@ let pendingDeleteId = null;
 let createSaving = false;
 let editSaving = false;
 let deleteWorking = false;
-let selectedFile = null;
+let selectedFiles = [];
 let toastTimer = null;
 
 const SOURCE_LABELS = {
@@ -659,13 +658,20 @@ function applySource(value) {
       : "e.g. Wedding Restoration";
   }
 
-  // Re-validate the currently selected file against the new mode's rules.
-  if (selectedFile) validateSelectedFile(selectedFile, isBattleMode);
+  // Switching into Battle mode with more than one file already selected
+  // isn't a valid state (Battle mode is single-image only) — trim back to
+  // the first file, same as if the user had only ever picked one.
+  if (isBattleMode && selectedFiles.length > 1) {
+    selectedFiles = selectedFiles.slice(0, 1);
+  }
+
+  // Re-validate the currently selected file(s) against the new mode's rules.
+  renderFileList();
 
   if (els.battleImagePreview && !isBattleMode) {
     els.battleImagePreview.hidden = true;
-  } else if (isBattleMode && selectedFile) {
-    void renderBattlePreview(selectedFile);
+  } else if (isBattleMode && selectedFiles[0]) {
+    void renderBattlePreview(selectedFiles[0]);
   }
 }
 
@@ -741,28 +747,107 @@ async function renderBattlePreview(file) {
   }
 }
 
-function setSelectedFile(file) {
-  selectedFile = file || null;
+/*
+ * Renders the current selectedFiles[] as a list of preview rows (thumbnail
+ * for images, icon for everything else — ZIP/PDF/PSD/AI/EPS — plus
+ * filename, size, and a remove button per row). Image thumbnails use
+ * short-lived object URLs that are revoked once the <img> has painted.
+ */
+function renderFileList() {
+  if (!els.fileList || !els.fileRowTemplate) return;
 
-  if (!file) {
-    if (els.filePreview) els.filePreview.hidden = true;
+  els.fileList.innerHTML = "";
+
+  selectedFiles.forEach((file, index) => {
+    const row = els.fileRowTemplate.content.firstElementChild.cloneNode(true);
+
+    const nameEl = row.querySelector(".dash-file-row-name");
+    const sizeEl = row.querySelector(".dash-file-row-size");
+    const removeEl = row.querySelector(".dash-file-row-remove");
+    const iconEl = row.querySelector(".dash-file-preview-icon");
+
+    if (nameEl) nameEl.textContent = file.name;
+    if (sizeEl) sizeEl.textContent = formatBytes(file.size);
+
+    if (removeEl) {
+      removeEl.setAttribute("aria-label", `Remove ${file.name}`);
+      removeEl.addEventListener("click", () => removeSelectedFile(index));
+    }
+
+    if (iconEl && file.type?.startsWith("image/")) {
+      const url = URL.createObjectURL(file);
+      const img = document.createElement("img");
+      img.src = url;
+      img.alt = "";
+      img.onload = () => setTimeout(() => URL.revokeObjectURL(url), 4000);
+      iconEl.textContent = "";
+      iconEl.classList.add("has-thumb");
+      iconEl.appendChild(img);
+    }
+
+    els.fileList.appendChild(row);
+  });
+
+  const hasFiles = selectedFiles.length > 0;
+  els.fileList.hidden = !hasFiles;
+
+  if (els.fileSummary) {
+    els.fileSummary.hidden = !hasFiles;
+    els.fileSummary.textContent = hasFiles
+      ? `${selectedFiles.length} image${selectedFiles.length === 1 ? "" : "s"} selected`
+      : "";
+  }
+
+  if (!hasFiles) {
     if (els.battleImagePreview) els.battleImagePreview.hidden = true;
     if (els.fileInput) els.fileInput.value = "";
+  }
+}
+
+function removeSelectedFile(index) {
+  selectedFiles = selectedFiles.filter((_, i) => i !== index);
+  renderFileList();
+}
+
+/*
+ * Adds newly-picked files to the existing selection (rather than replacing
+ * it), so the user can build up a multi-image delivery across several
+ * clicks/drops. Each file is validated against the current mode; invalid
+ * files are skipped with an error message rather than silently dropped.
+ * Battle mode is single-image only, matching its original behavior.
+ */
+function addFiles(fileList) {
+  const incoming = Array.from(fileList || []);
+  if (!incoming.length) return;
+
+  const isBattleMode = currentSource() === "photoshop_battles";
+
+  if (isBattleMode) {
+    const file = incoming[0];
+    if (!validateSelectedFile(file, true)) return;
+    selectedFiles = [file];
+    renderFileList();
+    void renderBattlePreview(file);
     return;
   }
 
-  const isBattleMode = currentSource() === "photoshop_battles";
-  const valid = validateSelectedFile(file, isBattleMode);
+  let rejected = 0;
 
-  if (els.fileName) els.fileName.textContent = file.name;
-  if (els.fileSize) els.fileSize.textContent = formatBytes(file.size);
-  if (els.filePreview) els.filePreview.hidden = false;
-
-  if (isBattleMode && valid) {
-    void renderBattlePreview(file);
-  } else if (els.battleImagePreview) {
-    els.battleImagePreview.hidden = true;
+  for (const file of incoming) {
+    if (isValidFile(file)) {
+      selectedFiles.push(file);
+    } else {
+      rejected += 1;
+    }
   }
+
+  setCreateError(
+    rejected
+      ? `${rejected} file${rejected === 1 ? "" : "s"} skipped — unsupported type or too large.`
+      : ""
+  );
+
+  renderFileList();
 }
 
 function setupFileSelection() {
@@ -787,16 +872,15 @@ function setupFileSelection() {
   els.uploadZone?.addEventListener("drop", event => {
     event.preventDefault();
     els.uploadZone.classList.remove("is-dragover");
-    const file = event.dataTransfer?.files?.[0];
-    if (file) setSelectedFile(file);
+    addFiles(event.dataTransfer?.files);
   });
 
   els.fileInput?.addEventListener("change", () => {
-    const file = els.fileInput.files?.[0];
-    if (file) setSelectedFile(file);
+    addFiles(els.fileInput.files);
+    // Cleared so selecting the same file(s) again after a remove still
+    // fires a change event.
+    els.fileInput.value = "";
   });
-
-  els.fileRemove?.addEventListener("click", () => setSelectedFile(null));
 }
 
 /* =========================================================
@@ -815,7 +899,8 @@ function setCreateSaving(saving) {
 
 function resetCreateForm() {
   els.createForm?.reset();
-  setSelectedFile(null);
+  selectedFiles = [];
+  renderFileList();
   setCreateError("");
   applySource("private");
   createRedditSource.reset();
@@ -831,13 +916,20 @@ async function handleCreateSubmit(event) {
 
   setCreateError("");
 
-  if (!selectedFile) {
-    setCreateError("Please choose a file to upload.");
+  if (!selectedFiles.length) {
+    setCreateError("Please choose at least one file to upload.");
     return;
   }
 
-  if (!validateSelectedFile(selectedFile, isBattleMode)) {
+  if (isBattleMode && selectedFiles.length > 1) {
+    setCreateError("PhotoshopBattles deliveries support a single image only.");
     return;
+  }
+
+  for (const file of selectedFiles) {
+    if (!validateSelectedFile(file, isBattleMode)) {
+      return;
+    }
   }
 
   const clientNameRaw = els.clientName?.value.trim() || "";
@@ -856,7 +948,7 @@ async function handleCreateSubmit(event) {
   const metadata = {
     id,
     client_name: clientNameRaw || "PhotoshopBattles",
-    project_name: projectNameRaw || selectedFile.name.replace(/\.[^.]+$/, ""),
+    project_name: projectNameRaw || selectedFiles[0].name.replace(/\.[^.]+$/, ""),
     notes: notesRaw || null,
     expires_at: new Date(Date.now() + hours * 3600000).toISOString()
   };
@@ -879,14 +971,23 @@ async function handleCreateSubmit(event) {
   metadata.reddit_source = createRedditSource.get();
 
   setCreateSaving(true);
-  showLoading("Uploading…", "Uploading your file — this may take a moment.");
+  showLoading(
+    "Uploading…",
+    selectedFiles.length > 1
+      ? `Uploading ${selectedFiles.length} images — this may take a moment.`
+      : "Uploading your file — this may take a moment."
+  );
 
   try {
-    await createDelivery(metadata, [selectedFile], () => {
+    await createDelivery(metadata, selectedFiles, () => {
       showLoading("Finishing up…", "Saving delivery details.");
     });
 
-    const created = { ...metadata, file_name: selectedFile.name, file_size: selectedFile.size };
+    const created = {
+      ...metadata,
+      file_name: selectedFiles[0].name,
+      file_size: selectedFiles.reduce((total, file) => total + file.size, 0)
+    };
     showSuccessModal(created);
 
     resetCreateForm();

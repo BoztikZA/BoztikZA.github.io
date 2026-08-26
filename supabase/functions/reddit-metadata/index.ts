@@ -100,15 +100,10 @@ Deno.serve(async request => {
 
   try {
     const resolvedUrl = await resolveRedirect(rawUrl);
-    console.log(`[Diagnostic] rawUrl: ${rawUrl}`);
-    console.log(`[Diagnostic] resolvedUrl: ${resolvedUrl}`);
 
-    console.log(`[Diagnostic] oembedUrl: ${oembedUrl}`);
-
-    
     // Extract metadata using Reddit's oEmbed endpoint
     const oembedUrl = `https://www.reddit.com/oembed?url=${encodeURIComponent(resolvedUrl)}`;
-    
+
     const redditResponse = await fetch(oembedUrl, {
       signal: controller.signal,
       headers: { "User-Agent": USER_AGENT, Accept: "application/json" }

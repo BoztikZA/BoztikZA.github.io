@@ -6104,6 +6104,39 @@ body.dash-modal-open {
 }
 
 
+/* ---- Multi-file selection list (Create Delivery) ---- */
+
+.dash-file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.dash-file-list .dash-file-preview {
+  margin-top: 0;
+}
+
+.dash-file-preview-icon.has-thumb {
+  padding: 0;
+  overflow: hidden;
+  background: var(--deliver-surface-2);
+}
+
+.dash-file-preview-icon.has-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.dash-file-summary {
+  margin: 10px 0 0;
+  font-size: 0.78rem;
+  color: var(--deliver-text-muted);
+}
+
+
 /* ---- PhotoshopBattles image preview ---- */
 
 .dash-battle-image-preview {

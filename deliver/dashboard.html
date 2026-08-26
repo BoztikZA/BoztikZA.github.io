@@ -1448,7 +1448,7 @@
                 class="dash-upload-zone"
                 tabindex="0"
                 role="button"
-                aria-label="Choose a file to upload"
+                aria-label="Choose one or more files to upload"
               >
 
                 <input
@@ -1456,7 +1456,8 @@
                   name="file"
                   type="file"
                   hidden
-                  accept=".zip,.jpg,.jpeg,.png,.webp,.pdf"
+                  multiple
+                  accept=".zip,.jpg,.jpeg,.png,.webp,.tif,.tiff,.pdf"
                 >
 
                 <div class="dash-upload-icon">
@@ -1464,58 +1465,66 @@
                 </div>
 
                 <strong>
-                  Drop your file here
+                  Drop your files here
                 </strong>
 
                 <span>
-                  or click to browse
+                  or click to browse — select multiple images at once
                 </span>
 
                 <small>
-                  ZIP, JPG, PNG, WEBP or PDF
+                  ZIP, JPG, PNG, WEBP, TIFF or PDF
                 </small>
 
               </div>
 
 
-              <!-- FILE PREVIEW -->
+              <!-- FILE PREVIEW LIST (one row per selected file; supports
+                   multiple images in a single delivery). Rows are built by
+                   dashboard.js from a single template row kept here so no
+                   inline JS templating is needed. -->
 
               <div
-                id="dash-file-preview"
-                class="dash-file-preview"
+                id="dash-file-list"
+                class="dash-file-list"
                 hidden
-              >
+              ></div>
 
-                <div class="dash-file-preview-icon">
-                  ▣
-                </div>
+              <template id="dash-file-row-template">
+                <div class="dash-file-preview">
 
-                <div class="dash-file-preview-info">
+                  <div class="dash-file-preview-icon">
+                    ▣
+                  </div>
 
-                  <strong
-                    id="dash-file-name"
+                  <div class="dash-file-preview-info">
+
+                    <strong class="dash-file-row-name">
+                      —
+                    </strong>
+
+                    <span class="dash-file-row-size">
+                      —
+                    </span>
+
+                  </div>
+
+                  <button
+                    type="button"
+                    class="dash-icon-button dash-file-row-remove"
+                    aria-label="Remove this file"
                   >
-                    —
-                  </strong>
-
-                  <span
-                    id="dash-file-size"
-                  >
-                    —
-                  </span>
+                    ×
+                  </button>
 
                 </div>
+              </template>
 
-                <button
-                  type="button"
-                  class="dash-icon-button"
-                  id="dash-file-remove"
-                  aria-label="Remove selected file"
-                >
-                  ×
-                </button>
-
-              </div>
+              <p
+                id="dash-file-summary"
+                class="dash-file-summary"
+                hidden
+              ></p>
 
 
               <!-- =========================================
