@@ -79,36 +79,48 @@
     ====================================================== */
 
     #deliver-support.boztik-support-compact {
-      position: relative;
+      position: sticky;
+      top: 24px;
 
       margin: 0;
 
-      padding: 28px 24px;
+      padding: 32px 28px;
 
       border-radius: 20px;
 
-      border:
-        1px solid
-        rgba(142, 255, 61, 0.16);
+      /* Premium Border/Glow */
+      border: 1px solid rgba(142, 255, 61, 0.25);
 
       background:
         linear-gradient(
-          145deg,
-          rgba(142, 255, 61, 0.065),
-          rgba(18, 22, 29, 0.98) 48%,
+          160deg,
+          rgba(142, 255, 61, 0.08),
+          rgba(18, 22, 29, 0.98) 45%,
           rgba(10, 13, 18, 0.98)
         );
 
+      /* Subtle Glow Shadow */
       box-shadow:
-        0 18px 45px rgba(0, 0, 0, 0.28),
-        inset 0 1px 0 rgba(255,255,255,0.035);
+        0 8px 30px rgba(0, 0, 0, 0.4),
+        0 0 20px rgba(142, 255, 61, 0.08),
+        inset 0 1px 0 rgba(255,255,255,0.05);
 
       overflow: hidden;
 
       display: flex;
       flex-direction: column;
-      height: 100%;
+      height: fit-content;
       box-sizing: border-box;
+
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    #deliver-support.boztik-support-compact:hover {
+      border-color: rgba(142, 255, 61, 0.4);
+      box-shadow:
+        0 12px 40px rgba(0, 0, 0, 0.5),
+        0 0 30px rgba(142, 255, 61, 0.12),
+        inset 0 1px 0 rgba(255,255,255,0.08);
     }
 
 
