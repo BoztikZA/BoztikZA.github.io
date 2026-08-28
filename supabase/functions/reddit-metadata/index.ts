@@ -12,16 +12,21 @@
 // back to manual entry / saving the raw URL without metadata.
 //
 // Deploy with: supabase functions deploy reddit-metadata
-const allowedOrigin = Deno.env.get("ALLOWED_ORIGIN") ?? "https://boztikza.github.io";
-const corsHeaders = {
-  "Access-Control-Allow-Origin": allowedOrigin,
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Vary": "Origin"
-};
-const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
+function getCorsHeaders(request: Request) {
+  const origin = request.headers.get("Origin");
+  const allowedOrigins = ["https://boztikza.github.io", "https://boztik.com"];
+  const corsOrigin = allowedOrigins.includes(origin ?? "") ? origin : "https://boztik.com";
+  return {
+    "Access-Control-Allow-Origin": corsOrigin,
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Vary": "Origin"
+  };
+}
+
+const json = (body: unknown, request: Request, status = 200) => new Response(JSON.stringify(body), {
   status,
-  headers: { ...corsHeaders, "Content-Type": "application/json" }
+  headers: { ...getCorsHeaders(request), "Content-Type": "application/json" }
 });
 
 const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";

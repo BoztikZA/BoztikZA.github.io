@@ -9,7 +9,7 @@ Boztik Deliver is a static premium client-delivery interface backed by Supabase 
 3. In Authentication, create the administrator user in project `hwcxxotgtqchcriascti`. Disable public sign-ups.
 4. Confirm the anon key in `js/config.js` is the **anon public key from this same project**. Never use a service-role key in this static site.
 5. Set `publicBaseUrl` to the deployed Deliver directory. The configured PayPal support URL is `http://paypal.me/angry5p1c3`.
-6. Deploy the secure file signer before testing client downloads: `supabase functions deploy deliver-file`. Set `ALLOWED_ORIGIN=https://boztikza.github.io` if it is not already configured. This function verifies the delivery has not expired and that the requested file belongs to it before issuing a short-lived URL.
+6. Deploy the secure file signer before testing client downloads: `supabase functions deploy deliver-file`. Set `ALLOWED_ORIGIN=https://boztik.com` if it is not already configured. This function verifies the delivery has not expired and that the requested file belongs to it before issuing a short-lived URL.
 
 ## Authentication checks
 
