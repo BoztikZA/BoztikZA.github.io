@@ -91,7 +91,15 @@ async function requestServerSignedUrl(file, mode) {
   }
 
   const response = await fetch(
-    DELIVER_FILE_FUNCTION,
+    /*
+     * The apikey is also passed as a URL param (in addition to
+     * the header below) as a defensive fallback. Supabase's
+     * gateway accepts either — this guards against any
+     * intermediary stripping custom headers on this cross-origin
+     * POST without changing what key is used or how it's
+     * validated.
+     */
+    `${DELIVER_FILE_FUNCTION}?apikey=${encodeURIComponent(config.supabaseAnonKey)}`,
     {
       method: "POST",
 
