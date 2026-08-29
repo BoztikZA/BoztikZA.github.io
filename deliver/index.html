@@ -79,48 +79,54 @@
     ====================================================== */
 
     #deliver-support.boztik-support-compact {
-      position: sticky;
-      top: 24px;
+      position: relative;
 
       margin: 0;
 
-      padding: 32px 28px;
+      padding: 28px 24px;
 
       border-radius: 20px;
 
-      /* Premium Border/Glow */
-      border: 1px solid rgba(142, 255, 61, 0.25);
+      border:
+        1px solid
+        rgba(142, 255, 61, 0.16);
 
       background:
         linear-gradient(
-          160deg,
-          rgba(142, 255, 61, 0.08),
-          rgba(18, 22, 29, 0.98) 45%,
+          145deg,
+          rgba(142, 255, 61, 0.065),
+          rgba(18, 22, 29, 0.98) 48%,
           rgba(10, 13, 18, 0.98)
         );
 
-      /* Subtle Glow Shadow */
       box-shadow:
-        0 8px 30px rgba(0, 0, 0, 0.4),
-        0 0 20px rgba(142, 255, 61, 0.08),
-        inset 0 1px 0 rgba(255,255,255,0.05);
+        0 18px 45px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255,255,255,0.035);
 
       overflow: hidden;
 
       display: flex;
       flex-direction: column;
-      height: fit-content;
+      height: 100%;
       box-sizing: border-box;
 
-      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      transition:
+        transform 220ms ease,
+        box-shadow 220ms ease,
+        border-color 220ms ease;
     }
 
+
     #deliver-support.boztik-support-compact:hover {
-      border-color: rgba(142, 255, 61, 0.4);
+      transform: translateY(-2px);
+
+      border-color:
+        rgba(142, 255, 61, 0.28);
+
       box-shadow:
-        0 12px 40px rgba(0, 0, 0, 0.5),
-        0 0 30px rgba(142, 255, 61, 0.12),
-        inset 0 1px 0 rgba(255,255,255,0.08);
+        0 22px 52px rgba(0, 0, 0, 0.32),
+        0 0 0 1px rgba(142, 255, 61, 0.05),
+        inset 0 1px 0 rgba(255,255,255,0.04);
     }
 
 
@@ -138,7 +144,7 @@
       border-radius: 50%;
 
       background:
-        rgba(142, 255, 61, 0.08);
+        rgba(142, 255, 61, 0.1);
 
       filter: blur(24px);
 
@@ -161,7 +167,7 @@
         linear-gradient(
           90deg,
           transparent,
-          rgba(142,255,61,0.45),
+          rgba(142,255,61,0.55),
           transparent
         );
     }
@@ -183,7 +189,7 @@
     }
 
     .deliver-section-label {
-      font-size: 0.62rem;
+      font-size: 0.65rem;
       font-weight: 800;
       letter-spacing: 0.1em;
       text-transform: uppercase;
@@ -193,6 +199,9 @@
       display: flex;
       align-items: center;
       gap: 5px;
+
+      text-shadow:
+        0 0 14px rgba(142, 255, 61, 0.25);
     }
 
     .boztik-support-heading {
@@ -200,22 +209,27 @@
     }
 
 
-    .boztik-support-heading .gratitude-title {
+    .gratitude-title {
       margin: 7px 0 10px;
 
       font-family:
         "Plus Jakarta Sans",
         sans-serif;
 
-      font-size: 1.35rem;
+      font-size: 1.46rem;
+
+      font-weight: 780;
 
       line-height: 1.2;
 
       letter-spacing: -0.025em;
+
+      color:
+        var(--deliver-text);
     }
 
 
-    .boztik-support-heading .gratitude-copy {
+    .gratitude-copy {
       margin: 0;
 
       color:
@@ -322,13 +336,13 @@
       align-items: center;
       justify-content: center;
 
-      width: 38px;
-      height: 38px;
+      width: 40px;
+      height: 40px;
 
-      border-radius: 9px;
+      border-radius: 10px;
 
       background:
-        rgba(255,255,255,0.04);
+        rgba(255,255,255,0.05);
     }
 
 
@@ -368,13 +382,13 @@
       justify-content: center;
       gap: 6px;
 
-      min-height: 46px;
+      min-height: 50px;
 
-      padding: 12px 18px;
+      padding: 13px 20px;
 
-      border-radius: 10px;
+      border-radius: 11px;
 
-      font-size: 0.82rem;
+      font-size: 0.86rem;
 
       font-weight: 800;
 
@@ -392,7 +406,7 @@
 
 
     .boztik-support-button:hover {
-      transform: translateY(-1px);
+      transform: translateY(-2px);
     }
 
 
@@ -412,6 +426,12 @@
     }
 
 
+    .boztik-support-button.kofi:hover {
+      box-shadow:
+        0 12px 26px rgba(255,94,91,0.34);
+    }
+
+
     .boztik-support-button.paypal {
       color: #fff;
 
@@ -424,6 +444,12 @@
 
       box-shadow:
         0 8px 18px rgba(0,48,135,0.24);
+    }
+
+
+    .boztik-support-button.paypal:hover {
+      box-shadow:
+        0 12px 26px rgba(0,48,135,0.36);
     }
 
     .why-copy {
