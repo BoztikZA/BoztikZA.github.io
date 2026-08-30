@@ -69,6 +69,40 @@
     }
 
 
+    /* =====================================================
+       STICKY SUPPORT CARD (DESKTOP / TABLET-LANDSCAPE ONLY)
+       Above 900px the layout is two columns, so the support
+       card can stick while the (taller) file column scrolls
+       past it. Below 900px it returns to normal flow — see
+       the max-width: 900px block further down, which already
+       resets position to relative for that breakpoint.
+    ====================================================== */
+
+    @media (min-width: 901px) {
+
+      .boztik-files-support-layout {
+        align-items: start;
+      }
+
+      #deliver-support.boztik-support-compact {
+        position: sticky;
+        top: 24px;
+        height: auto;
+        max-height: calc(100vh - 48px);
+        overflow-y: auto;
+
+        /* keep the card from visually colliding with the file
+           column's bottom edge when it's shorter than the photo */
+        align-self: start;
+      }
+
+      .boztik-support-inner {
+        height: auto;
+      }
+
+    }
+
+
     .boztik-files-column {
       min-width: 0;
     }
@@ -380,19 +414,21 @@
 
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 8px;
 
-      min-height: 50px;
+      min-height: 52px;
 
       padding: 13px 20px;
 
-      border-radius: 11px;
+      border-radius: 12px;
 
-      font-size: 0.86rem;
+      border: 1px solid transparent;
+
+      font-size: 0.9rem;
 
       font-weight: 800;
 
-      letter-spacing: 0.01em;
+      letter-spacing: 0.015em;
 
       text-decoration: none;
 
@@ -401,12 +437,18 @@
       transition:
         transform 180ms ease,
         box-shadow 180ms ease,
-        opacity 180ms ease;
+        filter 180ms ease;
     }
 
 
     .boztik-support-button:hover {
       transform: translateY(-2px);
+      filter: brightness(1.06);
+    }
+
+
+    .boztik-support-button:active {
+      transform: translateY(0);
     }
 
 
@@ -416,19 +458,35 @@
     }
 
 
+    .boztik-support-button span[aria-hidden="true"] {
+      transition: transform 180ms ease;
+    }
+
+    .boztik-support-button:hover span[aria-hidden="true"] {
+      transform: translate(2px, -2px);
+    }
+
+
     .boztik-support-button.kofi {
       color: #fff;
 
-      background: #ff5e5b;
+      background:
+        linear-gradient(
+          135deg,
+          #ff7a77,
+          #ff5e5b
+        );
+
+      border-color: rgba(255, 255, 255, 0.12);
 
       box-shadow:
-        0 8px 18px rgba(255,94,91,0.22);
+        0 10px 22px rgba(255, 94, 91, 0.3);
     }
 
 
     .boztik-support-button.kofi:hover {
       box-shadow:
-        0 12px 26px rgba(255,94,91,0.34);
+        0 14px 32px rgba(255, 94, 91, 0.42);
     }
 
 
@@ -438,18 +496,20 @@
       background:
         linear-gradient(
           135deg,
-          #0070ba,
+          #0091e6,
           #003087
         );
 
+      border-color: rgba(255, 255, 255, 0.12);
+
       box-shadow:
-        0 8px 18px rgba(0,48,135,0.24);
+        0 10px 22px rgba(0, 48, 135, 0.32);
     }
 
 
     .boztik-support-button.paypal:hover {
       box-shadow:
-        0 12px 26px rgba(0,48,135,0.36);
+        0 14px 32px rgba(0, 48, 135, 0.44);
     }
 
     .why-copy {
@@ -1143,6 +1203,26 @@
         grid-template-columns:
           minmax(0, 1fr)
           minmax(320px, 400px);
+      }
+
+    }
+
+
+    /* =====================================================
+       ULTRA-WIDE DESKTOP
+       Now that .deliver-page spans more of the viewport, give
+       the support column a touch more room and a wider gap so
+       the two columns still feel balanced rather than stretched.
+    ====================================================== */
+
+    @media (min-width: 1600px) {
+
+      .boztik-files-support-layout {
+        gap: 32px;
+
+        grid-template-columns:
+          minmax(0, 1fr)
+          minmax(340px, 420px);
       }
 
     }

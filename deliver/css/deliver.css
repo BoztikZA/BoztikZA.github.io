@@ -161,20 +161,20 @@ a:focus-visible {
 ========================================================= */
 
 .deliver-page {
-  width: min(1320px, calc(100% - 64px));
+  width: min(1640px, calc(100% - 64px));
   margin: 0 auto;
   padding: 60px 0 100px;
 }
 
 @media (max-width: 900px) {
   .deliver-page {
-    width: min(100% - 48px, 1320px);
+    width: min(100% - 48px, 1640px);
   }
 }
 
 @media (max-width: 700px) {
   .deliver-page {
-    width: min(100% - 32px, 1320px);
+    width: min(100% - 32px, 1640px);
     padding: 40px 0 60px;
   }
 }
@@ -5093,9 +5093,6 @@ a:focus-visible {
   .deliver-card-refined {
     padding: 24px;
   }
-  .deliver-meta-refined {
-    grid-template-columns: 1fr 1fr;
-  }
 }
 
 .deliver-gallery-header {
@@ -5118,26 +5115,95 @@ a:focus-visible {
     repeat(3, minmax(0, 1fr));
 
   gap:
-    12px;
+    14px;
 
   margin-top:
     22px;
+
+  /* Cards carry their own borders now — drop the seam-grid
+     background trick from the base .deliver-meta-refined rule. */
+  background: none;
+  border: none;
+  border-radius: 0;
+  overflow: visible;
 
 }
 
 
 .deliver-meta-refined .meta-group {
 
+  position: relative;
+
   padding:
-    15px 17px;
+    18px 20px 16px;
+
+  background: var(--deliver-bg-soft);
+  border: 1px solid var(--deliver-border);
+  border-radius: 14px;
+  overflow: hidden;
+
+  transition:
+    border-color 200ms ease,
+    background 200ms ease,
+    transform 200ms ease;
+
+}
+
+
+.deliver-meta-refined .meta-group::before {
+
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      var(--deliver-accent),
+      transparent
+    );
+
+  opacity: 0.5;
+
+}
+
+
+.deliver-meta-refined .meta-group:hover {
+
+  border-color: var(--deliver-accent-border);
+  background: rgba(142, 255, 61, 0.035);
+  transform: translateY(-2px);
 
 }
 
 
 .deliver-meta-refined .meta-label {
 
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
   margin-bottom:
-    5px;
+    8px;
+
+  color: var(--deliver-accent);
+  opacity: 0.9;
+
+}
+
+
+.deliver-meta-refined .meta-value {
+
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--deliver-text);
+
+  white-space: normal;
+  word-break: break-word;
 
 }
 
@@ -5147,8 +5213,22 @@ a:focus-visible {
   .deliver-meta-refined {
 
     grid-template-columns:
-      1fr;
+      1fr 1fr;
 
+    gap: 10px;
+
+  }
+
+  .deliver-meta-refined .meta-group {
+    padding: 15px 16px 13px;
+  }
+
+}
+
+@media (max-width: 460px) {
+
+  .deliver-meta-refined {
+    grid-template-columns: 1fr;
   }
 
 }
@@ -6651,6 +6731,21 @@ body.dash-modal-open {
 
   .deliver-gallery-refined.single-file .deliver-file-content {
     padding: 22px 18px 24px;
+  }
+}
+
+/* Wider desktop: with the delivery container now spanning more of
+   the viewport (see .deliver-page), give the photograph itself more
+   room to breathe — it's the primary visual, so it should grow with
+   the page rather than staying capped at a fixed size. */
+@media (min-width: 1300px) {
+  .deliver-gallery-refined.single-file .deliver-file-preview {
+    min-height: 440px;
+    padding: 28px;
+  }
+
+  .deliver-gallery-refined.single-file .deliver-preview-image {
+    max-height: min(78vh, 940px);
   }
 }
 
