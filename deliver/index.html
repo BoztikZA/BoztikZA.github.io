@@ -69,40 +69,6 @@
     }
 
 
-    /* =====================================================
-       STICKY SUPPORT CARD (DESKTOP / TABLET-LANDSCAPE ONLY)
-       Above 900px the layout is two columns, so the support
-       card can stick while the (taller) file column scrolls
-       past it. Below 900px it returns to normal flow — see
-       the max-width: 900px block further down, which already
-       resets position to relative for that breakpoint.
-    ====================================================== */
-
-    @media (min-width: 901px) {
-
-      .boztik-files-support-layout {
-        align-items: start;
-      }
-
-      #deliver-support.boztik-support-compact {
-        position: sticky;
-        top: 24px;
-        height: auto;
-        max-height: calc(100vh - 48px);
-        overflow-y: auto;
-
-        /* keep the card from visually colliding with the file
-           column's bottom edge when it's shorter than the photo */
-        align-self: start;
-      }
-
-      .boztik-support-inner {
-        height: auto;
-      }
-
-    }
-
-
     .boztik-files-column {
       min-width: 0;
     }
@@ -1223,6 +1189,44 @@
         grid-template-columns:
           minmax(0, 1fr)
           minmax(340px, 420px);
+      }
+
+    }
+
+
+    /* =====================================================
+       STICKY SUPPORT CARD (DESKTOP / TABLET-LANDSCAPE ONLY)
+       Placed AFTER every base rule for #deliver-support and
+       .boztik-support-inner (position/height/overflow), so at
+       equal specificity these overrides win in the cascade —
+       putting this block earlier caused the base rules
+       (position: relative / height: 100% / overflow: hidden)
+       to silently override it and break sticky. Above 900px
+       the layout is two columns, so the card can stick while
+       the (taller) file column scrolls past it. The TABLET
+       block right below resets it to normal flow at ≤900px.
+    ====================================================== */
+
+    @media (min-width: 901px) {
+
+      .boztik-files-support-layout {
+        align-items: start;
+      }
+
+      #deliver-support.boztik-support-compact {
+        position: sticky;
+        top: 24px;
+        height: auto;
+        max-height: calc(100vh - 48px);
+        overflow-y: auto;
+
+        /* keep the card from visually colliding with the file
+           column's bottom edge when it's shorter than the photo */
+        align-self: start;
+      }
+
+      .boztik-support-inner {
+        height: auto;
       }
 
     }

@@ -161,20 +161,24 @@ a:focus-visible {
 ========================================================= */
 
 .deliver-page {
-  width: min(1640px, calc(100% - 64px));
+  /* Fluid width: scales with the viewport instead of stopping at a
+     hard cap, so the content actually keeps growing on large/ultra-wide
+     monitors rather than leaving big fixed margins. 2200px is only a
+     ceiling for extreme widths (4K/ultra-wide) — see the note below. */
+  width: min(94%, 2200px);
   margin: 0 auto;
   padding: 60px 0 100px;
 }
 
 @media (max-width: 900px) {
   .deliver-page {
-    width: min(100% - 48px, 1640px);
+    width: min(100% - 48px, 2200px);
   }
 }
 
 @media (max-width: 700px) {
   .deliver-page {
-    width: min(100% - 32px, 1640px);
+    width: min(100% - 32px, 2200px);
     padding: 40px 0 60px;
   }
 }
