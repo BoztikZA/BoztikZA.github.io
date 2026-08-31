@@ -98,6 +98,23 @@ body {
   min-height:
     100vh;
 
+  /* The site-wide stylesheet (../styles-premium.css) sets
+     `overflow-x: hidden` on body, which per the CSS Overflow spec
+     forces the browser to also compute overflow-y as `auto` (an
+     axis left at "visible" gets silently upgraded to "auto" once
+     the other axis is non-visible). That makes <body> a scroll
+     container, which is a well-known cause of position: sticky
+     silently failing for descendants like the support sidebar —
+     the sticky element's containing block resolves against the
+     wrong scrolling ancestor. `clip` prevents horizontal overflow
+     just like `hidden` did, without turning body into a scroll
+     container, so it doesn't interfere with sticky further down
+     the tree. Scoped to this page only — styles-premium.css itself
+     is untouched since deliver.css loads after it and applies only
+     to deliver/*.html. */
+  overflow-x:
+    clip;
+
   background:
     radial-gradient(
       circle at 50% -10%,
