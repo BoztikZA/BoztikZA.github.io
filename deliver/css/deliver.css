@@ -5985,6 +5985,33 @@ body.dash-modal-open {
 }
 .deliver-floating-support a:hover { background: var(--deliver-accent-hover); transform: translateY(-1px); }
 
+.deliver-floating-support__tips {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.deliver-floating-support .deliver-tip-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 8px 10px;
+  border: 1px solid var(--deliver-border-strong);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--deliver-text-soft);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.deliver-floating-support .deliver-tip-link:hover { background: rgba(255, 255, 255, 0.075); }
+.deliver-tip-link svg { width: 19px; height: 19px; flex: 0 0 auto; }
+.deliver-tip-link--kofi { color: #ff8f8b !important; border-color: rgba(255, 94, 91, 0.38) !important; }
+.deliver-tip-link--paypal { border-color: rgba(0, 156, 222, 0.4) !important; }
+
 @media (max-width: 620px) {
   .deliver-floating-support { right: 12px; bottom: 12px; width: min(310px, calc(100vw - 24px)); padding: 14px; }
   .deliver-floating-support p { display: none; }
