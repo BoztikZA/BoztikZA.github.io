@@ -5929,6 +5929,133 @@ body.dash-modal-open {
   .deliver-expired-actions a { width: 100%; max-width: none !important; justify-content: center; }
 }
 
+/* =========================================================
+   CLIENT SUPPORT — fixed, concise, and independent of gallery
+========================================================= */
+
+.deliver-floating-support {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 850;
+  width: min(328px, calc(100vw - 32px));
+  padding: 17px;
+  border: 1px solid rgba(142, 255, 61, 0.3);
+  border-radius: 16px;
+  background: rgba(15, 20, 26, 0.97);
+  box-shadow: 0 18px 54px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.025) inset;
+  backdrop-filter: blur(18px);
+}
+
+.deliver-floating-support__status {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 8px;
+  color: var(--deliver-accent);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.deliver-floating-support__status span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--deliver-accent);
+  box-shadow: 0 0 12px rgba(142, 255, 61, 0.8);
+}
+
+.deliver-floating-support strong { display: block; color: var(--deliver-text); font-size: 0.98rem; }
+.deliver-floating-support p { margin: 6px 0 13px; color: var(--deliver-text-muted); font-size: 0.8rem; line-height: 1.45; }
+.deliver-floating-support a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 42px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--deliver-accent);
+  color: #071006;
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+.deliver-floating-support a:hover { background: var(--deliver-accent-hover); transform: translateY(-1px); }
+
+@media (max-width: 620px) {
+  .deliver-floating-support { right: 12px; bottom: 12px; width: min(310px, calc(100vw - 24px)); padding: 14px; }
+  .deliver-floating-support p { display: none; }
+  .deliver-floating-support__status { margin-bottom: 5px; }
+}
+
+/* =========================================================
+   COMMAND CENTRE — final visual and responsive consolidation
+========================================================= */
+
+.deliver-dashboard-body .dash-page {
+  width: min(1440px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 42px 0 72px;
+}
+
+.dash-header {
+  padding: 28px 30px;
+  margin-bottom: 22px;
+  border: 1px solid var(--deliver-border);
+  border-radius: 20px;
+  background: radial-gradient(circle at 100% 0, rgba(142, 255, 61, 0.1), transparent 34%), var(--deliver-surface);
+}
+
+.dash-tabs {
+  gap: 8px;
+  padding: 8px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.025);
+  overflow: visible;
+  margin-bottom: 30px;
+}
+
+.dash-tab {
+  min-height: 74px;
+  padding: 14px 16px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: transparent;
+  white-space: normal;
+}
+
+.dash-tab-icon { margin: 0; font-size: 1.1rem; }
+.dash-tab strong { margin: 0; font-size: 0.88rem; }
+.dash-tab small { margin-top: 2px; }
+.dash-tab.is-active { border-color: var(--deliver-accent-border); background: var(--deliver-accent-soft); }
+.dash-tab.is-active::after { display: none; }
+
+.dash-panel,
+.dash-delivery-card { box-shadow: 0 12px 30px rgba(0, 0, 0, 0.13); }
+
+.dash-delivery-card:hover { transform: translateY(-2px); box-shadow: 0 18px 38px rgba(0, 0, 0, 0.2); }
+
+@media (max-width: 800px) {
+  .deliver-dashboard-body .dash-page { width: min(100% - 24px, 1440px); padding-top: 24px; }
+  .dash-header { align-items: flex-start; padding: 22px; margin-bottom: 16px; }
+  .dash-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 22px; }
+  .dash-tab { min-height: 62px; padding: 11px; }
+}
+
+@media (max-width: 460px) {
+  .dash-header { flex-direction: column; gap: 16px; }
+  .dash-header .dash-btn { width: 100%; }
+  .dash-tabs { gap: 5px; padding: 5px; }
+  .dash-tab { min-height: 58px; }
+  .dash-tab small { display: none; }
+  .dash-section-actions { width: 100%; }
+  .dash-section-actions .dash-btn { flex: 1 1 auto; }
+  .dash-delivery-card-actions .dash-btn { min-width: calc(50% - 4px); }
+}
+
 .dash-source-tag {
   display: inline-flex;
   align-items: center;

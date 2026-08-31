@@ -600,6 +600,8 @@ function setupAuth() {
 ========================================================= */
 
 function switchTab(name) {
+  if (!els.panels.some(panel => panel.dataset.panel === name)) return;
+
   currentTab = name;
 
   els.tabButtons.forEach(btn => {
@@ -618,6 +620,22 @@ function switchTab(name) {
 function setupTabs() {
   els.tabButtons.forEach(btn => {
     btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+
+    btn.addEventListener("keydown", event => {
+      const currentIndex = els.tabButtons.indexOf(btn);
+      let nextIndex = null;
+
+      if (event.key === "ArrowRight" || event.key === "ArrowDown") nextIndex = (currentIndex + 1) % els.tabButtons.length;
+      if (event.key === "ArrowLeft" || event.key === "ArrowUp") nextIndex = (currentIndex - 1 + els.tabButtons.length) % els.tabButtons.length;
+      if (event.key === "Home") nextIndex = 0;
+      if (event.key === "End") nextIndex = els.tabButtons.length - 1;
+      if (nextIndex === null) return;
+
+      event.preventDefault();
+      const next = els.tabButtons[nextIndex];
+      switchTab(next.dataset.tab);
+      next.focus();
+    });
   });
 
   els.goTabButtons.forEach(btn => {

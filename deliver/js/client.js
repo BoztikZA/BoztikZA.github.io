@@ -614,7 +614,7 @@ function state(
   ) {
 
     els.support.hidden =
-      !showPromo;
+      name === "loading";
 
   }
 
