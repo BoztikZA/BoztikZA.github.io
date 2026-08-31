@@ -5889,6 +5889,46 @@ body.dash-modal-open {
   background: rgba(255, 107, 107, 0.06);
 }
 
+.dash-status-pill.is-expiring {
+  color: #ffd27a;
+  border-color: rgba(255, 190, 72, 0.28);
+  background: rgba(255, 190, 72, 0.08);
+}
+
+.dash-field-help {
+  margin: 7px 0 0;
+  color: var(--deliver-text-muted);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.deliver-expired-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+}
+
+.deliver-expired-support {
+  display: grid;
+  gap: 7px;
+  max-width: 560px;
+  margin: 28px auto 0;
+  padding: 18px 20px;
+  border: 1px solid var(--deliver-border);
+  border-radius: 14px;
+  background: var(--deliver-bg-soft);
+  text-align: left;
+}
+
+.deliver-expired-support span { color: var(--deliver-text-muted); }
+.deliver-expired-support a { color: var(--deliver-accent); font-weight: 700; }
+
+@media (max-width: 520px) {
+  .deliver-expired-actions { flex-direction: column; }
+  .deliver-expired-actions a { width: 100%; max-width: none !important; justify-content: center; }
+}
+
 .dash-source-tag {
   display: inline-flex;
   align-items: center;

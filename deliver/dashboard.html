@@ -1621,7 +1621,6 @@
 
               </div>
 
-
               <div
                 id="dash-battle-expiry-note"
                 class="dash-field-help"
@@ -2579,6 +2578,43 @@
                 </option>
 
               </select>
+
+            </div>
+
+
+            <div class="dash-field">
+
+              <label for="dash-edit-expiry-choice">
+                Delivery availability
+              </label>
+
+              <select id="dash-edit-expiry-choice">
+                <option value="custom">Set a specific date and time</option>
+                <option value="24">Extend by 24 hours</option>
+                <option value="168">Extend by 7 days</option>
+                <option value="720">Extend by 30 days</option>
+              </select>
+
+              <p class="dash-field-help">
+                Extensions are added from the current expiry when possible, or from now if the delivery has already expired.
+              </p>
+
+            </div>
+
+
+            <div class="dash-field">
+
+              <label for="dash-edit-expires-at">
+                Available until
+              </label>
+
+              <input
+                id="dash-edit-expires-at"
+                type="datetime-local"
+                required
+              >
+
+              <p class="dash-field-help" id="dash-edit-expiry-current"></p>
 
             </div>
 

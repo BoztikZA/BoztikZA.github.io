@@ -140,6 +140,9 @@ const els = {
   editId: $("dash-edit-id"),
   editClientName: $("dash-edit-client-name"),
   editProjectName: $("dash-edit-project-name"),
+  editExpiryChoice: $("dash-edit-expiry-choice"),
+  editExpiresAt: $("dash-edit-expires-at"),
+  editExpiryCurrent: $("dash-edit-expiry-current"),
   editSource: $("dash-edit-source"),
   editRedditFields: $("dash-edit-reddit-fields"),
   editRedditUrl: $("dash-edit-reddit-url"),
@@ -1242,6 +1245,7 @@ function renderDeliveryList() {
 
 function renderDeliveryCard(delivery) {
   const expired = delivery.expires_at && new Date(delivery.expires_at).getTime() <= Date.now();
+  const expiresSoon = !expired && delivery.expires_at && new Date(delivery.expires_at).getTime() - Date.now() <= 72 * 3600000;
   const battle = isBattle(delivery);
   const cd = !expired && delivery.expires_at ? countdown(delivery.expires_at) : null;
   const fileCount = Array.isArray(delivery.delivery_files) ? (delivery.delivery_files.length || 1) : 1;
@@ -1255,15 +1259,15 @@ function renderDeliveryCard(delivery) {
         <strong>${escapeHtml(delivery.project_name || "Untitled delivery")}</strong>
         <span>${escapeHtml(delivery.client_name || "")}</span>
       </div>
-      <span class="dash-status-pill ${expired ? "is-expired" : "is-active"}">
-        ${expired ? "Expired" : "Active"}
+      <span class="dash-status-pill ${expired ? "is-expired" : (expiresSoon ? "is-expiring" : "is-active")}">
+        ${expired ? "Expired" : (expiresSoon ? "Expiring soon" : "Active")}
       </span>
     </div>
 
     <div class="dash-delivery-card-meta">
       <span class="dash-source-tag${battle ? " is-battle" : ""}">${escapeHtml(sourceLabelOf(delivery))}</span>
       <span>${fileCount} file${fileCount === 1 ? "" : "s"} · ${formatBytes(delivery.file_size || 0)}</span>
-      <span>${expired ? `Expired ${formatDate(delivery.expires_at)}` : (cd ? cd.label : formatDate(delivery.expires_at))}</span>
+      <span>${expired ? `Expired ${formatDate(delivery.expires_at)}` : `${expiresSoon && cd ? cd.label + " · " : ""}Until ${formatDate(delivery.expires_at)}`}</span>
     </div>
 
     <div class="dash-delivery-card-stats">
@@ -1273,6 +1277,7 @@ function renderDeliveryCard(delivery) {
 
     <div class="dash-delivery-card-actions">
       <button type="button" class="dash-btn dash-compact btn-edit">Edit</button>
+      <button type="button" class="dash-btn dash-compact btn-extend">Extend</button>
       <button type="button" class="dash-btn dash-compact btn-copy" ${expired ? "disabled" : ""}>Copy Link</button>
       ${battle ? `<button type="button" class="dash-btn dash-compact btn-copy-direct" ${expired ? "disabled" : ""}>Copy Direct URL</button>` : ""}
       <button type="button" class="dash-btn dash-compact btn-open" ${expired ? "disabled" : ""}>Open</button>
@@ -1282,6 +1287,7 @@ function renderDeliveryCard(delivery) {
   `;
 
   card.querySelector(".btn-edit")?.addEventListener("click", () => openEditModal(delivery));
+  card.querySelector(".btn-extend")?.addEventListener("click", () => openEditModal(delivery, true));
 
   card.querySelector(".btn-copy")?.addEventListener("click", () => copyToClipboard(deliveryLink(delivery.id), "Delivery link"));
 
@@ -1344,7 +1350,14 @@ function applyEditSourceFieldVisibility() {
   if (els.editRedditFields) els.editRedditFields.hidden = !battleMode;
 }
 
-function openEditModal(delivery) {
+function toDateTimeLocal(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const offset = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+}
+
+function openEditModal(delivery, extensionMode = false) {
   editingId = delivery.id;
   setEditError("");
   setEditSaving(false);
@@ -1352,6 +1365,11 @@ function openEditModal(delivery) {
   if (els.editId) els.editId.value = delivery.id;
   if (els.editClientName) els.editClientName.value = delivery.client_name || "";
   if (els.editProjectName) els.editProjectName.value = delivery.project_name || "";
+  if (els.editExpiryChoice) els.editExpiryChoice.value = "custom";
+  if (els.editExpiresAt) els.editExpiresAt.value = toDateTimeLocal(delivery.expires_at);
+  if (els.editExpiryCurrent) els.editExpiryCurrent.textContent = delivery.expires_at
+    ? `Current expiry: ${formatDate(delivery.expires_at)}${new Date(delivery.expires_at).getTime() <= Date.now() ? " (expired)" : ""}. Times use this device's local time.`
+    : "Choose when this delivery should expire. Times use this device's local time.";
   if (els.editSource) els.editSource.value = uiSourceOf(delivery);
   if (els.editRedditUrl) els.editRedditUrl.value = delivery.source_meta?.redditUrl || "";
   if (els.editNotes) els.editNotes.value = delivery.notes || "";
@@ -1360,6 +1378,16 @@ function openEditModal(delivery) {
 
   applyEditSourceFieldVisibility();
   openModal(els.editModal);
+  if (extensionMode) els.editExpiryChoice?.focus();
+}
+
+function applyExpiryExtension() {
+  const hours = Number(els.editExpiryChoice?.value || 0);
+  if (!hours || !els.editExpiresAt) return;
+  const existing = deliveries.find(d => d.id === editingId);
+  const current = new Date(existing?.expires_at || 0).getTime();
+  const base = Math.max(Date.now(), Number.isFinite(current) ? current : 0);
+  els.editExpiresAt.value = toDateTimeLocal(new Date(base + hours * 3600000).toISOString());
 }
 
 function closeEditModal() {
@@ -1377,18 +1405,26 @@ async function handleEditSubmit(event) {
   const uiSource = els.editSource?.value || "private";
   const notesRaw = els.editNotes?.value.trim() || "";
   const redditUrlRaw = els.editRedditUrl?.value.trim() || "";
+  const expiryValue = els.editExpiresAt?.value || "";
 
   setEditError("");
 
   if (!clientNameRaw) { setEditError("Please enter a client name."); return; }
   if (!projectNameRaw) { setEditError("Please enter a project name."); return; }
+  if (!expiryValue) { setEditError("Please choose an expiry date and time."); return; }
+  const expiresAt = new Date(expiryValue);
+  if (Number.isNaN(expiresAt.getTime()) || expiresAt.getTime() <= Date.now()) {
+    setEditError("Choose an expiry time in the future so the delivery can be accessed.");
+    return;
+  }
 
   const existing = deliveries.find(d => d.id === editingId);
 
   const updates = {
     client_name: clientNameRaw,
     project_name: projectNameRaw,
-    notes: notesRaw || null
+    notes: notesRaw || null,
+    expires_at: expiresAt.toISOString()
   };
 
   if (uiSource === "photoshop_battles") {
@@ -1436,6 +1472,7 @@ async function handleEditSubmit(event) {
 function setupEditModal() {
   els.editForm?.addEventListener("submit", handleEditSubmit);
   els.editSource?.addEventListener("change", applyEditSourceFieldVisibility);
+  els.editExpiryChoice?.addEventListener("change", applyExpiryExtension);
   wireModalDismiss(els.editModal, els.editClose, () => { if (!editSaving) closeEditModal(); });
   els.editCancel?.addEventListener("click", () => { if (!editSaving) closeEditModal(); });
 }
