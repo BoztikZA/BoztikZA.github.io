@@ -1999,6 +1999,57 @@ footer p{
 
     font-size:13px;
 
+/* =========================================
+   CONTACT PAGE STYLES
+========================================= */
+
+.contact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+    max-width: 1000px;
+    margin: 40px auto 0;
+    padding: 0 20px;
+}
+
+.contact-card {
+    padding: 30px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: rgba(255,255,255,.02);
+}
+
+.contact-card h3 {
+    margin-bottom: 15px;
+    color: var(--primary);
+}
+
+.contact-note {
+    margin-top: 20px;
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+.transparency-section {
+    margin-top: 60px;
+    padding: 0 20px;
+    text-align: center;
+}
+
+.transparency-card {
+    max-width: 700px;
+    margin: auto;
+    padding: 40px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: rgba(255,255,255,.03);
+}
+
+.transparency-card h3 {
+    margin-bottom: 15px;
+}
+
+
     font-weight:800;
 
     letter-spacing:2px;
