@@ -78,7 +78,7 @@
       width: 100%;
       max-width: 100%;
       margin: 0;
-      padding: 28px 24px;
+      padding: 22px 20px;
       border-radius: 20px;
       border: 1px solid rgba(142, 255, 61, 0.16);
       background: linear-gradient(
@@ -159,13 +159,35 @@
       height: auto;
       display: flex;
       flex-direction: column;
-      gap: 22px;
+      gap: 12px;
       justify-content: flex-start;
     }
 
     .boztik-support-section {
       display: flex;
       flex-direction: column;
+    }
+
+    .boztik-support-compact .deliver-section-label {
+      margin-bottom: 8px;
+      font-size: 0.64rem;
+    }
+
+    .boztik-support-compact .gratitude-title {
+      margin: 4px 0 8px;
+      font-size: 1.2rem;
+    }
+
+    .boztik-support-compact .gratitude-copy {
+      font-size: 0.76rem;
+      line-height: 1.55;
+    }
+
+    .boztik-support-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: stretch;
     }
 
     .deliver-section-label {
@@ -362,12 +384,12 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      width: 100%;
-      min-height: 52px;
-      padding: 13px 20px;
+      flex: 1 1 170px;
+      min-height: 46px;
+      padding: 12px 16px;
       border-radius: 12px;
       border: 1px solid transparent;
-      font-size: 0.9rem;
+      font-size: 0.82rem;
       font-weight: 800;
       letter-spacing: 0.015em;
       text-decoration: none;
@@ -402,6 +424,17 @@
       transform: translate(2px, -2px);
     }
 
+
+    .boztik-support-button.contact {
+      color: var(--deliver-text-soft);
+      background: rgba(255, 255, 255, 0.045);
+      border-color: rgba(255, 255, 255, 0.12);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+
+    .boztik-support-button.contact:hover {
+      background: rgba(255, 255, 255, 0.07);
+    }
 
     .boztik-support-button.kofi {
       color: #fff;
@@ -1172,12 +1205,20 @@
 
       .boztik-support-inner {
        height: auto;
-       gap: 20px;
+       gap: 14px;
        justify-content: flex-start;
       }
 
       .boztik-support-options-stacked {
        grid-template-columns: 1fr;
+      }
+
+      .boztik-support-actions {
+       gap: 10px;
+      }
+
+      .boztik-support-button {
+       flex-basis: 100%;
       }
 
       .boztik-service-grid {
@@ -1204,8 +1245,13 @@
        grid-template-columns: 1fr;
       }
 
+      .boztik-support-actions {
+       flex-direction: column;
+      }
+
       .boztik-support-button {
        width: 100%;
+       flex-basis: auto;
       }
 
       #deliver-private-requests.boztik-services-card {
@@ -1700,8 +1746,6 @@
 
             <div class="boztik-support-inner">
 
-
-              <!-- HEADER -->
               <div class="boztik-support-section header-section">
 
                 <span class="deliver-section-label">
@@ -1713,222 +1757,33 @@
                 </h2>
 
                 <p class="gratitude-copy">
-                  Boztik is independently built and maintained. If you find the service useful, your support helps keep it running, improve the tools, and make continued development possible.
-                </p>
-
-                <p class="gratitude-copy gratitude-copy--secondary">
-                  Thank you for supporting independent creators and developers.
+                  Enjoyed your edited photos or found Boztik useful? Your support helps me continue improving my services and developing Boztik. Thank you for supporting my work.
                 </p>
 
               </div>
 
-
-              <!-- WAYS TO SUPPORT -->
-              <div class="boztik-support-section ways-section">
-
-                <span class="deliver-section-label">
-                  • WAYS TO SUPPORT
-                </span>
-
-                <div class="boztik-support-options-stacked">
-
-                  <div class="boztik-support-card">
-                    <div class="boztik-support-card-info">
-                      <div class="boztik-support-details">
-                        <strong>Delivery assistance</strong>
-                        <span>Download help, re-upload or extension requests</span>
-                      </div>
-                    </div>
-                    <a href="../contact.html" class="boztik-support-button">
-                      Contact Boztik <span aria-hidden="true">↗</span>
-                    </a>
-                  </div>
-
-
-                  <!-- KO-FI CARD -->
-
-                  <div class="boztik-support-card">
-
-                    <div class="boztik-support-card-info">
-
-                      <div class="boztik-support-icon">
-
-                        <svg
-                          width="22"
-                          height="22"
-                          viewBox="0 0 24 24"
-                          fill="#ff5e5b"
-                        >
-
-                          <path d="M2.5 4A1.5 1.5 0 0 1 4 2.5h11A1.5 1.5 0 0 1 16.5 4v1H17a3.5 3.5 0 0 1 0 7h-.86A5.5 5.5 0 0 1 11 16H7a5.5 5.5 0 0 1-5.5-5.5V4Zm14 3v5a2 2 0 0 0 0-5Z"/>
-
-                        </svg>
-
-                      </div>
-
-
-                      <div class="boztik-support-details">
-
-                        <strong>
-                          Ko-fi
-                        </strong>
-
-                        <span>
-                          Quick one-time support
-                        </span>
-
-                      </div>
-
-                    </div>
-
-
-                    <a
-                      href="https://ko-fi.com/boztik"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="boztik-support-button kofi"
-                    >
-                      Support on Ko-fi
-                      <span aria-hidden="true">↗</span>
-                    </a>
-
-                  </div>
-
-
-                  <!-- PAYPAL CARD -->
-
-                  <div class="boztik-support-card">
-
-                    <div class="boztik-support-card-info">
-
-                      <div class="boztik-support-icon">
-
-                        <svg
-                          width="22"
-                          height="22"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                        >
-
-                          <path
-                            d="M8.2 4.3h5c2.6 0 4.1 1.4 3.7 3.8-.5 3.2-2.5 4.7-5.4 4.7H9.9l-.8 5H6.4l1.8-13.5Z"
-                            fill="#009cde"
-                          />
-
-                          <path
-                            d="M6.3 4.3h5c2.6 0 4.1 1.4 3.7 3.8-.5 3.2-2.5 4.7-5.4 4.7H8l-.8 5H4.5l1.8-13.5Z"
-                            fill="#003087"
-                          />
-
-                        </svg>
-
-                      </div>
-
-
-                      <div class="boztik-support-details">
-
-                        <strong>
-                          PayPal
-                        </strong>
-
-                        <span>
-                          Flexible support
-                        </span>
-
-                      </div>
-
-                    </div>
-
-
-                    <a
-                      href="http://paypal.me/angry5p1c3"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="boztik-support-button paypal"
-                    >
-                      Support with PayPal
-                      <span aria-hidden="true">↗</span>
-                    </a>
-
-                  </div>
-
-                </div>
-
-              </div>
-
-
-              <!-- OPTIONAL NOTE -->
-              <div class="boztik-support-section optional-section">
-
-                <span class="deliver-section-label">
-                  • OPTIONAL SUPPORT
-                </span>
-
-                <div class="boztik-support-note">
-
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.4"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
+              <div class="boztik-support-section actions-section">
+                <div class="boztik-support-actions" aria-label="Support actions">
+                  <a href="../contact.html" class="boztik-support-button contact">
+                    Delivery Help <span aria-hidden="true">↗</span>
+                  </a>
+                  <a
+                    href="https://ko-fi.com/boztik"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="boztik-support-button kofi"
                   >
-
-                    <path d="M20 6L9 17l-5-5"/>
-
-                  </svg>
-
-                  <span>
-                    Completely optional — every contribution is genuinely appreciated.
-                  </span>
-
+                    Support on Ko-fi <span aria-hidden="true">↗</span>
+                  </a>
+                  <a
+                    href="http://paypal.me/angry5p1c3"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="boztik-support-button paypal"
+                  >
+                    Support with PayPal <span aria-hidden="true">↗</span>
+                  </a>
                 </div>
-
-              </div>
-
-
-              <!-- WHY IT HELPS -->
-              <div class="boztik-support-section why-section">
-
-                <span class="deliver-section-label">
-                  • WHY IT HELPS
-                </span>
-
-                <p class="why-copy">
-                  Your support helps me keep improving my photo editing services, creative tools and Boztik Deliver — while keeping this delivery experience simple and accessible for clients.
-                </p>
-
-              </div>
-
-
-              <!-- PAY WHAT YOU WANT -->
-              <div class="boztik-support-section value-section">
-
-                <p class="value-copy">
-                  Prefer to support based on the value you received? Any amount you choose is appreciated.
-                </p>
-
-              </div>
-
-
-              <!-- FOOTER / CLOSING -->
-              <div class="boztik-support-section footer-section">
-
-                <p class="closing-line">
-                  Thank you for supporting independent creative work.
-                </p>
-
-
-                <a
-                  href="https://ko-fi.com/boztik/goal?g=9"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="boztik-support-goal"
-                >
-                  See what I'm currently working toward →
-                </a>
-
               </div>
 
             </div>
