@@ -56,16 +56,11 @@
     ====================================================== */
 
     .boztik-files-support-layout {
-      display: grid;
-      grid-template-columns:
-        minmax(0, 1fr)
-        minmax(270px, 0.46fr);
-
-      gap: 24px;
-
-      align-items: stretch;
-
-      margin-top: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+      width: min(100%, 1100px);
+      margin: 28px auto 0;
     }
 
 
@@ -78,46 +73,31 @@
        PREMIUM SIDEBAR SUPPORT CREATOR
     ====================================================== */
 
-    #deliver-support.boztik-support-compact {
+    .boztik-support-compact {
       position: relative;
-
+      width: 100%;
+      max-width: 100%;
       margin: 0;
-
       padding: 28px 24px;
-
       border-radius: 20px;
-
-      border:
-        1px solid
-        rgba(142, 255, 61, 0.16);
-
-      background:
-        linear-gradient(
-          145deg,
-          rgba(142, 255, 61, 0.065),
-          rgba(18, 22, 29, 0.98) 48%,
-          rgba(10, 13, 18, 0.98)
-        );
-
-      box-shadow:
-        0 18px 45px rgba(0, 0, 0, 0.28),
-        inset 0 1px 0 rgba(255,255,255,0.035);
-
+      border: 1px solid rgba(142, 255, 61, 0.16);
+      background: linear-gradient(
+        145deg,
+        rgba(142, 255, 61, 0.065),
+        rgba(18, 22, 29, 0.98) 48%,
+        rgba(10, 13, 18, 0.98)
+      );
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255,255,255,0.035);
       overflow: hidden;
-
       display: flex;
       flex-direction: column;
-      height: 100%;
+      height: auto;
       box-sizing: border-box;
-
-      transition:
-        transform 220ms ease,
-        box-shadow 220ms ease,
-        border-color 220ms ease;
+      transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
     }
 
 
-    #deliver-support.boztik-support-compact:hover {
+    .boztik-support-compact:hover {
       transform: translateY(-2px);
 
       border-color:
@@ -130,7 +110,7 @@
     }
 
 
-    #deliver-support.boztik-support-compact::before {
+    .boztik-support-compact::before {
       content: "";
 
       position: absolute;
@@ -152,7 +132,7 @@
     }
 
 
-    #deliver-support.boztik-support-compact::after {
+    .boztik-support-compact::after {
       content: "";
 
       position: absolute;
@@ -176,11 +156,11 @@
     .boztik-support-inner {
       position: relative;
       z-index: 1;
-      height: 100%;
+      height: auto;
       display: flex;
       flex-direction: column;
       gap: 22px;
-      justify-content: space-between;
+      justify-content: flex-start;
     }
 
     .boztik-support-section {
@@ -231,13 +211,15 @@
 
     .gratitude-copy {
       margin: 0;
-
-      color:
-        var(--deliver-text-soft);
-
+      color: var(--deliver-text-soft);
       font-size: 0.78rem;
-
       line-height: 1.6;
+    }
+
+    .gratitude-copy--secondary {
+      margin-top: 8px;
+      color: var(--deliver-text);
+      font-weight: 700;
     }
 
 
@@ -283,9 +265,9 @@
 
 
     .boztik-support-options-stacked {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
     }
 
 
@@ -293,7 +275,7 @@
       display: flex;
       flex-direction: column;
       gap: 14px;
-
+      height: 100%;
       padding: 16px;
 
       border:
@@ -377,33 +359,21 @@
 
     .boztik-support-button {
       display: inline-flex;
-
       align-items: center;
       justify-content: center;
       gap: 8px;
-
+      width: 100%;
       min-height: 52px;
-
       padding: 13px 20px;
-
       border-radius: 12px;
-
       border: 1px solid transparent;
-
       font-size: 0.9rem;
-
       font-weight: 800;
-
       letter-spacing: 0.015em;
-
       text-decoration: none;
-
-      white-space: nowrap;
-
-      transition:
-        transform 180ms ease,
-        box-shadow 180ms ease,
-        filter 180ms ease;
+      white-space: normal;
+      text-align: center;
+      transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
     }
 
 
@@ -1145,172 +1115,103 @@
 
 
     /* =====================================================
-       DESKTOP
+       SUPPORT SECTION RESPONSES
     ====================================================== */
 
     @media (min-width: 1100px) {
-
       .boztik-files-support-layout {
-        grid-template-columns:
-          minmax(0, 1fr)
-          minmax(285px, 0.42fr);
+       gap: 30px;
       }
-
     }
-
-
-    /* =====================================================
-       WIDE DESKTOP
-    ====================================================== */
 
     @media (min-width: 1300px) {
-
       .boztik-files-support-layout {
-        grid-template-columns:
-          minmax(0, 1fr)
-          minmax(320px, 400px);
+       gap: 32px;
       }
-
     }
-
-
-    /* =====================================================
-       ULTRA-WIDE DESKTOP
-       Now that .deliver-page spans more of the viewport, give
-       the support column a touch more room and a wider gap so
-       the two columns still feel balanced rather than stretched.
-    ====================================================== */
 
     @media (min-width: 1600px) {
-
       .boztik-files-support-layout {
-        gap: 32px;
-
-        grid-template-columns:
-          minmax(0, 1fr)
-          minmax(340px, 420px);
+       gap: 32px;
       }
-
     }
 
-
-    /* =====================================================
-       STICKY SUPPORT CARD (DESKTOP / TABLET-LANDSCAPE ONLY)
-       Placed AFTER every base rule for #deliver-support and
-       .boztik-support-inner (position/height/overflow), so at
-       equal specificity these overrides win in the cascade —
-       putting this block earlier caused the base rules
-       (position: relative / height: 100% / overflow: hidden)
-       to silently override it and break sticky. Above 900px
-       the layout is two columns, so the card can stick while
-       the (taller) file column scrolls past it. The TABLET
-       block right below resets it to normal flow at ≤900px.
-    ====================================================== */
 
     @media (min-width: 901px) {
-
       .boztik-files-support-layout {
-        align-items: start;
+       align-items: stretch;
       }
 
-      #deliver-support.boztik-support-compact {
-        position: sticky;
-        top: 24px;
-        height: auto;
-        max-height: calc(100vh - 48px);
-        overflow-y: auto;
-
-        /* keep the card from visually colliding with the file
-           column's bottom edge when it's shorter than the photo */
-        align-self: start;
+      .boztik-support-compact {
+       position: relative;
+       top: auto;
+       height: auto;
+       max-height: none;
+       overflow: visible;
+       align-self: stretch;
       }
 
       .boztik-support-inner {
-        height: auto;
+       height: auto;
       }
-
     }
 
-
-    /* =====================================================
-       TABLET
-    ====================================================== */
 
     @media (max-width: 900px) {
-
       .boztik-files-support-layout {
-        grid-template-columns: 1fr;
-
-        gap: 22px;
+       gap: 22px;
       }
 
-
-      #deliver-support.boztik-support-compact {
-        position: relative;
-        top: auto;
-        height: auto;
+      .boztik-support-compact {
+       position: relative;
+       top: auto;
+       height: auto;
+       max-height: none;
+       overflow: visible;
       }
 
       .boztik-support-inner {
-        height: auto;
-        gap: 20px;
-        justify-content: flex-start;
+       height: auto;
+       gap: 20px;
+       justify-content: flex-start;
       }
 
+      .boztik-support-options-stacked {
+       grid-template-columns: 1fr;
+      }
 
       .boztik-service-grid {
-        grid-template-columns:
-          repeat(2, minmax(0, 1fr));
+       grid-template-columns: repeat(2, minmax(0, 1fr));
       }
-
 
       .boztik-footer-main {
-        grid-template-columns:
-          repeat(2, minmax(0, 1fr));
+       grid-template-columns: repeat(2, minmax(0, 1fr));
       }
-
     }
 
 
-    /* =====================================================
-       MOBILE
-    ====================================================== */
-
     @media (max-width: 600px) {
-
       .boztik-files-support-layout {
-        gap: 18px;
+       gap: 18px;
       }
 
-
-      #deliver-support.boztik-support-compact {
-        padding: 21px 17px;
-
-        border-radius: 16px;
+      .boztik-support-compact {
+       padding: 21px 17px;
+       border-radius: 16px;
       }
 
-
-      .boztik-support-option {
-        grid-template-columns:
-          auto minmax(0, 1fr);
-
-        gap: 9px;
+      .boztik-support-options-stacked {
+       grid-template-columns: 1fr;
       }
-
 
       .boztik-support-button {
-        grid-column: 1 / -1;
-
-        width: 100%;
+       width: 100%;
       }
 
-
       #deliver-private-requests.boztik-services-card {
-        margin-top: 22px;
-
-        padding: 30px 18px;
-
-        border-radius: 18px;
+       margin-top: 22px;
+       padding: 30px 18px;
+       border-radius: 18px;
       }
 
 
@@ -1795,7 +1696,6 @@
           <aside
             id="deliver-support-details"
             class="deliver-gratitude boztik-support-compact"
-            hidden
           >
 
             <div class="boztik-support-inner">
@@ -1805,15 +1705,19 @@
               <div class="boztik-support-section header-section">
 
                 <span class="deliver-section-label">
-                  • DELIVERY SUPPORT
+                  • SUPPORT BOZTIK
                 </span>
 
                 <h2 class="gratitude-title">
-                  Need a hand with your delivery?
+                  Support Boztik
                 </h2>
 
                 <p class="gratitude-copy">
-                  Contact Boztik for download help, a re-upload, or to request extra time on this delivery. Optional support is available below if you would like to leave a tip.
+                  Boztik is independently built and maintained. If you find the service useful, your support helps keep it running, improve the tools, and make continued development possible.
+                </p>
+
+                <p class="gratitude-copy gratitude-copy--secondary">
+                  Thank you for supporting independent creators and developers.
                 </p>
 
               </div>

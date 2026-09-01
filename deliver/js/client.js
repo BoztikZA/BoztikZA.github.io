@@ -613,8 +613,15 @@ function state(
     els.support
   ) {
 
+    /*
+      The user-facing support section is intentionally kept in the
+      normal document flow below the delivery content so it never
+      overlaps the preview, metadata, downloads, or expiry panels.
+      The floating support chip is therefore disabled on this page.
+    */
+
     els.support.hidden =
-      name === "loading";
+      true;
 
   }
 
