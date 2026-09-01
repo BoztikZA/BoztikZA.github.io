@@ -73,6 +73,18 @@ const els = {
   date:
     $("deliver-upload-date"),
 
+  projectNameDisplayCompact:
+    $("display-project-name-compact"),
+
+  idCompact:
+    $("deliver-id-value-compact"),
+
+  sizeCompact:
+    $("deliver-file-size-compact"),
+
+  dateCompact:
+    $("deliver-upload-date-compact"),
+
 
   notes:
     $("deliver-notes"),
@@ -105,6 +117,12 @@ const els = {
 
   expiryDateWrap:
     $("deliver-expiry-date-wrap"),
+
+  expiryDateCompact:
+    $("deliver-expiry-date-compact"),
+
+  expiryDateWrapCompact:
+    $("deliver-expiry-date-wrap-compact"),
 
 
   gallery:
@@ -3388,6 +3406,52 @@ async function init() {
 
 
     /* =====================================================
+        COMPACT METADATA (TOP)
+    ===================================================== */
+
+    if (
+      els.projectNameDisplayCompact
+    ) {
+
+      els.projectNameDisplayCompact.textContent =
+        delivery.project_name ||
+        "-";
+
+    }
+
+    if (
+      els.idCompact
+    ) {
+
+      els.idCompact.textContent =
+        delivery.id;
+
+    }
+
+    if (
+      els.sizeCompact
+    ) {
+
+      els.sizeCompact.textContent =
+        formatBytes(
+          delivery.file_size
+        );
+
+    }
+
+    if (
+      els.dateCompact
+    ) {
+
+      els.dateCompact.textContent =
+        formatDate(
+          delivery.created_at
+        );
+
+    }
+
+
+    /* =====================================================
        EXPIRY DATE
     ===================================================== */
 
@@ -3405,6 +3469,23 @@ async function init() {
 
       els.expiryDateWrap.hidden =
         false;
+
+    }
+
+    if (
+     els.expiryDateCompact &&
+     els.expiryDateWrapCompact &&
+     delivery.expires_at
+    ) {
+
+     els.expiryDateCompact.textContent =
+       formatDate(
+         delivery.expires_at
+       );
+
+
+     els.expiryDateWrapCompact.hidden =
+       false;
 
     }
 
