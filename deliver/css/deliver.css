@@ -5930,18 +5930,24 @@ body.dash-modal-open {
 }
 
 /* =========================================================
-   CLIENT SUPPORT — fixed, concise, and independent of gallery
+   SUPPORT BOZTIK — dedicated in-flow section (not floating).
+   Lives in normal document flow between the delivery content
+   and the footer, so it can never overlap the preview image,
+   delivery details, or download controls on any viewport.
 ========================================================= */
 
-/* The support section for this delivery page is intentionally kept in
-   the main document flow below the delivered content. The old floating
-   support card is disabled so it cannot cover the preview or actions. */
-.deliver-floating-support {
-  display: none;
+.boztik-support-section {
+  margin-top: 32px;
 }
 
-.deliver-floating-support__status {
-  display: flex;
+.boztik-support-section__inner {
+  max-width: 640px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.boztik-support-section__eyebrow {
+  display: inline-flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 12px;
@@ -5952,7 +5958,7 @@ body.dash-modal-open {
   text-transform: uppercase;
 }
 
-.deliver-floating-support__status span {
+.boztik-support-section__eyebrow span {
   width: 7px;
   height: 7px;
   border-radius: 50%;
@@ -5960,66 +5966,45 @@ body.dash-modal-open {
   box-shadow: 0 0 12px rgba(142, 255, 61, 0.8);
 }
 
-.deliver-floating-support strong { display: block; color: var(--deliver-text); font-size: 0.98rem; }
-.deliver-floating-support p { margin: 6px 0 13px; color: var(--deliver-text-muted); font-size: 0.8rem; line-height: 1.45; }
-.deliver-floating-support a {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  min-height: 42px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: var(--deliver-accent);
-  color: #071006;
-  font-size: 0.8rem;
-  font-weight: 800;
-  text-decoration: none;
-}
-.deliver-floating-support a:hover { background: var(--deliver-accent-hover); transform: translateY(-1px); }
-.deliver-floating-support a:focus-visible {
-  outline: 2px solid var(--deliver-accent);
-  outline-offset: 2px;
-}
-
-/* --- Support Boztik (primary) block --- */
-.deliver-floating-support .deliver-floating-support__support-copy {
-  margin: 0 0 12px;
+.boztik-support-section__copy {
+  margin: 0 auto 12px;
   color: var(--deliver-text);
-  font-size: 0.83rem;
+  font-size: 0.88rem;
   font-weight: 500;
-  line-height: 1.62;
-  max-width: 42ch;
+  line-height: 1.65;
 }
 
-.deliver-floating-support .deliver-floating-support__support-copy--secondary {
+.boztik-support-section__copy--secondary {
   color: var(--deliver-text-muted);
-  font-size: 0.79rem;
-  margin-bottom: 14px;
+  font-size: 0.83rem;
+  margin-bottom: 16px;
 }
 
-.deliver-floating-support .deliver-floating-support__support-thanks {
-  margin: 0 0 18px;
+.boztik-support-section__thanks {
+  margin: 0 auto 22px;
   color: var(--deliver-text);
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   font-weight: 700;
   line-height: 1.5;
 }
 
-.deliver-floating-support__tips {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 12px;
-  margin-top: 0;
+.boztik-support-section__tips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  margin: 0 0 16px;
 }
 
-.deliver-floating-support .deliver-tip-link {
+.boztik-support-tip {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  min-height: 58px;
-  padding: 15px 18px;
+  flex: 1 1 220px;
+  max-width: 260px;
+  min-height: 56px;
+  padding: 14px 20px;
   border: 1px solid var(--deliver-border-strong);
   border-radius: 13px;
   background: rgba(255, 255, 255, 0.05);
@@ -6027,93 +6012,119 @@ body.dash-modal-open {
   font-size: 0.9rem;
   font-weight: 800;
   letter-spacing: 0.01em;
+  text-decoration: none;
   transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.deliver-floating-support .deliver-tip-link:hover {
-  transform: translateY(-1px);
-}
+.boztik-support-tip:hover { transform: translateY(-1px); }
 
-.deliver-floating-support .deliver-tip-link:focus-visible {
+.boztik-support-tip:focus-visible {
   outline: 2px solid var(--deliver-text);
   outline-offset: 2px;
 }
 
-.deliver-tip-link svg { width: 22px; height: 22px; flex: 0 0 auto; }
+.boztik-support-tip svg { width: 22px; height: 22px; flex: 0 0 auto; }
 
-.deliver-tip-link--kofi {
-  color: #ffb3af !important;
-  border-color: rgba(255, 94, 91, 0.5) !important;
-  background: rgba(255, 94, 91, 0.1) !important;
+.boztik-support-tip--kofi {
+  color: #ffb3af;
+  border-color: rgba(255, 94, 91, 0.5);
+  background: rgba(255, 94, 91, 0.1);
 }
-.deliver-tip-link--kofi:hover {
-  border-color: rgba(255, 94, 91, 0.75) !important;
-  background: rgba(255, 94, 91, 0.14) !important;
+.boztik-support-tip--kofi:hover {
+  border-color: rgba(255, 94, 91, 0.75);
+  background: rgba(255, 94, 91, 0.14);
   box-shadow: 0 10px 26px rgba(255, 94, 91, 0.2);
 }
 
-.deliver-tip-link--paypal {
-  color: #a9dbf5 !important;
-  border-color: rgba(0, 156, 222, 0.5) !important;
-  background: rgba(0, 156, 222, 0.1) !important;
+.boztik-support-tip--paypal {
+  color: #a9dbf5;
+  border-color: rgba(0, 156, 222, 0.5);
+  background: rgba(0, 156, 222, 0.1);
 }
-.deliver-tip-link--paypal:hover {
-  border-color: rgba(0, 156, 222, 0.75) !important;
-  background: rgba(0, 156, 222, 0.14) !important;
+.boztik-support-tip--paypal:hover {
+  border-color: rgba(0, 156, 222, 0.75);
+  background: rgba(0, 156, 222, 0.14);
   box-shadow: 0 10px 26px rgba(0, 156, 222, 0.2);
 }
 
-.deliver-floating-support .deliver-floating-support__support-closing {
-  margin: 14px 0 0;
+.boztik-support-section__closing {
+  margin: 0;
   color: var(--deliver-text-muted);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 600;
   font-style: italic;
-  text-align: center;
   opacity: 0.85;
 }
 
-/* --- divider between Support Boztik and delivery-help --- */
-.deliver-floating-support__divider {
+.boztik-support-section__divider {
   height: 1px;
-  margin: 20px 0 16px;
+  margin: 28px auto;
+  max-width: 640px;
   background: linear-gradient(90deg, rgba(142, 255, 61, 0), rgba(142, 255, 61, 0.28), rgba(142, 255, 61, 0));
 }
 
-/* --- delivery-help (secondary) block --- */
-.deliver-floating-support__help strong { font-size: 0.88rem; }
-.deliver-floating-support__help p { font-size: 0.78rem; margin-bottom: 11px; }
-.deliver-floating-support__help a {
-  min-height: 38px;
-  padding: 9px 12px;
-  background: rgba(255, 255, 255, 0.05);
+.boztik-support-section__help {
+  max-width: 640px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.boztik-support-section__help strong {
+  display: block;
+  margin-bottom: 6px;
   color: var(--deliver-text);
-  border: 1px solid var(--deliver-border-strong);
-  font-size: 0.78rem;
+  font-size: 0.92rem;
   font-weight: 700;
 }
-.deliver-floating-support__help a:hover {
+
+.boztik-support-section__help p {
+  margin: 0 auto 16px;
+  max-width: 46ch;
+  color: var(--deliver-text-muted);
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+
+.boztik-support-help-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 10px 20px;
+  border: 1px solid var(--deliver-border-strong);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--deliver-text);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.boztik-support-help-link:hover {
   background: rgba(255, 255, 255, 0.09);
   transform: translateY(-1px);
 }
 
-/* Tablet: rein the width in slightly so the card doesn't dominate mid-size viewports */
-@media (min-width: 621px) and (max-width: 900px) {
-  .deliver-floating-support { width: min(354px, calc(100vw - 28px)); }
+.boztik-support-help-link:focus-visible {
+  outline: 2px solid var(--deliver-accent);
+  outline-offset: 2px;
 }
 
-@media (max-width: 620px) {
-  .deliver-floating-support { right: 12px; bottom: 12px; width: min(340px, calc(100vw - 24px)); max-height: min(calc(100vh - 24px), 520px); padding: 19px 19px 16px; }
-  .deliver-floating-support__help p { display: none; }
-  .deliver-floating-support__status { margin-bottom: 8px; }
-  .deliver-floating-support .deliver-floating-support__support-copy { font-size: 0.8rem; max-width: none; }
-  .deliver-floating-support .deliver-floating-support__support-copy--secondary { font-size: 0.77rem; margin-bottom: 12px; }
-  .deliver-floating-support .deliver-floating-support__support-thanks { font-size: 0.82rem; margin-bottom: 14px; }
-  .deliver-floating-support__tips { gap: 10px; }
-  .deliver-floating-support .deliver-tip-link { min-height: 52px; font-size: 0.84rem; padding: 12px 14px; }
-  .deliver-floating-support .deliver-floating-support__support-closing { margin-top: 12px; }
-  .deliver-floating-support__divider { margin: 16px 0 13px; }
+/* Below ~480px a two-across button row gets cramped for the longer
+   "Support with Ko-fi / PayPal" labels, so let them stack. */
+@media (max-width: 480px) {
+  .boztik-support-tip { flex-basis: 100%; max-width: 320px; }
 }
+
+@media (max-width: 700px) {
+  .boztik-support-section { margin-top: 24px; }
+  .boztik-support-section__copy { font-size: 0.83rem; }
+  .boztik-support-section__copy--secondary { font-size: 0.79rem; }
+  .boztik-support-section__thanks { font-size: 0.86rem; margin-bottom: 18px; }
+  .boztik-support-section__divider { margin: 22px auto; }
+}
+
 
 /* =========================================================
    COMMAND CENTRE — final visual and responsive consolidation

@@ -10,6 +10,7 @@ Boztik Deliver is a static premium client-delivery interface backed by Supabase 
 4. Confirm the anon key in `js/config.js` is the **anon public key from this same project**. Never use a service-role key in this static site.
 5. Set `publicBaseUrl` to the deployed Deliver directory. The configured PayPal support URL is `http://paypal.me/angry5p1c3`.
 6. Deploy the secure file signer before testing client downloads: `supabase functions deploy deliver-file`. Set `ALLOWED_ORIGIN=https://boztik.com` if it is not already configured. This function verifies the delivery has not expired and that the requested file belongs to it before issuing a short-lived URL.
+7. Deploy the PhotoshopBattles direct-image server before sharing any PhotoshopBattles link to Reddit: `supabase functions deploy photoshop-battles-image`. It needs `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` set (Supabase sets these automatically for Edge Functions) and reads the `deliveries`/`delivery_files` tables directly to stream the image and record a view via `record_delivery_view`. If this function was ever deployed from the previous incorrect path (`supabase/photoshop-battles-image/`), redeploy it now that the source lives under `supabase/functions/photoshop-battles-image/` — the CLI only picks up functions from `supabase/functions/<name>/index.ts`, so a deploy run against the old path would have silently failed or deployed nothing, leaving views for PhotoshopBattles deliveries permanently at zero.
 
 ## Authentication checks
 
