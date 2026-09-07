@@ -157,39 +157,42 @@ const els = {
   supportModalClose:
     $("deliver-support-modal-close"),
 
-  paymentCard:
-    $("deliver-payment-card"),
+  supportTop:
+    $("deliver-support-compact-top"),
+
+  supportDetails:
+    $("deliver-support-details"),
+
+  footer:
+    document.querySelector(
+      ".boztik-professional-footer"
+    ),
 
 };
 
 
 
-/* =========================================================
-   DELIVERY GATING (delivery-type access control)
-========================================================= */
+/* The public view derives this flag from source = reddit and
+   source_meta.type = photoshop_battles without exposing source_meta. */
+let isPhotoshopBattlesDelivery = false;
 
-/*
-   Client-side presentation only. The real enforcement is the
-   server-side deliver-file Edge Function (it refuses to sign the
-   original for gated, non-released deliveries). This flag merely
-   renders the correct behaviour (locked preview holder, payment
-   card, disabled downloads); it never unlocks anything by itself..
-*/
-let deliveryGating = { open: false, released: false, locked: false };
-
-function resolveGating(delivery) {
-  const battle =
-    delivery?.is_photoshop_battles === true;
-  const open =
-    delivery?.source === "free" ||
-    battle;
-  const released =
-    delivery?.release_original === true;
-  return {
-    open,
-    released,
-    locked: !open && !released
+function applyPhotoshopBattlesPresentation() {
+  const hide = element => {
+    if (element) element.hidden = true;
   };
+
+  hide(els.supportTop);
+  hide(els.supportDetails);
+  hide(els.support);
+  hide(els.supportModal);
+  hide(els.privateRequests);
+  hide(els.discover);
+  hide(els.explore);
+  hide(els.footer);
+
+  if (els.explorePanel) {
+    els.explorePanel.classList.add("is-open");
+  }
 }
 
 
@@ -619,6 +622,10 @@ function state(
   */
 
   const showPromo =
+    name === "active" &&
+    !isPhotoshopBattlesDelivery;
+
+  const showAd =
     name === "active";
 
 
@@ -647,7 +654,7 @@ function state(
   ) {
 
     els.adSlot.hidden =
-      !showPromo;
+      !showAd;
 
     /*
       The ad no longer auto-loads here — it now loads lazily the
@@ -2022,12 +2029,8 @@ async function loadImagePreview(
 
 function buildFileCardHTML(
   file,
-  index,
-  gating = null
+  index
 ) {
-
-  const locked =
-    !!(gating?.locked);
 
   const previewable =
     isPreviewable(
@@ -2071,29 +2074,7 @@ function buildFileCardHTML(
       ${
         previewable
 
-          ? (locked ? `
-            <div
-              class="deliver-file-preview deliver-paid-preview"
-            >
-
-              <div
-                class="deliver-paid-preview-lock"
-              >
-
-                <span
-                  class="deliver-paid-preview-lock-icon"
-                  aria-hidden="true"
-                >
-                </span>
-
-                <span>
-                  Watermarked preview available after payment
-                </span>
-
-              </div>
-
-            </div>
-          ` : `
+          ? `
 
             <div
               class="deliver-file-preview"
@@ -2119,7 +2100,7 @@ function buildFileCardHTML(
 
             </div>
 
-          `)
+          `
           : `
 
             <div
@@ -2210,7 +2191,7 @@ function buildFileCardHTML(
         >
 
           ${
-            previewable && !locked
+            previewable
 
               ? `
 
@@ -2269,7 +2250,6 @@ function buildFileCardHTML(
             class="deliver-file-download"
             data-download="${index}"
             aria-label="Download ${safeFileName}"
-            ${locked ? "disabled" : ""}
           >
 
             <span
@@ -2334,8 +2314,7 @@ function buildFileCardHTML(
 ========================================================= */
 
 function renderFiles(
-  files,
-  gating = null
+  files
 ) {
 
   if (
@@ -2406,8 +2385,7 @@ function renderFiles(
         (file, index) =>
           buildFileCardHTML(
             file,
-            index,
-            gating
+            index
           )
       )
       .join("");
@@ -2597,8 +2575,7 @@ function renderFiles(
 
         renderFileInfo(
           file,
-          slot,
-          gating
+          slot
         );
 
       }
@@ -2613,8 +2590,7 @@ function renderFiles(
 
 async function renderFileInfo(
   file,
-  slot,
-  gating = null
+  slot
 ) {
 
   if (
@@ -2652,24 +2628,6 @@ async function renderFileInfo(
     );
 
 
-/*
-   * For a locked gated delivery, the original preview must not be
-   * fetched (the server refuses it anyway).. Show basic file
-   * information instead of requesting dimensions/EXIF/PDF pages as
-   * that would hit the signed-preview endpoint for the protected original..
-   */
-  if (gating?.locked) {
-    slot.innerHTML =
-      buildGenericInfoHTML({
-        fileName: file.file_name,
-        sizeLabel,
-        format,
-        mimeType,
-        pageCount: null
-      });
-
-    return;
-  }
   try {
 
     /* =====================================================
@@ -3413,7 +3371,8 @@ async function init() {
 
     }
 
-deliveryGating = resolveGating(delivery;
+    isPhotoshopBattlesDelivery =
+      delivery.is_photoshop_battles === true;
 
     /* =====================================================
        DELIVERY HEADER
@@ -3799,27 +3758,8 @@ deliveryGating = resolveGating(delivery;
     */
 
     renderFiles(
-      validFiles,
-      deliveryGating
+      validFiles
     );
-
-deliveryGating = resolveGating(delivery);
-
-  /* =
-       DELIVERY GATING UI — payment access control
-   (presentation only; enforcement is server-side in deliver-file)== */
-
-  if (els.paymentCard)) {
-
-    els.paymentCard.hidden =
-      !deliveryGating.locked;
-  }
-
-
-  if (els.all)) {
-    els.all.disabled =
-      deliveryGating.locked;
-  }
 
     /* =====================================================
        DOWNLOAD ALL FILES
@@ -4045,6 +3985,11 @@ deliveryGating = resolveGating(delivery);
     state(
       "active"
     );
+
+    if (isPhotoshopBattlesDelivery) {
+      applyPhotoshopBattlesPresentation();
+      loadAd();
+    }
 
 
   } catch (

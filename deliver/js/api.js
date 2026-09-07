@@ -481,8 +481,7 @@ export async function updateDelivery(
     "expires_at",
     "source",
     "source_meta",
-    "reddit_source",
-    "release_original"
+    "reddit_source"
   ];
 
   const payload = {};
@@ -697,27 +696,6 @@ export async function updateDelivery(
     ) {
       throw new Error(
         "reddit_source must be a plain object or null."
-      );
-    }
-  }
-
-
-  /*
-   * Validate release_original. Server-side release flag (set by the admin
-   * after payment is confirmed, or later by a legitimate payment webhook)..
-   * Strictly boolean — never derived from client input..
-   */
-  if (
-    Object.prototype.hasOwnProperty.call(
-      payload,
-      "release_original"
-    )
-  ) {
-    if (
-      typeof payload.release_original !== "boolean"
-    ) {
-      throw new Error(
-        "release_original must be true or false."
       );
     }
   }
