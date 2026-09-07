@@ -35,6 +35,11 @@
   --deliver-accent-soft: rgba(142, 255, 61, 0.08);
   --deliver-accent-border: rgba(142, 255, 61, 0.20);
 
+  /* Secondary accent — used for the Creative Services / Private Requests section, matching the main site's teal Services color */
+  --deliver-accent-2: #5fe3c2;
+  --deliver-accent-2-soft: rgba(95, 227, 194, 0.08);
+  --deliver-accent-2-border: rgba(95, 227, 194, 0.20);
+
   /* Functional */
   --deliver-warning: #fbbf24;
   --deliver-danger: #ef4444;
@@ -7276,5 +7281,57 @@ body.dash-modal-open {
   .deliver-source-open {
     width: 100%;
     justify-content: center;
+  }
+}
+/* ============================
+   Visual pass — Private Requests / Creative Services section
+   (additive only — these classes had zero prior CSS rules, so this
+   cannot override or break any existing styling. Teal accent matches
+   the main site's Services color convention from the Sep 2026 revamp.)
+   ============================ */
+.boztik-services-card {
+  border-color: var(--deliver-accent-2-border);
+}
+
+.boztik-services-card .deliver-eyebrow {
+  color: var(--deliver-accent-2);
+}
+
+.boztik-service-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.boztik-service-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--deliver-surface-2);
+  border: 1px solid var(--deliver-border);
+  border-radius: var(--deliver-radius-small);
+  color: var(--deliver-text-soft);
+  font-weight: 600;
+  font-size: 0.92rem;
+  transition: var(--deliver-transition);
+}
+
+.boztik-service-item:hover {
+  border-color: var(--deliver-accent-2-border);
+  background: var(--deliver-accent-2-soft);
+}
+
+.boztik-service-item svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: var(--deliver-accent-2);
+}
+
+@media (max-width: 700px) {
+  .boztik-service-grid {
+    grid-template-columns: 1fr;
   }
 }
