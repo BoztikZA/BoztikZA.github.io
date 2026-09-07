@@ -166,6 +166,9 @@ const els = {
   supportDetails:
     $("deliver-support-details"),
 
+  footerSupport:
+    $("deliver-footer-support"),
+
   footer:
     document.querySelector(
       ".boztik-professional-footer"
@@ -178,6 +181,7 @@ const els = {
 /* The public view derives this flag from source = reddit and
    source_meta.type = photoshop_battles without exposing source_meta. */
 let isPhotoshopBattlesDelivery = false;
+let supportEnabled = true;
 
 function applyPhotoshopBattlesPresentation() {
   const hide = element => {
@@ -192,6 +196,7 @@ function applyPhotoshopBattlesPresentation() {
   hide(els.discover);
   hide(els.explore);
   hide(els.footer);
+  hide(els.footerSupport);
 
   document.body.classList.add("is-photoshop-battles");
 
@@ -705,7 +710,11 @@ function state(
   }
 
   if (els.supportDetails) {
-    els.supportDetails.hidden = name !== "active" || isPhotoshopBattlesDelivery;
+    els.supportDetails.hidden = name !== "active" || isPhotoshopBattlesDelivery || !supportEnabled;
+  }
+
+  if (els.footerSupport) {
+    els.footerSupport.hidden = isPhotoshopBattlesDelivery || !supportEnabled;
   }
 
 
@@ -3371,6 +3380,11 @@ async function init() {
        support/payment links. */
     isPhotoshopBattlesDelivery =
       delivery.is_photoshop_battles === true;
+
+    /* Existing deliveries safely default to support enabled until the new
+       optional preference is present in the public view. */
+    supportEnabled =
+      delivery.support_enabled !== false;
 
 
     /*

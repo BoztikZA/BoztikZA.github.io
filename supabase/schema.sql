@@ -321,6 +321,8 @@ select
   created_at,
   expires_at,
   reddit_source,
+  coalesce((source_meta->>'support_enabled')::boolean, true)
+    as support_enabled,
   (source = 'reddit' and coalesce(source_meta->>'type', '') = 'photoshop_battles')
     as is_photoshop_battles
 from public.deliveries

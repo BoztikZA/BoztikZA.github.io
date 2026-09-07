@@ -95,6 +95,8 @@ const els = {
   battleImagePreviewImg: $("dash-battle-image-preview-img"),
   expirySelect: $("dash-expiry"),
   battleExpiryNote: $("dash-battle-expiry-note"),
+  supportSetting: $("dash-support-setting"),
+  supportEnabled: $("dash-support-enabled"),
   createSubmit: $("dash-create-submit"),
   createSubmitLabel: $("dash-create-submit-label"),
   createSubmitSpinner: $("dash-create-submit-spinner"),
@@ -146,6 +148,8 @@ const els = {
   editExpiresAt: $("dash-edit-expires-at"),
   editExpiryCurrent: $("dash-edit-expiry-current"),
   editSource: $("dash-edit-source"),
+  editSupportSetting: $("dash-edit-support-setting"),
+  editSupportEnabled: $("dash-edit-support-enabled"),
   editRedditFields: $("dash-edit-reddit-fields"),
   editRedditUrl: $("dash-edit-reddit-url"),
   editNotes: $("dash-edit-notes"),
@@ -666,6 +670,11 @@ function applySource(value) {
   if (els.photoshopNotice) els.photoshopNotice.hidden = !isBattleMode;
   if (els.redditFields) els.redditFields.hidden = !isBattleMode;
   if (els.battleExpiryNote) els.battleExpiryNote.hidden = !isBattleMode;
+  if (els.supportSetting) els.supportSetting.hidden = isBattleMode;
+  if (els.supportEnabled) {
+    if (isBattleMode) els.supportEnabled.checked = false;
+    else if (!els.supportEnabled.dataset.touched) els.supportEnabled.checked = true;
+  }
 
   if (els.clientFieldsNote) {
     els.clientFieldsNote.textContent = isBattleMode
@@ -959,6 +968,7 @@ async function handleCreateSubmit(event) {
   const projectNameRaw = els.projectName?.value.trim() || "";
   const notesRaw = els.notes?.value.trim() || "";
   const redditUrlRaw = els.redditUrl?.value.trim() || "";
+  const supportEnabled = !isBattleMode && els.supportEnabled?.checked !== false;
   const hours = Number(els.expirySelect?.value || config.defaultExpiryHours);
 
   if (!isBattleMode) {
@@ -985,7 +995,7 @@ async function handleCreateSubmit(event) {
     };
   } else {
     metadata.source = source;
-    metadata.source_meta = null;
+    metadata.source_meta = supportEnabled ? null : { support_enabled: false };
   }
 
   // Reddit Source (Optional) — independent of the channel/source fields
@@ -1384,6 +1394,8 @@ function setEditSaving(saving) {
 function applyEditSourceFieldVisibility() {
   const battleMode = els.editSource?.value === "photoshop_battles";
   if (els.editRedditFields) els.editRedditFields.hidden = !battleMode;
+  if (els.editSupportSetting) els.editSupportSetting.hidden = battleMode;
+  if (battleMode && els.editSupportEnabled) els.editSupportEnabled.checked = false;
 }
 
 function toDateTimeLocal(value) {
@@ -1407,6 +1419,9 @@ function openEditModal(delivery, extensionMode = false) {
     ? `Current expiry: ${formatDate(delivery.expires_at)}${new Date(delivery.expires_at).getTime() <= Date.now() ? " (expired)" : ""}. Times use this device's local time.`
     : "Choose when this delivery should expire. Times use this device's local time.";
   if (els.editSource) els.editSource.value = uiSourceOf(delivery);
+  if (els.editSupportEnabled) {
+    els.editSupportEnabled.checked = !isBattle(delivery) && delivery.source_meta?.support_enabled !== false;
+  }
   if (els.editRedditUrl) els.editRedditUrl.value = delivery.source_meta?.redditUrl || "";
   if (els.editNotes) els.editNotes.value = delivery.notes || "";
 
@@ -1441,6 +1456,7 @@ async function handleEditSubmit(event) {
   const uiSource = els.editSource?.value || "private";
   const notesRaw = els.editNotes?.value.trim() || "";
   const redditUrlRaw = els.editRedditUrl?.value.trim() || "";
+  const supportEnabled = uiSource !== "photoshop_battles" && els.editSupportEnabled?.checked !== false;
   const expiryValue = els.editExpiresAt?.value || "";
 
   setEditError("");
@@ -1475,7 +1491,7 @@ async function handleEditSubmit(event) {
     };
   } else {
     updates.source = uiSource;
-    updates.source_meta = null;
+    updates.source_meta = supportEnabled ? null : { support_enabled: false };
   }
 
   // Reddit Source (Optional) — null clears it, same as a normal delivery

@@ -7181,6 +7181,65 @@ body.is-photoshop-battles .deliver-battle-ad-host #deliver-adsense-slot {
   color: #ffc267;
 }
 
+.dash-support-toggle {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--deliver-border);
+}
+
+.dash-support-toggle label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.dash-support-toggle input {
+  width: 18px;
+  height: 18px;
+  margin: 2px 0 0;
+  accent-color: var(--deliver-accent);
+}
+
+.dash-support-toggle strong,
+.dash-support-toggle small {
+  display: block;
+}
+
+.dash-support-toggle strong {
+  color: var(--deliver-text);
+  font-size: .84rem;
+}
+
+.dash-support-toggle small {
+  margin-top: 3px;
+  color: var(--deliver-text-muted);
+  font-size: .74rem;
+  line-height: 1.45;
+}
+
+/* The viewer stage must be allowed to shrink inside its dialog. Without the
+   zero minimum, very large portrait images can be clipped to part of the
+   frame instead of scaling fully into view. */
+.deliver-viewer-shell {
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  min-height: 0;
+}
+
+.deliver-viewer-stage {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+}
+
+.deliver-viewer-image {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
 /* Normal delivery pages keep assistance in reach without placing two support
    prompts ahead of the client's work. */
 body:not(.is-photoshop-battles) .boztik-files-support-layout {
