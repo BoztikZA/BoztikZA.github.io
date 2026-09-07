@@ -144,6 +144,9 @@ const els = {
   adSlot:
     $("deliver-adsense-slot"),
 
+  battleAdHost:
+    $("deliver-battle-ad-host"),
+
   support:
     $("deliver-support"),
 
@@ -189,6 +192,17 @@ function applyPhotoshopBattlesPresentation() {
   hide(els.discover);
   hide(els.explore);
   hide(els.footer);
+
+  document.body.classList.add("is-photoshop-battles");
+
+  /* Keep the approved AdSense unit, but relocate it below the image action.
+     Its normal home is in the optional promotional panel, which is absent on
+     PhotoshopBattles pages. */
+  if (els.adSlot && els.battleAdHost) {
+    els.battleAdHost.append(els.adSlot);
+    els.battleAdHost.hidden = false;
+    els.adSlot.hidden = false;
+  }
 
   if (els.explorePanel) {
     els.explorePanel.classList.add("is-open");
@@ -681,6 +695,17 @@ function state(
     els.support.hidden =
       true;
 
+  }
+
+  /* Normal deliveries use the compact in-flow support card alongside the
+     files. Keeping a single, optional support location avoids the duplicated
+     and overly prominent prompts that used to appear above and below work. */
+  if (els.supportTop) {
+    els.supportTop.hidden = true;
+  }
+
+  if (els.supportDetails) {
+    els.supportDetails.hidden = name !== "active" || isPhotoshopBattlesDelivery;
   }
 
 
@@ -3341,6 +3366,12 @@ async function init() {
 
     }
 
+    /* Set the derived public mode before checking expiry as well. An expired
+       PhotoshopBattles delivery must not fall back to the normal footer with
+       support/payment links. */
+    isPhotoshopBattlesDelivery =
+      delivery.is_photoshop_battles === true;
+
 
     /*
       IMPORTANT:
@@ -3362,6 +3393,10 @@ async function init() {
       expiry.expired
     ) {
 
+      if (isPhotoshopBattlesDelivery) {
+        applyPhotoshopBattlesPresentation();
+      }
+
       state(
         "expired"
       );
@@ -3370,9 +3405,6 @@ async function init() {
       return;
 
     }
-
-    isPhotoshopBattlesDelivery =
-      delivery.is_photoshop_battles === true;
 
     /* =====================================================
        DELIVERY HEADER

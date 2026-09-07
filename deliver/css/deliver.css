@@ -7091,6 +7091,145 @@ body.dash-modal-open {
 }
 
 /* =========================================================
+   PHOTOSHOPBATTLES — a deliberately minimal, ad-supported image page.
+   This class is applied only after the public API confirms the derived
+   is_photoshop_battles flag; normal client deliveries are unaffected.
+========================================================= */
+
+body.is-photoshop-battles header,
+body.is-photoshop-battles .skip-link,
+body.is-photoshop-battles .deliver-hero-refined,
+body.is-photoshop-battles .deliver-status-bar,
+body.is-photoshop-battles .deliver-meta-compact,
+body.is-photoshop-battles .deliver-card-refined > .deliver-meta-refined,
+body.is-photoshop-battles .deliver-source-wrap,
+body.is-photoshop-battles .deliver-gallery-header,
+body.is-photoshop-battles .deliver-action-hint,
+body.is-photoshop-battles .boztik-professional-footer {
+  display: none !important;
+}
+
+body.is-photoshop-battles .deliver-page {
+  width: min(100%, 1600px);
+  min-height: 100vh;
+  padding: clamp(12px, 2vw, 32px);
+}
+
+body.is-photoshop-battles #deliver-active {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+body.is-photoshop-battles .deliver-card-refined,
+body.is-photoshop-battles .boztik-files-support-layout,
+body.is-photoshop-battles .boztik-files-column {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+body.is-photoshop-battles .deliver-gallery-refined.single-file .deliver-file-card {
+  border: 0;
+  border-radius: 18px;
+  background: #07090c;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, .42);
+}
+
+body.is-photoshop-battles .deliver-gallery-refined.single-file .deliver-file-preview {
+  min-height: calc(100vh - 150px);
+  padding: clamp(10px, 2vw, 26px);
+  background: #07090c;
+}
+
+body.is-photoshop-battles .deliver-gallery-refined.single-file .deliver-preview-image {
+  max-width: 100%;
+  max-height: calc(100vh - 180px);
+  border-radius: 12px;
+}
+
+body.is-photoshop-battles .deliver-gallery-refined.single-file .deliver-file-content {
+  display: flex;
+  justify-content: center;
+  padding: 18px;
+}
+
+body.is-photoshop-battles .deliver-gallery-refined.single-file .deliver-file-content > :not(.deliver-file-download) {
+  display: none;
+}
+
+body.is-photoshop-battles .deliver-file-download,
+body.is-photoshop-battles .deliver-download-all {
+  min-width: min(100%, 280px);
+}
+
+.deliver-battle-ad-host {
+  width: min(100%, 900px);
+  margin: 20px auto 0;
+}
+
+body.is-photoshop-battles .deliver-battle-ad-host #deliver-adsense-slot {
+  margin-top: 0;
+}
+
+.dash-stat-card--attention .dash-stat-icon {
+  color: #ffc267;
+}
+
+/* Normal delivery pages keep assistance in reach without placing two support
+   prompts ahead of the client's work. */
+body:not(.is-photoshop-battles) .boztik-files-support-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(250px, 330px);
+  align-items: start;
+  gap: clamp(18px, 3vw, 34px);
+}
+
+body:not(.is-photoshop-battles) #deliver-support-details {
+  position: sticky;
+  top: 20px;
+  width: auto;
+  max-width: none;
+  margin: 0;
+  padding: 18px;
+}
+
+body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-button {
+  min-height: 42px;
+  flex: initial;
+}
+
+@media (max-width: 840px) {
+  body:not(.is-photoshop-battles) .boztik-files-support-layout {
+    grid-template-columns: 1fr;
+  }
+
+  body:not(.is-photoshop-battles) #deliver-support-details {
+    position: static;
+  }
+
+  body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-actions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================
    REDDIT SOURCE (OPTIONAL) — Command Centre
    Used in both the Create Delivery form and the Edit Delivery
    modal. Deliberately muted/secondary so it never competes with

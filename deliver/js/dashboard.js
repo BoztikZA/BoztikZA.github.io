@@ -54,6 +54,8 @@ const els = {
   statMonthlyDownloads: $("stat-monthly-downloads"),
   statLifetimeViews: $("stat-lifetime-views"),
   statLifetimeDownloads: $("stat-lifetime-downloads"),
+  statExpiringSoon: $("stat-expiring-soon"),
+  statDownloadRate: $("stat-download-rate"),
   overviewRecent: $("overview-recent-deliveries"),
   activityStatus: $("dash-activity-status"),
   overviewActivity: $("overview-activity-list"),
@@ -1101,6 +1103,20 @@ function activeCount(list) {
   return list.filter(d => d.expires_at && new Date(d.expires_at).getTime() > now).length;
 }
 
+function expiringSoonCount(list) {
+  const now = Date.now();
+  const threshold = now + 72 * 3600000;
+  return list.filter(delivery => {
+    const expiry = new Date(delivery.expires_at || 0).getTime();
+    return Number.isFinite(expiry) && expiry > now && expiry <= threshold;
+  }).length;
+}
+
+function downloadRate(totals) {
+  if (!totals.lifetimeViews) return "—";
+  return `${Math.round((totals.lifetimeDownloads / totals.lifetimeViews) * 100)}%`;
+}
+
 function renderOverview() {
   const totals = computeTotals(deliveries);
 
@@ -1109,6 +1125,8 @@ function renderOverview() {
   if (els.statMonthlyDownloads) els.statMonthlyDownloads.textContent = totals.monthlyDownloads;
   if (els.statLifetimeViews) els.statLifetimeViews.textContent = totals.lifetimeViews;
   if (els.statLifetimeDownloads) els.statLifetimeDownloads.textContent = totals.lifetimeDownloads;
+  if (els.statExpiringSoon) els.statExpiringSoon.textContent = expiringSoonCount(deliveries);
+  if (els.statDownloadRate) els.statDownloadRate.textContent = downloadRate(totals);
 
   renderRecentDeliveries();
   renderActivity();
