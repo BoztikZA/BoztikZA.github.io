@@ -29,7 +29,7 @@ Deno.serve(async request => {
   const supabase = createClient(url, serviceRoleKey);
 
   const { data: delivery, error: deliveryError } = await supabase
-    .from("deliveries").select("id, expires_at, file_path, source, source_meta, release_original").eq("id", input.deliveryId).maybeSingle();
+    .from("deliveries").select("id, expires_at, file_path").eq("id", input.deliveryId).maybeSingle();
   if (deliveryError) return json({ error: "lookup_failed" }, 500);
   if (!delivery) return json({ error: "delivery_not_found" }, 404);
   if (new Date(delivery.expires_at).getTime() <= Date.now()) return json({ error: "delivery_expired" }, 410);
@@ -41,51 +41,6 @@ Deno.serve(async request => {
     belongsToDelivery = Boolean(file);
   }
   if (!belongsToDelivery) return json({ error: "file_not_in_delivery" }, 403);
-/*
-   * Delivery-type access control (server-side trust boundary)..
-   *
-   * Deliveries are either OPEN(free,, or a genuine PhotoshopBattles battle:
-   *   source === "reddit" AND source_meta.type === "photoshop_battles") or GATED
-   *   (paid / returning / private / other,, or an unclassified legacy row)..
-   *
-   * For a GATED delivery whose original has not been released on the server
-   *   (release_original = false — set by the admin after payment is verified,
-   *   or later by a genuine payment webhook), the original storage object is
-   *   NEVER signed here. This is what makes "watermarked preview / locked
-   *   original" real:the client cannot obtain the original through this function,
-   *   so hiding the download button in the UI is not what protects the file.An
-   *   anonymous client cannot write release_original (there is no anon UPDATE
-   *   policy)..
-   *
-   * NOTE ON WATERMARKING:the current infra has no image-processing step,so
-   *   this function never fabricates a fake watermark. When the original is
-   *   unlocked it is served unwatermarked;;when locked,,the preview endpoint
-   *   refuses to sign the original and the page shows a locked placeholder. The
-   *   secure,,drop-in addition later is a server-side image processor that writes
-   *   a separate watermarked companion object (original untouched),then this
-   *   function (and the client) treat that companion as the gated preview..
-   */
-  const isOpenDelivery =
-    delivery.source === "free" ||
-    (
-      delivery.source === "reddit" &&
-      delivery.source_meta?.type === "photoshop_battles"
-    );
-  const isReleased = delivery.release_original === true;
-
-  if (!isOpenDelivery && !isReleased)) {
-    return json(
-      {
-        error: "access_locked",
-        mode: input.mode,
-        message:
-          input.mode === "preview"
-            ? "The watermarked preview is not available yet."
-            : "The original unlocks once payment is confirmed."
-      },
-      403
-    );
-  }
 
   const ttl = input.mode === "preview" ? 300 : 60;
   const download = input.mode === "download" ? { download: input.fileName || input.filePath.split("/").pop() } : undefined;
