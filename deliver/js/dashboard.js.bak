@@ -144,7 +144,6 @@ const els = {
   editExpiresAt: $("dash-edit-expires-at"),
   editExpiryCurrent: $("dash-edit-expiry-current"),
   editSource: $("dash-edit-source"),
-  editRelease: $("dash-edit-release"),
   editRedditFields: $("dash-edit-reddit-fields"),
   editRedditUrl: $("dash-edit-reddit-url"),
   editNotes: $("dash-edit-notes"),
@@ -1390,7 +1389,6 @@ function openEditModal(delivery, extensionMode = false) {
     ? `Current expiry: ${formatDate(delivery.expires_at)}${new Date(delivery.expires_at).getTime() <= Date.now() ? " (expired)" : ""}. Times use this device's local time.`
     : "Choose when this delivery should expire. Times use this device's local time.";
   if (els.editSource) els.editSource.value = uiSourceOf(delivery);
-if (els.editRelease) els.editRelease.checked = Boolean(delivery.release_original);
   if (els.editRedditUrl) els.editRedditUrl.value = delivery.source_meta?.redditUrl || "";
   if (els.editNotes) els.editNotes.value = delivery.notes || "";
 
@@ -1444,8 +1442,7 @@ async function handleEditSubmit(event) {
     client_name: clientNameRaw,
     project_name: projectNameRaw,
     notes: notesRaw || null,
-    expires_at: expiresAt.toISOString(),
-    release_original: Boolean(els.editRelease?.checked)
+    expires_at: expiresAt.toISOString()
   };
 
   if (uiSource === "photoshop_battles") {

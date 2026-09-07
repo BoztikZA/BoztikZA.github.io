@@ -1952,63 +1952,6 @@
           </div>
 
 
-<!-- =================================================
-       PAYMENT / UNLOCK CARD (gated paid deliveries)
-       Only shown for gated deliveries whose original has not yet
-       been released (paid / returning / private / other) by client.js.
-       Hiding it never unlocks anything — the server-side deliver-file
-       Edge Function enforces this..
-================================================== -->
-
-<section
-  id="deliver-payment-card"
-  class="deliver-payment-card"
-  hidden
-  aria-label="Unlock your original files"
->
-  <div class="deliver-payment-card-inner">
-
-    <span class="deliver-eyebrow">
-      YOUR ORIGINAL FILES
-    </span>
-
-    <h3 class="deliver-payment-card-title">
-      Your full-resolution originals unlock after payment
-    </h3>
-
-    <p class="deliver-payment-card-copy">
-      The watermarked preview marks your completed edit; the original,
-      non-watermarked files are released automatically once your payment
-      is confirmed. You can support this work and release your originals
-      below — any amount is appreciated..
-    </p>
-
-    <div class="boztik-support-actions" aria-label="Support and unlock your originals">
-      <a
-        href="https://ko-fi.com/boztik"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="boztik-support-button kofi"
-      >
-        Release with Ko-fi <span aria-hidden="true">↗</span>
-      </a>
-      <a
-        href="http://paypal.me/angry5p1c3"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="boztik-support-button paypal"
-      >
-        Release with PayPal <span aria-hidden="true">↗</span>
-      </a>
-    </div>
-
-    <p class="deliver-payment-card-note">
-      Prefer not to pay directly? The existing Ko-fi / PayPal support
-      buttons elsewhere on the page work the same way — payment is
-      confirmed before the original is unlocked..
-
-  </div>
-</section>
           <!-- =================================================
                PREMIUM SIDEBAR SUPPORT CREATOR
           ================================================== -->
