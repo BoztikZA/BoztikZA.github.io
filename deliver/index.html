@@ -58,18 +58,33 @@
     .deliver-meta-compact {
      display: grid;
      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-     gap: 14px;
-     width: 100%;
+     gap: 0;
+     width: calc(100% - 40px);
      max-width: 1200px;
      margin: 22px auto 0;
-     padding: 0 20px;
+     padding: 8px;
+     border: 1px solid rgba(142, 255, 61, 0.18);
+     border-radius: 18px;
+     background: linear-gradient(130deg, rgba(142, 255, 61, 0.075), rgba(17, 22, 28, 0.96) 35%, rgba(11, 15, 19, 0.98));
+     box-shadow: 0 16px 38px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255,255,255,.035);
     }
 
     .deliver-meta-compact .meta-group {
-     border: none;
-     padding: 0;
-     background: transparent;
-     border-top: none;
+     position: relative;
+     min-width: 0;
+     padding: 14px 16px;
+     border-radius: 12px;
+     background: rgba(255,255,255,.018);
+    }
+
+    .deliver-meta-compact .meta-group + .meta-group::before {
+     content: "";
+     position: absolute;
+     left: 0;
+     top: 18%;
+     width: 1px;
+     height: 64%;
+     background: linear-gradient(transparent, rgba(142,255,61,.24), transparent);
     }
 
     .deliver-meta-compact .meta-label {
@@ -78,14 +93,14 @@
      letter-spacing: 0.05em;
      text-transform: uppercase;
      color: var(--deliver-text-muted);
-     margin-bottom: 5px;
+     margin-bottom: 7px;
      display: block;
     }
 
     .deliver-meta-compact .meta-value {
      display: block;
-     font-size: 0.9rem;
-     font-weight: 600;
+     font-size: 0.92rem;
+     font-weight: 750;
      color: var(--deliver-text);
      word-break: break-word;
     }
@@ -1285,9 +1300,13 @@
     @media (max-width: 600px) {
      .deliver-meta-compact {
        grid-template-columns: repeat(2, minmax(0, 1fr));
-       gap: 12px;
-       padding: 0 16px;
+       gap: 6px;
+       width: calc(100% - 32px);
+       padding: 6px;
      }
+
+     .deliver-meta-compact .meta-group { padding: 12px; }
+     .deliver-meta-compact .meta-group + .meta-group::before { display: none; }
 
      .boztik-files-support-layout {
       gap: 18px;
@@ -1378,11 +1397,6 @@
 
     /* Hide old metadata display but keep it in DOM */
     .deliver-card-refined > .deliver-meta-refined {
-      display: none;
-    }
-
-    /* Hide old support section in the layout since we moved it above */
-    .boztik-files-support-layout > .boztik-support-compact {
       display: none;
     }
 
@@ -1980,6 +1994,10 @@
 
                 <p class="gratitude-copy">
                   Boztik is independently built and maintained. If this delivery has been helpful, a small contribution helps keep thoughtful creative tools and services growing.
+                </p>
+
+                <p class="boztik-support-reassurance">
+                  Optional support, securely handled by Ko-fi or PayPal. Thank you for helping independent creative work thrive.
                 </p>
 
               </div>

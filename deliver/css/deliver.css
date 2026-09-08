@@ -7277,6 +7277,8 @@ body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-button 
   flex: initial;
 }
 
+body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-reassurance { margin: 12px 0 0; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.08); color: var(--deliver-text-muted); font-size: .72rem; line-height: 1.5; }
+
 /* Delivery library: compact, at-a-glance analytics with a clear preview action. */
 .dash-delivery-card { position: relative; overflow: hidden; background: linear-gradient(145deg, rgba(27, 33, 37, .98), rgba(15, 19, 22, .98)); transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease; }
 .dash-delivery-card::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 3px; background: var(--deliver-accent); opacity: .75; }
