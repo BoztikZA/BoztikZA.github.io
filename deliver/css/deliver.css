@@ -7258,6 +7258,10 @@ body:not(.is-photoshop-battles) .boztik-files-support-layout {
   gap: clamp(18px, 3vw, 34px);
 }
 
+/* The support card is intentionally compact: it snaps to its own content height
+   (not stretched to match the tall project/files column), so there is no large
+   empty area beneath the support message. It stays top-aligned with the files
+   column and remains sticky while scrolling; Ko-fi/PayPal sit at the bottom. */
 body:not(.is-photoshop-battles) #deliver-support-details {
   position: sticky;
   top: 20px;
@@ -7265,11 +7269,11 @@ body:not(.is-photoshop-battles) #deliver-support-details {
   max-width: none;
   margin: 0;
   padding: 18px;
-  align-self: stretch;
+  align-self: start;
 }
 
-body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-inner { height: 100%; }
-body:not(.is-photoshop-battles) #deliver-support-details .actions-section { margin-top: auto; padding-top: 18px; }
+body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-inner { height: auto; }
+body:not(.is-photoshop-battles) #deliver-support-details .actions-section { margin-top: auto; padding-top: 14px; }
 
 body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-actions {
   display: grid;
@@ -7575,3 +7579,22 @@ body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-button.
     grid-template-columns: 1fr;
   }
 }
+
+/* ---- View-rate performance colouring (raw delivery-page view count) ----
+   Muted, dark-theme-friendly red - amber - green progression. The value shown is
+   the raw (all-time) view count; colour conveys the engagement level. The stat
+   card and deliverable-card values share these classes. The analytics spotlight
+   number has a more specific default selector, so its colours are re-scoped. */
+.rate-empty { color: var(--deliver-text-dim); }
+.rate-poor { color: #ff8a8a; }
+.rate-low { color: #ffb26b; }
+.rate-moderate { color: #ffd27a; }
+.rate-good { color: #b8e8aa; }
+.rate-strong { color: var(--deliver-accent); }
+
+.dash-analytics-rate strong.rate-empty { color: var(--deliver-text-dim); }
+.dash-analytics-rate strong.rate-poor { color: #ff8a8a; }
+.dash-analytics-rate strong.rate-low { color: #ffb26b; }
+.dash-analytics-rate strong.rate-moderate { color: #ffd27a; }
+.dash-analytics-rate strong.rate-good { color: #b8e8aa; }
+.dash-analytics-rate strong.rate-strong { color: var(--deliver-accent); }

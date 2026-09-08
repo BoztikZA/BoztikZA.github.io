@@ -125,6 +125,7 @@ export function buildImageInfoHTML({ fileName, sizeLabel, format, mimeType, widt
   const rows = [
     row("Filename", fileName),
     row("File size", sizeLabel),
+    row("Resolution", `${width} × ${height}px`),
     row("Aspect ratio", aspectRatio(width, height)),
     row("Orientation", orientation),
     row("Color", exif?.colorSpace === 1 ? "RGB" : ""),

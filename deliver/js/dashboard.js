@@ -55,7 +55,7 @@ const els = {
   statLifetimeViews: $("stat-lifetime-views"),
   statLifetimeDownloads: $("stat-lifetime-downloads"),
   statExpiringSoon: $("stat-expiring-soon"),
-  statDownloadRate: $("stat-download-rate"),
+  statViewRate: $("stat-view-rate"),
   overviewRecent: $("overview-recent-deliveries"),
   activityStatus: $("dash-activity-status"),
   overviewActivity: $("overview-activity-list"),
@@ -120,7 +120,7 @@ const els = {
   analyticsTableBody: $("dash-analytics-table-body"),
   analyticsHeadline: $("dash-analytics-headline"),
   analyticsSummary: $("dash-analytics-summary"),
-  analyticsDownloadRate: $("dash-analytics-download-rate"),
+  analyticsViewRate: $("dash-analytics-view-rate"),
   analyticsTopDelivery: $("dash-analytics-top-delivery"),
 
   loadingOverlay: $("dash-loading-overlay"),
@@ -1113,9 +1113,27 @@ function expiringSoonCount(list) {
   }).length;
 }
 
-function downloadRate(totals) {
-  if (!totals.lifetimeViews) return "—";
-  return `${Math.round((totals.lifetimeDownloads / totals.lifetimeViews) * 100)}%`;
+// View-rate signal. This system records a page-view for every delivery-page
+// open (repeat visits included) and a download per download; there is no
+// separate link-exposure counter. Per the product decision, the displayed
+// "view rate" is the raw delivery-page view count (the most direct available
+// measure of delivery-link traffic), colour-coded by engagement level rather
+// than expressed as a shaky ratio.
+function viewRateLevel(views) {
+  const v = Number(views) || 0;
+  if (v <= 0) return "rate-empty";
+  if (v <= 3) return "rate-poor";
+  if (v <= 7) return "rate-low";
+  if (v <= 14) return "rate-moderate";
+  if (v <= 29) return "rate-good";
+  return "rate-strong";
+}
+
+function applyRateColor(el, level) {
+  if (!el) return;
+  ["rate-empty", "rate-poor", "rate-low", "rate-moderate", "rate-good", "rate-strong"]
+    .forEach(c => el.classList.remove(c));
+  el.classList.add(level);
 }
 
 function renderOverview() {
@@ -1127,7 +1145,10 @@ function renderOverview() {
   if (els.statLifetimeViews) els.statLifetimeViews.textContent = totals.lifetimeViews;
   if (els.statLifetimeDownloads) els.statLifetimeDownloads.textContent = totals.lifetimeDownloads;
   if (els.statExpiringSoon) els.statExpiringSoon.textContent = expiringSoonCount(deliveries);
-  if (els.statDownloadRate) els.statDownloadRate.textContent = downloadRate(totals);
+  if (els.statViewRate) {
+    els.statViewRate.textContent = totals.lifetimeViews > 0 ? totals.lifetimeViews : "—";
+    applyRateColor(els.statViewRate, viewRateLevel(totals.lifetimeViews));
+  }
 
   renderRecentDeliveries();
   renderActivity();
@@ -1308,9 +1329,8 @@ function renderDeliveryCard(delivery) {
     </div>
 
     <div class="dash-delivery-card-stats">
-      <span class="dash-card-metric"><b>${Number(delivery.lifetime_views || 0)}</b> views</span>
+      <span class="dash-card-rate ${viewRateLevel(Number(delivery.lifetime_views || 0))}">${Number(delivery.lifetime_views || 0)} views</span>
       <span class="dash-card-metric"><b>${Number(delivery.lifetime_downloads || 0)}</b> downloads</span>
-      <span class="dash-card-rate">${Number(delivery.lifetime_views || 0) ? Math.round((Number(delivery.lifetime_downloads || 0) / Number(delivery.lifetime_views || 0)) * 100) : 0}% download rate</span>
     </div>
 
     <div class="dash-delivery-card-actions">
@@ -1597,9 +1617,12 @@ function renderAnalytics() {
   if (els.analyticsLifetimeViews) els.analyticsLifetimeViews.textContent = totals.lifetimeViews;
   if (els.analyticsLifetimeDownloads) els.analyticsLifetimeDownloads.textContent = totals.lifetimeDownloads;
 
-  const downloadRate = totals.lifetimeViews ? Math.round((totals.lifetimeDownloads / totals.lifetimeViews) * 100) : 0;
+  const allTimeViews = totals.lifetimeViews;
   const topDelivery = [...deliveries].sort((a, b) => Number(b.lifetime_views || 0) - Number(a.lifetime_views || 0))[0];
-  if (els.analyticsDownloadRate) els.analyticsDownloadRate.textContent = `${downloadRate}%`;
+  if (els.analyticsViewRate) {
+    els.analyticsViewRate.textContent = allTimeViews > 0 ? `${allTimeViews} views` : "—";
+    applyRateColor(els.analyticsViewRate, viewRateLevel(allTimeViews));
+  }
   if (els.analyticsHeadline) els.analyticsHeadline.textContent = totals.lifetimeViews ? `${totals.lifetimeViews} client view${totals.lifetimeViews === 1 ? "" : "s"} recorded across your work.` : "Your delivery performance will build here.";
   if (els.analyticsSummary) els.analyticsSummary.textContent = totals.lifetimeDownloads ? `${totals.lifetimeDownloads} completed download${totals.lifetimeDownloads === 1 ? "" : "s"} give you a clear read on delivery engagement.` : "Views and downloads are collected privately and shown only in this Command Centre.";
   if (els.analyticsTopDelivery) els.analyticsTopDelivery.textContent = topDelivery && Number(topDelivery.lifetime_views || 0) ? `Most viewed: ${topDelivery.project_name || "Untitled delivery"} · ${Number(topDelivery.lifetime_views)} views` : "No delivery activity yet";
