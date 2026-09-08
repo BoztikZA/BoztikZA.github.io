@@ -7277,6 +7277,22 @@ body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-button 
   flex: initial;
 }
 
+/* Delivery library: compact, at-a-glance analytics with a clear preview action. */
+.dash-delivery-card { position: relative; overflow: hidden; background: linear-gradient(145deg, rgba(27, 33, 37, .98), rgba(15, 19, 22, .98)); transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease; }
+.dash-delivery-card::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 3px; background: var(--deliver-accent); opacity: .75; }
+.dash-delivery-card-stats { gap: 8px; padding-top: 2px; }
+.dash-card-metric, .dash-card-rate { display: inline-flex; align-items: baseline; gap: 4px; padding: 7px 9px; border: 1px solid rgba(255,255,255,.07); border-radius: 9px; background: rgba(255,255,255,.025); }
+.dash-card-metric b { color: var(--deliver-text); font-size: .9rem; }
+.dash-card-rate { color: var(--deliver-accent); border-color: rgba(142,255,61,.18); background: rgba(142,255,61,.05); }
+.dash-delivery-card-actions .btn-open { color: #c9ffd1; border-color: rgba(142,255,61,.34); background: rgba(142,255,61,.08); }
+.dash-delivery-card-actions .btn-open:hover { background: rgba(142,255,61,.16); }
+
+/* Branded support actions are visible only on ordinary client deliveries. */
+body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-button.kofi { color: #fff; border-color: #ff5e5b; background: linear-gradient(135deg, #ff7a77, #ff5e5b); box-shadow: 0 10px 22px rgba(255,94,91,.26); }
+body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-button.paypal { color: #fff; border-color: #0070ba; background: linear-gradient(135deg, #003087, #0070ba); box-shadow: 0 10px 22px rgba(0,112,186,.26); }
+body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-button.kofi:hover { background: linear-gradient(135deg, #ff8e8b, #ff5e5b); }
+body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-button.paypal:hover { background: linear-gradient(135deg, #0047a8, #009cde); }
+
 @media (max-width: 840px) {
   body:not(.is-photoshop-battles) .boztik-files-support-layout {
     grid-template-columns: 1fr;

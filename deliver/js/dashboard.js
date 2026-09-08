@@ -1308,14 +1308,16 @@ function renderDeliveryCard(delivery) {
     </div>
 
     <div class="dash-delivery-card-stats">
-      <span>${Number(delivery.lifetime_views || 0)} views</span>
-      <span>${Number(delivery.lifetime_downloads || 0)} downloads</span>
+      <span class="dash-card-metric"><b>${Number(delivery.lifetime_views || 0)}</b> views</span>
+      <span class="dash-card-metric"><b>${Number(delivery.lifetime_downloads || 0)}</b> downloads</span>
+      <span class="dash-card-rate">${Number(delivery.lifetime_views || 0) ? Math.round((Number(delivery.lifetime_downloads || 0) / Number(delivery.lifetime_views || 0)) * 100) : 0}% download rate</span>
     </div>
 
     <div class="dash-delivery-card-actions">
       <button type="button" class="dash-btn dash-compact btn-edit">Edit</button>
       <button type="button" class="dash-btn dash-compact btn-extend">Extend</button>
       <button type="button" class="dash-btn dash-compact btn-copy" ${expired ? "disabled" : ""}>Copy Link</button>
+      <button type="button" class="dash-btn dash-compact btn-open" ${expired ? "disabled" : ""}>Open Preview</button>
       ${battle ? `<button type="button" class="dash-btn dash-compact btn-copy-direct" ${expired ? "disabled" : ""}>Copy Direct URL</button>` : ""}
       <button type="button" class="dash-btn dash-compact btn-duplicate">Duplicate</button>
       <button type="button" class="dash-btn dash-compact danger btn-delete">Delete</button>
@@ -1326,6 +1328,13 @@ function renderDeliveryCard(delivery) {
   card.querySelector(".btn-extend")?.addEventListener("click", () => openEditModal(delivery, true));
 
   card.querySelector(".btn-copy")?.addEventListener("click", () => copyToClipboard(deliveryLink(delivery.id), "Delivery link"));
+
+  card.querySelector(".btn-open")?.addEventListener("click", () => {
+    const url = new URL(deliveryLink(delivery.id));
+    // client.js recognises this admin-only marker and intentionally skips recordView().
+    url.searchParams.set("preview", "1");
+    window.open(url.href, "_blank", "noopener,noreferrer");
+  });
 
   card.querySelector(".btn-copy-direct")?.addEventListener("click", () => copyToClipboard(battleDirectUrl(delivery), "Direct image URL"));
 
