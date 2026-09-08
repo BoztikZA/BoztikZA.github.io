@@ -7254,7 +7254,7 @@ body.is-photoshop-battles .deliver-battle-ad-host #deliver-adsense-slot {
 body:not(.is-photoshop-battles) .boztik-files-support-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(250px, 330px);
-  align-items: start;
+  align-items: stretch;
   gap: clamp(18px, 3vw, 34px);
 }
 
@@ -7265,7 +7265,11 @@ body:not(.is-photoshop-battles) #deliver-support-details {
   max-width: none;
   margin: 0;
   padding: 18px;
+  align-self: stretch;
 }
+
+body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-inner { height: 100%; }
+body:not(.is-photoshop-battles) #deliver-support-details .actions-section { margin-top: auto; padding-top: 18px; }
 
 body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-actions {
   display: grid;
@@ -7278,6 +7282,13 @@ body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-button 
 }
 
 body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-reassurance { margin: 12px 0 0; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.08); color: var(--deliver-text-muted); font-size: .72rem; line-height: 1.5; }
+body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-value { display: grid; gap: 10px; margin-top: 22px; }
+body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-value > div { display: flex; gap: 9px; align-items: flex-start; padding: 10px; border: 1px solid rgba(255,255,255,.07); border-radius: 10px; background: rgba(255,255,255,.025); }
+body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-value > div > span { color: var(--deliver-accent); font-size: .8rem; line-height: 1.35; }
+body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-value p { margin: 0; }
+body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-value strong, body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-value small { display: block; }
+body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-value strong { color: var(--deliver-text); font-size: .74rem; }
+body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-value small { margin-top: 2px; color: var(--deliver-text-muted); font-size: .68rem; line-height: 1.4; }
 
 /* Delivery library: compact, at-a-glance analytics with a clear preview action. */
 .dash-delivery-card { position: relative; overflow: hidden; background: linear-gradient(145deg, rgba(27, 33, 37, .98), rgba(15, 19, 22, .98)); transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease; }
@@ -7295,6 +7306,10 @@ body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-button.
 body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-button.kofi:hover { background: linear-gradient(135deg, #ff8e8b, #ff5e5b); }
 body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-button.paypal:hover { background: linear-gradient(135deg, #0047a8, #009cde); }
 
+.boztik-services-actions .boztik-contact-cta { border-color: rgba(142,255,61,.48); background: rgba(142,255,61,.1); color: var(--deliver-accent); box-shadow: inset 0 1px 0 rgba(255,255,255,.05); }
+.boztik-services-actions .boztik-contact-cta:hover { background: rgba(142,255,61,.18); transform: translateY(-2px); }
+.boztik-services-actions .boztik-portfolio-link { border-color: rgba(255,255,255,.14); color: var(--deliver-text-soft); }
+
 @media (max-width: 840px) {
   body:not(.is-photoshop-battles) .boztik-files-support-layout {
     grid-template-columns: 1fr;
@@ -7305,7 +7320,7 @@ body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-button.
   }
 
   body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-actions {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: 1fr;
   }
 }
 
