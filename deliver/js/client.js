@@ -181,7 +181,6 @@ const els = {
 /* The public view derives this flag from source = reddit and
    source_meta.type = photoshop_battles without exposing source_meta. */
 let isPhotoshopBattlesDelivery = false;
-let supportEnabled = true;
 
 function applyPhotoshopBattlesPresentation() {
   const hide = element => {
@@ -710,11 +709,11 @@ function state(
   }
 
   if (els.supportDetails) {
-    els.supportDetails.hidden = name !== "active" || isPhotoshopBattlesDelivery || !supportEnabled;
+    els.supportDetails.hidden = name !== "active" || isPhotoshopBattlesDelivery;
   }
 
   if (els.footerSupport) {
-    els.footerSupport.hidden = isPhotoshopBattlesDelivery || !supportEnabled;
+    els.footerSupport.hidden = isPhotoshopBattlesDelivery;
   }
 
 
@@ -3380,12 +3379,6 @@ async function init() {
        support/payment links. */
     isPhotoshopBattlesDelivery =
       delivery.is_photoshop_battles === true;
-
-    /* Existing deliveries safely default to support enabled until the new
-       optional preference is present in the public view. */
-    supportEnabled =
-      delivery.support_enabled !== false;
-
 
     /*
       IMPORTANT:

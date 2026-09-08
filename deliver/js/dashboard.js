@@ -95,8 +95,6 @@ const els = {
   battleImagePreviewImg: $("dash-battle-image-preview-img"),
   expirySelect: $("dash-expiry"),
   battleExpiryNote: $("dash-battle-expiry-note"),
-  supportSetting: $("dash-support-setting"),
-  supportEnabled: $("dash-support-enabled"),
   createSubmit: $("dash-create-submit"),
   createSubmitLabel: $("dash-create-submit-label"),
   createSubmitSpinner: $("dash-create-submit-spinner"),
@@ -120,6 +118,10 @@ const els = {
   battleLifetimeDownloads: $("battle-lifetime-downloads"),
   analyticsMonthLabel: $("dash-analytics-month-label"),
   analyticsTableBody: $("dash-analytics-table-body"),
+  analyticsHeadline: $("dash-analytics-headline"),
+  analyticsSummary: $("dash-analytics-summary"),
+  analyticsDownloadRate: $("dash-analytics-download-rate"),
+  analyticsTopDelivery: $("dash-analytics-top-delivery"),
 
   loadingOverlay: $("dash-loading-overlay"),
   loadingTitle: $("dash-loading-title"),
@@ -135,7 +137,6 @@ const els = {
   successBattleDirectUrl: $("dash-success-battle-direct-url"),
   successBattleCopy: $("dash-success-battle-copy"),
   successBattleOpen: $("dash-success-battle-open"),
-  successView: $("dash-success-view"),
   successDone: $("dash-success-done"),
 
   editModal: $("dash-edit-modal"),
@@ -148,8 +149,6 @@ const els = {
   editExpiresAt: $("dash-edit-expires-at"),
   editExpiryCurrent: $("dash-edit-expiry-current"),
   editSource: $("dash-edit-source"),
-  editSupportSetting: $("dash-edit-support-setting"),
-  editSupportEnabled: $("dash-edit-support-enabled"),
   editRedditFields: $("dash-edit-reddit-fields"),
   editRedditUrl: $("dash-edit-reddit-url"),
   editNotes: $("dash-edit-notes"),
@@ -670,11 +669,6 @@ function applySource(value) {
   if (els.photoshopNotice) els.photoshopNotice.hidden = !isBattleMode;
   if (els.redditFields) els.redditFields.hidden = !isBattleMode;
   if (els.battleExpiryNote) els.battleExpiryNote.hidden = !isBattleMode;
-  if (els.supportSetting) els.supportSetting.hidden = isBattleMode;
-  if (els.supportEnabled) {
-    if (isBattleMode) els.supportEnabled.checked = false;
-    else if (!els.supportEnabled.dataset.touched) els.supportEnabled.checked = true;
-  }
 
   if (els.clientFieldsNote) {
     els.clientFieldsNote.textContent = isBattleMode
@@ -968,7 +962,6 @@ async function handleCreateSubmit(event) {
   const projectNameRaw = els.projectName?.value.trim() || "";
   const notesRaw = els.notes?.value.trim() || "";
   const redditUrlRaw = els.redditUrl?.value.trim() || "";
-  const supportEnabled = !isBattleMode && els.supportEnabled?.checked !== false;
   const hours = Number(els.expirySelect?.value || config.defaultExpiryHours);
 
   if (!isBattleMode) {
@@ -995,7 +988,7 @@ async function handleCreateSubmit(event) {
     };
   } else {
     metadata.source = source;
-    metadata.source_meta = supportEnabled ? null : { support_enabled: false };
+    metadata.source_meta = null;
   }
 
   // Reddit Source (Optional) — independent of the channel/source fields
@@ -1066,8 +1059,6 @@ function showSuccessModal(delivery) {
   } else if (els.successBattleUrl) {
     els.successBattleUrl.hidden = true;
   }
-
-  if (els.successView) els.successView.onclick = () => window.open(url, "_blank", "noopener,noreferrer");
 
   openModal(els.successModal);
 }
@@ -1326,7 +1317,6 @@ function renderDeliveryCard(delivery) {
       <button type="button" class="dash-btn dash-compact btn-extend">Extend</button>
       <button type="button" class="dash-btn dash-compact btn-copy" ${expired ? "disabled" : ""}>Copy Link</button>
       ${battle ? `<button type="button" class="dash-btn dash-compact btn-copy-direct" ${expired ? "disabled" : ""}>Copy Direct URL</button>` : ""}
-      <button type="button" class="dash-btn dash-compact btn-open" ${expired ? "disabled" : ""}>Open</button>
       <button type="button" class="dash-btn dash-compact btn-duplicate">Duplicate</button>
       <button type="button" class="dash-btn dash-compact danger btn-delete">Delete</button>
     </div>
@@ -1338,12 +1328,6 @@ function renderDeliveryCard(delivery) {
   card.querySelector(".btn-copy")?.addEventListener("click", () => copyToClipboard(deliveryLink(delivery.id), "Delivery link"));
 
   card.querySelector(".btn-copy-direct")?.addEventListener("click", () => copyToClipboard(battleDirectUrl(delivery), "Direct image URL"));
-
-  card.querySelector(".btn-open")?.addEventListener("click", () => {
-    const url = new URL(deliveryLink(delivery.id));
-    url.searchParams.set("preview", "1");
-    window.open(url.href, "_blank", "noopener,noreferrer");
-  });
 
   card.querySelector(".btn-duplicate")?.addEventListener("click", async event => {
     const btn = event.currentTarget;
@@ -1394,8 +1378,6 @@ function setEditSaving(saving) {
 function applyEditSourceFieldVisibility() {
   const battleMode = els.editSource?.value === "photoshop_battles";
   if (els.editRedditFields) els.editRedditFields.hidden = !battleMode;
-  if (els.editSupportSetting) els.editSupportSetting.hidden = battleMode;
-  if (battleMode && els.editSupportEnabled) els.editSupportEnabled.checked = false;
 }
 
 function toDateTimeLocal(value) {
@@ -1419,9 +1401,6 @@ function openEditModal(delivery, extensionMode = false) {
     ? `Current expiry: ${formatDate(delivery.expires_at)}${new Date(delivery.expires_at).getTime() <= Date.now() ? " (expired)" : ""}. Times use this device's local time.`
     : "Choose when this delivery should expire. Times use this device's local time.";
   if (els.editSource) els.editSource.value = uiSourceOf(delivery);
-  if (els.editSupportEnabled) {
-    els.editSupportEnabled.checked = !isBattle(delivery) && delivery.source_meta?.support_enabled !== false;
-  }
   if (els.editRedditUrl) els.editRedditUrl.value = delivery.source_meta?.redditUrl || "";
   if (els.editNotes) els.editNotes.value = delivery.notes || "";
 
@@ -1456,7 +1435,6 @@ async function handleEditSubmit(event) {
   const uiSource = els.editSource?.value || "private";
   const notesRaw = els.editNotes?.value.trim() || "";
   const redditUrlRaw = els.editRedditUrl?.value.trim() || "";
-  const supportEnabled = uiSource !== "photoshop_battles" && els.editSupportEnabled?.checked !== false;
   const expiryValue = els.editExpiresAt?.value || "";
 
   setEditError("");
@@ -1491,7 +1469,7 @@ async function handleEditSubmit(event) {
     };
   } else {
     updates.source = uiSource;
-    updates.source_meta = supportEnabled ? null : { support_enabled: false };
+    updates.source_meta = null;
   }
 
   // Reddit Source (Optional) — null clears it, same as a normal delivery
@@ -1609,6 +1587,13 @@ function renderAnalytics() {
   if (els.analyticsMonthlyDownloads) els.analyticsMonthlyDownloads.textContent = totals.monthlyDownloads;
   if (els.analyticsLifetimeViews) els.analyticsLifetimeViews.textContent = totals.lifetimeViews;
   if (els.analyticsLifetimeDownloads) els.analyticsLifetimeDownloads.textContent = totals.lifetimeDownloads;
+
+  const downloadRate = totals.lifetimeViews ? Math.round((totals.lifetimeDownloads / totals.lifetimeViews) * 100) : 0;
+  const topDelivery = [...deliveries].sort((a, b) => Number(b.lifetime_views || 0) - Number(a.lifetime_views || 0))[0];
+  if (els.analyticsDownloadRate) els.analyticsDownloadRate.textContent = `${downloadRate}%`;
+  if (els.analyticsHeadline) els.analyticsHeadline.textContent = totals.lifetimeViews ? `${totals.lifetimeViews} client view${totals.lifetimeViews === 1 ? "" : "s"} recorded across your work.` : "Your delivery performance will build here.";
+  if (els.analyticsSummary) els.analyticsSummary.textContent = totals.lifetimeDownloads ? `${totals.lifetimeDownloads} completed download${totals.lifetimeDownloads === 1 ? "" : "s"} give you a clear read on delivery engagement.` : "Views and downloads are collected privately and shown only in this Command Centre.";
+  if (els.analyticsTopDelivery) els.analyticsTopDelivery.textContent = topDelivery && Number(topDelivery.lifetime_views || 0) ? `Most viewed: ${topDelivery.project_name || "Untitled delivery"} · ${Number(topDelivery.lifetime_views)} views` : "No delivery activity yet";
 
   const battleDeliveries = deliveries.filter(isBattle);
   const battleTotals = computeTotals(battleDeliveries);

@@ -6913,6 +6913,15 @@ body.dash-modal-open {
   font-size: 0.8rem;
 }
 
+.dash-analytics-spotlight { display: flex; justify-content: space-between; gap: 24px; align-items: center; margin: 20px 0; padding: clamp(20px, 3vw, 30px); border: 1px solid rgba(142, 255, 61, .2); border-radius: var(--deliver-radius); background: radial-gradient(circle at 100% 0, rgba(142, 255, 61, .16), transparent 42%), linear-gradient(135deg, rgba(20, 29, 25, .94), rgba(12, 16, 19, .96)); box-shadow: 0 18px 44px rgba(0, 0, 0, .18); }
+.dash-analytics-spotlight h3 { margin: 6px 0; color: var(--deliver-text); font-size: clamp(1.05rem, 2vw, 1.4rem); }
+.dash-analytics-spotlight p { max-width: 580px; margin: 0; color: var(--deliver-text-muted); line-height: 1.55; }
+.dash-analytics-rate { min-width: 180px; padding: 16px 18px; border-radius: 14px; background: rgba(0, 0, 0, .22); border: 1px solid rgba(255,255,255,.08); }
+.dash-analytics-rate span, .dash-analytics-rate small { display: block; color: var(--deliver-text-muted); font-size: .75rem; }
+.dash-analytics-rate strong { display: block; margin: 4px 0; color: var(--deliver-accent); font-size: 2rem; line-height: 1; }
+
+@media (max-width: 640px) { .dash-analytics-spotlight { align-items: stretch; flex-direction: column; } .dash-analytics-rate { min-width: 0; } }
+
 
 /* ---- Deliveries tab filter bar ---- */
 

@@ -2,8 +2,8 @@
 // BOZTIK DELIVER — cleanup-expired-deliveries
 // Supabase Edge Function
 //
-// Deletes storage objects and rows for deliveries whose expires_at
-// has passed. GitHub Pages is static and can't run this on a
+// Deletes only stored files for deliveries whose expires_at has passed,
+// retaining delivery records and their analytics. GitHub Pages is static and can't run this on a
 // schedule itself, so this function is deployed to Supabase and
 // invoked on a cron schedule (see supabase/CLEANUP_SETUP.md).
 //
@@ -33,8 +33,9 @@ Deno.serve(async (req) => {
 
   const { data: expired, error: fetchError } = await supabase
     .from("deliveries")
-    .select("id, file_path")
-    .lt("expires_at", new Date().toISOString());
+    .select("id, file_path, delivery_files(file_path)")
+    .lt("expires_at", new Date().toISOString())
+    .is("storage_deleted_at", null);
 
   if (fetchError) {
     return new Response(JSON.stringify({ error: fetchError.message }), { status: 500 });
@@ -46,21 +47,32 @@ Deno.serve(async (req) => {
     });
   }
 
-  const paths = expired.map((d) => d.file_path);
+  const paths = expired.flatMap((delivery) => {
+    const files = delivery.delivery_files?.length
+      ? delivery.delivery_files
+      : [{ file_path: delivery.file_path }];
+    return files.map((file) => file.file_path).filter(Boolean);
+  });
   const ids = expired.map((d) => d.id);
 
-  const { error: storageError } = await supabase.storage.from("deliveries").remove(paths);
-  if (storageError) {
-    console.error("Storage cleanup error:", storageError.message);
+  if (paths.length) {
+    const { error: storageError } = await supabase.storage.from("deliveries").remove(paths);
+    if (storageError) {
+      console.error("Storage cleanup error:", storageError.message);
+      return new Response(JSON.stringify({ error: storageError.message }), { status: 500 });
+    }
   }
 
-  const { error: dbError } = await supabase.from("deliveries").delete().in("id", ids);
+  const { error: dbError } = await supabase
+    .from("deliveries")
+    .update({ storage_deleted_at: new Date().toISOString() })
+    .in("id", ids);
   if (dbError) {
     return new Response(JSON.stringify({ error: dbError.message }), { status: 500 });
   }
 
   return new Response(
-    JSON.stringify({ deleted: ids.length, ids }),
+    JSON.stringify({ cleaned: ids.length, filesRemoved: paths.length, ids }),
     { headers: { "Content-Type": "application/json" } }
   );
 });
