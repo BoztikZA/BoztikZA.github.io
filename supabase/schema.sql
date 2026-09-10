@@ -327,3 +327,18 @@ select
     as is_photoshop_battles
 from public.deliveries
 where expires_at > now();
+
+-- =========================================================
+-- V7 UPGRADE: STORAGE LIFECYCLE (physical files vs. history)
+-- Physical Storage assets are temporary; the delivery row and its
+-- analytics (view_count, download_count, delivery_analytics) are
+-- permanent. This flag records when the physical files were removed
+-- (by cleanup-expired-deliveries on natural expiry, or by a manual
+-- Command Centre delete) without ever deleting the historical row.
+-- Additive only, safe to run more than once.
+-- =========================================================
+alter table public.deliveries
+  add column if not exists storage_deleted_at timestamptz;
+
+comment on column public.deliveries.storage_deleted_at is
+  'When set, storage files were permanently removed (expiry cleanup or manual delete); the delivery and its analytics remain for Command Centre reporting.';

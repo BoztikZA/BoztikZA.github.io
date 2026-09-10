@@ -764,6 +764,29 @@ export async function updateDelivery(
 
 /* =========================================================
    DELETE DELIVERY
+
+   IMPORTANT — this only ever removes the PHYSICAL Storage
+   assets for a delivery. The delivery row itself (and its
+   delivery_files / delivery_analytics rows, which carry the
+   historical view/download counts) is deliberately never
+   deleted, so Command Centre history survives the files
+   being removed. This mirrors the same
+   remove-storage-then-mark-cleaned pattern used by the
+   automatic cleanup-expired-deliveries Edge Function, so a
+   manual delete behaves exactly like "expire this right now
+   and clean it up" rather than a destructive delete.
+
+   Because the public client page and the anonymous Storage
+   read policy both key off `expires_at > now()`, expires_at
+   is pulled to "now" as part of this so a manually-deleted
+   delivery can never keep pointing anonymous visitors at
+   files that no longer exist. Analytics (view_count,
+   download_count, delivery_analytics) are never touched.
+
+   Safe to call more than once on the same delivery: removing
+   already-missing Storage objects is a no-op for the Supabase
+   Storage API, and re-marking storage_deleted_at/expires_at is
+   harmless.
 ========================================================= */
 
 export async function deleteDelivery(
@@ -772,33 +795,48 @@ export async function deleteDelivery(
   const files =
     delivery.delivery_files?.length
       ? delivery.delivery_files
-      : [
-          {
-            file_path:
-              delivery.file_path
-          }
-        ];
+      : delivery.file_path
+        ? [
+            {
+              file_path:
+                delivery.file_path
+            }
+          ]
+        : [];
 
-  const {
-    error: storageError
-  } = await supabase()
-    .storage
-    .from(config.storageBucket)
-    .remove(
-      files.map(
-        file =>
-          file.file_path
-      )
-    );
+  const paths =
+    files
+      .map(file => file.file_path)
+      .filter(Boolean);
 
-  if (storageError) {
-    throw storageError;
+  if (paths.length) {
+    const {
+      error: storageError
+    } = await supabase()
+      .storage
+      .from(config.storageBucket)
+      .remove(paths);
+
+    // Storage deletion failing must never touch analytics or
+    // the delivery record — surface the error so the admin can
+    // retry, and leave everything else exactly as it was.
+    if (storageError) {
+      throw storageError;
+    }
   }
+
+  const nowIso = new Date().toISOString();
 
   const { error } =
     await supabase()
       .from("deliveries")
-      .delete()
+      .update({
+        // Immediately expire so deliveries_public / the anon
+        // Storage read policy stop treating this delivery as
+        // available, without erasing its history.
+        expires_at: nowIso,
+        storage_deleted_at: nowIso
+      })
       .eq("id", delivery.id);
 
   if (error) {
