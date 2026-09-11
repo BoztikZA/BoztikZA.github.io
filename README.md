@@ -11,9 +11,6 @@ Nothing else was touched. `deliver/js/api.js`, `deliver/js/client.js`,
 `deliver/js/auth.js`, `deliver/js/shared.js`, `supabase/schema.sql`, and every
 other file in the repo are untouched.
 
-`CHANGES.patch` in this folder is a `git diff` of the exact changes if you
-want to review or apply it with `git apply`.
-
 ## 2. Database changes
 
 **None required.** I inspected `supabase/schema.sql` and
@@ -154,7 +151,7 @@ did verify:
    `supabase/schema.sql` is safe (idempotent) and costs nothing if it's
    already applied
 3. **Replace the four files** in your repo with the versions in this
-   folder (or `git apply CHANGES.patch` from the repo root), commit, push
+   folder, commit, push
 4. **Run through Tests A–J** from your original brief against the live
    site — particularly H/I/J (Reddit URL formats + PhotoshopBattles) since
    that's the part I can't verify without hitting live Reddit/Supabase

@@ -387,12 +387,6 @@ function listenForRecoverySession() {
     client.auth.onAuthStateChange(
       (event, session) => {
 
-        console.log(
-          "[Boztik Deliver] Auth event:",
-          event
-        );
-
-
         if (
           event === "PASSWORD_RECOVERY" &&
           session
