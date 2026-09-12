@@ -1,0 +1,3159 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,follow">
+  <meta name="theme-color" content="#8eff3d">
+
+  <title>Boztik Deliver | Secure client delivery</title>
+
+  <meta
+    name="description"
+    content="Secure creative file delivery from Boztik."
+  >
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Boztik">
+  <meta property="og:title" content="Boztik Deliver | Secure client delivery">
+  <meta
+    property="og:description"
+    content="Secure creative file delivery from Boztik."
+  >
+  <meta property="og:image" content="../images/logo.png">
+
+  <meta name="twitter:card" content="summary">
+
+  <link rel="icon" href="../images/logo.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap"
+    rel="stylesheet"
+  >
+
+  <link rel="stylesheet" href="../styles-premium.css">
+  <link rel="stylesheet" href="css/deliver.css?v=12">
+
+  <!-- Google AdSense -->
+  <script
+    async
+    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3739684241868984"
+    crossorigin="anonymous"
+  ></script>
+
+
+  <!-- =====================================================
+       BOZTIK DELIVERY PAGE REFINEMENT
+  ====================================================== -->
+
+  <style>
+
+    /* =====================================================
+       PROJECT METADATA SECTION
+    ====================================================== */
+
+    .deliver-meta-compact {
+     display: grid;
+     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+     gap: 0;
+     width: calc(100% - 40px);
+     max-width: 1200px;
+     margin: 22px auto 0;
+     padding: 8px;
+     border: 1px solid rgba(142, 255, 61, 0.18);
+     border-radius: 18px;
+     background: linear-gradient(130deg, rgba(142, 255, 61, 0.075), rgba(17, 22, 28, 0.96) 35%, rgba(11, 15, 19, 0.98));
+     box-shadow: 0 16px 38px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255,255,255,.035);
+    }
+
+    .deliver-meta-compact .meta-group {
+     position: relative;
+     min-width: 0;
+     padding: 14px 16px;
+     border-radius: 12px;
+     background: rgba(255,255,255,.018);
+    }
+
+    .deliver-meta-compact .meta-group + .meta-group::before {
+     content: "";
+     position: absolute;
+     left: 0;
+     top: 18%;
+     width: 1px;
+     height: 64%;
+     background: linear-gradient(transparent, rgba(142,255,61,.24), transparent);
+    }
+
+    .deliver-meta-compact .meta-label {
+     font-size: 0.64rem;
+     font-weight: 700;
+     letter-spacing: 0.05em;
+     text-transform: uppercase;
+     color: var(--deliver-text-muted);
+     margin-bottom: 7px;
+     display: block;
+    }
+
+    .deliver-meta-compact .meta-value {
+     display: block;
+     font-size: 0.92rem;
+     font-weight: 750;
+     color: var(--deliver-text);
+     word-break: break-word;
+    }
+
+    @media (min-width: 768px) {
+     .deliver-meta-compact {
+       grid-template-columns: repeat(4, minmax(0, 1fr));
+     }
+    }
+
+    @media (min-width: 1024px) {
+     .deliver-meta-compact {
+       grid-template-columns: repeat(5, minmax(0, 1fr));
+     }
+    }
+
+    /* =====================================================
+       MAIN FILE / SUPPORT LAYOUT
+    ====================================================== */
+
+    .boztik-files-support-layout {
+     display: flex;
+     flex-direction: column;
+     gap: 28px;
+     width: min(100%, 1100px);
+     margin: 28px auto 0;
+    }
+
+
+    .boztik-files-column {
+     min-width: 0;
+    }
+
+
+    /* =====================================================
+       PREMIUM SIDEBAR SUPPORT CREATOR
+    ====================================================== */
+
+    .boztik-support-compact {
+      position: relative;
+      width: 100%;
+     max-width: 1200px;
+     margin: 18px auto 0;
+     padding: 20px 20px;
+     border-radius: 18px;
+      border: 1px solid rgba(142, 255, 61, 0.16);
+      background: linear-gradient(
+        145deg,
+        rgba(142, 255, 61, 0.065),
+        rgba(18, 22, 29, 0.98) 48%,
+        rgba(10, 13, 18, 0.98)
+      );
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255,255,255,0.035);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      height: auto;
+      box-sizing: border-box;
+      transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+    }
+
+
+    .boztik-support-compact:hover {
+      transform: translateY(-2px);
+
+      border-color:
+        rgba(142, 255, 61, 0.28);
+
+      box-shadow:
+        0 22px 52px rgba(0, 0, 0, 0.32),
+        0 0 0 1px rgba(142, 255, 61, 0.05),
+        inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+
+
+    .boztik-support-compact::before {
+      content: "";
+
+      position: absolute;
+
+      width: 200px;
+      height: 200px;
+
+      top: -100px;
+      right: -80px;
+
+      border-radius: 50%;
+
+      background:
+        rgba(142, 255, 61, 0.1);
+
+      filter: blur(24px);
+
+      pointer-events: none;
+    }
+
+
+    .boztik-support-compact::after {
+      content: "";
+
+      position: absolute;
+
+      top: 0;
+      left: 20px;
+      right: 20px;
+
+      height: 1px;
+
+      background:
+        linear-gradient(
+          90deg,
+          transparent,
+          rgba(142,255,61,0.55),
+          transparent
+        );
+    }
+
+
+    .boztik-support-inner {
+      position: relative;
+      z-index: 1;
+      height: auto;
+      display: flex;
+      flex-direction: column;
+     gap: 10px;
+      justify-content: flex-start;
+    }
+
+    .boztik-support-section {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .boztik-support-compact .deliver-section-label {
+     margin-bottom: 6px;
+     font-size: 0.62rem;
+    }
+
+    .boztik-support-compact .gratitude-title {
+     margin: 3px 0 6px;
+     font-size: 1.1rem;
+    }
+
+    .boztik-support-compact .gratitude-copy {
+     font-size: 0.72rem;
+     line-height: 1.5;
+    }
+
+    .boztik-support-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .deliver-section-label {
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--deliver-accent);
+      opacity: 0.95;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+
+      text-shadow:
+        0 0 14px rgba(142, 255, 61, 0.25);
+    }
+
+    .boztik-support-heading {
+      margin-bottom: 0;
+    }
+
+
+    .gratitude-title {
+      margin: 7px 0 10px;
+
+      font-family:
+        "Plus Jakarta Sans",
+        sans-serif;
+
+      font-size: 1.46rem;
+
+      font-weight: 780;
+
+      line-height: 1.2;
+
+      letter-spacing: -0.025em;
+
+      color:
+        var(--deliver-text);
+    }
+
+
+    .gratitude-copy {
+      margin: 0;
+      color: var(--deliver-text-soft);
+      font-size: 0.78rem;
+      line-height: 1.6;
+    }
+
+    .gratitude-copy--secondary {
+      margin-top: 8px;
+      color: var(--deliver-text);
+      font-weight: 700;
+    }
+
+
+    .boztik-support-note {
+      display: flex;
+
+      align-items: flex-start;
+
+      gap: 8px;
+
+      padding: 10px 12px;
+
+      border:
+        1px solid
+        rgba(142, 255, 61, 0.15);
+
+      border-radius: 10px;
+
+      background:
+        rgba(142, 255, 61, 0.02);
+
+      color:
+        var(--deliver-text-muted);
+
+      font-size: 0.68rem;
+
+      line-height: 1.45;
+    }
+
+
+    .boztik-support-note svg {
+      flex:
+        0 0 auto;
+
+      width: 14px;
+      height: 14px;
+
+      margin-top: 1px;
+
+      color:
+        var(--deliver-accent);
+    }
+
+
+    .boztik-support-options-stacked {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+
+    .boztik-support-card {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      height: 100%;
+      padding: 16px;
+
+      border:
+        1px solid
+        rgba(255,255,255,0.06);
+
+      border-radius: 12px;
+
+      background:
+        rgba(255,255,255,0.025);
+
+      transition:
+        transform 180ms ease,
+        border-color 180ms ease,
+        background 180ms ease;
+    }
+
+
+    .boztik-support-card:hover {
+      transform: translateY(-1px);
+
+      border-color:
+        rgba(142,255,61,0.22);
+
+      background:
+        rgba(142,255,61,0.03);
+    }
+
+
+    .boztik-support-card-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+
+    .boztik-support-icon {
+      display: flex;
+
+      align-items: center;
+      justify-content: center;
+
+      width: 40px;
+      height: 40px;
+
+      border-radius: 10px;
+
+      background:
+        rgba(255,255,255,0.05);
+    }
+
+
+    .boztik-support-details {
+      min-width: 0;
+    }
+
+
+    .boztik-support-details strong {
+      display: block;
+
+      margin-bottom: 1px;
+
+      color:
+        var(--deliver-text);
+
+      font-size: 0.78rem;
+
+      font-weight: 750;
+    }
+
+
+    .boztik-support-details span {
+      display: block;
+
+      color:
+        var(--deliver-text-muted);
+
+      font-size: 0.68rem;
+    }
+
+
+    .boztik-support-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex: 1 1 170px;
+      min-height: 46px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.015em;
+      text-decoration: none;
+      white-space: normal;
+      text-align: center;
+      transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+    }
+
+
+    .boztik-support-button:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.06);
+    }
+
+
+    .boztik-support-button:active {
+      transform: translateY(0);
+    }
+
+
+    .boztik-support-button:focus-visible {
+      outline: 2px solid var(--deliver-accent);
+      outline-offset: 2px;
+    }
+
+
+    .boztik-support-button span[aria-hidden="true"] {
+      transition: transform 180ms ease;
+    }
+
+    .boztik-support-button:hover span[aria-hidden="true"] {
+      transform: translate(2px, -2px);
+    }
+
+
+    .boztik-support-button.contact {
+      color: var(--deliver-text-soft);
+      background: rgba(255, 255, 255, 0.045);
+      border-color: rgba(255, 255, 255, 0.12);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+
+    .boztik-support-button.contact:hover {
+      background: rgba(255, 255, 255, 0.07);
+    }
+
+    .boztik-support-button.kofi {
+      color: #fff;
+
+      background:
+        linear-gradient(
+          135deg,
+          #ff7a77,
+          #ff5e5b
+        );
+
+      border-color: rgba(255, 255, 255, 0.12);
+
+      box-shadow:
+        0 10px 22px rgba(255, 94, 91, 0.3);
+    }
+
+
+    .boztik-support-button.kofi:hover {
+      box-shadow:
+        0 14px 32px rgba(255, 94, 91, 0.42);
+    }
+
+
+    .boztik-support-button.paypal {
+      color: #fff;
+
+      background:
+        linear-gradient(
+          135deg,
+          #0091e6,
+          #003087
+        );
+
+      border-color: rgba(255, 255, 255, 0.12);
+
+      box-shadow:
+        0 10px 22px rgba(0, 48, 135, 0.32);
+    }
+
+
+    .boztik-support-button.paypal:hover {
+      box-shadow:
+        0 14px 32px rgba(0, 48, 135, 0.44);
+    }
+
+    .why-copy {
+      margin: 0;
+      color: var(--deliver-text-muted);
+      font-size: 0.72rem;
+      line-height: 1.55;
+    }
+
+    .value-copy {
+      margin: 0;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border-left: 3px solid var(--deliver-accent);
+      background: rgba(142, 255, 61, 0.035);
+      color: var(--deliver-text-soft);
+      font-size: 0.72rem;
+      line-height: 1.5;
+    }
+
+    .closing-line {
+      margin: 0 0 10px;
+      color: var(--deliver-text-muted);
+      font-size: 0.68rem;
+      text-align: center;
+      font-style: italic;
+    }
+
+    .boztik-support-goal {
+      display: block;
+
+      margin-top: 2px;
+
+      color:
+        var(--deliver-text-muted);
+
+      font-size: 0.65rem;
+
+      font-weight: 650;
+
+      text-align: center;
+
+      text-decoration: underline;
+
+      text-underline-offset: 3px;
+    }
+
+
+    .boztik-support-goal:hover {
+      color:
+        var(--deliver-accent);
+    }
+
+
+    /* =====================================================
+       EXPLORE MORE TOGGLE
+    ====================================================== */
+
+    .deliver-explore-toggle-wrap {
+      display: flex;
+      justify-content: center;
+      margin: 40px 0;
+    }
+
+    .deliver-explore-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+
+      padding: 0;
+      border: none;
+      background: none;
+
+      color: var(--deliver-text-muted);
+      cursor: pointer;
+
+      transition:
+        color 200ms ease;
+    }
+
+    .deliver-explore-toggle:hover,
+    .deliver-explore-toggle:focus-visible {
+      color: var(--deliver-accent);
+    }
+
+    .deliver-explore-toggle-line {
+      width: 44px;
+      height: 1px;
+      background:
+        linear-gradient(
+          90deg,
+          transparent,
+          currentColor
+        );
+      opacity: 0.35;
+      transition: opacity 200ms ease;
+    }
+
+    .deliver-explore-toggle-line:last-child {
+      background:
+        linear-gradient(
+          90deg,
+          currentColor,
+          transparent
+        );
+    }
+
+    .deliver-explore-toggle:hover .deliver-explore-toggle-line,
+    .deliver-explore-toggle:focus-visible .deliver-explore-toggle-line {
+      opacity: 0.7;
+    }
+
+    .deliver-explore-toggle-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .deliver-explore-toggle-icon {
+      width: 16px;
+      height: 16px;
+      flex: 0 0 auto;
+      transition: transform 320ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .deliver-explore-toggle[aria-expanded="true"] .deliver-explore-toggle-icon {
+      transform: rotate(180deg);
+    }
+
+
+    /*
+      Grid-based collapse: animating grid-template-rows between
+      0fr and 1fr gives a smooth height transition without ever
+      measuring or hardcoding a pixel height, so it can't break
+      on tablets/mobile or when content length changes.
+    */
+
+    .deliver-explore-panel {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 480ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .deliver-explore-panel.is-open {
+      grid-template-rows: 1fr;
+    }
+
+    .deliver-explore-panel-inner {
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    /*
+      Staggered reveal: each direct section inside the panel
+      fades/slides in with an increasing delay once opened, so
+      the secondary content cascades rather than appearing at once.
+    */
+
+    .deliver-explore-panel-inner > * {
+      opacity: 0;
+      transform: translateY(10px);
+      transition:
+        opacity 380ms ease,
+        transform 380ms ease;
+    }
+
+    .deliver-explore-panel.is-open .deliver-explore-panel-inner > * {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .deliver-explore-panel.is-open .deliver-explore-panel-inner > *:nth-child(1) {
+      transition-delay: 80ms;
+    }
+
+    .deliver-explore-panel.is-open .deliver-explore-panel-inner > *:nth-child(2) {
+      transition-delay: 160ms;
+    }
+
+    .deliver-explore-panel.is-open .deliver-explore-panel-inner > *:nth-child(3) {
+      transition-delay: 240ms;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+      .deliver-explore-panel,
+      .deliver-explore-toggle-icon,
+      .deliver-explore-panel-inner > * {
+        transition-duration: 1ms !important;
+      }
+
+    }
+
+
+    /* =====================================================
+       SERVICES SECTION
+    ====================================================== */
+
+    #deliver-private-requests.boztik-services-card {
+      position: relative;
+
+      margin-top: 30px;
+
+      padding: 42px 44px;
+
+      border-radius: 22px;
+
+      border:
+        1px solid
+        rgba(142,255,61,0.16);
+
+      background:
+        linear-gradient(
+          145deg,
+          rgba(142,255,61,0.055),
+          rgba(18,22,29,0.98) 42%,
+          rgba(11,14,19,0.98)
+        );
+
+      box-shadow:
+        0 22px 55px rgba(0,0,0,0.28),
+        inset 0 1px 0 rgba(255,255,255,0.035);
+
+      overflow: hidden;
+    }
+
+
+    #deliver-private-requests.boztik-services-card::before {
+      content: "";
+
+      position: absolute;
+
+      width: 280px;
+      height: 280px;
+
+      right: -150px;
+      top: -170px;
+
+      border-radius: 50%;
+
+      background:
+        rgba(142,255,61,0.065);
+
+      filter: blur(25px);
+
+      pointer-events: none;
+    }
+
+
+    .boztik-services-content {
+      position: relative;
+      z-index: 1;
+    }
+
+
+    .boztik-services-header {
+      max-width: 820px;
+
+      margin: 0 auto 30px;
+
+      text-align: center;
+    }
+
+
+    .boztik-services-title {
+      margin: 9px 0 12px;
+
+      font-family:
+        "Plus Jakarta Sans",
+        sans-serif;
+
+      font-size:
+        clamp(1.55rem, 3vw, 2.15rem);
+
+      line-height: 1.15;
+
+      letter-spacing: -0.035em;
+    }
+
+
+    .boztik-services-intro {
+      max-width: 760px;
+
+      margin: 0 auto;
+
+      color:
+        var(--deliver-text-muted);
+
+      font-size: 0.9rem;
+
+      line-height: 1.7;
+    }
+
+
+    .boztik-service-grid {
+      display: grid;
+
+      grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+      gap: 10px;
+
+      max-width: 930px;
+
+      margin: 0 auto 30px;
+    }
+
+
+    .boztik-service-item {
+      display: flex;
+
+      align-items: center;
+
+      gap: 9px;
+
+      min-height: 43px;
+
+      padding: 10px 12px;
+
+      border:
+        1px solid
+        rgba(255,255,255,0.055);
+
+      border-radius: 10px;
+
+      background:
+        rgba(255,255,255,0.025);
+
+      color:
+        var(--deliver-text-soft);
+
+      font-size: 0.72rem;
+
+      font-weight: 650;
+    }
+
+
+    .boztik-service-item svg {
+      flex:
+        0 0 auto;
+
+      width: 15px;
+      height: 15px;
+
+      color:
+        var(--deliver-accent);
+    }
+
+
+    .boztik-flexible-pricing {
+      max-width: 720px;
+
+      margin: 0 auto 25px;
+
+      padding: 18px 20px;
+
+      border:
+        1px solid
+        rgba(142,255,61,0.12);
+
+      border-radius: 14px;
+
+      background:
+        rgba(142,255,61,0.035);
+
+      text-align: center;
+    }
+
+
+    .boztik-flexible-pricing strong {
+      display: block;
+
+      margin-bottom: 6px;
+
+      color:
+        var(--deliver-text);
+
+      font-size: 0.86rem;
+
+      font-weight: 800;
+    }
+
+
+    .boztik-flexible-pricing p {
+      margin: 0;
+
+      color:
+        var(--deliver-text-muted);
+
+      font-size: 0.74rem;
+
+      line-height: 1.55;
+    }
+
+
+    .boztik-services-actions {
+      display: flex;
+
+      flex-wrap: wrap;
+
+      align-items: center;
+      justify-content: center;
+
+      gap: 12px;
+    }
+
+
+    .boztik-services-actions a {
+      min-width: 190px;
+    }
+
+
+    .boztik-services-footnote {
+      margin: 17px 0 0;
+
+      color:
+        rgba(255,255,255,0.38);
+
+      font-size: 0.65rem;
+
+      line-height: 1.5;
+
+      text-align: center;
+    }
+
+
+    /* =====================================================
+       TOOLKIT MOVED TO BOTTOM
+    ====================================================== */
+
+    #deliver-discover.boztik-toolkit-bottom {
+      margin-top: 42px;
+      margin-bottom: 30px;
+    }
+
+
+    #deliver-discover.boztik-toolkit-bottom .toolkit-showcase-refined {
+      margin: 0;
+    }
+
+
+    /* =====================================================
+       ADSENSE
+    ====================================================== */
+
+    #deliver-adsense-slot.boztik-ad-area {
+      width: 100%;
+
+      margin: 28px 0 0;
+
+      padding: 17px 0 8px;
+
+      opacity: 0.62;
+    }
+
+
+    .boztik-ad-heading {
+      display: flex;
+
+      align-items: center;
+
+      gap: 12px;
+
+      margin-bottom: 10px;
+    }
+
+
+    .boztik-ad-heading::before,
+    .boztik-ad-heading::after {
+      content: "";
+
+      flex: 1;
+
+      height: 1px;
+
+      background:
+        rgba(255,255,255,0.055);
+    }
+
+
+    .boztik-ad-heading span {
+      color:
+        rgba(255,255,255,0.28);
+
+      font-size: 0.57rem;
+
+      font-weight: 700;
+
+      letter-spacing: 0.15em;
+
+      text-transform: uppercase;
+
+      white-space: nowrap;
+    }
+
+
+    .boztik-ad-slot-inner {
+      min-height: 90px;
+
+      padding: 12px;
+
+      border:
+        1px solid
+        rgba(255,255,255,0.045);
+
+      border-radius: 12px;
+
+      background:
+        rgba(255,255,255,0.012);
+    }
+
+
+    /* =====================================================
+       PROFESSIONAL FOOTER
+    ====================================================== */
+
+    .boztik-professional-footer {
+      margin-top: 50px;
+
+      padding:
+        34px 0 22px;
+
+      border-top:
+        1px solid
+        rgba(255,255,255,0.07);
+    }
+
+
+    .boztik-footer-main {
+      display: grid;
+
+      grid-template-columns:
+        minmax(220px, 1.4fr)
+        repeat(3, minmax(120px, 0.65fr));
+
+      gap: 34px;
+
+      padding-bottom: 28px;
+    }
+
+
+    .boztik-footer-brand strong {
+      display: block;
+
+      margin-bottom: 8px;
+
+      font-family:
+        "Plus Jakarta Sans",
+        sans-serif;
+
+      color:
+        var(--deliver-text);
+
+      font-size: 1.05rem;
+
+      letter-spacing: 0.12em;
+    }
+
+
+    .boztik-footer-brand p {
+      max-width: 290px;
+
+      margin: 0;
+
+      color:
+        var(--deliver-text-muted);
+
+      font-size: 0.72rem;
+
+      line-height: 1.6;
+    }
+
+
+    .boztik-footer-column h3 {
+      margin: 0 0 10px;
+
+      color:
+        var(--deliver-text);
+
+      font-size: 0.68rem;
+
+      font-weight: 800;
+
+      letter-spacing: 0.09em;
+
+      text-transform: uppercase;
+    }
+
+
+    .boztik-footer-column a {
+      display: block;
+
+      width: fit-content;
+
+      margin-bottom: 7px;
+
+      color:
+        var(--deliver-text-muted);
+
+      font-size: 0.7rem;
+
+      text-decoration: none;
+
+      transition: color 180ms ease;
+    }
+
+
+    .boztik-footer-column a:hover {
+      color:
+        var(--deliver-accent);
+    }
+
+
+    .boztik-footer-bottom {
+      display: flex;
+
+      align-items: center;
+      justify-content: space-between;
+
+      gap: 18px;
+
+      padding-top: 19px;
+
+      border-top:
+        1px solid
+        rgba(255,255,255,0.045);
+    }
+
+
+    .boztik-footer-bottom p {
+      margin: 0;
+
+      color:
+        rgba(255,255,255,0.35);
+
+      font-size: 0.63rem;
+
+      line-height: 1.5;
+    }
+
+
+    .boztik-footer-security {
+      display: inline-flex;
+
+      align-items: center;
+
+      gap: 6px;
+
+      color:
+        rgba(255,255,255,0.42);
+
+      font-size: 0.62rem;
+
+      font-weight: 650;
+    }
+
+
+    .boztik-footer-security svg {
+      width: 13px;
+      height: 13px;
+
+      color:
+        var(--deliver-accent);
+    }
+
+
+    /* =====================================================
+       SUPPORT SECTION RESPONSES
+    ====================================================== */
+
+    @media (min-width: 1100px) {
+      .boztik-files-support-layout {
+       gap: 30px;
+      }
+    }
+
+    @media (min-width: 1300px) {
+      .boztik-files-support-layout {
+       gap: 32px;
+      }
+    }
+
+    @media (min-width: 1600px) {
+      .boztik-files-support-layout {
+       gap: 32px;
+      }
+    }
+
+
+    @media (min-width: 901px) {
+      .boztik-files-support-layout {
+       align-items: stretch;
+      }
+
+      .boztik-support-compact {
+       position: relative;
+       top: auto;
+       height: auto;
+       max-height: none;
+       overflow: visible;
+       align-self: stretch;
+      }
+
+      .boztik-support-inner {
+       height: auto;
+      }
+    }
+
+
+    @media (max-width: 900px) {
+      .boztik-files-support-layout {
+       gap: 22px;
+      }
+
+      .boztik-support-compact {
+       position: relative;
+       top: auto;
+       height: auto;
+       max-height: none;
+       overflow: visible;
+      }
+
+      .boztik-support-inner {
+       height: auto;
+      gap: 10px;
+       justify-content: flex-start;
+      }
+
+      .boztik-support-options-stacked {
+       grid-template-columns: 1fr;
+      }
+
+      .boztik-support-actions {
+       gap: 10px;
+      }
+
+      .boztik-support-button {
+      flex-basis: auto;
+      }
+
+      .boztik-service-grid {
+       grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .boztik-footer-main {
+       grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+
+    @media (max-width: 600px) {
+     .deliver-meta-compact {
+       grid-template-columns: repeat(2, minmax(0, 1fr));
+       gap: 6px;
+       width: calc(100% - 32px);
+       padding: 6px;
+     }
+
+     .deliver-meta-compact .meta-group { padding: 12px; }
+     .deliver-meta-compact .meta-group + .meta-group::before { display: none; }
+
+     .boztik-files-support-layout {
+      gap: 18px;
+     }
+
+     .boztik-support-compact {
+      padding: 18px 16px;
+      border-radius: 16px;
+      margin: 18px 16px 0;
+      width: calc(100% - 32px);
+     }
+
+     .boztik-support-inner {
+      gap: 8px;
+     }
+
+     .boztik-support-compact .gratitude-title {
+      font-size: 0.95rem;
+      }
+
+     .boztik-support-compact .gratitude-copy {
+      font-size: 0.68rem;
+     }
+
+     .boztik-support-options-stacked {
+      grid-template-columns: 1fr;
+     }
+
+     .boztik-support-actions {
+      flex-direction: column;
+     }
+
+     .boztik-support-button {
+      width: 100%;
+      flex-basis: auto;
+     }
+
+     #deliver-private-requests.boztik-services-card {
+      margin-top: 22px;
+      padding: 30px 18px;
+      border-radius: 18px;
+      }
+
+
+     .boztik-service-grid {
+       grid-template-columns: 1fr;
+
+       gap: 8px;
+     }
+
+
+     .boztik-services-title {
+       font-size: 1.55rem;
+      }
+
+
+     .boztik-services-intro {
+       font-size: 0.82rem;
+     }
+
+
+     .boztik-services-actions {
+       flex-direction: column;
+     }
+
+
+     .boztik-services-actions a {
+       width: 100%;
+
+       min-width: 0;
+     }
+
+
+     .boztik-footer-main {
+       grid-template-columns: 1fr;
+
+       gap: 24px;
+     }
+
+
+     .boztik-footer-bottom {
+       flex-direction: column;
+
+       align-items: flex-start;
+     }
+
+    }
+
+    /* Hide old metadata display but keep it in DOM */
+    .deliver-card-refined > .deliver-meta-refined {
+      display: none;
+    }
+
+    /* =====================================================
+        DELIVERY CONTACT SECTION
+     ====================================================== */
+
+    .deliver-contact-section {
+      width: 100%;
+      max-width: 1200px;
+      margin: 32px auto 0;
+      padding: 28px 20px;
+      text-align: center;
+    }
+
+    .deliver-contact-section .deliver-eyebrow {
+      display: block;
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--deliver-accent);
+      margin-bottom: 10px;
+    }
+
+    .deliver-contact-section h2 {
+      margin: 12px 0 16px;
+      font-family: "Plus Jakarta Sans", sans-serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--deliver-text);
+    }
+
+    .deliver-contact-intro {
+      max-width: 640px;
+      margin: 0 auto 20px;
+      color: var(--deliver-text-muted);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 600px) {
+      .deliver-contact-section {
+        margin: 24px auto 0;
+        padding: 20px 16px;
+      }
+
+      .deliver-contact-section h2 {
+        font-size: 1.1rem;
+      }
+
+      .deliver-contact-intro {
+        font-size: 0.82rem;
+      }
+    }
+
+  </style>
+</head>
+
+
+<body>
+
+  <a
+    class="skip-link"
+    href="#main-content"
+  >
+    Skip to delivery
+  </a>
+
+
+  <div class="background-glow">
+    <div class="glow1"></div>
+    <div class="glow2"></div>
+  </div>
+
+
+  <!-- =====================================================
+       HEADER
+  ====================================================== -->
+
+  <header>
+
+    <nav class="navbar">
+
+      <a
+        class="logo-area"
+        href="../index.html"
+        aria-label="Boztik home"
+      >
+
+        <img
+          src="../images/logo.png"
+          alt="Boztik logo"
+        >
+
+        <div>
+
+          <span class="logo-title">
+            BOZTIK
+          </span>
+
+          <span class="logo-subtitle">
+            Creative Delivery
+          </span>
+
+        </div>
+
+      </a>
+
+    </nav>
+
+  </header>
+
+
+  <main
+    id="main-content"
+    class="deliver-page"
+  >
+
+
+    <!-- =====================================================
+         LOADING
+    ====================================================== -->
+
+    <section
+      id="deliver-loading"
+      class="deliver-section"
+    >
+
+      <div class="loading-spinner-refined"></div>
+
+      <span class="deliver-eyebrow">
+        Secure Connection
+      </span>
+
+      <h1 class="deliver-hero-title">
+        Preparing your delivery...
+      </h1>
+
+      <p class="deliver-hero-subtitle">
+        We're securely preparing your finished work for download.
+      </p>
+
+    </section>
+
+
+    <!-- =====================================================
+         ACTIVE DELIVERY
+    ====================================================== -->
+
+    <section
+      id="deliver-active"
+      class="deliver-section"
+      hidden
+    >
+
+
+      <!-- PROJECT READY -->
+
+      <div class="deliver-hero-refined">
+
+        <span class="deliver-eyebrow">
+          Project Ready
+        </span>
+
+        <h1
+          id="deliver-project-name"
+          class="deliver-hero-title"
+        >
+          Your finished work is ready
+        </h1>
+
+        <p
+          id="deliver-client-name"
+          class="deliver-hero-subtitle"
+        ></p>
+
+      </div>
+
+
+      <!-- STATUS -->
+
+      <div class="deliver-status-bar">
+
+        <div class="status-pill">
+
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+
+          Private & Secure
+
+        </div>
+
+
+        <div
+          id="deliver-countdown-wrap"
+          class="status-pill"
+        >
+
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle
+              cx="12"
+              cy="12"
+              r="10"
+            />
+
+            <polyline
+              points="12 6 12 12 16 14"
+            />
+
+          </svg>
+
+          Available for
+
+          <span id="deliver-countdown-label"></span>
+
+        </div>
+
+      </div>
+
+
+      <!-- COMPACT PROJECT METADATA (TOP) -->
+
+      <div class="deliver-meta-compact">
+
+       <div class="meta-group">
+         <span class="meta-label">Project Name</span>
+         <strong id="display-project-name-compact" class="meta-value">-</strong>
+       </div>
+
+       <div class="meta-group">
+         <span class="meta-label">Delivery ID</span>
+         <strong id="deliver-id-value-compact" class="meta-value">-</strong>
+       </div>
+
+       <div class="meta-group">
+         <span class="meta-label">Total Size</span>
+         <strong id="deliver-file-size-compact" class="meta-value">-</strong>
+       </div>
+
+       <div class="meta-group">
+         <span class="meta-label">Delivery Date</span>
+         <strong id="deliver-upload-date-compact" class="meta-value">-</strong>
+       </div>
+
+       <div id="deliver-expiry-date-wrap-compact" class="meta-group" hidden>
+         <span class="meta-label">Available Until</span>
+         <strong id="deliver-expiry-date-compact" class="meta-value">-</strong>
+       </div>
+
+      </div>
+
+
+      <!-- COMPACT SUPPORT SECTION (BEFORE IMAGE) -->
+
+      <aside
+       id="deliver-support-compact-top"
+       class="boztik-support-compact"
+      >
+
+       <div class="boztik-support-inner">
+
+         <div class="boztik-support-section header-section">
+
+           <span class="deliver-section-label">
+             ● SUPPORT BOZTIK
+           </span>
+
+           <h2 class="gratitude-title">
+             Enjoying your work?
+           </h2>
+
+           <p class="gratitude-copy">
+             Your support helps me continue improving my services. Thank you for supporting my work.
+           </p>
+
+         </div>
+
+         <div class="boztik-support-section actions-section">
+           <div class="boztik-support-actions" aria-label="Support actions">
+             <a
+               href="https://ko-fi.com/boztik"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="boztik-support-button kofi"
+             >
+               Support on Ko-fi <span aria-hidden="true">↗</span>
+             </a>
+             <a
+               href="http://paypal.me/angry5p1c3"
+               target="_blank"
+               rel="noopener noreferrer"
+               class="boztik-support-button paypal"
+             >
+               Support with PayPal <span aria-hidden="true">↗</span>
+             </a>
+           </div>
+         </div>
+
+       </div>
+
+      </aside>
+
+
+      <!-- ===================================================
+           DELIVERY INFORMATION
+      ==================================================== -->
+
+      <div class="deliver-card-refined">
+
+
+        <!-- DELIVERY META -->
+
+        <div class="deliver-meta-refined">
+
+          <div class="meta-group">
+
+            <span class="meta-label">
+              Project Name
+            </span>
+
+            <strong
+              id="display-project-name"
+              class="meta-value"
+            >
+              -
+            </strong>
+
+          </div>
+
+
+          <div class="meta-group">
+
+            <span class="meta-label">
+              Delivery ID
+            </span>
+
+            <strong
+              id="deliver-id-value"
+              class="meta-value"
+            >
+              -
+            </strong>
+
+          </div>
+
+
+          <div class="meta-group">
+
+            <span class="meta-label">
+              Total Size
+            </span>
+
+            <strong
+              id="deliver-file-size"
+              class="meta-value"
+            >
+              -
+            </strong>
+
+          </div>
+
+
+          <div class="meta-group">
+
+            <span class="meta-label">
+              Delivery Date
+            </span>
+
+            <strong
+              id="deliver-upload-date"
+              class="meta-value"
+            >
+              -
+            </strong>
+
+          </div>
+
+
+          <div
+            id="deliver-expiry-date-wrap"
+            class="meta-group"
+            hidden
+          >
+
+            <span class="meta-label">
+              Available Until
+            </span>
+
+            <strong
+              id="deliver-expiry-date"
+              class="meta-value"
+            >
+              -
+            </strong>
+
+          </div>
+
+        </div>
+
+
+        <!-- CLIENT NOTE -->
+
+        <div
+          id="deliver-notes-wrap"
+          class="deliver-meta-refined"
+          style="
+            margin-top: -24px;
+            border-top: none;
+          "
+          hidden
+        >
+
+          <div
+            class="meta-group"
+            style="grid-column: 1 / -1;"
+          >
+
+            <span class="meta-label">
+              A note from Boztik
+            </span>
+
+            <strong
+              id="deliver-notes"
+              class="meta-value"
+              style="
+                font-weight: 500;
+                font-style: italic;
+                opacity: 0.9;
+              "
+            ></strong>
+
+          </div>
+
+        </div>
+
+
+        <!-- ORIGINAL SOURCE (Reddit) — hidden unless the delivery has
+             reddit_source attached; never shown/empty otherwise -->
+
+        <div
+          id="deliver-source-wrap"
+          class="deliver-source-wrap"
+          hidden
+        >
+
+          <span class="deliver-source-eyebrow">
+            Original Source
+          </span>
+
+          <div class="deliver-source-meta">
+            <span>Reddit ·</span>
+            <span id="deliver-source-sub" class="deliver-source-sub"></span>
+          </div>
+
+          <span id="deliver-source-author" class="deliver-source-meta"></span>
+
+          <strong id="deliver-source-title" class="deliver-source-title"></strong>
+
+          <a
+            id="deliver-source-link"
+            class="deliver-source-open"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            View Original Reddit Post ↗
+          </a>
+
+        </div>
+
+
+        <!-- =================================================
+             PROJECT FILES + SUPPORT
+        ================================================== -->
+
+        <div class="boztik-files-support-layout">
+
+
+          <!-- =================================================
+               PROJECT FILES
+          ================================================== -->
+
+          <div class="boztik-files-column">
+
+            <div class="deliver-gallery-header">
+
+              <span class="deliver-eyebrow">
+                Deliverables
+              </span>
+
+              <h2>
+                Project Files
+              </h2>
+
+            </div>
+
+
+            <div
+              id="deliver-gallery"
+              class="deliver-gallery-refined"
+            ></div>
+
+
+            <div class="deliver-primary-action-wrap">
+
+              <button
+                id="deliver-download-all"
+                class="deliver-download-all"
+                type="button"
+              >
+
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+
+                  <path
+                    d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
+                  />
+
+                  <polyline
+                    points="7 10 12 15 17 10"
+                  />
+
+                  <line
+                    x1="12"
+                    y1="15"
+                    x2="12"
+                    y2="3"
+                  />
+
+                </svg>
+
+                Download All Files
+
+              </button>
+
+
+              <p class="deliver-action-hint">
+                Your files are prepared securely and available for a limited time.
+              </p>
+
+            </div>
+
+            <!-- PhotoshopBattles moves the one shared AdSense unit here at
+                 runtime, so its image page stays free of client support and
+                 promotional content. -->
+            <div id="deliver-battle-ad-host" class="deliver-battle-ad-host" hidden></div>
+
+          </div>
+
+
+          <!-- =================================================
+               PREMIUM SIDEBAR SUPPORT CREATOR
+          ================================================== -->
+
+          <aside
+            id="deliver-support-details"
+            class="deliver-gratitude boztik-support-compact"
+          >
+
+            <div class="boztik-support-inner">
+
+              <div class="boztik-support-section header-section">
+
+                <span class="deliver-section-label">
+                  BOZTIK SUPPORT
+                </span>
+
+                <h2 class="gratitude-title">
+                  Enjoying your delivery?
+                </h2>
+
+                <p class="gratitude-copy">
+                  Boztik is independently built and maintained. If this delivery has been helpful, a small contribution helps keep thoughtful creative tools and services growing.
+                </p>
+
+                <p class="boztik-support-reassurance">
+                  Optional support, securely handled by Ko-fi or PayPal. Thank you for helping independent creative work thrive.
+                </p>
+
+                <div class="boztik-support-value" aria-label="What support helps with">
+                  <div><span aria-hidden="true">✦</span><p><strong>Thoughtful delivery</strong><small>Secure, simple access to your finished files.</small></p></div>
+                  <div><span aria-hidden="true">✦</span><p><strong>Better creative tools</strong><small>Ongoing refinements that make the experience smoother.</small></p></div>
+                  <div><span aria-hidden="true">✦</span><p><strong>Independent work</strong><small>More time focused on quality, detail and care.</small></p></div>
+                </div>
+
+              </div>
+
+              <div class="boztik-support-section actions-section">
+                <div class="boztik-support-actions" aria-label="Support actions">
+                  <a href="../contact.html" class="boztik-support-button contact">
+                    Need delivery help? <span aria-hidden="true">↗</span>
+                  </a>
+                  <a
+                    href="https://ko-fi.com/boztik"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="boztik-support-button kofi"
+                  >
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M3 5.5A2.5 2.5 0 0 1 5.5 3h10A2.5 2.5 0 0 1 18 5.5V7h.75a3.25 3.25 0 1 1 0 6.5H18A6.5 6.5 0 0 1 11.5 20h-4A6.5 6.5 0 0 1 1 13.5v-8Zm15 3v2.5a1.75 1.75 0 1 0 0-3.5V8.5Z"/></svg>
+                    Support via Ko-fi <span aria-hidden="true">↗</span>
+                  </a>
+                  <a
+                    href="http://paypal.me/angry5p1c3"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="boztik-support-button paypal"
+                  >
+                    <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20"><path fill="#fff" d="M8.2 4.3h5c2.6 0 4.1 1.4 3.7 3.8-.5 3.2-2.5 4.7-5.4 4.7H9.9l-.8 5H6.4l1.8-13.5Z"/><path fill="#d8efff" d="M6.3 4.3h5c2.6 0 4.1 1.4 3.7 3.8-.5 3.2-2.5 4.7-5.4 4.7H8l-.8 5H4.5l1.8-13.5Z"/></svg>
+                    Support via PayPal <span aria-hidden="true">↗</span>
+                  </a>
+                </div>
+              </div>
+
+            </div>
+
+          </aside>
+
+        </div>
+
+      </div>
+
+      <!-- =====================================================
+           SERVICES / ADDITIONAL EDITS
+      ====================================================== -->
+
+      <section
+        id="deliver-private-requests"
+        class="deliver-card-refined boztik-services-card"
+        hidden
+      >
+
+        <div class="boztik-services-content">
+
+
+          <div class="boztik-services-header">
+
+            <span class="deliver-eyebrow">
+              Creative Services
+            </span>
+
+            <h2 class="boztik-services-title">
+              Need another image edited?
+            </h2>
+
+            <p class="boztik-services-intro">
+              Have another photograph that needs attention? Boztik provides professional, detail-focused photo editing for personal photographs, portraits, creative projects, business images and everything in between. Tell me what you need and I'll work with you to achieve the result you're looking for.
+            </p>
+
+            <p class="boztik-services-intro" style="margin-top:8px;">
+              Share what you have in mind and receive a personal response about the best approach for your image.
+            </p>
+
+          </div>
+
+
+          <!-- SERVICES -->
+
+          <div class="boztik-service-grid">
+
+
+            <div class="boztik-service-item">
+
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M12 3l2.5 5.5L20 11l-5.5 2.5L12 19l-2.5-5.5L4 11l5.5-2.5L12 3z"/>
+              </svg>
+
+              Photo Restoration
+
+            </div>
+
+
+            <div class="boztik-service-item">
+
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M20 21a8 8 0 0 0-16 0"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+
+              Portrait & Headshots
+
+            </div>
+
+
+            <div class="boztik-service-item">
+
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M3 7h18M5 7v13h14V7M8 7V4h8v3"/>
+              </svg>
+
+              Object Removal
+
+            </div>
+
+
+            <div class="boztik-service-item">
+
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M4 4h16v16H4z"/>
+                <path d="M8 15l3-3 2 2 3-4 3 5"/>
+              </svg>
+
+              Image Enhancement
+
+            </div>
+
+
+            <div class="boztik-service-item">
+
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="12" r="9"/>
+                <path d="M12 3v18M3 12h18"/>
+              </svg>
+
+              Colour Correction & Colourisation
+
+            </div>
+
+
+            <div class="boztik-service-item">
+
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M12 3v18M3 12h18"/>
+                <path d="M5 5l14 14M19 5L5 19"/>
+              </svg>
+
+              Creative Compositing
+
+            </div>
+
+
+            <div class="boztik-service-item">
+
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M4 12h16"/>
+                <path d="M12 4v16"/>
+              </svg>
+
+              Upscaling & Detail Recovery
+
+            </div>
+
+
+            <div class="boztik-service-item">
+
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M4 5h16v14H4z"/>
+                <path d="M8 9h8M8 13h5"/>
+              </svg>
+
+              Background Cleanup
+
+            </div>
+
+
+            <div class="boztik-service-item">
+
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M12 3v18"/>
+                <path d="M5 7h14"/>
+                <path d="M7 17h10"/>
+              </svg>
+
+              Custom Editing Requests
+
+            </div>
+
+          </div>
+
+
+          <!-- FLEXIBLE PRICING -->
+
+          <div class="boztik-flexible-pricing">
+
+            <strong>
+              Flexible pricing for individual projects
+            </strong>
+
+            <p>
+              Not every editing job fits a fixed package. For smaller projects, personal work or custom requests, I offer flexible pricing and a Pay What You Want option where appropriate. Tell me what you need, and we'll find an approach that works for the project.
+            </p>
+
+          </div>
+
+
+          <!-- ACTIONS -->
+
+          <div class="boztik-services-actions">
+
+            <a
+              href="https://ko-fi.com/c/36ad8145f5"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn-primary-deliver"
+            >
+              Request a custom edit
+            </a>
+
+            <a
+              href="../contact.html"
+              class="btn-secondary-deliver boztik-contact-cta"
+            >
+              Contact Boztik <span aria-hidden="true">→</span>
+            </a>
+
+
+            <a
+              href="https://boztiktech9a11.myportfolio.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn-secondary-deliver boztik-portfolio-link"
+              style="
+                padding: 0 34px;
+                border-radius: 999px;
+              "
+            >
+              View portfolio
+            </a>
+
+          </div>
+
+
+          <p class="boztik-services-footnote">
+            Every project is reviewed individually so the editing approach can be matched to the image and the result you want.
+          </p>
+
+        </div>
+
+      </section>
+
+
+      <!-- =====================================================
+          DELIVERY CONTACT / ASSISTANCE SECTION
+      ====================================================== -->
+
+      <div class="deliver-contact-section">
+
+       <span class="deliver-eyebrow">
+         Need Help?
+       </span>
+
+       <h2>Delivery Assistance</h2>
+
+       <p class="deliver-contact-intro">
+         Need more time, have a question about your files, or need assistance downloading? Contact Boztik and I'll help you out.
+       </p>
+
+       <a
+         href="../contact.html"
+         class="deliver-action-btn"
+       >
+         Contact Boztik
+       </a>
+
+      </div>
+
+
+      <!-- =====================================================
+          EXPLORE MORE TOGGLE
+      ====================================================== -->
+
+      <div class="deliver-explore-toggle-wrap">
+
+        <button
+          type="button"
+          id="deliver-explore"
+          class="deliver-explore-toggle"
+          aria-expanded="false"
+          aria-controls="deliver-explore-panel"
+          hidden
+        >
+
+          <span class="deliver-explore-toggle-line"></span>
+
+          <span class="deliver-explore-toggle-label">
+            Explore More
+          </span>
+
+          <svg
+            class="deliver-explore-toggle-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+
+          <span class="deliver-explore-toggle-line"></span>
+
+        </button>
+
+      </div>
+
+
+      <div
+        id="deliver-explore-panel"
+        class="deliver-explore-panel"
+      >
+
+        <div class="deliver-explore-panel-inner">
+
+
+      <!-- =====================================================
+           CREATIVE TOOLKIT — MOVED TO BOTTOM
+      ====================================================== -->
+
+      <div
+        id="deliver-discover"
+        class="toolkit-showcase-refined boztik-toolkit-bottom"
+        hidden
+      >
+
+        <div class="toolkit-content">
+
+
+          <div class="toolkit-text">
+
+            <span class="deliver-eyebrow">
+              Creative Toolkit
+            </span>
+
+            <h2 class="toolkit-title">
+              Meet Boztik Creative Toolkit
+            </h2>
+
+            <p class="toolkit-subtitle">
+              A practical browser toolkit for photographers, designers and creators who work with images every day.
+            </p>
+
+
+            <div class="toolkit-features-list">
+
+
+              <div class="toolkit-feature-item">
+
+                <div class="toolkit-feature-icon">
+
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="10"
+                    />
+
+                    <line
+                      x1="12"
+                      y1="16"
+                      x2="12"
+                      y2="12"
+                    />
+
+                    <line
+                      x1="12"
+                      y1="8"
+                      x2="12.01"
+                      y2="8"
+                    />
+
+                  </svg>
+
+                </div>
+
+
+                <div class="toolkit-feature-text">
+
+                  <h4>
+                    Image Inspector
+                  </h4>
+
+                  <p>
+                    Inspect image dimensions, resolution and useful image information quickly from your browser.
+                  </p>
+
+                </div>
+
+              </div>
+
+
+              <div class="toolkit-feature-item">
+
+                <div class="toolkit-feature-icon">
+
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+
+                    <path d="M2 17l10 5 10-5"/>
+
+                    <path d="M2 12l10 5 10-5"/>
+
+                  </svg>
+
+                </div>
+
+
+                <div class="toolkit-feature-text">
+
+                  <h4>
+                    Colour Tools
+                  </h4>
+
+                  <p>
+                    Extract useful colour palettes from images for design, branding and creative reference.
+                  </p>
+
+                </div>
+
+              </div>
+
+
+              <div class="toolkit-feature-item">
+
+                <div class="toolkit-feature-icon">
+
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+
+                    <circle
+                      cx="11"
+                      cy="11"
+                      r="8"
+                    />
+
+                    <line
+                      x1="21"
+                      y1="21"
+                      x2="16.65"
+                      y2="16.65"
+                    />
+
+                  </svg>
+
+                </div>
+
+
+                <div class="toolkit-feature-text">
+
+                  <h4>
+                    Reverse Image Search
+                  </h4>
+
+                  <p>
+                    Research image sources and visual references directly from your browser workflow.
+                  </p>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <div class="toolkit-actions">
+
+              <a
+                href="https://chromewebstore.google.com/detail/boztik-creative-toolkit/maaebbajegilfcpmljlpcclebdpngign"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="deliver-action-btn"
+              >
+
+                <img
+                  src="../images/chrome.png"
+                  width="20"
+                  height="20"
+                  alt=""
+                >
+
+                Get for Chrome
+
+              </a>
+
+
+              <a
+                href="https://microsoftedge.microsoft.com/addons/detail/ajpnibmfjlajpgijgaionelkdjgiemfi"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="deliver-action-btn"
+              >
+
+                <img
+                  src="../images/edge.png"
+                  width="20"
+                  height="20"
+                  alt=""
+                >
+
+                Get for Edge
+
+              </a>
+
+
+              <a
+                href="../index.html"
+                class="toolkit-link-plain"
+              >
+                Full Website
+              </a>
+
+            </div>
+
+          </div>
+
+
+          <div class="toolkit-visual">
+
+            <img
+              src="../images/extension-preview.png"
+              alt="Boztik Creative Toolkit Preview"
+            >
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- =====================================================
+           ADSENSE
+      ====================================================== -->
+
+      <div
+        id="deliver-adsense-slot"
+        class="deliver-section boztik-ad-area"
+        hidden
+      >
+
+        <div class="boztik-ad-heading">
+
+          <span>
+            Advertisement
+          </span>
+
+        </div>
+
+
+        <div class="boztik-ad-slot-inner">
+
+          <ins
+            class="adsbygoogle"
+            style="display:block"
+            data-ad-client="ca-pub-3739684241868984"
+            data-ad-slot="9342555903"
+            data-ad-format="auto"
+            data-full-width-responsive="true"
+          ></ins>
+
+        </div>
+
+      </div>
+
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         EXPIRED
+    ====================================================== -->
+
+    <section
+      id="deliver-expired"
+      class="deliver-section"
+      hidden
+    >
+
+      <svg
+        width="64"
+        height="64"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="var(--error-deliver)"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        style="margin-bottom: 24px;"
+      >
+
+        <circle
+          cx="12"
+          cy="12"
+          r="10"
+        />
+
+        <line
+          x1="12"
+          y1="8"
+          x2="12"
+          y2="12"
+        />
+
+        <line
+          x1="12"
+          y1="16"
+          x2="12.01"
+          y2="16"
+        />
+
+      </svg>
+
+
+      <h1 class="deliver-hero-title">
+        This delivery has expired
+      </h1>
+
+
+      <p class="deliver-hero-subtitle">
+        Your delivery link has expired, but help is still available. Contact Boztik to request a re-upload or to ask whether the delivery can be re-enabled.
+      </p>
+
+
+      <div class="deliver-expired-actions">
+
+        <a
+          href="../index.html"
+          class="btn-primary-deliver"
+          style="max-width: 240px;"
+        >
+          Visit Boztik
+        </a>
+
+
+        <a
+          href="../contact.html"
+          class="btn-secondary-deliver"
+          style="
+            padding: 0 40px;
+            border-radius: 999px;
+          "
+        >
+          Request delivery help
+        </a>
+
+      </div>
+
+      <aside class="deliver-expired-support" aria-label="Delivery support">
+        <strong>Need help with this delivery?</strong>
+        <span>Boztik can help you request a re-upload or discuss extending access.</span>
+        <a href="../contact.html">Contact delivery support</a>
+      </aside>
+
+    </section>
+
+
+    <!-- =====================================================
+         ERROR
+    ====================================================== -->
+
+    <section
+      id="deliver-error"
+      class="deliver-section"
+      hidden
+    >
+
+      <svg
+        width="64"
+        height="64"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="var(--error-deliver)"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        style="margin-bottom: 24px;"
+      >
+
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+
+        <line
+          x1="12"
+          y1="9"
+          x2="12"
+          y2="13"
+        />
+
+        <line
+          x1="12"
+          y1="17"
+          x2="12.01"
+          y2="17"
+        />
+
+      </svg>
+
+
+      <h1 class="deliver-hero-title">
+        Something went wrong
+      </h1>
+
+
+      <p class="deliver-hero-subtitle">
+        We encountered an error while retrieving your delivery. Please try refreshing the page.
+      </p>
+
+
+      <p
+        id="deliver-error-detail"
+        style="
+          font-family: monospace;
+          font-size: 0.8rem;
+          opacity: 0.5;
+          margin-top: 20px;
+        "
+        hidden
+      ></p>
+
+
+      <button
+        type="button"
+        data-delivery-retry
+        class="btn-primary-deliver"
+        style="
+          max-width: 240px;
+          margin-top: 24px;
+        "
+      >
+        Retry
+      </button>
+
+    </section>
+
+
+    <!-- =====================================================
+         PROFESSIONAL FOOTER
+    ====================================================== -->
+
+    <footer class="boztik-professional-footer">
+
+
+      <div class="boztik-footer-main">
+
+
+        <!-- BRAND -->
+
+        <div class="boztik-footer-brand">
+
+          <strong>
+            BOZTIK
+          </strong>
+
+          <p>
+            Professional photo editing, creative services and practical tools for photographers, designers and creators.
+          </p>
+
+        </div>
+
+
+        <!-- EXPLORE -->
+
+        <div class="boztik-footer-column">
+
+          <h3>
+            Explore
+          </h3>
+
+          <a href="../index.html">
+            Website
+          </a>
+
+          <a
+            href="https://boztiktech9a11.myportfolio.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Portfolio
+          </a>
+
+          <a href="../index.html#downloads">
+            Creative Toolkit
+          </a>
+
+        </div>
+
+
+        <!-- SERVICES -->
+
+        <div class="boztik-footer-column">
+
+          <h3>
+            Services
+          </h3>
+
+          <a
+            href="https://ko-fi.com/c/36ad8145f5"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Request an Edit
+          </a>
+
+          <a
+            href="https://boztiktech9a11.myportfolio.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Photo Editing
+          </a>
+
+          <a
+            href="https://boztiktech9a11.myportfolio.com/contact"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Custom Requests
+          </a>
+
+        </div>
+
+
+        <!-- SUPPORT -->
+
+        <div id="deliver-footer-support" class="boztik-footer-column">
+
+          <h3>
+            Support
+          </h3>
+
+          <a
+            href="https://ko-fi.com/boztik"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Ko-fi
+          </a>
+
+          <a
+            href="http://paypal.me/angry5p1c3"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            PayPal
+          </a>
+
+          <a
+            href="https://boztiktech9a11.myportfolio.com/contact"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Contact Boztik
+          </a>
+
+        </div>
+
+      </div>
+
+
+      <div class="boztik-footer-bottom">
+
+
+        <p>
+          &copy; 2026 Boztik. All rights reserved.
+        </p>
+
+
+        <div class="boztik-footer-security">
+
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+
+          </svg>
+
+          Secure private delivery
+
+        </div>
+
+      </div>
+
+    </footer>
+
+  </main>
+
+  <!-- Fixed separately from the gallery so assistance is always one tap away. -->
+  <aside id="deliver-support" class="deliver-floating-support" hidden aria-label="Delivery support">
+    <div class="deliver-floating-support__support">
+      <span class="deliver-floating-support__status"><span aria-hidden="true"></span> Support Boztik</span>
+      <p class="deliver-floating-support__support-copy">Boztik is independently built and maintained. If you find the service useful, your support helps keep it running, improve the tools and make continued development possible.</p>
+      <p class="deliver-floating-support__support-copy deliver-floating-support__support-copy--secondary">Support any amount you feel is appropriate. Every contribution, large or small, is genuinely appreciated.</p>
+      <p class="deliver-floating-support__support-thanks">Thank you for supporting independent creators and developers.</p>
+      <div class="deliver-floating-support__tips" aria-label="Support links">
+        <a href="https://ko-fi.com/boztik" target="_blank" rel="noopener noreferrer" class="deliver-tip-link deliver-tip-link--kofi">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.5A2.5 2.5 0 0 1 5.5 3h10A2.5 2.5 0 0 1 18 5.5V7h.75a3.25 3.25 0 1 1 0 6.5H18A6.5 6.5 0 0 1 11.5 20h-4A6.5 6.5 0 0 1 1 13.5v-8Zm15 3v2.5a1.75 1.75 0 1 0 0-3.5V8.5Z"/></svg>
+          <span>Support with Ko-fi</span>
+        </a>
+        <a href="http://paypal.me/angry5p1c3" target="_blank" rel="noopener noreferrer" class="deliver-tip-link deliver-tip-link--paypal">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path fill="#009cde" d="M8.2 4.3h5c2.6 0 4.1 1.4 3.7 3.8-.5 3.2-2.5 4.7-5.4 4.7H9.9l-.8 5H6.4l1.8-13.5Z"/><path fill="#003087" d="M6.3 4.3h5c2.6 0 4.1 1.4 3.7 3.8-.5 3.2-2.5 4.7-5.4 4.7H8l-.8 5H4.5l1.8-13.5Z"/></svg>
+          <span>Support with PayPal</span>
+        </a>
+      </div>
+      <p class="deliver-floating-support__support-closing">Your support helps keep Boztik growing.</p>
+    </div>
+    <div class="deliver-floating-support__divider" aria-hidden="true"></div>
+    <div class="deliver-floating-support__help">
+      <strong>Need help with your files?</strong>
+      <p>Request download help, a re-upload, or more time on this delivery.</p>
+      <a href="../contact.html">Get delivery help <span aria-hidden="true">↗</span></a>
+    </div>
+  </aside>
+
+
+  <!-- =====================================================
+       SUPPORT MODAL
+  ====================================================== -->
+
+  <dialog
+    id="deliver-support-modal"
+    class="premium-popup"
+  >
+
+    <button
+      id="deliver-support-modal-close"
+      class="deliver-popup-close"
+      aria-label="Close"
+    >
+      &times;
+    </button>
+
+
+    <div style="text-align: center;">
+
+      <svg
+        width="48"
+        height="48"
+        viewBox="0 0 24 24"
+        fill="var(--primary-deliver)"
+        style="margin-bottom: 20px;"
+      >
+
+        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+
+      </svg>
+
+
+      <h2>
+        Thanks for supporting my work
+      </h2>
+
+
+      <p>
+        I hope you enjoy the finished result. If you'd like to support independent creative work, even a small contribution helps me keep building and improving.
+      </p>
+
+
+      <div
+        style="
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          margin-top: 24px;
+        "
+      >
+
+        <a
+          href="https://ko-fi.com/boztik"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="support-link support-link--kofi"
+        >
+          Support on Ko-fi
+          <span aria-hidden="true">↗</span>
+        </a>
+
+
+        <a
+          href="http://paypal.me/angry5p1c3"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="support-link support-link--paypal"
+        >
+          Support with PayPal
+          <span aria-hidden="true">↗</span>
+        </a>
+
+
+        <a
+          href="https://ko-fi.com/boztik/goal?g=9"
+          target="_blank"
+          rel="noopener noreferrer"
+          style="
+            font-size: 0.85rem;
+            color: var(--text-muted-deliver);
+            font-weight: 600;
+            text-decoration: underline;
+            margin-top: 8px;
+          "
+        >
+          View what I'm currently working toward →
+        </a>
+
+      </div>
+
+
+      <button
+        onclick="this.closest('dialog').close()"
+        style="
+          background: none;
+          border: none;
+          color: var(--text-muted-deliver);
+          font-size: 0.85rem;
+          font-weight: 600;
+          cursor: pointer;
+          margin-top: 24px;
+          text-decoration: underline;
+        "
+      >
+        No thanks, continue
+      </button>
+
+    </div>
+
+  </dialog>
+
+
+  <!-- =====================================================
+       SUPABASE
+  ====================================================== -->
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+  ></script>
+
+
+  <!-- =====================================================
+       DELIVERY APPLICATION
+  ====================================================== -->
+
+  <script
+    type="module"
+    src="js/client.js"
+  ></script>
+
+</body>
+</html>
