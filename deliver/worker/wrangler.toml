@@ -1,0 +1,82 @@
+name = "boztik-deliver-v2"
+main = "src/index.ts"
+compatibility_date = "2026-09-01"
+compatibility_flags = ["nodejs_compat"]
+
+# ---------------------------------------------------------------------------
+# ROUTE — bind this Worker to the new subdomain via a Custom Domain. Custom
+# Domains cover every path on the hostname implicitly, so the pattern is
+# just the bare hostname — no "/*" (Cloudflare rejects a wildcard/path here;
+# this is the corrected form after that exact error surfaced in local
+# testing). Requires a DNS CNAME record for `deliver-api` pointing at your
+# zone, created once in the Cloudflare dashboard when you add this Custom
+# Domain — this does not touch the `www` or apex records used by the main
+# site.
+# ---------------------------------------------------------------------------
+routes = [
+  { pattern = "deliver-api.boztik.com", custom_domain = true }
+]
+
+# ---------------------------------------------------------------------------
+# D1 — create with: wrangler d1 create boztik_deliver_v2
+# Then paste the returned database_id below.
+# ---------------------------------------------------------------------------
+[[d1_databases]]
+binding = "DB"
+database_name = "boztik_deliver_v2"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+migrations_dir = "migrations"
+
+# ---------------------------------------------------------------------------
+# R2 — create with: wrangler r2 bucket create boztik-deliver-v2
+# This binding is used for direct server-side operations only (delete on
+# expiry/manual-delete, existence checks, the PhotoshopBattles stream route).
+# It is NOT used for presigned URLs — see R2_ACCOUNT_ID etc. below.
+# ---------------------------------------------------------------------------
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "boztik-deliver-v2"
+
+# ---------------------------------------------------------------------------
+# CRON — expiry cleanup + abandoned-upload sweep (src/scheduled.ts).
+# Every 30 minutes. Adjust freely; cost impact is negligible either way.
+# ---------------------------------------------------------------------------
+[triggers]
+crons = ["*/30 * * * *"]
+
+# ---------------------------------------------------------------------------
+# Non-secret configuration
+# ---------------------------------------------------------------------------
+[vars]
+R2_BUCKET_NAME = "boztik-deliver-v2"
+PUBLIC_ORIGIN = "https://www.boztik.com"
+DELIVER_V2_BASE_URL = "https://www.boztik.com/deliver-v2"
+# Your Cloudflare Access team domain, e.g. "boztik.cloudflareaccess.com"
+# (find it in Zero Trust → Settings → Custom Pages, or your team domain
+# setting). Required for JWT verification in src/lib/access.ts.
+ACCESS_TEAM_DOMAIN = "REPLACE_WITH_YOUR_TEAM_DOMAIN"
+# The Access Application's AUD tag, shown on the application's overview page
+# in the Zero Trust dashboard after you create it (see §7 of the Phase 2 doc).
+ACCESS_AUD = "REPLACE_WITH_ACCESS_APPLICATION_AUD"
+# Belt-and-suspenders check, independent of the Access policy itself — see
+# src/lib/access.ts. Set this to your own login email.
+ADMIN_EMAIL = "REPLACE_WITH_YOUR_EMAIL"
+DOWNLOAD_URL_TTL_SECONDS = "60"
+PREVIEW_URL_TTL_SECONDS = "300"
+UPLOAD_URL_TTL_SECONDS = "900"
+MAX_UPLOAD_BYTES = "262144000"
+MAX_FILES_PER_DELIVERY = "10"
+ABANDONED_UPLOAD_GRACE_HOURS = "24"
+
+# ---------------------------------------------------------------------------
+# SECRETS — never put these here. Set each with:
+#   wrangler secret put <NAME>
+#
+#   R2_ACCOUNT_ID          — your Cloudflare account ID (dashboard sidebar)
+#   R2_ACCESS_KEY_ID        — from an R2 API token (R2 → Manage API Tokens)
+#   R2_SECRET_ACCESS_KEY    — from the same R2 API token
+#     Scope this token to the boztik-deliver-v2 bucket only, Object
+#     Read & Write. This is what src/lib/r2.ts uses to sign presigned
+#     PUT/GET URLs via aws4fetch — it is intentionally a *different*
+#     credential from the [[r2_buckets]] binding above.
+# ---------------------------------------------------------------------------
