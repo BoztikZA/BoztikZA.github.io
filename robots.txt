@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /deliver/
 
-Sitemap: https://boztik.com/sitemap.xml
+Sitemap: https://www.boztik.com/sitemap.xml
