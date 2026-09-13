@@ -3,7 +3,7 @@
 // including the Photoshop Battles delivery type. Talks to Supabase only
 // through auth.js / api.js / shared.js — no direct Supabase calls here.
 
-import { getSession, signIn, signOut, onAuthChange } from "./auth.js";
+import { getSession, signOut, onAuthChange } from "./auth.js";
 import {
   listDeliveries,
   createDelivery,
@@ -35,10 +35,6 @@ const els = {
   logoutLink: $("dash-logout-link"),
 
   loginView: $("dash-login-view"),
-  loginForm: $("dash-login-form"),
-  email: $("dash-email"),
-  password: $("dash-password"),
-  loginBtn: $("dash-login-btn"),
   loginError: $("dash-login-error"),
 
   mainView: $("dash-main-view"),
@@ -429,15 +425,7 @@ function battleDirectUrl(delivery) {
   const token = delivery.source_meta?.direct_token;
   if (!token) return null;
 
-  const fileName =
-    delivery.file_name ||
-    delivery.delivery_files?.[0]?.file_name ||
-    "";
-
-  const rawExt = fileName.split(".").pop()?.toLowerCase() || "jpg";
-  const ext = rawExt === "jpeg" ? "jpg" : (BATTLE_EXTENSIONS.includes(rawExt) ? rawExt : "jpg");
-
-  return `${config.supabaseUrl}/functions/v1/photoshop-battles-image/${encodeURIComponent(delivery.id)}--${encodeURIComponent(token)}.${ext}`;
+  return `${config.apiBaseUrl}/api/d/${encodeURIComponent(delivery.id)}/reddit-embed?token=${encodeURIComponent(token)}`;
 }
 
 /* =========================================================
@@ -535,44 +523,6 @@ function setLoginError(message = "") {
   els.loginError.hidden = !message;
 }
 
-async function handleLoginSubmit(event) {
-  event.preventDefault();
-
-  const email = els.email?.value.trim() || "";
-  const password = els.password?.value || "";
-
-  setLoginError("");
-
-  if (!email || !password) {
-    setLoginError("Enter your email and password.");
-    return;
-  }
-
-  if (els.loginBtn) {
-    els.loginBtn.disabled = true;
-    els.loginBtn.textContent = "Signing in…";
-  }
-
-  try {
-    await signIn(email, password);
-    if (els.password) els.password.value = "";
-    showDashboardView();
-    await bootstrapDashboard();
-  } catch (error) {
-    console.error("[Boztik Deliver] Sign-in failed:", error);
-    setLoginError(
-      error?.message?.includes("Invalid login credentials")
-        ? "Incorrect email or password."
-        : (error?.message || "Sign-in failed. Please try again.")
-    );
-  } finally {
-    if (els.loginBtn) {
-      els.loginBtn.disabled = false;
-      els.loginBtn.textContent = "Sign in";
-    }
-  }
-}
-
 async function handleLogout(event) {
   event.preventDefault();
 
@@ -587,7 +537,6 @@ async function handleLogout(event) {
 }
 
 function setupAuth() {
-  els.loginForm?.addEventListener("submit", handleLoginSubmit);
   els.logoutLink?.addEventListener("click", handleLogout);
 
   // Session expiring/being revoked elsewhere (e.g. another tab signs out,
@@ -1678,6 +1627,11 @@ async function loadDeliveries() {
     deliveries = await listDeliveries();
   } catch (error) {
     console.error("[Boztik Deliver] listDeliveries failed:", error);
+    if (error?.message === "unauthorized") {
+      setLoginError("Your Cloudflare Access session is no longer valid. Reload the page to sign in again.");
+      showLoginView();
+      return;
+    }
     showToast("Could not load deliveries.", "error");
     deliveries = [];
   }

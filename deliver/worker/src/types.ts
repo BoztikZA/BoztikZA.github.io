@@ -78,8 +78,12 @@ export interface PublicDelivery {
   project_name: string | null;
   client_name: string | null;
   notes: string | null;
-  created_at: number;
-  expires_at: number;
+  /** ISO 8601 strings — converted from D1's raw Unix-seconds columns at
+   *  the response boundary so the reused frontend's `new Date(value)`
+   *  calls (built against Supabase's timestamptz strings) keep working.
+   *  See lib/db.ts's secToIso(). */
+  created_at: string;
+  expires_at: string;
   support_enabled: boolean;
   is_photoshop_battles: boolean;
   reddit_source: Record<string, unknown> | null;

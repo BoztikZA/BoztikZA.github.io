@@ -8,6 +8,18 @@ import type {
 const nowSec = () => Math.floor(Date.now() / 1000);
 const currentMonth = () => new Date().toISOString().slice(0, 7); // 'YYYY-MM'
 
+/** Converts a D1 Unix-seconds column to the ISO 8601 string the reused
+ *  frontend expects (see file-level comment above). Never used on values
+ *  going INTO the database — only on rows read back out for a JSON
+ *  response. */
+export function secToIso(seconds: number): string {
+  return new Date(seconds * 1000).toISOString();
+}
+
+export function secToIsoOrNull(seconds: number | null): string | null {
+  return seconds === null ? null : secToIso(seconds);
+}
+
 export async function getDelivery(env: Env, id: string): Promise<DeliveryRow | null> {
   const row = await env.DB.prepare("SELECT * FROM deliveries WHERE id = ?")
     .bind(id)
@@ -93,6 +105,10 @@ export async function listDeliveriesForDashboard(env: Env): Promise<Record<strin
     const monthly = analyticsByDelivery[d.id] ?? { views: 0, downloads: 0 };
     return {
       ...d,
+      created_at: secToIso(d.created_at),
+      expires_at: secToIso(d.expires_at),
+      last_viewed_at: secToIsoOrNull(d.last_viewed_at),
+      last_downloaded_at: secToIsoOrNull(d.last_downloaded_at),
       support_enabled: Boolean(d.support_enabled),
       is_photoshop_battles: Boolean(d.is_photoshop_battles),
       reddit_source: d.reddit_source ? JSON.parse(d.reddit_source) : null,

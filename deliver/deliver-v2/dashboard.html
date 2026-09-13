@@ -9,7 +9,7 @@
 
   <title>Deliver Dashboard | Boztik</title>
 
-  <link rel="icon" href="../images/logo.png">
+  <link rel="icon" href="../../images/logo.png">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,7 +19,7 @@
     rel="stylesheet"
   >
 
-  <link rel="stylesheet" href="../styles-premium.css">
+  <link rel="stylesheet" href="../../styles-premium.css">
   <link rel="stylesheet" href="css/deliver.css?v=7">
 
   <style>
@@ -84,10 +84,10 @@
   <header>
     <nav class="navbar" aria-label="Primary navigation">
 
-      <a class="logo-area" href="../index.html">
+      <a class="logo-area" href="../../index.html">
 
         <img
-          src="../images/logo.png"
+          src="../../images/logo.png"
           alt="Boztik logo"
         >
 
@@ -105,7 +105,7 @@
 
       <div class="nav-links" style="display:flex">
 
-        <a href="../index.html">
+        <a href="../../index.html">
           Back to site
         </a>
 
@@ -131,7 +131,13 @@
 
 
     <!-- ===================================================
-         LOGIN
+         ACCESS GATE
+         This page is protected by Cloudflare Access at the edge —
+         a browser cannot load dashboard.html at all without an
+         approved Access session, so there is no client-side login
+         form here. This panel only appears if an admin API call
+         is rejected as unauthorized (e.g. an expired session or a
+         signed-in email that doesn't match the configured admin).
     ==================================================== -->
 
     <section
@@ -144,95 +150,22 @@
       </span>
 
       <h1>
-        Welcome back.
+        Access required.
       </h1>
 
       <p>
-        Sign in with the administrator account created
-        in this Deliver project.
+        This dashboard is protected by Cloudflare Access.
+        If you're seeing this, your Access session may
+        have expired or isn't authorized for this
+        account. Reload the page to sign in again.
       </p>
 
-
-      <form id="dash-login-form">
-
-        <!-- EMAIL -->
-
-        <div class="dash-field">
-
-          <label for="dash-email">
-            Email
-          </label>
-
-          <input
-            id="dash-email"
-            type="email"
-            autocomplete="username"
-            required
-          >
-
-        </div>
-
-
-        <!-- PASSWORD -->
-
-        <div class="dash-field">
-
-          <label for="dash-password">
-            Password
-          </label>
-
-          <input
-            id="dash-password"
-            type="password"
-            autocomplete="current-password"
-            required
-          >
-
-        </div>
-
-
-        <!-- FORGOT PASSWORD -->
-
-        <div class="dash-password-row">
-
-          <a
-            href="./reset-password.html"
-            class="dash-forgot-password"
-          >
-            Forgot your password?
-          </a>
-
-        </div>
-
-
-        <!-- LOGIN BUTTON -->
-
-        <button
-          type="submit"
-          class="dash-btn primary"
-          id="dash-login-btn"
-          style="width: 100%; margin-top: 10px;"
-        >
-          Sign in
-        </button>
-
-
-        <!-- LOGIN ERROR -->
-
-        <p
-          class="dash-login-error"
-          id="dash-login-error"
-          hidden
-          role="alert"
-        ></p>
-
-
-        <p class="dash-login-help">
-          Password reset is handled securely through
-          your Boztik Deliver account.
-        </p>
-
-      </form>
+      <p
+        class="dash-login-error"
+        id="dash-login-error"
+        hidden
+        role="alert"
+      ></p>
 
     </section>
 
@@ -2997,15 +2930,6 @@
     </div>
 
   </footer>
-
-
-  <!-- =====================================================
-       SUPABASE
-  ====================================================== -->
-
-  <script
-    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"
-  ></script>
 
 
   <!-- =====================================================

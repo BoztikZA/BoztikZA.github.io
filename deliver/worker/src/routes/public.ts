@@ -1,6 +1,7 @@
 import type { DeliveryFileRow, DeliveryRow, Env, PublicDelivery } from "../types";
 import { AccessAuthError } from "../types";
 import * as db from "../lib/db";
+import { secToIso } from "../lib/db";
 import { presignGetUrl, getObjectBody } from "../lib/r2";
 import { requireAccessIdentity } from "../lib/access";
 
@@ -26,8 +27,8 @@ function toPublicDelivery(delivery: DeliveryRow, files: DeliveryFileRow[]): Publ
     project_name: delivery.project_name,
     client_name: delivery.client_name,
     notes: delivery.notes,
-    created_at: delivery.created_at,
-    expires_at: delivery.expires_at,
+    created_at: secToIso(delivery.created_at),
+    expires_at: secToIso(delivery.expires_at),
     support_enabled: Boolean(delivery.support_enabled) && !delivery.is_photoshop_battles,
     is_photoshop_battles: Boolean(delivery.is_photoshop_battles),
     reddit_source: redditSource,

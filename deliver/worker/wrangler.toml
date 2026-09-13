@@ -50,7 +50,7 @@ crons = ["*/30 * * * *"]
 [vars]
 R2_BUCKET_NAME = "boztik-deliver-v2"
 PUBLIC_ORIGIN = "https://www.boztik.com"
-DELIVER_V2_BASE_URL = "https://www.boztik.com/deliver-v2"
+DELIVER_V2_BASE_URL = "https://www.boztik.com/deliver/deliver-v2"
 # Your Cloudflare Access team domain, e.g. "boztik.cloudflareaccess.com"
 # (find it in Zero Trust → Settings → Custom Pages, or your team domain
 # setting). Required for JWT verification in src/lib/access.ts.
