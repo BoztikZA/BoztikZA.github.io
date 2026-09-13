@@ -1,28 +1,20 @@
-# Boztik Deliver v2 setup
+# Boztik Deliver setup
 
-Boztik Deliver is a static premium client-delivery interface backed by Supabase Auth, Postgres and private Storage.
+Boztik Deliver is a static premium client-delivery interface backed by Supabase Auth, Postgres, private Storage, and the `deliver-file` signer. The active production site must not depend on Cloudflare Workers, R2, D1, or Cloudflare Access.
 
 ## Before deploying
 
-1. In Supabase SQL Editor, run the complete [`../supabase/schema.sql`](../supabase/schema.sql) file. The V2 and V3 sections create multi-file delivery support, safe client views, analytics and the matching functions used by the dashboard.
-2. Create the `deliveries` bucket as private if it does not already exist; the SQL also applies its file-type rules.
-3. In Authentication, create the administrator user in project `hwcxxotgtqchcriascti`. Disable public sign-ups.
-4. Confirm the anon key in `js/config.js` is the **anon public key from this same project**. Never use a service-role key in this static site.
-5. Set `publicBaseUrl` to the deployed Deliver directory. The configured PayPal support URL is `https://paypal.me/angry5p1c3`.
-6. Deploy the secure file signer before testing client downloads: `supabase functions deploy deliver-file`. Set `ALLOWED_ORIGIN=https://boztik.com` if it is not already configured. This function verifies the delivery has not expired and that the requested file belongs to it before issuing a short-lived URL.
-7. Deploy the PhotoshopBattles direct-image server before sharing any PhotoshopBattles link to Reddit: `supabase functions deploy photoshop-battles-image`. It needs `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` set (Supabase sets these automatically for Edge Functions) and reads the `deliveries`/`delivery_files` tables directly to stream the image and record a view via `record_delivery_view`. If this function was ever deployed from the previous incorrect path (`supabase/photoshop-battles-image/`), redeploy it now that the source lives under `supabase/functions/photoshop-battles-image/` — the CLI only picks up functions from `supabase/functions/<name>/index.ts`, so a deploy run against the old path would have silently failed or deployed nothing, leaving views for PhotoshopBattles deliveries permanently at zero.
+1. Apply the reviewed Supabase migrations and schema changes needed by this project. Do not re-run the complete schema blindly against production.
+2. Confirm the `deliveries` bucket remains private and that its existing RLS policies are intact.
+3. Confirm the anon key in `js/config.js` is the public anon key for project `hwcxxotgtqchcriascti`. Never use a service-role key in the static site.
+4. Deploy the secure file signer: `supabase functions deploy deliver-file --project-ref hwcxxotgtqchcriascti`. It verifies that a file belongs to an active delivery before issuing a short-lived URL.
+5. After the lifecycle migration is applied, deploy `cleanup-expired-deliveries` and set a strong `CLEANUP_SECRET` function secret. Create and monitor a daily Supabase Cron job that invokes it. The function removes only expired physical Storage objects and sets `deliveries.storage_deleted_at`; it does not delete delivery rows or analytics.
 
-## Authentication checks
+## Verification
 
-Open `deliver/dashboard.html` in a normal browser window. A successful login creates a persistent `boztik-deliver-auth-v2` browser session; reload once to confirm session restoration, then log out to clear it.
+- Sign in at `deliver/dashboard.html`, create a small test delivery, and verify the copied client URL in a private window.
+- Check image preview, individual and all-file downloads, and the view/download counters.
+- Delete a test delivery; its Storage objects should disappear while its delivery history remains visible in Command Centre.
+- Make a test delivery expire, run cleanup, and verify `storage_deleted_at` is populated while `view_count`, `download_count`, and `delivery_analytics` remain intact.
 
-If Supabase reports invalid login credentials, the supplied email/password are not a user in the configured project. If it reports email verification, confirm that user in Authentication > Users. The dashboard now displays Supabase’s actual safe error instead of replacing every failure with one generic message.
-
-## Delivery checks
-
-- Upload a small ZIP and a JPG together; both should appear in the delivery.
-- Open the copied client link in a private window and test individual and all-file downloads.
-- Set `expires_at` in the past and refresh; the delivery should become unavailable.
-- Delete a test delivery; its Storage objects should be removed with the record.
-
-For automatic physical removal of expired uploads, deploy and schedule the existing `cleanup-expired-deliveries` Supabase Edge Function.
+Do not schedule or test cleanup against historical files until the Supabase restriction has been lifted and a reviewed backup/export exists.

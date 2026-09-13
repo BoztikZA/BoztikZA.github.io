@@ -47,32 +47,41 @@ Deno.serve(async (req) => {
     });
   }
 
-  const paths = expired.flatMap((delivery) => {
+  // Process deliveries independently. A transient error on one object must
+  // not prevent unrelated expired files from being reclaimed, and a row is
+  // marked only after its own Storage removal succeeds.
+  const cleaned = [];
+  const failed = [];
+  let filesRemoved = 0;
+
+  for (const delivery of expired) {
     const files = delivery.delivery_files?.length
       ? delivery.delivery_files
-      : [{ file_path: delivery.file_path }];
-    return files.map((file) => file.file_path).filter(Boolean);
-  });
-  const ids = expired.map((d) => d.id);
+      : delivery.file_path ? [{ file_path: delivery.file_path }] : [];
+    const paths = files.map((file) => file.file_path).filter(Boolean);
 
-  if (paths.length) {
-    const { error: storageError } = await supabase.storage.from("deliveries").remove(paths);
-    if (storageError) {
-      console.error("Storage cleanup error:", storageError.message);
-      return new Response(JSON.stringify({ error: storageError.message }), { status: 500 });
+    if (paths.length) {
+      const { error: storageError } = await supabase.storage.from("deliveries").remove(paths);
+      if (storageError) {
+        console.error(`Storage cleanup error for ${delivery.id}:`, storageError.message);
+        failed.push({ id: delivery.id, error: storageError.message });
+        continue;
+      }
+      filesRemoved += paths.length;
     }
-  }
 
-  const { error: dbError } = await supabase
-    .from("deliveries")
-    .update({ storage_deleted_at: new Date().toISOString() })
-    .in("id", ids);
-  if (dbError) {
-    return new Response(JSON.stringify({ error: dbError.message }), { status: 500 });
+    const { error: dbError } = await supabase.from("deliveries")
+      .update({ storage_deleted_at: new Date().toISOString() }).eq("id", delivery.id);
+    if (dbError) {
+      console.error(`Failed to mark ${delivery.id} as cleaned:`, dbError.message);
+      failed.push({ id: delivery.id, error: dbError.message });
+      continue;
+    }
+    cleaned.push(delivery.id);
   }
 
   return new Response(
-    JSON.stringify({ cleaned: ids.length, filesRemoved: paths.length, ids }),
+    JSON.stringify({ cleaned: cleaned.length, failed: failed.length, filesRemoved, ids: cleaned, failures: failed }),
     { headers: { "Content-Type": "application/json" } }
   );
 });

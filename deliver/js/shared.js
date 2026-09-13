@@ -1,12 +1,15 @@
 import { config } from "./config.js";
 
-// NOTE (Phase 3): the original shared.js's supabase() client-factory
-// function was removed here — deliver-v2 talks to the new Worker via
-// plain fetch() (see api.js), so a Supabase client is never constructed
-// anywhere in this directory. Left in place, it would have been dead code
-// that silently misbehaves if anything ever called it (config.js no
-// longer carries supabaseUrl/supabaseAnonKey). Everything below this line
-// is untouched from the original file.
+let client;
+export function supabase() {
+  if (!client) {
+    if (!window.supabase?.createClient) throw new Error("Supabase could not be loaded. Check your connection and reload.");
+    client = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey, {
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storageKey: "boztik-deliver-auth-v2" }
+    });
+  }
+  return client;
+}
 export const escapeHtml = (value = "") => String(value).replace(/[&<>'"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#039;",'"':"&quot;"}[c]));
 export const formatBytes = bytes => !bytes ? "0 B" : `${(bytes / 1024 ** Math.min(3, Math.floor(Math.log(bytes) / Math.log(1024)))).toFixed(bytes < 1024 ? 0 : 1)} ${["B","KB","MB","GB"][Math.min(3, Math.floor(Math.log(bytes) / Math.log(1024)))]}`;
 export const formatDate = value => new Date(value).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
