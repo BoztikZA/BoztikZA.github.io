@@ -1,0 +1,138 @@
+/* ============================================================
+   PORTFOLIO PAGE — additive styles only.
+   Append to the end of styles-premium.css.
+   Uses existing design tokens already defined at :root
+   (--bg, --surface, --primary, --primary-dark, --accent, --text).
+   No existing rule is modified or removed.
+   ============================================================ */
+
+.portfolio-hero {
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 4rem 1.5rem 2rem;
+}
+
+.portfolio-hero .eyebrow {
+  display: inline-block;
+  color: var(--accent);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  margin-bottom: 0.75rem;
+}
+
+.portfolio-hero h1 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: clamp(2.25rem, 5vw, 3rem);
+  color: var(--text);
+  margin: 0 0 1rem;
+}
+
+.portfolio-hero-sub {
+  color: var(--text);
+  opacity: 0.8;
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.portfolio-grid-section {
+  padding: 1.5rem 1.5rem 3rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.portfolio-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.75rem;
+}
+
+.portfolio-card {
+  background: var(--surface);
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(142, 255, 61, 0.12);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.portfolio-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(142, 255, 61, 0.35);
+}
+
+.portfolio-compare {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.portfolio-compare img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.portfolio-tag {
+  display: inline-block;
+  margin: 1.25rem 1.25rem 0;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.tag-restoration { background: rgba(142, 255, 61, 0.15); color: var(--primary); }
+.tag-removal      { background: rgba(95, 227, 194, 0.15); color: var(--accent); }
+.tag-portrait     { background: rgba(142, 255, 61, 0.15); color: var(--primary); }
+.tag-composite    { background: rgba(95, 227, 194, 0.15); color: var(--accent); }
+.tag-concept      { background: rgba(142, 255, 61, 0.15); color: var(--primary); }
+
+.portfolio-card h3 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.15rem;
+  color: var(--text);
+  margin: 0.75rem 1.25rem 0.5rem;
+}
+
+.portfolio-card p {
+  color: var(--text);
+  opacity: 0.75;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  margin: 0 1.25rem 1.5rem;
+}
+
+.portfolio-cta {
+  text-align: center;
+  max-width: 640px;
+  margin: 2rem auto 4rem;
+  padding: 0 1.5rem;
+}
+
+.portfolio-cta h2 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  color: var(--text);
+  font-size: 1.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.portfolio-cta p {
+  color: var(--text);
+  opacity: 0.8;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.portfolio-cta .btn {
+  margin: 0 0.4rem;
+}
+
+@media (max-width: 600px) {
+  .portfolio-hero { padding: 3rem 1.25rem 1.5rem; }
+  .portfolio-grid { grid-template-columns: 1fr; }
+}
