@@ -18,6 +18,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles-premium.css?v=20260806b">
+  <link rel="stylesheet" href="contact-styles-addition.css?v=20260806b">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3739684241868984"
        crossorigin="anonymous"></script>
 </head>
@@ -58,50 +59,68 @@
   </header>
 
   <main id="main-content">
-    <section class="support-hero reveal">
-      <div class="support-hero__copy">
+    <section class="page-hero contact-hero reveal">
+      <div class="section-heading" style="margin-bottom:0;">
         <span class="section-label">Get in Touch</span>
         <h1>Contact Boztik</h1>
-        <p>Have a question, need help, or want to work with Boztik? Get in touch. Whether you have feedback about our tools, need assistance, or have a business enquiry, we're happy to hear from you.</p>
+        <p>Need help, have a question, or want to discuss an editing project? Get in touch — whether it's feedback on our tools, a support issue, or a creative enquiry, we'd love to hear from you.</p>
+      </div>
+      <div class="support-actions contact-hero-actions">
+        <a class="support-button" href="mailto:boztiktech@gmail.com">Email Boztik</a>
+        <a class="secondary-link" href="support.html">Visit Support</a>
       </div>
     </section>
 
-    <section class="contact-details reveal">
-      <div class="contact-card">
-        <h3>Email</h3>
-        <p>For all enquiries, please reach out to us at:</p>
-        <a href="mailto:boztiktech@gmail.com" class="support-button">boztiktech@gmail.com</a>
-        <p class="contact-note">We aim to respond to enquiries as soon as reasonably possible. Response times may vary depending on the nature and volume of enquiries.</p>
+    <section class="contact-email reveal" aria-labelledby="contact-email-title">
+      <div class="contact-email-card">
+        <span class="cta-badge">Prefer to write directly?</span>
+        <h2 id="contact-email-title">Email us at</h2>
+        <a class="contact-email-address" href="mailto:boztiktech@gmail.com">boztiktech@gmail.com</a>
+        <div class="support-actions">
+          <a class="support-button" href="mailto:boztiktech@gmail.com">Email Boztik</a>
+          <button class="secondary-link contact-copy-button" type="button" data-copy="boztiktech@gmail.com">Copy address</button>
+        </div>
+        <p class="contact-response-note">We aim to respond to enquiries as soon as reasonably possible. Response times may vary depending on the nature and volume of enquiries.</p>
       </div>
     </section>
 
-    <section class="contact-sections reveal">
-      <div class="contact-grid">
-        <div class="contact-card">
+    <section class="contact-options reveal" aria-labelledby="contact-options-title">
+      <div class="section-heading">
+        <span class="section-label">What can we help with?</span>
+        <h2 id="contact-options-title">Whatever you need, we're listening.</h2>
+        <p>The easiest way to reach us is by email. Pick the category that fits best so your message lands with the right person.</p>
+      </div>
+      <div class="contact-options-grid">
+        <article class="contact-option-card">
+          <span class="option-mark" aria-hidden="true">01</span>
           <h3>General Enquiries</h3>
           <p>Questions about Boztik, its tools, website or services.</p>
-        </div>
-        <div class="contact-card">
+        </article>
+        <article class="contact-option-card">
+          <span class="option-mark" aria-hidden="true">02</span>
           <h3>Technical Support</h3>
           <p>Help with problems using Boztik products or reporting an issue.</p>
-        </div>
-        <div class="contact-card">
-          <h3>Business & Collaboration</h3>
+        </article>
+        <article class="contact-option-card">
+          <span class="option-mark" aria-hidden="true">03</span>
+          <h3>Business &amp; Collaboration</h3>
           <p>Professional enquiries, partnerships, collaborations or other business opportunities.</p>
-        </div>
-        <div class="contact-card">
+        </article>
+        <article class="contact-option-card">
+          <span class="option-mark" aria-hidden="true">04</span>
           <h3>Feedback</h3>
           <p>Suggestions, feature requests and feedback that can help improve Boztik.</p>
-        </div>
+        </article>
       </div>
     </section>
 
-    <section class="transparency-section reveal">
-        <div class="transparency-card">
-            <h3>About Boztik</h3>
-            <p>Boztik is an independent technology and creative brand focused on useful digital tools, creative services and resources. We are dedicated to providing accessible, high-quality solutions for creators worldwide.</p>
-        </div>
+    <section class="contact-about reveal" aria-labelledby="contact-about-title">
+      <div class="contact-about-card">
+        <h2 id="contact-about-title">About Boztik</h2>
+        <p>Boztik is an independent technology and creative brand focused on useful digital tools, creative services and resources. We are dedicated to providing accessible, high-quality solutions for creators worldwide.</p>
+      </div>
     </section>
+
       <section class="adsense-section reveal" aria-label="Sponsored content">
       <div class="adsense-card">
         <div class="adsense-meta">
@@ -140,5 +159,35 @@
 
   <script src="js/site.js?v=20260805a"></script>
   <script src="js/support.js"></script>
+  <script>
+    (function () {
+      var btn = document.querySelector('.contact-copy-button');
+      if (!btn) return;
+      var email = btn.getAttribute('data-copy') || '';
+      var done = function () {
+        var original = btn.textContent;
+        btn.textContent = 'Copied!';
+        window.setTimeout(function () { btn.textContent = original; }, 2000);
+      };
+      var legacy = function () {
+        var ta = document.createElement('textarea');
+        ta.value = email;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); } catch (e) {}
+        document.body.removeChild(ta);
+      };
+      btn.addEventListener('click', function () {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(email).then(done)['catch'](function () { legacy(); done(); });
+        } else {
+          legacy(); done();
+        }
+      });
+    })();
+  </script>
 </body>
 </html>

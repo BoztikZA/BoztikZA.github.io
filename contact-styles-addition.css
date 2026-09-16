@@ -1,0 +1,229 @@
+/* ============================================================
+   Boztik — Contact page additions  (page-specific, no shared sheets)
+   Single page: contact.html
+   Uses design tokens from styles-premium.css (:root variables).
+   ============================================================ */
+
+/* ---------- 1. Contact hero ---------- */
+.contact-hero {
+  padding-top: 44px;
+}
+
+.contact-hero-actions {
+  margin-top: 30px;
+  justify-content: center;
+}
+
+/* ---------- 2. Primary email callout ---------- */
+.contact-email {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 10px 30px 46px;
+}
+
+.contact-email-card {
+  text-align: center;
+  padding: 38px 30px;
+  border-radius: 30px;
+  border: 1px solid rgba(142, 255, 61, 0.38);
+  background:
+    radial-gradient(circle at top center, rgba(142, 255, 61, 0.10), transparent 62%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+  box-shadow: 0 30px 70px rgba(140, 255, 63, 0.13);
+}
+
+.contact-email-card .cta-badge {
+  display: inline-block;
+  margin-bottom: 14px;
+  padding: 9px 14px;
+  border-radius: 999px;
+  background: rgba(142, 255, 61, 0.12);
+  color: var(--accent);
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.contact-email-card h2 {
+  font-family: var(--font-heading);
+  font-size: clamp(1.7rem, 3vw, 2.3rem);
+  letter-spacing: -0.02em;
+  margin-bottom: 16px;
+  color: var(--text);
+}
+
+.contact-email-address {
+  display: inline-block;
+  padding: 14px 24px;
+  border-radius: 16px;
+  border: 1px solid rgba(142, 255, 61, 0.28);
+  background: rgba(142, 255, 61, 0.08);
+  color: var(--primary);
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: clamp(1.15rem, 2.4vw, 1.6rem);
+  letter-spacing: -0.01em;
+  margin-bottom: 24px;
+  transition: var(--transition);
+}
+
+.contact-email-address:hover {
+  transform: translateY(-2px);
+  background: rgba(142, 255, 61, 0.14);
+}
+
+.contact-email-card .support-actions {
+  justify-content: center;
+}
+
+/* "Copy address" — fills the secondary-link style with a neon touch */
+.contact-copy-button {
+  border: 1px solid rgba(142, 255, 61, 0.26);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+}
+
+.contact-copy-button:hover {
+  border-color: rgba(142, 255, 61, 0.55);
+  box-shadow: 0 12px 24px rgba(140, 255, 63, 0.16);
+}
+
+.contact-response-note {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  max-width: 740px;
+  margin: 22px auto 0;
+}
+
+/* ---------- 3. Contact options (cards) ---------- */
+.contact-options {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 46px 30px 14px;
+}
+
+.contact-options-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.contact-option-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  padding: 26px;
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+}
+
+.contact-option-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(142, 255, 61, 0.5);
+  box-shadow: 0 24px 58px rgba(140, 255, 63, 0.16);
+}
+
+.contact-option-card .option-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid rgba(142, 255, 61, 0.4);
+  background: rgba(142, 255, 61, 0.14);
+  color: var(--primary);
+  font-family: var(--font-heading);
+  font-weight: 900;
+  font-size: 0.95rem;
+  margin-bottom: 14px;
+}
+
+.contact-option-card h3 {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  letter-spacing: -0.01em;
+  margin-bottom: 8px;
+}
+
+.contact-option-card p {
+  color: var(--text-muted);
+  font-size: 0.98rem;
+}
+
+/* ---------- 4. About / trust panel ---------- */
+.contact-about {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 46px 30px 14px;
+}
+
+.contact-about-card {
+  text-align: center;
+  padding: 30px;
+  border-radius: 26px;
+  border: 1px solid var(--border);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+  box-shadow: var(--shadow);
+}
+
+.contact-about-card h2 {
+  font-family: var(--font-heading);
+  font-size: clamp(1.5rem, 2.6vw, 2rem);
+  letter-spacing: -0.02em;
+  margin-bottom: 14px;
+}
+
+.contact-about-card p {
+  color: var(--text-muted);
+  font-size: 1rem;
+  max-width: 740px;
+  margin: 0 auto;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  .contact-options-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-email-card,
+  .contact-about-card {
+    padding: 26px 22px;
+  }
+}
+
+@media (max-width: 640px) {
+  .contact-hero {
+    padding-top: 28px;
+  }
+
+  .contact-email {
+    padding: 6px 20px 30px;
+  }
+
+  .contact-email-address {
+    font-size: 1.12rem;
+  }
+
+  .contact-options {
+    padding: 28px 20px 10px;
+  }
+
+  .contact-option-card {
+    padding: 22px 20px;
+  }
+
+  .contact-options-grid {
+    gap: 16px;
+  }
+
+  .contact-about {
+    padding: 28px 20px 10px;
+  }
+}
