@@ -2580,3 +2580,137 @@ html { scroll-padding-top: 96px; }
     min-width: 0;
   }
 }
+/* ============================
+   Homepage — Featured Work + Guides preview
+   Additive styles for the homepage only (not used on other pages).
+   Uses existing design tokens; nothing existing is modified.
+   ============================ */
+.featured-work-section {
+  padding: 3rem 1.5rem 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.featured-work-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.featured-work-head .section-heading {
+  max-width: 640px;
+  margin: 0;
+}
+
+.featured-work-head .section-heading h2 {
+  margin-bottom: 6px;
+}
+
+.featured-work-head .section-heading p {
+  margin-bottom: 0;
+}
+
+.featured-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.featured-card {
+  display: block;
+  position: relative;
+  border-radius: 22px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.featured-card:hover,
+.featured-card:focus-visible {
+  transform: translateY(-6px);
+  border-color: var(--primary);
+  box-shadow: 0 18px 40px rgba(140, 255, 63, 0.12);
+}
+
+.featured-media {
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.featured-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.featured-card-body {
+  padding: 18px 20px 22px;
+}
+
+.featured-tag {
+  display: inline-block;
+  margin-bottom: 8px;
+  padding: 0.28rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--primary);
+  background: rgba(142, 255, 61, 0.14);
+}
+
+.featured-card h3 {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  margin-bottom: 6px;
+  color: var(--text);
+}
+
+.featured-card p {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.featured-cta {
+  margin-top: 30px;
+  text-align: center;
+}
+
+.path-portfolio-link {
+  margin-top: 12px;
+  align-self: flex-start;
+}
+
+/* Small guides preview on the homepage */
+.guides-preview {
+  padding: 1rem 1.5rem 2.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.guides-preview .section-heading {
+  max-width: 760px;
+  margin-bottom: 28px;
+}
+
+.guides-preview .guide-grid {
+  max-width: none;
+}
+
+.guides-preview-cta {
+  margin-top: 28px;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .featured-grid { grid-template-columns: 1fr; }
+  .featured-work-head { flex-direction: column; align-items: flex-start; }
+}
