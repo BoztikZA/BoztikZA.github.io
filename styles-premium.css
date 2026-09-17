@@ -2714,3 +2714,244 @@ html { scroll-padding-top: 96px; }
   .featured-grid { grid-template-columns: 1fr; }
   .featured-work-head { flex-direction: column; align-items: flex-start; }
 }
+
+/* ============================================================
+   BOZTIK — BRAND VISUAL LANGUAGE
+   Umbrella-brand theme. BOZTIK is the brand; photo editing,
+   restoration, creative work, tools, guides and the Creative
+   Toolkit are products beneath it. Appended additively — nothing
+   below removes, rewrites or layout-breaks core styles.
+   ============================================================ */
+
+:root {
+  --bz-accent-soft: rgba(142, 255, 61, 0.12);
+  --bz-surface: #0b110d;
+  --bz-glow: 0 0 42px rgba(142, 255, 61, 0.22);
+}
+
+/* ---- Base heading typography across the whole site ---- */
+h1, h2, h3, h4 {
+  font-family: var(--font-heading);
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+h1, h2, h3 { font-weight: 800; }
+
+/* ---- Eyebrow / section-heading system ---- */
+.section-heading .section-label { letter-spacing: 0.24em; }
+.section-heading .section-label::after {
+  content: "";
+  display: block;
+  width: 46px;
+  height: 2px;
+  margin: 10px auto 0;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+}
+.section-heading h2 { line-height: 1.12; }
+.eyebrow { position: relative; padding-bottom: 6px; }
+.eyebrow::after {
+  content: "";
+  display: block;
+  width: 40px;
+  height: 2px;
+  margin: 8px auto 0;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, var(--primary), transparent);
+}
+
+/* ---- Global navigation brand (header = BOZTIK) ---- */
+.logo-area img {
+  border-radius: 12px;
+  box-shadow: 0 0 0 1px var(--border), 0 0 26px rgba(142, 255, 61, 0.16);
+}
+.logo-area .logo-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.logo-area .logo-subtitle {
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--primary);
+  margin-top: 5px;
+}
+
+/* ---- Brand hero (homepage) ---- */
+.brand-hero { padding-top: 34px; padding-bottom: 46px; text-align: center; }
+.brand-hero__inner { max-width: 900px; margin: 0 auto; }
+.brand-hero .hero-badge { margin-bottom: 30px; }
+.hero-logo-wrap { margin: 0 auto 10px; }
+.hero-logo {
+  width: min(188px, 42vw);
+  margin: 0 auto;
+  border-radius: 26px;
+  filter: drop-shadow(0 8px 34px rgba(142, 255, 61, 0.28));
+}
+.hero-wordmark {
+  font-size: clamp(3.2rem, 12vw, 7.4rem);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  line-height: 0.98;
+  color: var(--text);
+  filter: drop-shadow(0 2px 24px rgba(142, 255, 61, 0.18));
+  margin-bottom: 8px;
+}
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .hero-wordmark {
+    background: linear-gradient(180deg, #ffffff 0%, #ddfcc9 48%, var(--primary) 130%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}
+.hero-tagline {
+  font-size: clamp(1.05rem, 2.4vw, 1.5rem);
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: 0.01em;
+  margin-bottom: 16px;
+}
+.hero-lede {
+  max-width: 700px;
+  margin: 0 auto 26px;
+  color: var(--text-muted);
+  font-size: 1.06rem;
+}
+.brand-hero__cta {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 0 auto 34px;
+}
+.brand-hero__cta .support-button { min-width: 200px; }
+.bz-hero-rule {
+  width: min(600px, 88%);
+  height: 2px;
+  margin: 0 auto;
+  border-radius: 2px;
+  background: repeating-linear-gradient(90deg,
+    rgba(142, 255, 61, 0) 0 6px,
+    rgba(142, 255, 61, 0.55) 6px 9px,
+    rgba(142, 255, 61, 0) 9px 22px);
+}
+
+/* ---- Boztik ecosystem section ---- */
+.ecosystem-section { padding-top: 26px; }
+.ecosystem-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+  max-width: 1120px;
+  margin: 0 auto;
+}
+.ecosystem-card {
+  position: relative;
+  padding: 28px 24px 26px;
+  border-radius: 22px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015));
+  border: 1px solid var(--border);
+  overflow: hidden;
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.ecosystem-card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.ecosystem-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(142, 255, 61, 0.4);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.35);
+}
+.ecosystem-card:hover::before { opacity: 1; }
+.eco-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 16px;
+  font-size: 1.6rem;
+  border-radius: 16px;
+  background: var(--bz-accent-soft);
+  border: 1px solid var(--border);
+}
+.ecosystem-card h3 { font-size: 1.22rem; margin-bottom: 10px; color: var(--primary); }
+.ecosystem-card p { color: var(--text-muted); font-size: 0.95rem; }
+
+/* ---- Footer wordmark ---- */
+footer h3 {
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 800;
+}
+.footer-logo {
+  border-radius: 16px;
+  box-shadow: 0 0 0 1px var(--border), 0 0 34px rgba(142, 255, 61, 0.16);
+}
+
+/* ---- Typographic strength across card/heading components ---- */
+.page-hero h1 { font-weight: 800; }
+.portfolio-hero h1 { letter-spacing: -0.02em; }
+.portfolio-cta h2,
+.cta-card h2,
+.support-card h2,
+.about-card h2,
+.tool-card h3,
+.guide-card h3,
+.featured-card h3,
+.path-card h3,
+.service-detail-card h3,
+.download-card-large h3,
+.whats-new-item strong,
+.assistant-list-card strong {
+  font-weight: 800;
+}
+
+/* ---- Portfolio: put the work centre stage ---- */
+.portfolio-grid { gap: 2rem; }
+.portfolio-card { background: var(--bz-surface); }
+.portfolio-compare { position: relative; }
+.portfolio-compare::after {
+  content: "";
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  width: 11px;
+  height: 11px;
+  background: var(--primary);
+  border: 2px solid var(--bg);
+  opacity: 0.85;
+}
+.portfolio-compare img { transition: transform 0.5s ease; }
+.portfolio-card:hover .portfolio-compare img { transform: scale(1.04); }
+
+@media (max-width: 960px) {
+  .ecosystem-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  .ecosystem-grid { grid-template-columns: 1fr; }
+  .brand-hero__cta { flex-direction: column; align-items: stretch; }
+  .brand-hero__cta .support-button { width: 100%; }
+  .hero-lede { font-size: 1rem; }
+  .hero-logo { width: min(150px, 46vw); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-logo,
+  .hero-wordmark,
+  .ecosystem-card,
+  .portfolio-compare img {
+    transition: none !important;
+  }
+  .ecosystem-card:hover { transform: none; }
+  .portfolio-card:hover .portfolio-compare img { transform: none; }
+}
