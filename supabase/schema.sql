@@ -223,13 +223,24 @@ create policy "Anonymous can read files for active deliveries"
     )
   );
 
--- =========================================================
+-- ---------------------------------------------------------
 -- V3 UPGRADE: DELIVERY ACTIVITY
 -- These counters are deliberately non-blocking on the client. They provide
 -- dashboard analytics without ever affecting a customer's download.
--- =========================================================
+-- ---------------------------------------------------------
+-- Notable: the below RPCs (`record_delivery_view`, `record_delivery_download`,
+-- and `increment_delivery_downloads`) MUST remain SECURITY DEFINER. The app
+-- gate-keeps every mutation on `expires_at > now()` and increments counters on
+-- `public.deliveries` / `public.delivery_analytics`, both of which are RLS-
+-- protected with NO anon INSERT/UPDATE policy. Under SECURITY INVOKER the
+-- function would run as the caller and these writes would be blocked by RLS,
+-- silently breaking anonymous view/download analytics. SECURITY DEFINER is the
+-- correct, safest choice here: callers have only EXECUTE on the function, can
+-- never read/write deliveries/analytics directly, and the SQL itself only ever
+-- touches the counter for a non-expired delivery. Do not "harden" these by
+-- switching them to SECURITY INVOKER.
+-- ---------------------------------------------------------
 alter table public.deliveries
-  add column if not exists view_count integer not null default 0,
   add column if not exists last_viewed_at timestamptz,
   add column if not exists last_downloaded_at timestamptz;
 

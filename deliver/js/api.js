@@ -82,7 +82,15 @@ export async function createDelivery(metadata, files, onProgress) {
       const file = files[index];
       const path = `${metadata.id}/${crypto.randomUUID()}-${safeFileName(file.name)}`;
       const { error } = await supabase().storage.from(config.storageBucket).upload(path, file, {
-        cacheControl: "3600", upsert: false, contentType: file.type || "application/octet-stream"
+        // Files are immutable at upload: every path embeds a random UUID, so a
+        // replaced upload (or a re-upload of a same-named file) always gets a
+        // brand-new, versioned path. A long-lived cache-control is therefore safe
+        // (no risk of serving stale replacements) and lets a client's browser
+        // reuse an unchanged image instead of re-downloading it every visit.
+        // Access is NOT weakened: the object stays in the private bucket and is
+        // only ever reachable through short-lived signed URLs issued by the
+        // deliver-file edge function (preview 300s / download 60s).
+        cacheControl: "31536000", upsert: false, contentType: file.type || "application/octet-stream"
       });
       if (error) throw error;
       uploaded.push({ delivery_id: metadata.id, file_path: path, file_name: file.name, file_size: file.size });

@@ -1784,13 +1784,22 @@ async function loadImagePreview(
 
 
     /*
-      These are the primary images on the delivery
-      page, so eager loading is preferable to lazy
-      loading.
+      These preview images all resolve to the SAME full-resolution
+      storage object as the "View Full Resolution" and "Download"
+      actions, so eager loading would pull every image in the
+      delivery down at full size on page load — including images
+      far off-screen.
+
+      Native lazy loading keeps the full-resolution download
+      limited to images actually in (or near) the viewport as the
+      client scrolls. The visible/topmost image still loads
+      immediately, so there is no perceived delay for the hero or
+      first row, and off-screen images are no longer transferred
+      unless/until the client scrolls to them.
     */
 
     image.loading =
-      "eager";
+      "lazy";
 
 
     image.decoding =
@@ -1868,6 +1877,17 @@ async function loadImagePreview(
 
         previewContainer.classList.add(
           "preview-loaded"
+        );
+
+        /*
+          Now that the (lazy-loaded) preview image has actually
+          downloaded, safely compute its dimensions/EXIF — reusing
+          the browser-cached bytes instead of forcing a separate
+          full-size fetch for a card that may still be off-screen.
+        */
+        renderDeferredFileInfo(
+          file,
+          previewContainer
         );
 
 
@@ -1989,6 +2009,17 @@ async function loadImagePreview(
               file
             );
 
+          /*
+            Even when the image preview cannot be rendered, still
+            provide the card's file information (dimensions/size/
+            EXIF normally, or generic metadata) so the client is
+            not left with a blank tile.
+          */
+          renderDeferredFileInfo(
+            file,
+            previewContainer
+          );
+
         }
 
       },
@@ -2056,6 +2087,70 @@ async function loadImagePreview(
 }
 
 
+/* =========================================================
+   DEFERRED FILE INFORMATION
+========================================================= */
+
+/*
+  File information for IMAGE files (dimensions/EXIF) is deferred until
+  the card's preview image has actually loaded, so we never trigger a
+  second full-size transfer for an image that is still off-screen. When
+  the preview image finally loads (native lazy loading), renderFileInfo()
+  reuses those already-cached bytes, and the dimensions/EXIF reads hit
+  the browser cache instead of the network.
+
+  Non-image files (PDF/ZIP/PSD/…) have no preview, so they are rendered
+  eagerly by renderFiles() — this helper is only reached for image cards
+  (or as a fallback when an image preview could not be produced).
+*/
+function renderDeferredFileInfo(
+  file,
+  previewContainer
+) {
+  try {
+
+    const card =
+      previewContainer?.closest?.(
+        ".deliver-file-card"
+      );
+
+    const slot =
+      card?.querySelector?.(
+        "[data-info]"
+      );
+
+    if (
+      !slot ||
+      slot.dataset.rendered
+    ) {
+
+      return;
+
+    }
+
+    slot.dataset.rendered =
+      "1";
+
+    slot.innerHTML =
+      "";
+
+    renderFileInfo(
+      file,
+      slot
+    );
+
+  } catch (
+    infoError
+  ) {
+
+    console.warn(
+      "[Boztik Deliver] Deferred file info unavailable:",
+      file?.file_name,
+      infoError
+    );
+
+  }
+}
 /* =========================================================
    BUILD FILE CARD
 ========================================================= */
@@ -2605,6 +2700,28 @@ function renderFiles(
 
         }
 
+
+        /*
+          IMAGE files are deferred here: their dimensions/EXIF are only
+          read once the (native lazy-loading) preview image has actually
+          been fetched (see loadImagePreview → renderDeferredFileInfo).
+          This stops renderFiles() from forcing a full-size transfer for
+          every image in the delivery — including off-screen cards — just
+          to populate their info slot.
+
+          Non-image files (PDF/ZIP/PSD/…) have no preview, so they are
+          cheap to describe and render eagerly here.
+        */
+
+        if (
+          isPreviewable(
+            file.file_name
+          )
+        ) {
+
+          return;
+
+        }
 
         renderFileInfo(
           file,

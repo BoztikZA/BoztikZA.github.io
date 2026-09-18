@@ -751,7 +751,16 @@ function validateSelectedFile(file, isBattleMode) {
   }
 
   if (!isValidFile(file)) {
-    setCreateError("That file type isn't supported, or the file is too large.");
+    const extension = file.name.split(".").pop()?.toLowerCase();
+    const tooLarge = config.allowedExtensions.includes(extension) && file.size > config.maxUploadBytes;
+    // "too large" is the most useful, actionable message — the user can see
+    // exactly how much headroom remains. Unsupported type is only reported when
+    // the size itself was not the problem.
+    setCreateError(
+      tooLarge
+        ? `"${file.name}" is ${formatBytes(file.size)} and exceeds the ${formatBytes(config.maxUploadBytes)} per-file upload limit.`
+        : "That file type isn't supported."
+    );
     return false;
   }
 
@@ -873,7 +882,7 @@ function addFiles(fileList) {
 
   setCreateError(
     rejected
-      ? `${rejected} file${rejected === 1 ? "" : "s"} skipped — unsupported type or too large.`
+      ? `${rejected} file${rejected === 1 ? "" : "s"} skipped — not a supported type, or larger than the ${formatBytes(config.maxUploadBytes)} per-file limit.`
       : ""
   );
 

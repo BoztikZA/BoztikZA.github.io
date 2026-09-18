@@ -4,7 +4,13 @@ export const config = Object.freeze({
   storageBucket: "deliveries",
   publicBaseUrl: "https://www.boztik.com/deliver/",
   defaultExpiryHours: 24,
-  maxUploadBytes: 250 * 1024 * 1024,
+  // Per-file upload cap. Lowered from 250 MB to guard against accidental
+  // multi-hundred-megabyte uploads that quickly burn the (Free-plan) egress
+  // and storage quota. A professional-photography delivery places high-res
+  // JPG/TIFF/PSD files typically well under this cap; oversized single files
+  // are almost always mis-drags or merged layered exports. The storage bucket
+  // file_size_limit (250 MB) still applies server-side above this.
+  maxUploadBytes: 50 * 1024 * 1024,
   allowedExtensions: ["zip", "jpg", "jpeg", "png", "psd", "tif", "tiff", "webp", "pdf", "ai", "eps"],
   paypalUrl: "https://paypal.me/angry5p1c3",
 
