@@ -3,6 +3,7 @@ import { safeFileName, supabase } from "./shared.js";
 
 const DELIVER_FILE_FUNCTION = `${config.supabaseUrl}/functions/v1/deliver-file`;
 const REDDIT_METADATA_FUNCTION = `${config.supabaseUrl}/functions/v1/reddit-metadata`;
+const STORAGE_USAGE_FUNCTION = `${config.supabaseUrl}/functions/v1/storage-usage`;
 
 export const DELIVERY_SOURCES = Object.freeze(["reddit", "private", "paid", "free", "returning", "other"]);
 
@@ -196,4 +197,37 @@ export async function fetchRedditMetadata(url) {
     return { title: result.title, subreddit: result.subreddit || null, author: result.author || null,
       canonicalUrl: result.canonicalUrl || result.redditUrl || url, redditUrl: result.redditUrl || url };
   } finally { clearTimeout(timeout); }
+}
+
+/**
+ * Fetches authoritative Supabase storage usage from the server-side
+ * `storage-usage` Edge Function, authenticated with the admin's sign-in
+ * session. Uses the user's access token (never the service-role key).
+ * Returns { storage, egress } where egress may be { available: false }.
+ */
+export async function fetchStorageUsage() {
+  const { data, error } = await supabase().auth.getSession();
+  if (error) throw error;
+  const token = data?.session?.access_token;
+  if (!token) throw new Error("You need to be signed in to view storage usage.");
+
+  let response;
+  try {
+    response = await fetch(STORAGE_USAGE_FUNCTION, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: config.supabaseAnonKey,
+        Authorization: `Bearer ${token}`
+      }
+    });
+  } catch {
+    throw new Error("Could not reach the usage service.");
+  }
+
+  const result = await response.json().catch(() => null);
+  if (!response.ok) {
+    throw new Error(result?.message || result?.error || `Storage usage unavailable (HTTP ${response.status}).`);
+  }
+  return result || {};
 }

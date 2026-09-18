@@ -7597,4 +7597,133 @@ body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-button.
 .dash-analytics-rate strong.rate-low { color: #ffb26b; }
 .dash-analytics-rate strong.rate-moderate { color: #ffd27a; }
 .dash-analytics-rate strong.rate-good { color: #b8e8aa; }
-.dash-analytics-rate strong.rate-strong { color: var(--deliver-accent); }
+/* =========================================================
+   COMMAND CENTRE — STORAGE & USAGE PANEL
+========================================================= */
+
+.dash-usage-panel { margin-top: 0; }
+
+.dash-usage-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 1px solid var(--deliver-border);
+  border-radius: 999px;
+  background: var(--deliver-bg-soft);
+  color: var(--deliver-text-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.dash-usage-status::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--deliver-accent);
+}
+
+.dash-usage-status.has-warning::before { background: var(--deliver-warning); }
+.dash-usage-status.has-danger::before { background: var(--deliver-danger); }
+.dash-usage-status.is-error::before { background: var(--deliver-danger); }
+.dash-usage-status.is-loading::before { background: var(--deliver-text-dim); }
+
+.dash-usage-message { color: var(--deliver-text-muted); margin: 0; }
+
+.dash-usage-hero { display: flex; flex-direction: column; gap: 18px; }
+
+.dash-usage-hero-main .dash-usage-label {
+  display: block;
+  color: var(--deliver-text-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.dash-usage-total {
+  display: block;
+  margin: 8px 0 4px;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--deliver-text);
+}
+
+.dash-usage-meta, .dash-usage-muted { color: var(--deliver-text-muted); font-size: 0.8rem; margin: 0; }
+
+.dash-usage-meter { display: flex; flex-direction: column; gap: 8px; }
+
+.dash-usage-meter-track {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--deliver-bg-soft);
+  border: 1px solid var(--deliver-border);
+  overflow: hidden;
+}
+
+.dash-usage-meter-fill {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(135deg, #b8ff7a, var(--deliver-accent));
+  border-radius: 999px;
+  transition: width 0.6s ease;
+}
+
+.dash-usage-meter.is-warning .dash-usage-meter-fill { background: linear-gradient(135deg, #ffc76b, var(--deliver-warning)); }
+.dash-usage-meter.is-danger .dash-usage-meter-fill { background: linear-gradient(135deg, #ff8d7d, var(--deliver-danger)); }
+
+.dash-usage-meter-meta { display: flex; align-items: baseline; gap: 8px; }
+.dash-usage-meter-meta strong { font-size: 1.05rem; color: var(--deliver-text); }
+.dash-usage-meter-meta span, .dash-usage-meter-note { color: var(--deliver-text-muted); font-size: 0.78rem; }
+.dash-usage-meter-note { margin: 0; }
+.dash-usage-meter-note code { font-size: 0.72rem; color: var(--deliver-accent); background: var(--deliver-bg-soft); padding: 1px 5px; border-radius: 5px; }
+
+.dash-usage-section, .dash-usage-egress {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--deliver-border);
+}
+
+.dash-usage-section h4, .dash-usage-egress h4 {
+  margin: 0 0 10px;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--deliver-text-muted);
+}
+
+.dash-usage-buckets { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+
+.dash-usage-bucket {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 12px;
+  align-items: baseline;
+  padding: 10px 12px;
+  border: 1px solid var(--deliver-border);
+  border-radius: var(--deliver-radius);
+  background: var(--deliver-bg-soft);
+  font-size: 0.82rem;
+}
+
+.dash-usage-bucket-name { color: var(--deliver-text); font-weight: 800; word-break: break-word; }
+.dash-usage-bucket-size { color: var(--deliver-text); font-weight: 800; }
+.dash-usage-bucket-count { color: var(--deliver-text-muted); }
+
+.dash-usage-egress-note { margin: 0; color: var(--deliver-text-muted); font-size: 0.82rem; line-height: 1.6; }
+.dash-usage-egress-note a, .dash-usage-muted a {
+  color: var(--deliver-accent);
+  font-weight: 800;
+}
+
+@media (max-width: 620px) {
+  .dash-usage-bucket { grid-template-columns: 1fr auto; }
+  .dash-usage-bucket-count { grid-column: 1 / -1; }
+}

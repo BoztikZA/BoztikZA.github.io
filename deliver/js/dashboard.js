@@ -11,6 +11,7 @@ import {
   deleteDelivery,
   duplicateDelivery,
   fetchRedditMetadata,
+  fetchStorageUsage,
   DELIVERY_SOURCES
 } from "./api.js";
 import { config } from "./config.js";
@@ -59,6 +60,9 @@ const els = {
   overviewRecent: $("overview-recent-deliveries"),
   activityStatus: $("dash-activity-status"),
   overviewActivity: $("overview-activity-list"),
+  usagePanel: $("dash-usage-panel"),
+  usageStatus: $("dash-usage-status"),
+  usageBody: $("dash-usage-body"),
   actionCards: Array.from(document.querySelectorAll(".dash-action-card[data-create-source]")),
 
   createForm: $("dash-create-form"),
@@ -1670,6 +1674,135 @@ function renderAnalyticsTable() {
 }
 
 /* =========================================================
+   STORAGE & USAGE (Command Centre "Storage & usage" panel)
+   Authoritative usage from the server-side `storage-usage`
+   Edge Function. Never fabricates values: shows a clear
+   loading / error / unavailable state when data can't be read,
+   and only enables the quota meter once config.storagePlanBytes
+   is set (so a guessed plan can never produce a misleading %).
+========================================================= */
+
+function usagePanelState(className) {
+  if (els.usagePanel) els.usagePanel.classList.remove("is-loading", "is-error", "has-warning", "has-danger");
+  if (className && els.usagePanel) els.usagePanel.classList.add(className);
+}
+
+function renderUsageMessage(html, statusText, stateClass) {
+  if (els.usageBody) els.usageBody.innerHTML = html;
+  if (els.usageStatus) {
+    els.usageStatus.textContent = statusText || "";
+    els.usageStatus.className = `dash-usage-status${stateClass ? ` ${stateClass}` : ""}`;
+  }
+  usagePanelState(stateClass === "is-loading" ? "is-loading" : stateClass || "");
+}
+
+function renderStorageUsageError(message) {
+  const panelId = config.supabaseProjectRef;
+  renderUsageMessage(`
+    <p class="dash-usage-message">${escapeHtml(message)}</p>
+    <p class="dash-usage-muted">
+      You can still check usage directly on your
+      <a href="https://supabase.com/dashboard/project/${escapeHtml(panelId || "")}/usage" target="_blank" rel="noopener">Supabase dashboard</a>.
+    </p>
+  `, "Unavailable", "is-error");
+}
+
+async function loadStorageUsage() {
+  if (!els.usageBody) return;
+
+  renderUsageMessage(`<p class="dash-usage-message">Loading storage usage…</p>`, "Syncing", "is-loading");
+
+  let usage;
+  try {
+    usage = await fetchStorageUsage();
+  } catch (error) {
+    console.error("[Boztik Deliver] Storage usage could not be loaded:", error);
+    renderStorageUsageError((error instanceof Error && error.message) ? error.message : "Could not load storage usage.");
+    return;
+  }
+
+  const storage = usage?.storage || null;
+  const totals = storage?.totals;
+  if (!storage || !totals || typeof totals.bytes !== "number") {
+    renderStorageUsageError("Supabase did not return usable usage data for this project.");
+    return;
+  }
+
+  const bytes = totals.bytes || 0;
+  const objects = totals.objects || 0;
+  const generatedAt = storage.generated_at ? new Date(storage.generated_at) : null;
+
+  const planBytes = Number.isFinite(config.storagePlanBytes) ? config.storagePlanBytes : null;
+  const planName = config.storagePlanName || "plan";
+
+  // Quota meter + warnings (only when the operator has configured the plan).
+  let meterHtml = "";
+  let stateClass = "";
+  let statusText = "OK";
+
+  if (planBytes && planBytes > 0) {
+    const pct = Math.min(100, Math.round((bytes / planBytes) * 100));
+    const remaining = Math.max(0, planBytes - bytes);
+    const meterClass = pct >= 95 ? "is-danger" : pct >= 80 ? "is-warning" : "";
+    meterHtml = `
+      <div class="dash-usage-meter ${meterClass}">
+        <div class="dash-usage-meter-track">
+          <span class="dash-usage-meter-fill" style="width:${pct}%"></span>
+        </div>
+        <div class="dash-usage-meter-meta">
+          <strong>${pct}%</strong>
+          <span>of ${formatBytes(planBytes)}${planName ? ` ${escapeHtml(planName)}` : ""}</span>
+        </div>
+        <p class="dash-usage-meter-note">${remaining > 0 ? `${formatBytes(remaining)} of plan quota remaining` : "Plan quota reached"}</p>
+      </div>`;
+
+    if (pct >= 95) { stateClass = "has-danger"; statusText = `Quota ${pct}%`; }
+    else if (pct >= 80) { stateClass = "has-warning"; statusText = `Quota ${pct}%`; }
+  }
+
+  // Per-bucket breakdown, largest first (all numeric — escaped anyway).
+  const buckets = Object.entries(storage.buckets || {}).sort((a, b) => (b[1]?.bytes || 0) - (a[1]?.bytes || 0));
+  const bucketsHtml = buckets.length
+    ? `<ul class="dash-usage-buckets">` + buckets.map(([name, bucket]) => {
+        const bBytes = bucket?.bytes || 0;
+        const bObjects = Number(bucket?.objects || 0);
+        return `<li class="dash-usage-bucket">
+          <span class="dash-usage-bucket-name">${escapeHtml(name)}</span>
+          <span class="dash-usage-bucket-size">${formatBytes(bBytes)}</span>
+          <span class="dash-usage-bucket-count">${bObjects.toLocaleString()} object${bObjects === 1 ? "" : "s"}</span>
+        </li>`;
+      }).join("") + `</ul>`
+    : `<p class="dash-usage-muted">No storage buckets.</p>`;
+
+  // Egress is not exposed per-project by the Supabase API — show honest
+  // unavailable state instead of a misleading 0.
+  const egress = usage.egress || {};
+  const egressHtml = `
+    <div class="dash-usage-egress">
+      <h4>Egress (bandwidth)</h4>
+      ${egress.available
+        ? `<p class="dash-usage-muted">${formatBytes(egress.bytes || 0)} this period</p>`
+        : `<p class="dash-usage-egress-note">Supabase does not currently expose per-project egress (GB) through its API, so it can't be shown here (a $0 would be misleading). Track it on your <a href="https://supabase.com/dashboard/project/${escapeHtml(config.supabaseProjectRef || "")}/usage" target="_blank" rel="noopener">Supabase usage page</a>.</p>`}
+    </div>`;
+
+  renderUsageMessage(`
+    <div class="dash-usage-hero">
+      <div class="dash-usage-hero-main">
+        <span class="dash-usage-label">Storage used</span>
+        <strong class="dash-usage-total">${formatBytes(bytes)}</strong>
+        <span class="dash-usage-meta">${objects.toLocaleString()} object${objects === 1 ? "" : "s"}${generatedAt ? ` · measured ${escapeHtml(formatDate(generatedAt))}` : ""}</span>
+      </div>
+      ${meterHtml || (planBytes ? "" : `<p class="dash-usage-meter-note">Set <code>storagePlanBytes</code> in <code>config.js</code> to enable the quota meter.</p>`)}
+    </div>
+    <div class="dash-usage-section">
+      <h4>Buckets</h4>
+      ${bucketsHtml}
+    </div>
+    ${egressHtml}
+  `, statusText, stateClass);
+}
+
+/* =========================================================
    DATA LOADING
 ========================================================= */
 
@@ -1692,13 +1825,17 @@ async function loadDeliveries() {
 ========================================================= */
 
 function setupGlobalRefresh() {
-  els.refreshBtn?.addEventListener("click", () => loadDeliveries());
+  els.refreshBtn?.addEventListener("click", () => {
+    loadDeliveries();
+    loadStorageUsage();
+  });
 }
 
 async function bootstrapDashboard() {
   showLoading("Loading dashboard…", "Fetching your deliveries.");
   try {
     await loadDeliveries();
+    void loadStorageUsage();
   } finally {
     hideLoading();
   }
