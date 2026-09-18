@@ -1732,32 +1732,65 @@ async function loadStorageUsage() {
   const objects = totals.objects || 0;
   const generatedAt = storage.generated_at ? new Date(storage.generated_at) : null;
 
-  const planBytes = Number.isFinite(config.storagePlanBytes) ? config.storagePlanBytes : null;
-  const planName = config.storagePlanName || "plan";
+  // Configured plan allowance (bytes). This is entered manually by the operator
+  // in config.js — Supabase exposes no runtime API for the project's Storage
+  // plan allowance. The UI therefore ALWAYS tags it "Configured plan allowance"
+  // and never implies it was fetched from Supabase. `null`/invalid shows raw
+  // usage only (no percentage, no warnings).
+  const planBytes = (Number.isFinite(config.storagePlanBytes) && config.storagePlanBytes > 0)
+    ? config.storagePlanBytes
+    : null;
+  const planName = (config.storagePlanName || "").trim() || "plan";
 
-  // Quota meter + warnings (only when the operator has configured the plan).
-  let meterHtml = "";
+  // Quota meter + warnings — only when an explicit, valid allowance exists.
+  let quotaHtml = "";
   let stateClass = "";
   let statusText = "OK";
 
-  if (planBytes && planBytes > 0) {
+  if (planBytes) {
+    const exceeded = bytes > planBytes;
     const pct = Math.min(100, Math.round((bytes / planBytes) * 100));
     const remaining = Math.max(0, planBytes - bytes);
-    const meterClass = pct >= 95 ? "is-danger" : pct >= 80 ? "is-warning" : "";
-    meterHtml = `
+    const meterClass = exceeded || pct >= 95 ? "is-danger" : pct >= 80 ? "is-warning" : "";
+
+    const remainingHtml = exceeded
+      ? `<span class="dash-usage-exceeded">Storage limit exceeded</span>`
+      : remaining > 0
+        ? `${formatBytes(remaining)} remaining`
+        : `<span class="dash-usage-exceeded">Storage limit reached</span>`;
+
+    quotaHtml = `
       <div class="dash-usage-meter ${meterClass}">
         <div class="dash-usage-meter-track">
           <span class="dash-usage-meter-fill" style="width:${pct}%"></span>
         </div>
         <div class="dash-usage-meter-meta">
           <strong>${pct}%</strong>
-          <span>of ${formatBytes(planBytes)}${planName ? ` ${escapeHtml(planName)}` : ""}</span>
+          <span>of ${formatBytes(planBytes)}${planName !== "plan" ? ` ${escapeHtml(planName)}` : ""}</span>
         </div>
-        <p class="dash-usage-meter-note">${remaining > 0 ? `${formatBytes(remaining)} of plan quota remaining` : "Plan quota reached"}</p>
+        <dl class="dash-usage-rows">
+          <div><dt>Allowance</dt><dd>${formatBytes(planBytes)}${planName !== "plan" ? ` <em>${escapeHtml(planName)}</em>` : ""}</dd></div>
+          <div><dt>Remaining</dt><dd>${remainingHtml}</dd></div>
+        </dl>
+        <p class="dash-usage-meter-note dash-usage-source-line">
+          <span class="dash-usage-source-tag">Configured plan allowance</span>
+        </p>
       </div>`;
 
-    if (pct >= 95) { stateClass = "has-danger"; statusText = `Quota ${pct}%`; }
+    if (exceeded) { stateClass = "has-danger"; statusText = "Limit exceeded"; }
+    else if (pct >= 95) { stateClass = "has-danger"; statusText = `Quota ${pct}%`; }
     else if (pct >= 80) { stateClass = "has-warning"; statusText = `Quota ${pct}%`; }
+  } else {
+    quotaHtml = `
+      <div class="dash-usage-allowance">
+        <dl class="dash-usage-rows">
+          <div><dt>Allowance</dt><dd><span class="dash-usage-unavailable">Unavailable</span></dd></div>
+          <div><dt>Remaining</dt><dd><span class="dash-usage-unavailable">Unavailable</span></dd></div>
+        </dl>
+        <p class="dash-usage-meter-note">
+          No plan allowance is configured. Set <code>storagePlanBytes</code> in <code>config.js</code> to enable the quota meter and warnings.
+        </p>
+      </div>`;
   }
 
   // Per-bucket breakdown, largest first (all numeric — escaped anyway).
@@ -1791,8 +1824,9 @@ async function loadStorageUsage() {
         <span class="dash-usage-label">Storage used</span>
         <strong class="dash-usage-total">${formatBytes(bytes)}</strong>
         <span class="dash-usage-meta">${objects.toLocaleString()} object${objects === 1 ? "" : "s"}${generatedAt ? ` · measured ${escapeHtml(formatDate(generatedAt))}` : ""}</span>
+        <p class="dash-usage-source">Source: <strong>Supabase Storage catalog</strong> · aggregated server-side</p>
       </div>
-      ${meterHtml || (planBytes ? "" : `<p class="dash-usage-meter-note">Set <code>storagePlanBytes</code> in <code>config.js</code> to enable the quota meter.</p>`)}
+      ${quotaHtml}
     </div>
     <div class="dash-usage-section">
       <h4>Buckets</h4>

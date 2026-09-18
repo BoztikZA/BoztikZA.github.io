@@ -7722,6 +7722,45 @@ body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-button.
   color: var(--deliver-accent);
   font-weight: 800;
 }
+/* Usage source indicator + explicit allowance/remaining rows. */
+.dash-usage-source {
+  margin: 6px 0 0;
+  color: var(--deliver-text-muted);
+  font-size: 0.75rem;
+}
+.dash-usage-source strong { color: var(--deliver-text); font-weight: 700; }
+
+.dash-usage-source-line { margin: 0; }
+
+.dash-usage-source-tag {
+  display: inline-block;
+  padding: 1px 8px;
+  border: 1px solid var(--deliver-border);
+  border-radius: 999px;
+  background: var(--deliver-bg-soft);
+  color: var(--deliver-text-muted);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.dash-usage-rows {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  margin: 8px 0 0;
+  padding: 0;
+  font-size: 0.8rem;
+}
+.dash-usage-rows > div { display: contents; }
+.dash-usage-rows dt { color: var(--deliver-text-muted); font-weight: 600; }
+.dash-usage-rows dd { margin: 0; color: var(--deliver-text); font-weight: 800; }
+.dash-usage-rows dd em { color: var(--deliver-text-muted); font-weight: 700; font-style: normal; }
+
+.dash-usage-exceeded { color: var(--deliver-danger); font-weight: 800; }
+.dash-usage-unavailable { color: var(--deliver-text-muted); font-weight: 700; }
+
+.dash-usage-allowance { display: flex; flex-direction: column; gap: 10px; }
 
 @media (max-width: 620px) {
   .dash-usage-bucket { grid-template-columns: 1fr auto; }

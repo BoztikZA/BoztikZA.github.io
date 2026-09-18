@@ -11,12 +11,19 @@ export const config = Object.freeze({
   // Command Centre "Storage & usage" panel.
   // Project ref (from supabaseUrl) — used to deep-link to the Supabase usage page.
   supabaseProjectRef: "hwcxxotgtqchcriascti",
-  // Set the project's plan Storage allowance (in bytes) to enable the quota
-  // meter + warnings. Leave `null` to show raw usage only (no percentage).
+  // CONFIGURED plan allowance (in bytes) — entered manually by the operator.
+  // Supabase does NOT expose the project's Storage plan allowance through any
+  // runtime API, so this is the only reliable source for a quota meter. The
+  // UI therefore labels it "Configured plan allowance" and never implies the
+  // figure came from Supabase. Leave `null` to show raw usage only (allowance
+  // and remaining shown as "Unavailable", no percentage / no warnings).
+  // Published plan Storage quotas (from Supabase's docs):
   //   Free plan:  1073741824        (1 GB)
   //   Pro plan:   107374182400      (100 GB)
   //   Team plan:  107374182400      (100 GB)
+  // Only set this once, intentionally, to the project's actual plan.
   storagePlanBytes: null,
-  // Human-readable plan name, shown next to the meter (only used when quota set).
+  // Optional human-readable plan name, shown next to the allowance (e.g. "Pro plan").
+  // Only used when storagePlanBytes is set.
   storagePlanName: ""
 });
