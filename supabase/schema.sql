@@ -342,3 +342,73 @@ alter table public.deliveries
 
 comment on column public.deliveries.storage_deleted_at is
   'When set, storage files were permanently removed (expiry cleanup or manual delete); the delivery and its analytics remain for Command Centre reporting.';
+
+-- =========================================================
+-- V8 UPGRADE: CLEANUP / DELETE ACCESS HARDENING
+-- Now that storage_deleted_at exists (V7), the anonymous-facing surfaces
+-- must also hide deliveries whose files are gone — even if they have not
+-- yet reached expires_at. Expiry remains enforced independently everywhere
+-- (expires_at > now()), so access control does not wait for the cleanup
+-- job. Idempotent: create or replace / drop-if-exists + create.
+-- =========================================================
+
+-- (1) deliveries_public must never expose a cleaned/deleted delivery.
+create or replace view public.deliveries_public
+with (security_invoker = true) as
+select
+  id,
+  project_name,
+  client_name,
+  notes,
+  file_path,
+  file_name,
+  file_size,
+  created_at,
+  expires_at,
+  reddit_source,
+  coalesce((source_meta->>'support_enabled')::boolean, true)
+    as support_enabled,
+  (source = 'reddit' and coalesce(source_meta->>'type', '') = 'photoshop_battles')
+    as is_photoshop_battles
+from public.deliveries
+where expires_at > now()
+  and storage_deleted_at is null;
+
+-- (2) delivery_files_public must not expose files of a cleaned/deleted delivery.
+create or replace view public.delivery_files_public
+with (security_invoker = true) as
+select f.delivery_id, f.file_path, f.file_name, f.file_size, f.content_type, f.created_at
+from public.delivery_files f
+join public.deliveries d on d.id = f.delivery_id
+where d.expires_at > now()
+  and d.storage_deleted_at is null;
+
+-- (3) Direct anonymous SELECT on the base table must also respect cleanup state.
+drop policy if exists "Anonymous can view non-expired deliveries" on public.deliveries;
+create policy "Anonymous can view non-expired deliveries"
+  on public.deliveries for select
+  to anon
+  using (expires_at > now() and storage_deleted_at is null);
+
+-- (4) Anonymous signed-URL reads on storage.objects must not resolve files of a
+--     cleaned/deleted delivery (single-file and multi-file paths alike).
+drop policy if exists "Anonymous can read files for active deliveries" on storage.objects;
+create policy "Anonymous can read files for active deliveries"
+  on storage.objects for select to anon
+  using (
+    bucket_id = 'deliveries' and (
+      exists (
+        select 1 from public.deliveries d
+        where d.file_path = storage.objects.name
+          and d.expires_at > now()
+          and d.storage_deleted_at is null
+      )
+      or exists (
+        select 1 from public.delivery_files f
+        join public.deliveries d on d.id = f.delivery_id
+        where f.file_path = storage.objects.name
+          and d.expires_at > now()
+          and d.storage_deleted_at is null
+      )
+    )
+  );

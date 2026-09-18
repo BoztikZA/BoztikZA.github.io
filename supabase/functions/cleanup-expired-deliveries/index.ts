@@ -4,11 +4,13 @@
 //
 // Deletes only stored files for deliveries whose expires_at has passed,
 // retaining delivery records and their analytics. GitHub Pages is static and can't run this on a
-// schedule itself, so this function is deployed to Supabase and
-// invoked on a cron schedule (see supabase/CLEANUP_SETUP.md).
+// schedule itself, so this function is deployed to Supabase and invoked on a
+// cron schedule every 30 minutes (see supabase/CLEANUP_SETUP.md and
+// supabase/cron/jobs.sql).
 //
 // Deploy:
 //   supabase functions deploy cleanup-expired-deliveries
+//   supabase secrets set CLEANUP_SECRET=...            (shared secret the cron job sends)
 //   supabase secrets set SUPABASE_SERVICE_ROLE_KEY=... (auto-available
 //     as SUPABASE_SERVICE_ROLE_KEY in the function runtime already)
 // =========================================================
@@ -58,11 +60,21 @@ Deno.serve(async (req) => {
     const files = delivery.delivery_files?.length
       ? delivery.delivery_files
       : delivery.file_path ? [{ file_path: delivery.file_path }] : [];
-    const paths = files.map((file) => file.file_path).filter(Boolean);
+    // Deduplicate so a legacy single-file delivery whose path also exists in
+    // delivery_files is not asked to be removed twice.
+    const paths = [...new Set(files.map((file) => file.file_path).filter(Boolean))];
 
     if (paths.length) {
       const { error: storageError } = await supabase.storage.from("deliveries").remove(paths);
-      if (storageError) {
+      // An object that reports as already-gone is success — there is nothing
+      // left to delete. This happens when an earlier run (or a manual delete,
+      // or an interrupted run where Storage removal succeeded but the
+      // storage_deleted_at marker did not persist) already removed the file.
+      // Treating "not found" as success keeps cleanup idempotent and lets the
+      // DB marker below settle the row instead of entering a permanent retry.
+      const alreadyGone = storageError &&
+        /not found|not exist|no such object|missing|doesn'?t exist/i.test(`${storageError.message}`);
+      if (storageError && !alreadyGone) {
         console.error(`Storage cleanup error for ${delivery.id}:`, storageError.message);
         failed.push({ id: delivery.id, error: storageError.message });
         continue;
@@ -78,6 +90,11 @@ Deno.serve(async (req) => {
       continue;
     }
     cleaned.push(delivery.id);
+  }
+
+  console.log(`[cleanup-expired-deliveries] expired=${expired.length} cleaned=${cleaned.length} failed=${failed.length} filesRemoved=${filesRemoved}`);
+  if (failed.length) {
+    console.error(`[cleanup-expired-deliveries] failed delivery files:`, failed.map((f) => `${f.id}: ${f.error}`).join(" | "));
   }
 
   return new Response(
