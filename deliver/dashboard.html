@@ -369,6 +369,24 @@
 
         </button>
 
+<button
+          type="button"
+          class="dash-tab"
+          id="tab-site-analytics"
+          role="tab"
+          aria-selected="false"
+          aria-controls="panel-site-analytics"
+          tabindex="-1"
+          data-tab="site-analytics"
+        >
+          <span class="dash-tab-icon">◈</span>
+
+          <span>
+            <strong>Site Analytics</strong>
+            <small>Website traffic</small>
+          </span>
+
+        </button>
       </div>
 
 
@@ -2381,9 +2399,219 @@
         </article>
 
       </section>
+<!-- =================================================
+           TAB: SITE ANALYTICS
+      ================================================== -->
+
+      <section
+        id="panel-site-analytics"
+        class="dash-tab-panel"
+        data-panel="site-analytics"
+        hidden
+      >
+
+        <div class="dash-section-heading">
+
+          <div>
+
+            <span class="dash-section-eyebrow">
+              PUBLIC SITE
+            </span>
+
+            <h2>
+              Site Analytics
+            </h2>
+
+            <p>
+              Private traffic analytics for the public Boztik website — separate
+              from client delivery activity.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div id="saa-content">
+
+          <div class="dash-site-analytics-toolbar">
+            <span id="saa-status">Idle — open this tab to load.</span>
+            <button type="button" id="saa-refresh" class="dash-btn">Refresh</button>
+          </div>
+
+
+          <!-- ============ SUMMARY STATS ============ -->
+
+          <div class="dash-stat-grid dash-stat-grid-analytics">
+
+            <article class="dash-stat-card">
+              <div class="dash-stat-top">
+                <span class="dash-stat-label">All-time visits</span>
+                <span class="dash-stat-icon">◉</span>
+              </div>
+              <strong class="dash-stat-value" id="saa-stat-all">—</strong>
+              <span class="dash-stat-meta">Total public page loads</span>
+            </article>
+
+            <article class="dash-stat-card">
+              <div class="dash-stat-top">
+                <span class="dash-stat-label">This month</span>
+                <span class="dash-stat-icon">↗</span>
+              </div>
+              <strong class="dash-stat-value" id="saa-stat-month">—</strong>
+              <span class="dash-stat-meta" id="saa-stat-month-label">Current calendar month</span>
+            </article>
+
+            <article class="dash-stat-card">
+              <div class="dash-stat-top">
+                <span class="dash-stat-label">Previous month</span>
+                <span class="dash-stat-icon">◔</span>
+              </div>
+              <strong class="dash-stat-value" id="saa-stat-prev">—</strong>
+              <span class="dash-stat-meta" id="saa-stat-prev-label">Previous calendar month</span>
+            </article>
+
+            <article class="dash-stat-card">
+              <div class="dash-stat-top">
+                <span class="dash-stat-label">Month-over-month</span>
+                <span class="dash-stat-icon">⇅</span>
+              </div>
+              <strong class="dash-stat-value" id="saa-stat-mom">—</strong>
+              <span class="dash-stat-meta">This month vs previous month</span>
+            </article>
+
+            <article class="dash-stat-card">
+              <div class="dash-stat-top">
+                <span class="dash-stat-label">Monthly average</span>
+                <span class="dash-stat-icon">∅</span>
+              </div>
+              <strong class="dash-stat-value" id="saa-stat-avg">—</strong>
+              <span class="dash-stat-meta" id="saa-stat-avg-label">Per recorded month</span>
+            </article>
+
+            <article class="dash-stat-card">
+              <div class="dash-stat-top">
+                <span class="dash-stat-label">Best month</span>
+                <span class="dash-stat-icon">★</span>
+              </div>
+              <strong class="dash-stat-value" id="saa-stat-best">—</strong>
+              <span class="dash-stat-meta">Highest monthly traffic</span>
+            </article>
+
+            <article class="dash-stat-card">
+              <div class="dash-stat-top">
+                <span class="dash-stat-label">Est. visitors</span>
+                <span class="dash-stat-icon">≋</span>
+              </div>
+              <strong class="dash-stat-value" id="saa-stat-unique">—</strong>
+              <span class="dash-stat-meta">All-time unique (estimated)</span>
+            </article>
+
+          </div>
 
 
       <!-- =================================================
+<!-- ============ MONTHLY TREND ============ -->
+
+          <article class="dash-panel">
+
+            <div class="dash-panel-header">
+
+              <div>
+
+                <span class="dash-section-eyebrow">
+                  TREND
+                </span>
+
+                <h3>
+                  Monthly visits
+                </h3>
+
+                <p>
+                  Visits per calendar month. A visit = one recorded view of a
+                  public page (homepage, portfolio, tools, guides…).
+                </p>
+
+              </div>
+
+            </div>
+
+            <div class="saa-bars" id="saa-chart"></div>
+
+          </article>
+
+
+          <!-- ============ AUDIENCE DRILL-DOWNS ============ -->
+
+          <article class="dash-panel dash-site-analytics-panel">
+
+            <div class="dash-panel-header">
+
+              <div>
+
+                <span class="dash-section-eyebrow">
+                  AUDIENCE
+                </span>
+
+                <h3>
+                  Where traffic comes from
+                </h3>
+
+                <p>
+                  Sources, estimated locations, devices, browsers and pages
+                  across all recorded visits. Location is estimated from the
+                  visitor's timezone + language — never their IP.
+                </p>
+
+              </div>
+
+            </div>
+
+            <div class="dash-site-analytics-grid">
+
+              <div class="dash-site-analytics-block">
+                <span class="dash-section-eyebrow">SOURCES</span>
+                <div class="saa-list" id="saa-sources"></div>
+              </div>
+
+              <div class="dash-site-analytics-block">
+                <span class="dash-section-eyebrow">LOCATIONS</span>
+                <div class="saa-list" id="saa-locations"></div>
+              </div>
+
+              <div class="dash-site-analytics-block">
+                <span class="dash-section-eyebrow">DEVICES</span>
+                <div class="saa-list" id="saa-devices"></div>
+              </div>
+
+              <div class="dash-site-analytics-block">
+                <span class="dash-section-eyebrow">BROWSERS</span>
+                <div class="saa-list" id="saa-browsers"></div>
+              </div>
+
+              <div class="dash-site-analytics-block">
+                <span class="dash-section-eyebrow">OPERATING SYSTEMS</span>
+                <div class="saa-list" id="saa-os"></div>
+              </div>
+
+              <div class="dash-site-analytics-block">
+                <span class="dash-section-eyebrow">TOP PUBLIC PAGES</span>
+                <div class="saa-list" id="saa-pages"></div>
+              </div>
+
+            </div>
+
+          </article>
+
+        </div><!-- /#saa-content -->
+
+
+        <div class="dash-empty-state" id="saa-empty" hidden>
+          <h4>No website traffic recorded yet</h4>
+          <p>Once someone visits a public page (homepage, portfolio, tools, guides…), their visit appears here.</p>
+        </div>
+
+      </section>
            GLOBAL LOADING OVERLAY
       ================================================== -->
 

@@ -265,3 +265,16 @@ export async function fetchRedditMetadata(url) {
 export async function fetchStorageUsage() {
   return maintenanceRequest({ action: "usage" });
 }
+
+/**
+ * Fetches public-website traffic analytics for the Command Centre's
+ * "Site Analytics" panel. Calls the `get_site_analytics` RPC (authenticated
+ * session required), which returns a compact { months[], totals{} } summary
+ * read from the monthly aggregate cache — a handful of rows regardless of
+ * raw event volume. Completely separate from delivery analytics.
+ */
+export async function fetchSiteAnalytics() {
+  const { data, error } = await supabase().rpc("get_site_analytics");
+  if (error) throw error;
+  return data || null;
+}
