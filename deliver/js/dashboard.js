@@ -12,7 +12,6 @@ import {
   duplicateDelivery,
   fetchRedditMetadata,
   fetchStorageUsage,
-  fetchSiteAnalytics,
   DELIVERY_SOURCES
 } from "./api.js";
 import { config } from "./config.js";
@@ -135,30 +134,6 @@ const els = {
   analyticsViewRate: $("dash-analytics-view-rate"),
   analyticsTopDelivery: $("dash-analytics-top-delivery"),
 
-  // Site Analytics (public-website traffic — separate from delivery analytics)
-  saaTab: $("tab-site-analytics"),
-  saaRefresh: $("saa-refresh"),
-  saaStatus: $("saa-status"),
-  saaContent: $("saa-content"),
-  saaEmpty: $("saa-empty"),
-  saaStatAll: $("saa-stat-all"),
-  saaStatMonth: $("saa-stat-month"),
-  saaStatMonthLabel: $("saa-stat-month-label"),
-  saaStatPrev: $("saa-stat-prev"),
-  saaStatPrevLabel: $("saa-stat-prev-label"),
-  saaStatMom: $("saa-stat-mom"),
-  saaStatAvg: $("saa-stat-avg"),
-  saaStatAvgLabel: $("saa-stat-avg-label"),
-  saaStatBest: $("saa-stat-best"),
-  saaStatUnique: $("saa-stat-unique"),
-  saaChart: $("saa-chart"),
-  saaSources: $("saa-sources"),
-  saaLocations: $("saa-locations"),
-  saaDevices: $("saa-devices"),
-  saaBrowsers: $("saa-browsers"),
-  saaOs: $("saa-os"),
-  saaPages: $("saa-pages"),
-
   loadingOverlay: $("dash-loading-overlay"),
   loadingTitle: $("dash-loading-title"),
   loadingMessage: $("dash-loading-message"),
@@ -227,8 +202,6 @@ let editSaving = false;
 let deleteWorking = false;
 let selectedFiles = [];
 let toastTimer = null;
-let siteAnalytics = null;
-let siteAnalyticsLoaded = false;
 
 const SOURCE_LABELS = {
   private: "Private Client",
@@ -659,11 +632,6 @@ function switchTab(name) {
     panel.hidden = panel.dataset.panel !== name;
     panel.classList.toggle("is-active", panel.dataset.panel === name);
   });
-
-  // Site Analytics loads its data lazily — only the first time the tab is
-  // opened (and on explicit refresh). Keeps the initial dashboard load lean
-  // when the operator never looks at website traffic.
-  if (name === "site-analytics") void maybeLoadSiteAnalytics();
 }
 
 function setupTabs() {
@@ -1998,188 +1966,6 @@ document.addEventListener("visibilitychange", () => {
 });
 
 /* =========================================================
-   SITE ANALYTICS (public-website traffic)
-========================================================= */
-
-// Defensive helpers for the compact { months[], totals{} } response returned
-// by the get_site_analytics RPC. months[] holds one object per calendar month
-// (visits, unique_visitors, and jsonb distributions); totals{} holds cheap
-// all-time sums. Everything below is pure, locale-safe presentation code.
-
-function saaNum(value, fallback = 0) {
-  return Number.isFinite(value) ? value : fallback;
-}
-
-function saaSum(list, key) {
-  return list.reduce((acc, row) => acc + saaNum(row && row[key]), 0);
-}
-
-// Merge a key's jsonb distribution across all months and return it sorted by
-// descending count, e.g. saaBreakdown(months, "devices") -> [{ label, count }].
-function saaBreakdown(rows, key) {
-  const merged = {};
-  rows.forEach(row => {
-    const entry = row && row[key];
-    if (!entry) return;
-    Object.keys(entry).forEach(k => {
-      merged[k] = saaNum(merged[k], 0) + saaNum(entry[k]);
-    });
-  });
-  return Object.entries(merged)
-    .sort((a, b) => b[1] - a[1])
-    .map(([label, count]) => ({ label, count }));
-}
-
-// Percentage change vs previous; null means "no sensible baseline" (n/a).
-function saaPctChange(current, previous) {
-  if (!previous) return (previous === 0 && current > 0) ? null : 0;
-  return ((current - previous) / previous) * 100;
-}
-
-function saaFormatCount(value) {
-  return saaNum(value, 0).toLocaleString("en-US");
-}
-
-// "photoshop_battles" -> "Photoshop Battles", "macos" -> "Macos".
-function saaTitleCase(value) {
-  const s = String(value == null ? "" : value);
-  return s.split(/[\s_-]+/).filter(Boolean)
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
-
-function saaSetText(el, value) {
-  if (el) el.textContent = value;
-}
-
-function saaSetBusy(busy) {
-  if (!els.saaRefresh) return;
-  els.saaRefresh.disabled = busy;
-  els.saaRefresh.classList.toggle("is-loading", busy);
-}
-
-// Lazy-load helper: the Site Analytics tab only fetches data the first time
-// it's opened, so the initial dashboard boot stays lean.
-function maybeLoadSiteAnalytics() {
-  if (!siteAnalyticsLoaded) return loadSiteAnalytics();
-  return Promise.resolve();
-}
-
-async function loadSiteAnalytics() {
-  if (!els.saaStatus) return;
-
-  saaSetBusy(true);
-  saaSetText(els.saaStatus, "Loading website traffic…");
-
-  let data;
-  try {
-    data = await fetchSiteAnalytics();
-  } catch (error) {
-    console.error("[Boztik Deliver] Site analytics could not be loaded:", error);
-    saaSetText(els.saaStatus, "Could not load website traffic. Try refreshing.");
-    saaSetBusy(false);
-    return;
-  }
-
-  siteAnalytics = data;
-  siteAnalyticsLoaded = true;
-  saaSetBusy(false);
-  renderSiteAnalytics(data);
-}
-
-function renderSiteAnalytics(data) {
-  const months = (data && Array.isArray(data.months))
-    ? data.months.slice().sort((a, b) => String(a.month).localeCompare(String(b.month)))
-    : [];
-  const totals = (data && data.totals) || {};
-
-  const empty = months.length === 0;
-
-  if (els.saaContent) els.saaContent.hidden = empty;
-  if (els.saaEmpty) els.saaEmpty.hidden = !empty;
-  if (els.saaStatus) els.saaStatus.textContent = empty
-    ? "No website traffic recorded yet — waiting for the first visit."
-    : `Updated ${new Date().toLocaleTimeString()}.`;
-
-  if (!els.saaContent || empty) return;
-
-  const totalVisits = saaSum(months, "visits");
-  const totalUniqueByMonth = saaSum(months, "unique_visitors");
-  const allTimeUnique = saaNum(totals.unique_visitors, totalUniqueByMonth);
-
-  const current = months[months.length - 1];
-  const previous = months.length > 1 ? months[months.length - 2] : null;
-
-  const currentVisits = current ? saaNum(current.visits) : 0;
-  const previousVisits = previous ? saaNum(previous.visits) : 0;
-  const momPct = saaPctChange(currentVisits, previousVisits);
-
-  const avg = months.length > 0 ? totalVisits / months.length : 0;
-
-  let best = { visits: 0, month: null };
-  months.forEach(m => {
-    const v = saaNum(m.visits);
-    if (v > best.visits) best = { visits: v, month: m.month };
-  });
-
-  saaSetText(els.saaStatAll, saaFormatCount(totalVisits));
-  saaSetText(els.saaStatMonth, saaFormatCount(currentVisits));
-  saaSetText(els.saaStatMonthLabel, current ? current.month : "Current calendar month");
-  saaSetText(els.saaStatPrev, saaFormatCount(previousVisits));
-  saaSetText(els.saaStatPrevLabel, previous ? previous.month : "Previous calendar month");
-  saaSetText(els.saaStatMom, (momPct === null ? "n/a" : `${momPct >= 0 ? "+" : ""}${momPct.toFixed(1)}%`));
-  saaSetText(els.saaStatAvg, saaFormatCount(Math.round(avg)));
-  saaSetText(els.saaStatAvgLabel, `Per recorded month (${months.length}${months.length === 1 ? " month" : " months"})`);
-  saaSetText(els.saaStatBest, best.month ? `${saaFormatCount(best.visits)} · ${best.month}` : "—");
-  saaSetText(els.saaStatUnique, saaFormatCount(allTimeUnique));
-
-  // Monthly bar chart (pure CSS heights — no chart library).
-  if (els.saaChart) {
-    const max = months.reduce((a, m) => Math.max(a, saaNum(m.visits)), 1);
-    els.saaChart.innerHTML = months.map(m => {
-      const v = saaNum(m.visits);
-      const pct = max > 0 ? Math.round((v / max) * 100) : 0;
-      return `
-        <div class="saa-bar-col" title="${m.month}: ${saaFormatCount(v)} visit(s)">
-          <span class="saa-bar-value">${saaFormatCount(v)}</span>
-          <span class="saa-bar" style="height:${Math.max(pct, 3)}%"></span>
-          <span class="saa-bar-label">${escapeHtml(m.month)}</span>
-        </div>`;
-    }).join("");
-  }
-
-  renderSaaDist(els.saaSources, saaBreakdown(months, "sources"), "Source");
-  renderSaaDist(els.saaLocations, saaBreakdown(months, "locations"), "Location");
-  renderSaaDist(els.saaDevices, saaBreakdown(months, "devices"), "Device");
-  renderSaaDist(els.saaBrowsers, saaBreakdown(months, "browsers"), "Browser");
-  renderSaaDist(els.saaOs, saaBreakdown(months, "os"), "Operating system");
-  renderSaaDist(els.saaPages, saaBreakdown(months, "pages"), "Page");
-}
-
-function renderSaaDist(el, items, singularLabel) {
-  if (!el) return;
-  const top = items.slice(0, 10).filter(i => saaNum(i.count) > 0);
-  const total = items.reduce((a, i) => a + saaNum(i.count), 0);
-  const max = top.reduce((a, i) => Math.max(a, saaNum(i.count)), 1);
-
-  if (!top.length) {
-    el.innerHTML = `<div class="saa-list-empty">No ${singularLabel.toLowerCase()} data yet.</div>`;
-    return;
-  }
-
-  el.innerHTML = top.map(i => {
-    const share = total > 0 ? Math.round((i.count / total) * 100) : 0;
-    const width = Math.max(2, Math.round((i.count / max) * 100));
-    return `
-      <div class="saa-row">
-        <span class="saa-row-label" title="${escapeHtml(i.label)}">${escapeHtml(saaTitleCase(i.label))}</span>
-        <div class="saa-row-track"><span class="saa-row-fill" style="width:${width}%"></span></div>
-        <span class="saa-row-value">${saaFormatCount(i.count)}</span>
-        <span class="saa-row-pct">${share}%</span>
-      </div>`;
-  }).join("");
-}
-/* =========================================================
    DATA LOADING
 ========================================================= */
 
@@ -2206,15 +1992,6 @@ function setupGlobalRefresh() {
     loadDeliveries();
     loadStorageUsage();
     void refreshStorageMonitor();
-    // Only reload site traffic if it has already been fetched at least once
-    // (its tab loads lazily on first open).
-    if (siteAnalyticsLoaded) void loadSiteAnalytics();
-  });
-}
-
-function setupSiteAnalytics() {
-  els.saaRefresh?.addEventListener("click", () => {
-    void loadSiteAnalytics();
   });
 }
 
@@ -2240,7 +2017,6 @@ async function init() {
   setupEditModal();
   setupDeleteModal();
   setupGlobalRefresh();
-  setupSiteAnalytics();
 
   let session = null;
 
