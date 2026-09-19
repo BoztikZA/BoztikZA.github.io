@@ -1596,8 +1596,8 @@ async function handleDeleteConfirm() {
   }
 
   try {
-    await deleteDelivery(delivery);
-    showToast("Delivery deleted.");
+    const result = await deleteDelivery(delivery);
+    showToast(result.status === "already_deleted" ? "Delivery was already deleted." : "Delivery deleted. Storage file(s) and delivery metadata have been removed.");
     closeDeleteModal();
     await loadDeliveries();
   } catch (error) {
@@ -1754,7 +1754,7 @@ async function loadStorageUsage() {
   // Quota meter + warnings — only when an explicit, valid allowance exists.
   let quotaHtml = "";
   let stateClass = "";
-  let statusText = "OK";
+  let statusText = "Healthy";
 
   if (planBytes) {
     const exceeded = bytes > planBytes;
@@ -1786,9 +1786,10 @@ async function loadStorageUsage() {
         </p>
       </div>`;
 
-    if (exceeded) { stateClass = "has-danger"; statusText = "Limit exceeded"; }
-    else if (pct >= 95) { stateClass = "has-danger"; statusText = `Quota ${pct}%`; }
-    else if (pct >= 80) { stateClass = "has-warning"; statusText = `Quota ${pct}%`; }
+    const level = (config.storageWarningLevels || []).find(item => pct >= item.minPercent) || { key: "healthy", label: "Healthy" };
+    statusText = level.label;
+    if (["over_quota", "critical", "high"].includes(level.key)) stateClass = "has-danger";
+    else if (["warning", "notice"].includes(level.key)) stateClass = "has-warning";
   } else {
     quotaHtml = `
       <div class="dash-usage-allowance">

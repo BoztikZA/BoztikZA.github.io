@@ -28,8 +28,16 @@ export const config = Object.freeze({
   //   Pro plan:   107374182400      (100 GB)
   //   Team plan:  107374182400      (100 GB)
   // Only set this once, intentionally, to the project's actual plan.
-  storagePlanBytes: null,
+  storagePlanBytes: 1024 * 1024 * 1024,
   // Optional human-readable plan name, shown next to the allowance (e.g. "Pro plan").
   // Only used when storagePlanBytes is set.
-  storagePlanName: ""
+  storagePlanName: "Free plan",
+  storageWarningLevels: Object.freeze([
+    { minPercent: 100, key: "over_quota", label: "Over quota" },
+    { minPercent: 95, key: "critical", label: "Critical" },
+    { minPercent: 90, key: "high", label: "High / urgent" },
+    { minPercent: 80, key: "warning", label: "Warning" },
+    { minPercent: 70, key: "notice", label: "Notice" },
+    { minPercent: 0, key: "healthy", label: "Healthy" }
+  ])
 });

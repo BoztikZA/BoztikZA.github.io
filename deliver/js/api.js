@@ -3,7 +3,7 @@ import { safeFileName, supabase } from "./shared.js";
 
 const DELIVER_FILE_FUNCTION = `${config.supabaseUrl}/functions/v1/deliver-file`;
 const REDDIT_METADATA_FUNCTION = `${config.supabaseUrl}/functions/v1/reddit-metadata`;
-const STORAGE_USAGE_FUNCTION = `${config.supabaseUrl}/functions/v1/storage-usage`;
+const DELIVERY_MAINTENANCE_FUNCTION = `${config.supabaseUrl}/functions/v1/delivery-maintenance`;
 
 export const DELIVERY_SOURCES = Object.freeze(["reddit", "private", "paid", "free", "returning", "other"]);
 
@@ -128,17 +128,33 @@ export async function updateDelivery(deliveryId, updates = {}) {
   return data;
 }
 
-export async function deleteDelivery(delivery) {
-  const files = delivery.delivery_files?.length ? delivery.delivery_files : [{ file_path: delivery.file_path }];
-  const paths = files.map(file => file.file_path).filter(Boolean);
-  if (paths.length) {
-    const { error } = await supabase().storage.from(config.storageBucket).remove(paths);
-    if (error) throw error;
-  }
-  // Preserve the delivery row and all associated analytics as historical data.
-  const { error } = await supabase().from("deliveries")
-    .update({ storage_deleted_at: new Date().toISOString() }).eq("id", delivery.id);
+async function maintenanceRequest(payload) {
+  const { data, error } = await supabase().auth.getSession();
   if (error) throw error;
+  const token = data?.session?.access_token;
+  if (!token) throw new Error("You need to be signed in to manage deliveries.");
+  let response;
+  try {
+    response = await fetch(DELIVERY_MAINTENANCE_FUNCTION, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: config.supabaseAnonKey, Authorization: `Bearer ${token}` },
+      body: JSON.stringify(payload)
+    });
+  } catch {
+    throw new Error("Could not reach the delivery maintenance service.");
+  }
+  const result = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(result?.message || result?.error || `Delivery maintenance failed (HTTP ${response.status}).`);
+  return result || {};
+}
+
+export async function deleteDelivery(delivery) {
+  if (!delivery?.id) throw new Error("A delivery ID is required.");
+  const result = await maintenanceRequest({ action: "delete", delivery_id: delivery.id });
+  if (result.status !== "success" && result.status !== "already_deleted") {
+    throw new Error(result.message || "Deletion was not confirmed by the server.");
+  }
+  return result;
 }
 
 export async function duplicateDelivery(delivery) {
@@ -209,33 +225,10 @@ export async function fetchRedditMetadata(url) {
 
 /**
  * Fetches authoritative Supabase storage usage from the server-side
- * `storage-usage` Edge Function, authenticated with the admin's sign-in
+ * `delivery-maintenance` Edge Function, authenticated with the allowlisted admin's sign-in
  * session. Uses the user's access token (never the service-role key).
  * Returns { storage, egress } where egress may be { available: false }.
  */
 export async function fetchStorageUsage() {
-  const { data, error } = await supabase().auth.getSession();
-  if (error) throw error;
-  const token = data?.session?.access_token;
-  if (!token) throw new Error("You need to be signed in to view storage usage.");
-
-  let response;
-  try {
-    response = await fetch(STORAGE_USAGE_FUNCTION, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        apikey: config.supabaseAnonKey,
-        Authorization: `Bearer ${token}`
-      }
-    });
-  } catch {
-    throw new Error("Could not reach the usage service.");
-  }
-
-  const result = await response.json().catch(() => null);
-  if (!response.ok) {
-    throw new Error(result?.message || result?.error || `Storage usage unavailable (HTTP ${response.status}).`);
-  }
-  return result || {};
+  return maintenanceRequest({ action: "usage" });
 }
