@@ -219,6 +219,24 @@
     }
 
 
+    /* Expired-page tip jar: not part of the sticky sidebar layout, so keep the
+       card's own clipping (the responsive rules below set overflow: visible for
+       the sidebar, which let the decorative glow widen the page on phones). */
+    #deliver-expired-support {
+      overflow: hidden;
+    }
+
+    /* Same reassurance-line styling the active card gets from deliver.css
+       (that rule is scoped to #deliver-support-details). */
+    #deliver-expired-support .boztik-support-reassurance {
+      margin: 12px 0 0;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--deliver-text-muted);
+      font-size: 0.72rem;
+      line-height: 1.5;
+    }
+
     .boztik-support-inner {
       position: relative;
       z-index: 1;
@@ -2719,12 +2737,12 @@
 
 
       <h1 class="deliver-hero-title">
-        This delivery has expired
+        Image expired
       </h1>
 
 
       <p class="deliver-hero-subtitle">
-        Your delivery link has expired, but help is still available. Contact Boztik to request a re-upload or to ask whether the delivery can be re-enabled.
+        This delivery is no longer available because the image has expired. Help is still available: contact Boztik to request a re-upload or to ask whether the delivery can be re-enabled.
       </p>
 
 
@@ -2756,6 +2774,57 @@
         <strong>Need help with this delivery?</strong>
         <span>Boztik can help you request a re-upload or discuss extending access.</span>
         <a href="../contact.html">Contact delivery support</a>
+      </aside>
+
+      <!-- =================================================
+           TIP JAR ON THE EXPIRED PAGE
+           The delivery link may have been shared publicly, so the
+           existing Ko-fi / PayPal support card stays available after
+           the image expires. Same classes, links and styling as the
+           active-delivery support card (#deliver-support-details);
+           shown by client.js only in the expired state.
+           Contains no delivery data, file paths or image URLs.
+      ================================================== -->
+      <aside
+        id="deliver-expired-support"
+        class="deliver-gratitude boztik-support-compact"
+        aria-label="Support Boztik"
+        hidden
+      >
+        <div class="boztik-support-inner">
+          <div class="boztik-support-section header-section">
+            <span class="deliver-section-label">BOZTIK SUPPORT</span>
+            <h2 class="gratitude-title">Enjoying Boztik?</h2>
+            <p class="gratitude-copy">
+              Boztik is independently built and maintained. If this delivery has been helpful, a small contribution helps keep thoughtful creative tools and services growing.
+            </p>
+            <p class="boztik-support-reassurance">
+              Optional support, securely handled by Ko-fi or PayPal. Thank you for helping independent creative work thrive.
+            </p>
+          </div>
+          <div class="boztik-support-section actions-section">
+            <div class="boztik-support-actions" aria-label="Support actions">
+              <a
+                href="https://ko-fi.com/boztik"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="boztik-support-button kofi"
+              >
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M3 5.5A2.5 2.5 0 0 1 5.5 3h10A2.5 2.5 0 0 1 18 5.5V7h.75a3.25 3.25 0 1 1 0 6.5H18A6.5 6.5 0 0 1 11.5 20h-4A6.5 6.5 0 0 1 1 13.5v-8Zm15 3v2.5a1.75 1.75 0 1 0 0-3.5V8.5Z"/></svg>
+                Support via Ko-fi <span aria-hidden="true">↗</span>
+              </a>
+              <a
+                href="http://paypal.me/angry5p1c3"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="boztik-support-button paypal"
+              >
+                <svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20"><path fill="#fff" d="M8.2 4.3h5c2.6 0 4.1 1.4 3.7 3.8-.5 3.2-2.5 4.7-5.4 4.7H9.9l-.8 5H6.4l1.8-13.5Z"/><path fill="#d8efff" d="M6.3 4.3h5c2.6 0 4.1 1.4 3.7 3.8-.5 3.2-2.5 4.7-5.4 4.7H8l-.8 5H4.5l1.8-13.5Z"/></svg>
+                Support via PayPal <span aria-hidden="true">↗</span>
+              </a>
+            </div>
+          </div>
+        </div>
       </aside>
 
     </section>
@@ -3152,7 +3221,7 @@
 
   <script
     type="module"
-    src="js/client.js"
+    src="js/client.js?v=expired-tipjar-1"
   ></script>
 
 </body>

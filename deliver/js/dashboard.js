@@ -25,6 +25,7 @@ import {
   isValidFile
 } from "./shared.js";
 import { getImageDimensions } from "./fileinfo.js";
+import { StorageLimitError, readStorageUsage, monitorLevel, formatMb, storageLimitBytes } from "./storage-guard.js";
 
 const $ = id => document.getElementById(id);
 
@@ -63,6 +64,12 @@ const els = {
   usagePanel: $("dash-usage-panel"),
   usageStatus: $("dash-usage-status"),
   usageBody: $("dash-usage-body"),
+
+  storageMonitor: $("dash-storage-monitor"),
+  smTitle: $("dash-sm-title"),
+  smFill: $("dash-sm-fill"),
+  smLine: $("dash-sm-line"),
+  smMeta: $("dash-sm-meta"),
   actionCards: Array.from(document.querySelectorAll(".dash-action-card[data-create-source]")),
 
   createForm: $("dash-create-form"),
@@ -522,6 +529,7 @@ function wireModalDismiss(modalEl, closeBtn, onClose) {
 ========================================================= */
 
 function showLoginView() {
+  stopStorageMonitor();
   if (els.loginView) els.loginView.hidden = false;
   if (els.mainView) els.mainView.hidden = true;
   if (els.logoutLink) els.logoutLink.hidden = true;
@@ -734,6 +742,18 @@ function setCreateError(message = "") {
   if (!els.createError) return;
   els.createError.textContent = message;
   els.createError.hidden = !message;
+}
+
+// Storage-limit refusals get a clear title + explanation (built with DOM
+// nodes / textContent only — no innerHTML).
+function setCreateStorageError(error) {
+  if (!els.createError) return;
+  const title = document.createElement("strong");
+  title.textContent = error.title;
+  const body = document.createElement("span");
+  body.textContent = error.body;
+  els.createError.replaceChildren(title, document.createElement("br"), body);
+  els.createError.hidden = false;
 }
 
 function validateSelectedFile(file, isBattleMode) {
@@ -1034,10 +1054,17 @@ async function handleCreateSubmit(event) {
 
   } catch (error) {
     console.error("[Boztik Deliver] createDelivery failed:", error);
-    setCreateError(error?.message || "Could not create this delivery. Please try again.");
+    if (error instanceof StorageLimitError) {
+      setCreateStorageError(error);
+      showToast(`${error.title}. Upload blocked.`, "error");
+    } else {
+      setCreateError(error?.message || "Could not create this delivery. Please try again.");
+    }
   } finally {
     setCreateSaving(false);
     hideLoading();
+    // Success, blocked or rolled back: always re-read authoritative usage.
+    void refreshStorageMonitor();
   }
 }
 
@@ -1383,6 +1410,7 @@ function renderDeliveryCard(delivery) {
       showToast(error?.message || "Could not duplicate this delivery.", "error");
     } finally {
       btn.disabled = false;
+      void refreshStorageMonitor();
     }
   });
 
@@ -1609,6 +1637,7 @@ async function handleDeleteConfirm() {
     }
   } finally {
     deleteWorking = false;
+    void refreshStorageMonitor();
   }
 }
 
@@ -1847,6 +1876,95 @@ async function loadStorageUsage() {
 }
 
 /* =========================================================
+   FLOATING STORAGE MONITOR (500 MB internal safety limit)
+   Same authoritative server-side usage source as the upload
+   guard (delivery-maintenance `usage`). Never estimates in the
+   browser: if usage can't be read it says so.
+   Refreshes ~every 60 s (only while the tab is visible), and
+   after every upload / duplicate / delete attempt.
+========================================================= */
+
+let storageMonitorTimer = null;
+let storageMonitorSeq = 0;
+let storageMonitorLastAt = 0;
+
+function renderStorageMonitor(usage) {
+  if (!els.storageMonitor) return;
+
+  if (!usage) {
+    els.storageMonitor.dataset.level = "unavailable";
+    if (els.smTitle) els.smTitle.textContent = "Storage usage unavailable";
+    if (els.smFill) els.smFill.style.width = "0%";
+    if (els.smLine) els.smLine.textContent = "Couldn't read usage — will retry";
+    if (els.smMeta) els.smMeta.textContent = "Uploads stay blocked until usage can be verified";
+    return;
+  }
+
+  const limit = storageLimitBytes();
+  const level = monitorLevel(usage.usedBytes, limit);
+  const rawPercent = (usage.usedBytes / limit) * 100;
+  // Never round a not-yet-blocked state up to 100%.
+  const percent = level === "blocked" ? Math.round(rawPercent) : Math.floor(rawPercent);
+  const files = `${usage.objectCount.toLocaleString()} file${usage.objectCount === 1 ? "" : "s"}`;
+  const levelWord = level === "warning" ? "Warning · " : level === "critical" ? "Critical · " : "";
+
+  els.storageMonitor.dataset.level = level;
+  if (els.smTitle) els.smTitle.textContent = `Storage ${formatMb(usage.usedBytes)} / ${formatMb(limit)}`;
+  if (els.smFill) els.smFill.style.width = `${Math.min(100, rawPercent).toFixed(1)}%`;
+  if (els.smLine) {
+    els.smLine.textContent = level === "blocked"
+      ? "UPLOADS BLOCKED"
+      : `${formatMb(limit - usage.usedBytes)} remaining`;
+  }
+  if (els.smMeta) els.smMeta.textContent = `${levelWord}${percent}% of limit · ${files}`;
+}
+
+async function refreshStorageMonitor() {
+  if (!els.storageMonitor || els.storageMonitor.hidden) return;
+
+  // A newer refresh (or a sign-out) supersedes any request still in flight,
+  // so a slow stale response can never overwrite fresher data.
+  const seq = ++storageMonitorSeq;
+  let usage = null;
+  try {
+    usage = readStorageUsage(await fetchStorageUsage());
+  } catch (error) {
+    console.warn("[Boztik Deliver] Storage monitor refresh failed:", error);
+  }
+  if (seq !== storageMonitorSeq) return;
+  storageMonitorLastAt = Date.now();
+  renderStorageMonitor(usage);
+}
+
+function startStorageMonitor() {
+  if (!els.storageMonitor) return;
+  els.storageMonitor.hidden = false;
+  document.body.classList.add("has-storage-monitor");
+  void refreshStorageMonitor();
+
+  clearInterval(storageMonitorTimer);
+  const every = Number(config.storageMonitorRefreshMs) > 0 ? Number(config.storageMonitorRefreshMs) : 60000;
+  storageMonitorTimer = setInterval(() => {
+    if (!document.hidden) void refreshStorageMonitor();
+  }, every);
+}
+
+function stopStorageMonitor() {
+  clearInterval(storageMonitorTimer);
+  storageMonitorTimer = null;
+  storageMonitorSeq += 1; // invalidate any in-flight request
+  if (els.storageMonitor) els.storageMonitor.hidden = true;
+  document.body.classList.remove("has-storage-monitor");
+}
+
+// Coming back to a backgrounded tab: catch up if the last read is stale.
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && storageMonitorTimer && Date.now() - storageMonitorLastAt > 30000) {
+    void refreshStorageMonitor();
+  }
+});
+
+/* =========================================================
    DATA LOADING
 ========================================================= */
 
@@ -1872,6 +1990,7 @@ function setupGlobalRefresh() {
   els.refreshBtn?.addEventListener("click", () => {
     loadDeliveries();
     loadStorageUsage();
+    void refreshStorageMonitor();
   });
 }
 
@@ -1880,6 +1999,7 @@ async function bootstrapDashboard() {
   try {
     await loadDeliveries();
     void loadStorageUsage();
+    startStorageMonitor();
   } finally {
     hideLoading();
   }

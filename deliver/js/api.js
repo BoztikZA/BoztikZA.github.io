@@ -1,5 +1,6 @@
 import { config } from "./config.js";
 import { safeFileName, supabase } from "./shared.js";
+import { StorageLimitError, evaluateStorageGuard, readStorageUsage } from "./storage-guard.js";
 
 const DELIVER_FILE_FUNCTION = `${config.supabaseUrl}/functions/v1/deliver-file`;
 const REDDIT_METADATA_FUNCTION = `${config.supabaseUrl}/functions/v1/reddit-metadata`;
@@ -73,8 +74,35 @@ export async function listDeliveries() {
   }));
 }
 
+/**
+ * 500 MB safety guard. Reads FRESH authoritative usage from the server
+ * (delivery-maintenance `usage`, admin session required) and throws a
+ * StorageLimitError when:
+ *   current_usage >= limit, or current_usage + incomingBytes > limit.
+ * Fail-closed: if usage cannot be verified the write is refused.
+ * Call this immediately before any Storage write (upload / copy).
+ */
+export async function assertStorageCapacity(incomingBytes) {
+  let usage = null;
+  let cause = null;
+  try {
+    usage = readStorageUsage(await fetchStorageUsage());
+  } catch (error) {
+    cause = error;
+    console.error("[Boztik Deliver] Storage usage check failed:", error);
+  }
+  if (!usage) throw new StorageLimitError("unverified", { cause });
+  const verdict = evaluateStorageGuard({ usedBytes: usage.usedBytes, incomingBytes });
+  if (!verdict.allowed) throw new StorageLimitError(verdict.reason, verdict);
+  return { ...usage, ...verdict };
+}
+
+const totalBytes = items => (items || []).reduce((total, item) => total + Math.max(0, Number(item?.size ?? item?.file_size) || 0), 0);
+
 export async function createDelivery(metadata, files, onProgress) {
   if (!metadata?.id || !files?.length) throw new Error("A delivery ID and at least one file are required.");
+  // Fresh usage check IMMEDIATELY before the first Storage upload begins.
+  await assertStorageCapacity(totalBytes(files));
   const uploaded = [];
   let deliveryInserted = false;
   try {
@@ -160,6 +188,9 @@ export async function deleteDelivery(delivery) {
 export async function duplicateDelivery(delivery) {
   const newId = `${delivery.id}-COPY-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
   const sourceFiles = delivery.delivery_files?.length ? delivery.delivery_files : [delivery];
+  // A duplicate physically copies every file inside Storage, so it consumes
+  // space exactly like an upload and must respect the same safety limit.
+  await assertStorageCapacity(totalBytes(sourceFiles));
   const copied = [];
   try {
     for (const source of sourceFiles) {

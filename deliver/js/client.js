@@ -166,6 +166,10 @@ const els = {
   supportDetails:
     $("deliver-support-details"),
 
+  /* Tip jar shown on the expired page (kept outside #deliver-active). */
+  expiredSupport:
+    $("deliver-expired-support"),
+
   footerSupport:
     $("deliver-footer-support"),
 
@@ -189,6 +193,7 @@ function applyPhotoshopBattlesPresentation() {
 
   hide(els.supportTop);
   hide(els.supportDetails);
+  hide(els.expiredSupport);
   hide(els.support);
   hide(els.supportModal);
   hide(els.privateRequests);
@@ -604,6 +609,33 @@ function getFileExtension(
    PAGE STATE MANAGEMENT
 ========================================================= */
 
+/* When a delivery expires the image must become unreachable, not merely
+   hidden: close the full-resolution viewer (it lives on <body>, outside the
+   active section), drop cached signed URLs and remove every rendered image,
+   file card and metadata node from the DOM. The expired state is terminal
+   (only a page reload can show a delivery again). */
+function scrubExpiredContent() {
+
+  try {
+    closeFullResolutionViewer();
+  } catch {
+    /* viewer may never have been created */
+  }
+
+  if (fullResolutionImage) {
+    fullResolutionImage.removeAttribute("src");
+  }
+
+  activeViewerFile = null;
+  previewUrlCache.clear();
+
+  if (els.active) {
+    els.active.replaceChildren();
+  }
+
+}
+
+
 function state(
   name
 ) {
@@ -710,6 +742,17 @@ function state(
 
   if (els.supportDetails) {
     els.supportDetails.hidden = name !== "active" || isPhotoshopBattlesDelivery;
+  }
+
+  /* Expired page keeps the existing Ko-fi / PayPal tip jar (the link may have
+     been shared publicly). PhotoshopBattles keeps its non-commercial
+     presentation whenever the page can tell it is one. */
+  if (els.expiredSupport) {
+    els.expiredSupport.hidden = name !== "expired" || isPhotoshopBattlesDelivery;
+  }
+
+  if (name === "expired") {
+    scrubExpiredContent();
   }
 
   if (els.footerSupport) {

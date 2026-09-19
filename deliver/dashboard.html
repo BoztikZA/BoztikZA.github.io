@@ -20,7 +20,7 @@
   >
 
   <link rel="stylesheet" href="../styles-premium.css">
-  <link rel="stylesheet" href="css/deliver.css?v=7">
+  <link rel="stylesheet" href="css/deliver.css?v=8">
 
   <style>
     /* =====================================================
@@ -3050,6 +3050,34 @@
 
 
   <!-- =====================================================
+       FLOATING STORAGE MONITOR (Command Centre only)
+       500 MB internal safety limit. Hidden until signed in;
+       populated from the authoritative server-side usage
+       endpoint by js/dashboard.js. Never present on public
+       delivery pages (this file is admin-only).
+  ====================================================== -->
+
+  <aside
+    id="dash-storage-monitor"
+    class="dash-storage-monitor"
+    data-level="loading"
+    role="region"
+    aria-label="Storage safety monitor"
+    hidden
+  >
+    <div class="dash-sm-head">
+      <span class="dash-sm-dot" aria-hidden="true"></span>
+      <strong class="dash-sm-title" id="dash-sm-title">Storage…</strong>
+    </div>
+    <div class="dash-sm-bar" aria-hidden="true">
+      <span class="dash-sm-fill" id="dash-sm-fill"></span>
+    </div>
+    <div class="dash-sm-line" id="dash-sm-line">Checking usage…</div>
+    <div class="dash-sm-meta" id="dash-sm-meta"></div>
+  </aside>
+
+
+  <!-- =====================================================
        SUPABASE
   ====================================================== -->
 
@@ -3064,7 +3092,7 @@
 
   <script
     type="module"
-    src="js/dashboard.js?v=photoshop-battles-1"
+    src="js/dashboard.js?v=storage-guard-1"
   ></script>
 
 </body>

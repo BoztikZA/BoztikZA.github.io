@@ -7766,3 +7766,107 @@ body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-button.
   .dash-usage-bucket { grid-template-columns: 1fr auto; }
   .dash-usage-bucket-count { grid-column: 1 / -1; }
 }
+
+/* =========================================================
+   FLOATING STORAGE MONITOR (Command Centre only)
+   500 MB internal safety limit. Compact, fixed, no animation
+   beyond a short bar-width transition. Level is carried by
+   BOTH colour and text (UPLOADS BLOCKED / Warning / Critical).
+========================================================= */
+.dash-storage-monitor {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 1100;
+  width: 220px;
+  padding: 10px 12px 11px;
+  border: 1px solid var(--deliver-border-strong);
+  border-radius: 12px;
+  background: var(--deliver-surface-2);
+  background: color-mix(in srgb, var(--deliver-surface-2) 94%, transparent);
+  color: var(--deliver-text);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.38);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  font-size: 0.74rem;
+  line-height: 1.35;
+}
+.dash-storage-monitor[hidden] { display: none; }
+.dash-sm-head { display: flex; align-items: center; gap: 8px; }
+.dash-sm-dot {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--deliver-accent);
+}
+.dash-sm-title { font-size: 0.78rem; font-weight: 800; letter-spacing: 0.01em; white-space: nowrap; }
+.dash-sm-bar {
+  height: 5px;
+  margin: 8px 0 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.dash-sm-fill {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: var(--deliver-accent);
+  transition: width 240ms ease;
+}
+.dash-sm-line { color: var(--deliver-text-soft); font-weight: 700; }
+.dash-sm-meta { margin-top: 2px; color: var(--deliver-text-muted); font-size: 0.7rem; }
+
+.dash-storage-monitor[data-level="loading"] .dash-sm-dot,
+.dash-storage-monitor[data-level="unavailable"] .dash-sm-dot { background: var(--deliver-text-dim); }
+.dash-storage-monitor[data-level="unavailable"] { border-color: var(--deliver-border-strong); }
+
+.dash-storage-monitor[data-level="warning"] { border-color: rgba(251, 191, 36, 0.45); }
+.dash-storage-monitor[data-level="warning"] .dash-sm-dot,
+.dash-storage-monitor[data-level="warning"] .dash-sm-fill { background: var(--deliver-warning); }
+
+.dash-storage-monitor[data-level="critical"] { border-color: rgba(251, 146, 60, 0.6); }
+.dash-storage-monitor[data-level="critical"] .dash-sm-dot,
+.dash-storage-monitor[data-level="critical"] .dash-sm-fill { background: #fb923c; }
+.dash-storage-monitor[data-level="critical"] .dash-sm-line { color: #fdba74; }
+
+.dash-storage-monitor[data-level="blocked"] {
+  border-color: rgba(239, 68, 68, 0.75);
+  background: #2a1a1f;
+  background: color-mix(in srgb, #2a1114 92%, var(--deliver-surface-2));
+}
+.dash-storage-monitor[data-level="blocked"] .dash-sm-dot,
+.dash-storage-monitor[data-level="blocked"] .dash-sm-fill { background: var(--deliver-danger); }
+.dash-storage-monitor[data-level="blocked"] .dash-sm-line {
+  color: #fca5a5;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+/* Phones only. Each .dash-stat-card::after decorative circle is offset -40px but
+   its card is not a positioned container, so the circle overhangs the page by
+   ~28px at 390px. That phantom overflow makes Chrome on phones widen the LAYOUT
+   viewport (innerWidth 418 on a 390px screen), which pushed fixed elements such
+   as this monitor partly off-screen. Clipping the panel removes the overhang
+   without changing how anything looks inside the phone's width. */
+@media (max-width: 620px) {
+  .deliver-dashboard-body .dash-tab-panel { overflow-x: clip; }
+}
+
+/* Keep the last rows of the dashboard reachable above the fixed monitor. */
+body.has-storage-monitor #dash-main-view { margin-bottom: 96px; }
+
+@media (max-width: 620px) {
+  .dash-storage-monitor {
+    right: auto;
+    left: 10px;
+    bottom: 10px;
+    width: auto;
+    max-width: calc(100vw - 20px);
+    min-width: 176px;
+    padding: 8px 10px 9px;
+  }
+  .dash-sm-bar { margin: 6px 0 5px; }
+}
