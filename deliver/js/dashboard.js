@@ -25,7 +25,7 @@ import {
   isValidFile
 } from "./shared.js";
 import { getImageDimensions } from "./fileinfo.js";
-import { StorageLimitError, readStorageUsage, monitorLevel, formatMb, storageLimitBytes } from "./storage-guard.js";
+import { StorageLimitError, readStorageUsage, monitorLevel, storageLimitBytes, storageLimitLabel, usagePercent } from "./storage-guard.js";
 
 const $ = id => document.getElementById(id);
 
@@ -1876,7 +1876,7 @@ async function loadStorageUsage() {
 }
 
 /* =========================================================
-   FLOATING STORAGE MONITOR (500 MB internal safety limit)
+   FLOATING STORAGE MONITOR (same limit + numbers as the Storage & usage panel)
    Same authoritative server-side usage source as the upload
    guard (delivery-maintenance `usage`). Never estimates in the
    browser: if usage can't be read it says so.
@@ -1903,20 +1903,21 @@ function renderStorageMonitor(usage) {
   const limit = storageLimitBytes();
   const level = monitorLevel(usage.usedBytes, limit);
   const rawPercent = (usage.usedBytes / limit) * 100;
-  // Never round a not-yet-blocked state up to 100%.
-  const percent = level === "blocked" ? Math.round(rawPercent) : Math.floor(rawPercent);
-  const files = `${usage.objectCount.toLocaleString()} file${usage.objectCount === 1 ? "" : "s"}`;
+  // Same numbers, units and rounding as the "Storage & usage" panel.
+  const percent = usagePercent(usage.usedBytes, limit);
+  const planLabel = storageLimitLabel();
+  const objects = `${usage.objectCount.toLocaleString()} object${usage.objectCount === 1 ? "" : "s"}`;
   const levelWord = level === "warning" ? "Warning · " : level === "critical" ? "Critical · " : "";
 
   els.storageMonitor.dataset.level = level;
-  if (els.smTitle) els.smTitle.textContent = `Storage ${formatMb(usage.usedBytes)} / ${formatMb(limit)}`;
+  if (els.smTitle) els.smTitle.textContent = `Storage ${formatBytes(usage.usedBytes)} / ${formatBytes(limit)}`;
   if (els.smFill) els.smFill.style.width = `${Math.min(100, rawPercent).toFixed(1)}%`;
   if (els.smLine) {
     els.smLine.textContent = level === "blocked"
       ? "UPLOADS BLOCKED"
-      : `${formatMb(limit - usage.usedBytes)} remaining`;
+      : `${formatBytes(limit - usage.usedBytes)} remaining`;
   }
-  if (els.smMeta) els.smMeta.textContent = `${levelWord}${percent}% of limit · ${files}`;
+  if (els.smMeta) els.smMeta.textContent = `${levelWord}${percent}% of ${formatBytes(limit)}${planLabel ? ` ${planLabel}` : ""} · ${objects}`;
 }
 
 async function refreshStorageMonitor() {

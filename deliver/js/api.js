@@ -75,10 +75,12 @@ export async function listDeliveries() {
 }
 
 /**
- * 500 MB safety guard. Reads FRESH authoritative usage from the server
+ * Storage-limit guard. Reads FRESH authoritative usage from the server
  * (delivery-maintenance `usage`, admin session required) and throws a
  * StorageLimitError when:
- *   current_usage >= limit, or current_usage + incomingBytes > limit.
+ *   current_usage >= limit, or current_usage + incomingBytes > limit
+ * where limit = config.storageSafetyLimitBytes if set, else the plan allowance
+ * (config.storagePlanBytes) the "Storage & usage" panel uses.
  * Fail-closed: if usage cannot be verified the write is refused.
  * Call this immediately before any Storage write (upload / copy).
  */

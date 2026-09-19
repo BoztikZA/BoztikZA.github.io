@@ -32,11 +32,15 @@ export const config = Object.freeze({
   // Optional human-readable plan name, shown next to the allowance (e.g. "Pro plan").
   // Only used when storagePlanBytes is set.
   storagePlanName: "Free plan",
-  // Hard INTERNAL safety limit for Boztik Deliver uploads (see storage-guard.js).
-  // The Free plan has ~1 GB, but uploads are refused at 500 MB so there is always
-  // a buffer. Enforced by api.js (fresh authoritative usage check immediately
+  // Upload limit enforced by api.js (fresh authoritative usage check immediately
   // before every Storage write) and shown by the Command Centre floating monitor.
-  storageSafetyLimitBytes: 500 * 1024 * 1024,
+  // null  = use the configured plan allowance above (storagePlanBytes), so the
+  //         floating monitor, the upload guard and the "Storage & usage" panel all
+  //         measure against the SAME number.
+  // <bytes> = optional stricter cap that keeps a buffer below the plan,
+  //         e.g. 900 * 1024 * 1024. The monitor and guard then use it; the
+  //         "Storage & usage" panel keeps showing the plan allowance.
+  storageSafetyLimitBytes: null,
   // How often the Command Centre floating storage monitor re-reads usage.
   storageMonitorRefreshMs: 60 * 1000,
   storageWarningLevels: Object.freeze([

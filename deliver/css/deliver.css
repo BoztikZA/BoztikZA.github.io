@@ -7769,7 +7769,7 @@ body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-button.
 
 /* =========================================================
    FLOATING STORAGE MONITOR (Command Centre only)
-   500 MB internal safety limit. Compact, fixed, no animation
+   Storage limit monitor. Compact, fixed, no animation
    beyond a short bar-width transition. Level is carried by
    BOTH colour and text (UPLOADS BLOCKED / Warning / Critical).
 ========================================================= */
@@ -7778,7 +7778,7 @@ body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-button.
   right: 16px;
   bottom: 16px;
   z-index: 1100;
-  width: 220px;
+  width: 250px;
   padding: 10px 12px 11px;
   border: 1px solid var(--deliver-border-strong);
   border-radius: 12px;

@@ -1,4 +1,4 @@
-// Boztik Deliver — 500 MB storage safety limit (pure logic).
+// Boztik Deliver — storage limit guard (pure logic).
 //
 // This module deliberately has NO Supabase / DOM dependencies so the rules can
 // be unit-tested in isolation and shared by api.js (upload guard) and
@@ -10,24 +10,37 @@
 // RPC. No service-role credentials exist in frontend code.
 
 import { config } from "./config.js";
+// The SAME formatter the "Storage & usage" panel uses, so every number matches.
+import { formatBytes } from "./shared.js";
 
 export const MB = 1024 * 1024;
-const DEFAULT_LIMIT_BYTES = 500 * MB;
+const FREE_PLAN_BYTES = 1024 * MB;
 
-/** The internal safety limit in bytes (config.storageSafetyLimitBytes, default 500 MB). */
+const positive = value => (Number.isFinite(Number(value)) && Number(value) > 0 ? Number(value) : null);
+
+/**
+ * The upload limit in bytes. Single source of truth shared with the dashboard's
+ * "Storage & usage" panel:
+ *   1. config.storageSafetyLimitBytes, if an explicit (stricter) cap is set
+ *   2. otherwise config.storagePlanBytes — the plan allowance the panel measures against
+ *   3. otherwise the 1 GB Free plan
+ */
 export function storageLimitBytes() {
-  const value = Number(config.storageSafetyLimitBytes);
-  return Number.isFinite(value) && value > 0 ? value : DEFAULT_LIMIT_BYTES;
+  return positive(config.storageSafetyLimitBytes) ?? positive(config.storagePlanBytes) ?? FREE_PLAN_BYTES;
 }
 
-/** "320 MB", "12.4 MB", "<0.1 MB" — MB-based (1 MB = 1024 * 1024 B, matching formatBytes). */
-export function formatMb(bytes) {
-  const mb = Math.max(0, Number(bytes) || 0) / MB;
-  if (mb === 0) return "0 MB";
-  if (mb < 0.1) return "<0.1 MB";
-  if (mb >= 100) return `${Math.round(mb)} MB`;
-  return `${mb.toFixed(1)} MB`;
+/** Plan label ("Free plan") only when the limit IS the plan allowance, else "". */
+export function storageLimitLabel() {
+  if (positive(config.storageSafetyLimitBytes) && storageLimitBytes() !== positive(config.storagePlanBytes)) return "";
+  return String(config.storagePlanName || "").trim();
 }
+
+/** Same rounding as the dashboard panel: whole percent, capped at 100. */
+export function usagePercent(usedBytes, limitBytes = storageLimitBytes()) {
+  return Math.min(100, Math.round((usedBytes / limitBytes) * 100));
+}
+
+export { formatBytes };
 
 /**
  * Normalises the delivery-maintenance `usage` response. Prefers the explicit
@@ -90,19 +103,19 @@ export function monitorLevel(usedBytes, limitBytes = storageLimitBytes()) {
  */
 export class StorageLimitError extends Error {
   constructor(kind, details = {}) {
-    const limit = formatMb(details.limitBytes ?? storageLimitBytes());
+    const limit = formatBytes(details.limitBytes ?? storageLimitBytes());
     let title;
     let body;
     if (kind === "full") {
       title = "Storage limit reached";
-      body = `Boztik Deliver has reached its ${limit} safety limit. Delete some old or expired deliveries/images before uploading new files.`;
+      body = `Boztik Deliver has reached its ${limit} storage limit. Delete some old or expired deliveries/images before uploading new files.`;
     } else if (kind === "insufficient") {
       title = "Storage limit reached";
-      body = `This upload (${formatMb(details.incomingBytes)}) would exceed the ${limit} safety limit. Only ${formatMb(details.remainingBytes)} of space remains. Delete some old or expired deliveries first, or choose a smaller file.`;
+      body = `This upload (${formatBytes(details.incomingBytes)}) would exceed the ${limit} storage limit. Only ${formatBytes(details.remainingBytes)} of space remains. Delete some old or expired deliveries first, or choose a smaller file.`;
     } else {
       kind = "unverified";
       title = "Storage check unavailable";
-      body = `Boztik Deliver couldn't confirm current storage usage, so the upload was blocked to protect the ${limit} safety limit. Check your connection and try again.`;
+      body = `Boztik Deliver couldn't confirm current storage usage, so the upload was blocked to protect the ${limit} storage limit. Check your connection and try again.`;
     }
     super(`${title}. ${body}`);
     this.name = "StorageLimitError";
