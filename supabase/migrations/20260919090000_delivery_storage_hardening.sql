@@ -2,8 +2,14 @@
 -- This migration intentionally archives (then removes) only delivery_files rows
 -- whose parent delivery is already absent before enforcing the foreign key.
 
+-- Older production installs created delivery_files before this optional field
+-- was introduced. It is intentionally nullable for legacy records.
+alter table public.delivery_files add column if not exists content_type text;
+
 create table if not exists public.delivery_files_orphan_archive (
-  id uuid primary key,
+  -- Production's first delivery_files deployment used bigint ids, whereas
+  -- newer schema.sql installs use UUIDs. Preserve either source key exactly.
+  source_file_id text primary key,
   delivery_id text not null,
   file_path text not null,
   file_name text not null,
@@ -15,16 +21,24 @@ create table if not exists public.delivery_files_orphan_archive (
 );
 
 insert into public.delivery_files_orphan_archive
-  (id, delivery_id, file_path, file_name, file_size, content_type, created_at)
-select f.id, f.delivery_id, f.file_path, f.file_name, f.file_size, f.content_type, f.created_at
+  (source_file_id, delivery_id, file_path, file_name, file_size, content_type, created_at)
+select f.id::text, f.delivery_id, f.file_path, f.file_name, f.file_size, f.content_type, f.created_at
 from public.delivery_files f
 where not exists (select 1 from public.deliveries d where d.id = f.delivery_id)
-on conflict (id) do nothing;
+on conflict (source_file_id) do nothing;
 
 delete from public.delivery_files f
 where not exists (select 1 from public.deliveries d where d.id = f.delivery_id);
 
 create index if not exists delivery_files_delivery_id_idx on public.delivery_files(delivery_id);
+
+create or replace view public.delivery_files_public
+with (security_invoker = true) as
+select f.delivery_id, f.file_path, f.file_name, f.file_size, f.content_type, f.created_at
+from public.delivery_files f
+join public.deliveries d on d.id = f.delivery_id
+where d.expires_at > now()
+  and d.storage_deleted_at is null;
 
 do $$
 begin

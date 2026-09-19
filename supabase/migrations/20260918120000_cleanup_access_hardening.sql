@@ -43,13 +43,22 @@ where expires_at > now()
   and storage_deleted_at is null;
 
 -- (2) delivery_files_public must not expose files of a cleaned/deleted delivery.
+-- The legacy view predates content_type, so PostgreSQL cannot change its
+-- positional output columns with CREATE OR REPLACE. Dropping is transactional
+-- and will fail safely if an unexpected dependent object exists.
+drop view if exists public.delivery_files_public;
 create or replace view public.delivery_files_public
 with (security_invoker = true) as
-select f.delivery_id, f.file_path, f.file_name, f.file_size, f.content_type, f.created_at
+-- `content_type` was not present in the first production multi-file table.
+-- Keep this access-hardening migration compatible with that legacy schema;
+-- the following hardening migration adds the nullable field before writes use it.
+select f.delivery_id, f.file_path, f.file_name, f.file_size, null::text as content_type, f.created_at
 from public.delivery_files f
 join public.deliveries d on d.id = f.delivery_id
 where d.expires_at > now()
   and d.storage_deleted_at is null;
+
+grant select on public.delivery_files_public to anon;
 
 -- (3) Direct anonymous SELECT on the base table must also respect cleanup state
 --     (the deliveries_public view resolves through this table under RLS).
