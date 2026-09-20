@@ -1,0 +1,73 @@
+name = "boztik-deliver-api"
+main = "src/index.ts"
+compatibility_date = "2026-09-01"
+
+# Public hostname. A Custom Domain covers every path on the hostname, so the
+# pattern is the bare hostname. One manual dashboard/DNS action may be needed
+# the first time (see README.md, "Manual Cloudflare steps"). This does not
+# touch the www/apex records used by the static site.
+routes = [
+  { pattern = "deliver-api.boztik.com", custom_domain = true }
+]
+
+# ---------------------------------------------------------------------------
+# D1 — existing database `boztik-deliver`.
+# Replace database_id with the id shown by:  npx wrangler d1 list
+# ---------------------------------------------------------------------------
+[[d1_databases]]
+binding = "DB"
+database_name = "boztik-deliver"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+migrations_dir = "migrations"
+
+# ---------------------------------------------------------------------------
+# R2 — existing bucket `boztik-deliveries`. The bucket stays PRIVATE (no public
+# access, no custom domain, no r2.dev URL). The Worker is the only reader and
+# writer; the browser never receives an R2 credential or R2 URL.
+# ---------------------------------------------------------------------------
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "boztik-deliveries"
+
+# ---------------------------------------------------------------------------
+# Cron (Worker scheduled handler): expiry cleanup, abandoned-upload sweep,
+# orphan sweep, storage reconciliation, housekeeping — every 10 minutes.
+# ---------------------------------------------------------------------------
+[triggers]
+crons = ["*/10 * * * *"]
+
+[observability]
+enabled = true
+
+# ---------------------------------------------------------------------------
+# Non-secret configuration
+# ---------------------------------------------------------------------------
+[vars]
+PUBLIC_ORIGIN = "https://www.boztik.com"
+# Browser origins allowed to call admin/auth routes (comma separated).
+ALLOWED_ORIGINS = "https://www.boztik.com,https://boztik.com"
+# Hard application storage cap. The code ALSO enforces a compiled-in 3 GiB
+# ceiling, so this value can only ever LOWER the cap, never raise it.
+STORAGE_LIMIT_BYTES = "3221225472"          # 3 GiB
+MAX_UPLOAD_BYTES = "94371840"               # 90 MiB / file (Workers request bodies are capped at 100 MB)
+MAX_FILES_PER_DELIVERY = "20"
+SESSION_HOURS = "12"
+DEFAULT_EXPIRY_HOURS = "24"
+# Uploads that reserved space but never delivered bytes are released after 2 h;
+# uploaded-but-never-finalised files are removed after this many hours.
+ABANDONED_UPLOAD_GRACE_HOURS = "6"
+RATE_LIMIT_PUBLIC_PER_MINUTE = "120"
+LOGIN_MAX_FAILURES = "8"                    # per IP per 15 minutes
+PAGE_ANALYTICS_ALLOWED = "1"
+
+# Deliberately NOT used: Cloudflare Access, KV, Durable Objects, Queues,
+# Workers AI, or any Supabase dependency.
+
+# ---------------------------------------------------------------------------
+# SECRETS — never commit. Set each with:  npx wrangler secret put <NAME>
+#   ADMIN_USERNAME       login username, e.g. admin@boztik.com
+#   ADMIN_PASSWORD_HASH  from:  node scripts/hash-password.mjs
+#   AUTH_TOKEN_SALT      from:  node scripts/hash-password.mjs --salt
+#                        (also keys the HMAC of signed file URLs)
+# Local dev: put the same three names in .dev.vars (git-ignored).
+# ---------------------------------------------------------------------------
