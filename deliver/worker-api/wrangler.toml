@@ -17,7 +17,7 @@ routes = [
 [[d1_databases]]
 binding = "DB"
 database_name = "boztik-deliver"
-database_id = "REPLACE_WITH_D1_DATABASE_ID"
+database_id = "280c1ef6-fdd7-4dda-90d9-55686e25ea2f"
 migrations_dir = "migrations"
 
 # ---------------------------------------------------------------------------
