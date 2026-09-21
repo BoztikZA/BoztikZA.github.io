@@ -47,7 +47,7 @@ In Progress
 - Reusable CSS.
 - No duplicated components.
 - GitHub Pages compatible.
-- Supabase compatible.
+- Cloudflare Worker / D1 / R2 backend.
 - Performance focused.
 - Accessibility improvements where possible.
 
@@ -70,13 +70,13 @@ In Progress
 ├── portfolio.html
 ├── contact.html
 │
-├── deliver/
-│   ├── index.html
-│   ├── upload.html
-│   ├── dashboard.html
-│   ├── css/
-│   ├── js/
-│   └── assets/
+├── deliver-v3/
+│   ├── index.html        (client delivery page)
+│   ├── dashboard.html    (admin Command Centre)
+│   ├── css/deliver.css
+│   └── js/               (auth, api, dashboard, client, insights, …)
+│
+├── deliver/worker-api/   (Cloudflare Worker → D1 + R2)
 │
 ├── assets/
 ├── css/
@@ -139,7 +139,7 @@ Version 1
 Features
 
 - Secure Upload Dashboard
-- Supabase Authentication
+- Worker-Owned Authentication
 - ZIP Uploads
 - Client Download Page
 - Download Tracking
@@ -206,7 +206,7 @@ ZIP generated
 
 ↓
 
-Upload to Supabase
+Upload via Cloudflare Worker
 
 ↓
 

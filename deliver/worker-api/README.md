@@ -2,7 +2,8 @@
 
 Replaces the Supabase backend for Boztik Deliver. The Worker is the **only** gateway to R2 and D1:
 the bucket stays private, the browser never receives an R2 credential/URL, and auth is Worker-owned
-(no Cloudflare Access). Frontend: `../../deliver-v3/`. The old Supabase system in `../` is untouched (rollback).
+(no Cloudflare Access). Frontend: `../../deliver-v3/`. The former Supabase backend and the older
+`deliver-v2`/`deliver/worker` transition versions were removed from the repository during the v3 cleanup.
 
 ## Guarantees (all covered by `npm run test:e2e`)
 - **3 GB hard cap**, compiled in (`HARD_CAP_BYTES`); config can only lower it. Admission is one atomic SQL
@@ -44,6 +45,8 @@ node scripts/client-contract.mjs                                                
 ```
 Note: under `wrangler dev` signed URLs carry the route hostname (`deliver-api.boztik.com`); the tests rewrite it.
 
-## Cutover (when you are happy)
-Rename `deliver/` -> `deliver-supabase-legacy/` and `deliver-v3/` -> `deliver/` (links are built from the page's own
-directory, so nothing else changes). Keep the legacy folder until you are confident.
+## Cutover
+Completed: the active frontend lives in `deliver-v3/` and talks only to this Worker. The legacy Supabase
+backend (`deliver/`, `supabase/`) and the intermediate `deliver-v2` / `deliver/worker` builds were removed
+from the repository. Public delivery links are built from the page's own directory, so `deliver-v3/` can be
+renamed to `deliver/` later without changing the Worker.
