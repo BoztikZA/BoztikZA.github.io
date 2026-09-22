@@ -18,6 +18,7 @@ import {
 import {
   getImageDimensions,
   parseExif,
+  parsePng,
   estimatePdfPageCount,
   buildImageInfoHTML,
   buildGenericInfoHTML,
@@ -2856,12 +2857,15 @@ async function renderFileInfo(
       let exif =
         null;
 
+      let png =
+        null;
+
 
       /*
-        EXIF is optional.
+        EXIF/PNG metadata is optional and format-specific.
 
         If it fails, the image information still
-        displays normally.
+        displays normally with just dimensions and size.
       */
 
       if (
@@ -2904,6 +2908,46 @@ async function renderFileInfo(
 
         }
 
+      } else if (
+        mimeType ===
+        "image/png"
+      ) {
+
+        try {
+
+          const response =
+            await fetch(
+              url
+            );
+
+
+          if (
+            response.ok
+          ) {
+
+            const buffer =
+              await response.arrayBuffer();
+
+
+            png =
+              parsePng(
+                buffer
+              );
+
+          }
+
+        } catch (
+          pngError
+        ) {
+
+          console.warn(
+            "[Boztik Deliver] PNG metadata unavailable:",
+            file.file_name,
+            pngError
+          );
+
+        }
+
       }
 
 
@@ -2925,7 +2969,9 @@ async function renderFileInfo(
           height:
             dimensions.height,
 
-          exif
+          exif,
+
+          png
 
         });
 

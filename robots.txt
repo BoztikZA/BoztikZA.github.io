@@ -1,5 +1,21 @@
+# Boztik — https://www.boztik.com
+# Public pages are crawlable. Private areas are kept out of search with a
+# noindex meta tag on the page itself (dashboard.html and the delivery pages),
+# which crawlers can only read if they are allowed to fetch the page, so those
+# paths are deliberately NOT blocked here.
+
 User-agent: *
 Allow: /
 Disallow: /deliver/
+
+# Google's ad crawlers ignore the "*" group above, so they are named explicitly.
+User-agent: Mediapartners-Google
+Disallow:
+
+User-agent: Google-Display-Ads-Bot
+Disallow:
+
+User-agent: AdsBot-Google
+Disallow:
 
 Sitemap: https://www.boztik.com/sitemap.xml

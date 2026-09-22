@@ -1069,12 +1069,19 @@ a:focus-visible {
 }
 
 .fileinfo-print h5 {
-  margin: 0 0 12px;
+  margin: 0 0 4px;
   color: var(--deliver-text-muted);
   font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.fileinfo-print-note {
+  margin: 0 0 12px;
+  color: var(--deliver-text-dim);
+  font-size: 0.74rem;
+  line-height: 1.4;
 }
 
 

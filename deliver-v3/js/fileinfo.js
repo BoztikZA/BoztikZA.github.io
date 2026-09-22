@@ -27,6 +27,18 @@ function qualitySummary(megapixels) {
   return "Best suited for screen/digital use";
 }
 
+// EXIF colour-space tag 0xa001: only two values are defined by the spec, plus the common
+// "uncalibrated" escape hatch. Anything else is left blank rather than guessed.
+function colorSpaceLabel(value) {
+  if (value === 1) return "sRGB";
+  if (value === 0xffff) return "Uncalibrated";
+  return undefined;
+}
+
+// PNG colour-type byte (IHDR) — combined with bit depth this is the file's actual pixel format,
+// not an estimate.
+const PNG_COLOR_TYPES = { 0: "Grayscale", 2: "RGB", 3: "Indexed (palette)", 4: "Grayscale + alpha", 6: "RGB + alpha" };
+
 export function getImageDimensions(url) {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -105,6 +117,42 @@ export async function estimatePdfPageCount(arrayBuffer) {
   } catch { return null; }
 }
 
+// Minimal PNG metadata reader — IHDR (real bit depth / colour type, not estimated) and pHYs
+// (the file's own declared pixel density, when the encoder wrote one; most web PNGs don't).
+// Reads only chunk headers/small payloads; never decodes pixel data.
+export function parsePng(arrayBuffer) {
+  try {
+    const view = new DataView(arrayBuffer);
+    if (view.byteLength < 8 || view.getUint32(0) !== 0x89504e47 || view.getUint32(4) !== 0x0d0a1a0a) return null;
+    const result = {};
+    let offset = 8;
+    while (offset + 8 <= view.byteLength) {
+      const length = view.getUint32(offset);
+      const type = String.fromCharCode(view.getUint8(offset + 4), view.getUint8(offset + 5), view.getUint8(offset + 6), view.getUint8(offset + 7));
+      const dataStart = offset + 8;
+      if (type === "IHDR" && length >= 13) {
+        result.bitDepth = view.getUint8(dataStart + 8);
+        result.colorType = view.getUint8(dataStart + 9);
+        result.interlaced = view.getUint8(dataStart + 12) === 1;
+      } else if (type === "pHYs" && length >= 9) {
+        const unit = view.getUint8(dataStart + 8);
+        if (unit === 1) { // 1 = metres; unit 0 (unspecified ratio) is not a real DPI, so it's skipped
+          const ppux = view.getUint32(dataStart);
+          const ppuy = view.getUint32(dataStart + 4);
+          result.dpiX = Math.round(ppux * 0.0254);
+          result.dpiY = Math.round(ppuy * 0.0254);
+        }
+      } else if (type === "sRGB") {
+        result.sRGB = true;
+      } else if (type === "IDAT" || type === "IEND") {
+        break; // metadata chunks (if any) always precede image data in a valid PNG
+      }
+      offset = dataStart + length + 4; // skip data + CRC
+    }
+    return Object.keys(result).length ? result : null;
+  } catch { return null; }
+}
+
 function row(label, value) { return value === undefined || value === null || value === "" ? "" : `<div class="fileinfo-item"><span>${label}</span><strong>${value}</strong></div>`; }
 function rowWide(label, value) { return value === undefined || value === null || value === "" ? "" : `<div class="fileinfo-item fileinfo-item-wide"><span>${label}</span><strong>${value}</strong></div>`; }
 function chip(value) { return value === undefined || value === null || value === "" ? "" : `<span class="fileinfo-chip">${value}</span>`; }
@@ -112,7 +160,7 @@ function chip(value) { return value === undefined || value === null || value ===
 // Compact glance row (format / dimensions / size) shown immediately, plus a
 // single collapsible <details> for everything else — full spec sheet and
 // print/output estimates stay one click away instead of dominating the card.
-export function buildImageInfoHTML({ fileName, sizeLabel, format, mimeType, width, height, exif }) {
+export function buildImageInfoHTML({ fileName, sizeLabel, format, mimeType, width, height, exif, png }) {
   const megapixels = (width * height) / 1_000_000;
   const orientation = width === height ? "Square" : width > height ? "Landscape" : "Portrait";
 
@@ -128,7 +176,11 @@ export function buildImageInfoHTML({ fileName, sizeLabel, format, mimeType, widt
     row("Resolution", `${width} × ${height}px`),
     row("Aspect ratio", aspectRatio(width, height)),
     row("Orientation", orientation),
-    row("Color", exif?.colorSpace === 1 ? "RGB" : ""),
+    row("Color space", exif ? colorSpaceLabel(exif.colorSpace) : (png?.sRGB ? "sRGB" : undefined)),
+    row("Bit depth", png?.bitDepth ? `${png.bitDepth}-bit` : undefined),
+    row("Color type", png?.colorType !== undefined ? PNG_COLOR_TYPES[png.colorType] || undefined : undefined),
+    row("Transparency", png?.colorType !== undefined ? (png.colorType === 4 || png.colorType === 6 ? "Has alpha channel" : "No alpha channel") : undefined),
+    row("Declared resolution", png?.dpiX ? `${png.dpiX} × ${png.dpiY} DPI` : undefined),
     row("MIME type", mimeType)
   ];
   if (exif) {
@@ -141,13 +193,16 @@ export function buildImageInfoHTML({ fileName, sizeLabel, format, mimeType, widt
     rows.push(row("Date captured", exif.dateTaken));
   }
 
+  // These are arithmetic on the pixel dimensions (px ÷ DPI), not a property read from the file —
+  // labelled and explained as an estimate so it can't be mistaken for the file's actual DPI.
   const print = width && height ? `
     <div class="fileinfo-print">
-      <h5>Print &amp; output</h5>
+      <h5>Estimated print size</h5>
+      <p class="fileinfo-print-note">Calculated from the pixel dimensions — not a value stored in the file.</p>
       <div class="fileinfo-grid">
-        ${row("300 DPI", `${printSize(width, 300)} × ${printSize(height, 300)} in`)}
-        ${row("240 DPI", `${printSize(width, 240)} × ${printSize(height, 240)} in`)}
-        ${row("150 DPI", `${printSize(width, 150)} × ${printSize(height, 150)} in`)}
+        ${row("At 300 DPI", `${printSize(width, 300)} × ${printSize(height, 300)} in`)}
+        ${row("At 240 DPI", `${printSize(width, 240)} × ${printSize(height, 240)} in`)}
+        ${row("At 150 DPI", `${printSize(width, 150)} × ${printSize(height, 150)} in`)}
         ${rowWide("Best for", qualitySummary(megapixels))}
       </div>
     </div>` : "";

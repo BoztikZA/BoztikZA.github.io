@@ -28,6 +28,7 @@ import {
 } from "./shared.js";
 import { getImageDimensions } from "./fileinfo.js";
 import { loadInsights, openDeliveryAnalytics } from "./insights.js";
+import { initCommandCentre, refreshCommandCentre, refreshAnalyticsExtras, formatRate } from "./command-centre.js";
 import { StorageLimitError, readStorageUsage, monitorLevel, storageLimitBytes, storageLimitLabel, usagePercent } from "./storage-guard.js";
 
 const $ = id => document.getElementById(id);
@@ -134,10 +135,6 @@ const els = {
   battleLifetimeDownloads: $("battle-lifetime-downloads"),
   analyticsMonthLabel: $("dash-analytics-month-label"),
   analyticsTableBody: $("dash-analytics-table-body"),
-  analyticsHeadline: $("dash-analytics-headline"),
-  analyticsSummary: $("dash-analytics-summary"),
-  analyticsViewRate: $("dash-analytics-view-rate"),
-  analyticsTopDelivery: $("dash-analytics-top-delivery"),
 
   loadingOverlay: $("dash-loading-overlay"),
   loadingTitle: $("dash-loading-title"),
@@ -1158,12 +1155,11 @@ function expiringSoonCount(list) {
   }).length;
 }
 
-// View-rate signal. This system records a page-view for every delivery-page
-// open (repeat visits included) and a download per download; there is no
-// separate link-exposure counter. Per the product decision, the displayed
-// "view rate" is the raw delivery-page view count (the most direct available
-// measure of delivery-link traffic), colour-coded by engagement level rather
-// than expressed as a shaky ratio.
+// "Downloads per 100 views" is real arithmetic on two real counters (all-time downloads / all-time
+// views). It replaces the old "view rate" card, which just repeated the lifetime view count.
+// Views include repeat visits, so it is a ratio of events, not a share of people.
+
+// Colour band for the small "N views" chip on each delivery card (the number itself is always shown).
 function viewRateLevel(views) {
   const v = Number(views) || 0;
   if (v <= 0) return "rate-empty";
@@ -1172,13 +1168,6 @@ function viewRateLevel(views) {
   if (v <= 14) return "rate-moderate";
   if (v <= 29) return "rate-good";
   return "rate-strong";
-}
-
-function applyRateColor(el, level) {
-  if (!el) return;
-  ["rate-empty", "rate-poor", "rate-low", "rate-moderate", "rate-good", "rate-strong"]
-    .forEach(c => el.classList.remove(c));
-  el.classList.add(level);
 }
 
 /** Lifetime/monthly totals come from the Worker's aggregates so they stay correct
@@ -1192,15 +1181,29 @@ function applyServerTotals(overview) {
   if (els.statMonthlyDownloads) els.statMonthlyDownloads.textContent = a.month.downloads;
   if (els.statLifetimeViews) els.statLifetimeViews.textContent = a.lifetime.views;
   if (els.statLifetimeDownloads) els.statLifetimeDownloads.textContent = a.lifetime.downloads;
-  if (els.statViewRate) {
-    els.statViewRate.textContent = a.lifetime.views > 0 ? a.lifetime.views : "—";
-    applyRateColor(els.statViewRate, viewRateLevel(a.lifetime.views));
-  }
+  if (els.statViewRate) els.statViewRate.textContent = formatRate(a.lifetime.views, a.lifetime.downloads);
 }
 
 async function refreshInsights() {
-  try { applyServerTotals(await loadInsights(els.insightsBody)); }
+  let overview = null;
+  try { overview = await loadInsights(els.insightsBody); applyServerTotals(overview); }
   catch (error) { console.error("[Boztik Deliver] insights failed:", error); }
+  let session = null;
+  try { session = await getSession(); } catch { /* topbar simply omits the session chip */ }
+  try {
+    await refreshCommandCentre({ deliveries, overview: overview || serverOverview, session });
+    await refreshAnalyticsExtras({ deliveries, overview: overview || serverOverview });
+  } catch (error) { console.error("[Boztik Deliver] command centre panels failed:", error); }
+}
+
+/** Buttons on the "Needs attention" list. Every action reuses an existing, already-tested code path. */
+async function handleAttentionAction(kind, id) {
+  const delivery = id ? deliveries.find(d => d.id === id) : null;
+  if (kind === "extend" && delivery) { switchTab("deliveries"); openEditModal(delivery, true); return; }
+  if (kind === "copy" && delivery) { await copyToClipboard(deliveryLink(delivery.id), "Delivery link"); return; }
+  if (kind === "deliveries") { if (els.statusFilter) els.statusFilter.value = "active"; if (els.sortSelect) els.sortSelect.value = "expires-asc"; switchTab("deliveries"); renderDeliveryList(); return; }
+  if (kind === "cleanup" || kind === "reconcile") { await runUsageAction(kind); return; }
+  if (kind === "refresh") { await loadDeliveries(); }
 }
 
 function renderOverview() {
@@ -1212,10 +1215,7 @@ function renderOverview() {
   if (els.statLifetimeViews) els.statLifetimeViews.textContent = totals.lifetimeViews;
   if (els.statLifetimeDownloads) els.statLifetimeDownloads.textContent = totals.lifetimeDownloads;
   if (els.statExpiringSoon) els.statExpiringSoon.textContent = expiringSoonCount(deliveries);
-  if (els.statViewRate) {
-    els.statViewRate.textContent = totals.lifetimeViews > 0 ? totals.lifetimeViews : "—";
-    applyRateColor(els.statViewRate, viewRateLevel(totals.lifetimeViews));
-  }
+  if (els.statViewRate) els.statViewRate.textContent = formatRate(totals.lifetimeViews, totals.lifetimeDownloads);
 
   renderRecentDeliveries();
   renderActivity();
@@ -1246,16 +1246,19 @@ function renderRecentDeliveries() {
     const row = document.createElement("div");
     row.className = "dash-recent-item";
 
-    const expired = delivery.expires_at && new Date(delivery.expires_at).getTime() <= Date.now();
+    const expiresAt = delivery.expires_at ? new Date(delivery.expires_at).getTime() : 0;
+    const expired = expiresAt && expiresAt <= Date.now();
+    const expiring = !expired && expiresAt && expiresAt - Date.now() <= 72 * 3600000;
+    const state = expired ? ["is-expired", "Expired"] : expiring ? ["is-expiring", "Expiring soon"] : ["is-active", "Active"];
 
+    row.tabIndex = 0;
+    row.setAttribute("role", "button");
     row.innerHTML = `
       <div class="dash-recent-item-main">
         <strong>${escapeHtml(delivery.project_name || "Untitled")}</strong>
-        <span>${escapeHtml(delivery.client_name || "")}</span>
+        <span>${escapeHtml([delivery.client_name, sourceLabelOf(delivery)].filter(Boolean).join(" · "))}</span>
       </div>
-      <span class="dash-status-pill ${expired ? "is-expired" : "is-active"}">
-        ${expired ? "Expired" : "Active"}
-      </span>
+      <span class="dash-status-pill ${state[0]}">${state[1]}</span>
     `;
 
     row.addEventListener("click", () => {
@@ -1266,6 +1269,7 @@ function renderRecentDeliveries() {
       }
     });
 
+    row.addEventListener("keydown", event => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); row.click(); } });
     els.overviewRecent.append(row);
   });
 }
@@ -1701,16 +1705,6 @@ function renderAnalytics() {
   if (els.analyticsLifetimeViews) els.analyticsLifetimeViews.textContent = totals.lifetimeViews;
   if (els.analyticsLifetimeDownloads) els.analyticsLifetimeDownloads.textContent = totals.lifetimeDownloads;
 
-  const allTimeViews = totals.lifetimeViews;
-  const topDelivery = [...deliveries].sort((a, b) => Number(b.lifetime_views || 0) - Number(a.lifetime_views || 0))[0];
-  if (els.analyticsViewRate) {
-    els.analyticsViewRate.textContent = allTimeViews > 0 ? `${allTimeViews} views` : "—";
-    applyRateColor(els.analyticsViewRate, viewRateLevel(allTimeViews));
-  }
-  if (els.analyticsHeadline) els.analyticsHeadline.textContent = totals.lifetimeViews ? `${totals.lifetimeViews} client view${totals.lifetimeViews === 1 ? "" : "s"} recorded across your work.` : "Your delivery performance will build here.";
-  if (els.analyticsSummary) els.analyticsSummary.textContent = totals.lifetimeDownloads ? `${totals.lifetimeDownloads} completed download${totals.lifetimeDownloads === 1 ? "" : "s"} give you a clear read on delivery engagement.` : "Views and downloads are collected privately and shown only in this Command Centre.";
-  if (els.analyticsTopDelivery) els.analyticsTopDelivery.textContent = topDelivery && Number(topDelivery.lifetime_views || 0) ? `Most viewed: ${topDelivery.project_name || "Untitled delivery"} · ${Number(topDelivery.lifetime_views)} views` : "No delivery activity yet";
-
   const battleDeliveries = deliveries.filter(isBattle);
   const battleTotals = computeTotals(battleDeliveries);
 
@@ -1852,8 +1846,11 @@ async function loadStorageUsage() {
 async function handleUsageAction(event) {
   const button = event.target.closest?.("[data-usage-action]");
   if (!button || button.disabled) return;
-  const action = button.dataset.usageAction;
   button.disabled = true;
+  try { await runUsageAction(button.dataset.usageAction); } finally { button.disabled = false; }
+}
+
+async function runUsageAction(action) {
   try {
     if (action === "cleanup") {
       let cleaned = 0, freed = 0, failed = 0;
@@ -2023,6 +2020,7 @@ async function init() {
   setupEditModal();
   setupDeleteModal();
   setupGlobalRefresh();
+  initCommandCentre({ onAction: handleAttentionAction, labelOf: sourceLabelOf, groupOf: uiSourceOf });
 
   let session = null;
 

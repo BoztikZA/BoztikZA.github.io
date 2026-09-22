@@ -7,7 +7,7 @@
   <meta name="robots" content="noindex,nofollow">
   <meta name="theme-color" content="#8eff3d">
 
-  <title>Deliver Dashboard | Boztik</title>
+  <title>Command Centre | Boztik</title>
 
   <link rel="icon" href="../images/logo.png">
 
@@ -21,6 +21,7 @@
 
   <link rel="stylesheet" href="../styles-premium.css">
   <link rel="stylesheet" href="css/deliver.css?v=8">
+  <link rel="stylesheet" href="css/command-centre.css?v=1">
 
   <style>
     /* =====================================================
@@ -70,6 +71,28 @@
   <a class="skip-link" href="#main-content">
     Skip to content
   </a>
+
+  <!-- Icon sprite (Command Centre). Decorative: every icon is paired with visible text. -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+      <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 20h16"/></symbol>
+      <symbol id="i-box" viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8zM3 8l9 5 9-5M12 13v8"/></symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+      <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3l10 18H2L12 3zM12 10v5M12 18h.01"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></symbol>
+      <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+      <symbol id="i-db" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></symbol>
+      <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></symbol>
+      <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 10-2.3 5.7M20 4v7h-7"/></symbol>
+      <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M3 12h4l2-6 4 12 2-6h6"/></symbol>
+      <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
+      <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></symbol>
+      <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+    </defs>
+  </svg>
+
 
   <div class="background-glow">
     <div class="glow1"></div>
@@ -236,32 +259,32 @@
            DASHBOARD HEADER
       ================================================== -->
 
-      <div class="dash-header">
+            <!-- =================================================
+           COMMAND CENTRE TOP BAR
+      ================================================== -->
 
-        <div>
-
-          <span class="deliver-eyebrow">
-            Delivery command centre
-          </span>
-
-          <h1>
-            Client deliveries
-          </h1>
-
-          <p>
-            Manage your client hand-offs and monitor activity.
-          </p>
-
+      <div class="cc-topbar">
+        <div class="cc-topbar-main">
+          <span class="cc-eyebrow"><span class="cc-pulse" aria-hidden="true"></span>Boztik Command Centre</span>
+          <h1>Command Centre</h1>
+          <p>Your private control room for deliveries, storage and site activity.</p>
         </div>
 
-        <button
-          type="button"
-          class="dash-btn dash-compact"
-          id="dash-refresh"
-        >
-          Refresh Data
-        </button>
-
+        <div class="cc-topbar-side">
+          <ul class="cc-status-strip" aria-label="System status">
+            <li id="cc-health" class="cc-chip is-loading"><span class="cc-dot" aria-hidden="true"></span><span>Checking API…</span></li>
+            <li id="cc-session" class="cc-chip"></li>
+          </ul>
+          <div class="cc-topbar-actions">
+            <span id="cc-refreshed" class="cc-muted" role="status"></span>
+            <button type="button" class="dash-btn dash-compact cc-btn-ghost" id="dash-refresh">
+              <svg class="cc-i" aria-hidden="true" focusable="false"><use href="#i-refresh"/></svg> Refresh
+            </button>
+            <button type="button" class="dash-btn dash-compact" id="dash-overview-create">
+              <svg class="cc-i" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg> New delivery
+            </button>
+          </div>
+        </div>
       </div>
 
 
@@ -269,708 +292,150 @@
            DASHBOARD TABS
       ================================================== -->
 
-      <div
-        class="dash-tabs"
-        role="tablist"
-        aria-label="Delivery command centre sections"
-      >
+      <div class="dash-tabs" role="tablist" aria-label="Command Centre sections">
 
-        <button
-          type="button"
-          class="dash-tab is-active"
-          id="tab-overview"
-          role="tab"
-          aria-selected="true"
-          aria-controls="panel-overview"
-          tabindex="0"
-          data-tab="overview"
-        >
-          <span class="dash-tab-icon">◉</span>
-
-          <span>
-            <strong>Overview</strong>
-            <small>Command centre</small>
-          </span>
-
+        <button type="button" class="dash-tab is-active" id="tab-overview" role="tab" aria-selected="true" aria-controls="panel-overview" tabindex="0" data-tab="overview">
+          <span class="dash-tab-icon"><svg class="cc-i" aria-hidden="true" focusable="false"><use href="#i-pulse"/></svg></span>
+          <span><strong>Overview</strong><small>What needs attention</small></span>
         </button>
 
-
-        <button
-          type="button"
-          class="dash-tab"
-          id="tab-create"
-          role="tab"
-          aria-selected="false"
-          aria-controls="panel-create"
-          tabindex="-1"
-          data-tab="create"
-        >
-          <span class="dash-tab-icon">＋</span>
-
-          <span>
-            <strong>Create Delivery</strong>
-            <small>New client hand-off</small>
-          </span>
-
+        <button type="button" class="dash-tab" id="tab-create" role="tab" aria-selected="false" aria-controls="panel-create" tabindex="-1" data-tab="create">
+          <span class="dash-tab-icon"><svg class="cc-i" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg></span>
+          <span><strong>New delivery</strong><small>Upload &amp; share</small></span>
         </button>
 
-
-        <button
-          type="button"
-          class="dash-tab"
-          id="tab-deliveries"
-          role="tab"
-          aria-selected="false"
-          aria-controls="panel-deliveries"
-          tabindex="-1"
-          data-tab="deliveries"
-        >
-          <span class="dash-tab-icon">▣</span>
-
-          <span>
-            <strong>Deliveries</strong>
-            <small>Manage projects</small>
-          </span>
-
+        <button type="button" class="dash-tab" id="tab-deliveries" role="tab" aria-selected="false" aria-controls="panel-deliveries" tabindex="-1" data-tab="deliveries">
+          <span class="dash-tab-icon"><svg class="cc-i" aria-hidden="true" focusable="false"><use href="#i-box"/></svg></span>
+          <span><strong>Deliveries</strong><small>Manage &amp; edit</small></span>
         </button>
 
-
-        <button
-          type="button"
-          class="dash-tab"
-          id="tab-analytics"
-          role="tab"
-          aria-selected="false"
-          aria-controls="panel-analytics"
-          tabindex="-1"
-          data-tab="analytics"
-        >
-          <span class="dash-tab-icon">↗</span>
-
-          <span>
-            <strong>Analytics</strong>
-            <small>Views & downloads</small>
-          </span>
-
+        <button type="button" class="dash-tab" id="tab-analytics" role="tab" aria-selected="false" aria-controls="panel-analytics" tabindex="-1" data-tab="analytics">
+          <span class="dash-tab-icon"><svg class="cc-i" aria-hidden="true" focusable="false"><use href="#i-chart"/></svg></span>
+          <span><strong>Analytics</strong><small>Views, downloads, pages</small></span>
         </button>
 
       </div>
 
 
-      <!-- =================================================
+<!-- =================================================
            TAB: OVERVIEW
       ================================================== -->
 
-      <section
-        id="panel-overview"
-        class="dash-tab-panel is-active"
-        role="tabpanel"
-        aria-labelledby="tab-overview"
-        data-panel="overview"
-      >
+      <section id="panel-overview" class="dash-tab-panel is-active" role="tabpanel" aria-labelledby="tab-overview" data-panel="overview">
 
-        <div class="dash-section-heading">
-
-          <div>
-
-            <span class="dash-section-eyebrow">
-              COMMAND CENTRE
-            </span>
-
-            <h2>
-              Delivery overview
-            </h2>
-
-            <p>
-              A quick snapshot of your current delivery operation.
-            </p>
-
-          </div>
-                  <div class="dash-section-actions">
-
-            <button
-              type="button"
-              class="dash-btn dash-compact"
-              id="dash-overview-create"
-            >
-              + New Delivery
-            </button>
-
-          </div>
-
-        </div>
-
-
-        <!-- ===============================================
-             STAT CARDS
-        ================================================ -->
-
-        <div class="dash-stat-grid">
-
-          <!-- ACTIVE DELIVERIES -->
-
-          <article class="dash-stat-card">
-
-            <div class="dash-stat-top">
-
-              <span class="dash-stat-label">
-                Active deliveries
-              </span>
-
-              <span class="dash-stat-icon">
-                ▣
-              </span>
-
+        <!-- NEEDS ATTENTION — built from real expiry, activity, storage and API status -->
+        <article class="cc-card cc-attention" aria-labelledby="cc-attention-title">
+          <header class="cc-card-head">
+            <div>
+              <span class="cc-eyebrow">Needs attention</span>
+              <h2 id="cc-attention-title">What to look at first</h2>
             </div>
+            <span id="cc-attention-count" class="cc-count" data-state="clear">Checking…</span>
+          </header>
+          <ul id="cc-attention-list" class="cc-attention-list" aria-live="polite">
+            <li class="cc-att cc-att--loading"><div class="cc-att-main"><strong>Checking deliveries, storage and the API…</strong></div></li>
+          </ul>
+        </article>
 
-            <strong
-              class="dash-stat-value"
-              id="stat-active"
-            >
-              0
-            </strong>
+        <!-- KEY NUMBERS -->
+        <div class="cc-kpis" role="group" aria-label="Key numbers">
 
-            <span class="dash-stat-meta">
-              Currently available
-            </span>
-
+          <article class="cc-kpi">
+            <header><span>Active deliveries</span><svg class="cc-i" aria-hidden="true" focusable="false"><use href="#i-box"/></svg></header>
+            <strong class="cc-kpi-val" id="stat-active">0</strong>
+            <p class="cc-kpi-sub"><b id="stat-expiring-soon">0</b> expiring within 72 hours</p>
           </article>
 
-
-          <!-- MONTHLY VIEWS -->
-
-          <article class="dash-stat-card">
-
-            <div class="dash-stat-top">
-
-              <span class="dash-stat-label">
-                Views this month
-              </span>
-
-              <span class="dash-stat-icon">
-                ◉
-              </span>
-
-            </div>
-
-            <strong
-              class="dash-stat-value"
-              id="stat-monthly-views"
-            >
-              0
-            </strong>
-
-            <span class="dash-stat-meta">
-              Across all deliveries
-            </span>
-
+          <article class="cc-kpi">
+            <header><span>Views · last 7 days</span><svg class="cc-i" aria-hidden="true" focusable="false"><use href="#i-eye"/></svg></header>
+            <strong class="cc-kpi-val" id="cc-views-7d">—</strong>
+            <p id="cc-views-delta" class="cc-kpi-delta"></p>
+            <p class="cc-kpi-sub">This month <b id="stat-monthly-views">0</b> · all time <b id="stat-lifetime-views">0</b></p>
           </article>
 
-
-          <!-- MONTHLY DOWNLOADS -->
-
-          <article class="dash-stat-card">
-
-            <div class="dash-stat-top">
-
-              <span class="dash-stat-label">
-                Downloads this month
-              </span>
-
-              <span class="dash-stat-icon">
-                ↓
-              </span>
-
-            </div>
-
-            <strong
-              class="dash-stat-value"
-              id="stat-monthly-downloads"
-            >
-              0
-            </strong>
-
-            <span class="dash-stat-meta">
-              Across all deliveries
-            </span>
-
+          <article class="cc-kpi">
+            <header><span>Downloads · last 7 days</span><svg class="cc-i" aria-hidden="true" focusable="false"><use href="#i-download"/></svg></header>
+            <strong class="cc-kpi-val" id="cc-downloads-7d">—</strong>
+            <p id="cc-downloads-delta" class="cc-kpi-delta"></p>
+            <p class="cc-kpi-sub">This month <b id="stat-monthly-downloads">0</b> · all time <b id="stat-lifetime-downloads">0</b></p>
           </article>
 
-
-          <!-- NEEDS ATTENTION -->
-
-          <article class="dash-stat-card dash-stat-card--attention">
-
-            <div class="dash-stat-top">
-
-              <span class="dash-stat-label">
-                Expiring soon
-              </span>
-
-              <span class="dash-stat-icon">
-                ⏱
-              </span>
-
-            </div>
-
-            <strong
-              class="dash-stat-value"
-              id="stat-expiring-soon"
-            >
-              0
-            </strong>
-
-            <span class="dash-stat-meta">
-              Needs review within 72 hours
-            </span>
-
-          </article>
-
-
-          <!-- LIFETIME VIEWS -->
-
-          <article class="dash-stat-card">
-
-            <div class="dash-stat-top">
-
-              <span class="dash-stat-label">
-                Lifetime views
-              </span>
-
-              <span class="dash-stat-icon">
-                ↗
-              </span>
-
-            </div>
-
-            <strong
-              class="dash-stat-value"
-              id="stat-lifetime-views"
-            >
-              0
-            </strong>
-
-            <span class="dash-stat-meta">
-              All-time activity
-            </span>
-
-          </article>
-
-
-          <!-- LIFETIME DOWNLOADS -->
-
-          <article class="dash-stat-card">
-
-            <div class="dash-stat-top">
-
-              <span class="dash-stat-label">
-                Lifetime downloads
-              </span>
-
-              <span class="dash-stat-icon">
-                ⇩
-              </span>
-
-            </div>
-
-            <strong
-              class="dash-stat-value"
-              id="stat-lifetime-downloads"
-            >
-              0
-            </strong>
-
-            <span class="dash-stat-meta">
-              All-time activity
-            </span>
-
-          </article>
-
-
-          <!-- DELIVERY COMPLETION -->
-
-          <article class="dash-stat-card">
-
-            <div class="dash-stat-top">
-
-              <span class="dash-stat-label">
-                View rate
-              </span>
-
-              <span class="dash-stat-icon">
-                ✓
-              </span>
-
-            </div>
-
-            <strong
-              class="dash-stat-value"
-              id="stat-view-rate"
-            >
-              —
-            </strong>
-
-            <span class="dash-stat-meta">
-              Delivery-page views · all-time
-            </span>
-
+          <article class="cc-kpi">
+            <header><span>Downloads per 100 views</span><svg class="cc-i" aria-hidden="true" focusable="false"><use href="#i-chart"/></svg></header>
+            <strong class="cc-kpi-val" id="stat-view-rate">—</strong>
+            <p class="cc-kpi-sub">All-time ratio. Views include repeat visits, so this is not a share of people.</p>
           </article>
 
         </div>
 
-        <!-- ===============================================
-             TRAFFIC & ACTIVITY
-        ================================================ -->
-
-        <article class="dash-panel dash-insights-panel" id="dash-insights-panel">
-          <div class="dash-panel-header">
+        <!-- TRAFFIC -->
+        <article class="cc-card dash-insights-panel" id="dash-insights-panel" aria-labelledby="cc-traffic-title">
+          <header class="cc-card-head">
             <div>
-              <span class="dash-section-eyebrow">TRAFFIC</span>
-              <h3>Activity &amp; performance</h3>
-              <p class="dash-panel-description">Views and downloads over time, plus what is trending right now.</p>
+              <span class="cc-eyebrow">Traffic</span>
+              <h2 id="cc-traffic-title">Views &amp; downloads over time</h2>
+              <p class="cc-card-desc">Delivery-page views and completed downloads, straight from the Worker's daily and hourly counters.</p>
             </div>
-          </div>
-          <div id="dash-insights-body"><p class="dash-usage-muted">Loading…</p></div>
+          </header>
+          <div id="dash-insights-body"><p class="cc-muted">Loading…</p></div>
         </article>
 
+        <!-- ATTENTION + HEALTH -->
+        <div class="cc-grid-2">
+          <article class="cc-card" aria-labelledby="cc-top-title">
+            <header class="cc-card-head"><div><span class="cc-eyebrow">Getting attention</span><h2 id="cc-top-title">Most active deliveries</h2><p class="cc-card-desc">Active deliveries ranked by the last 7 days of views and downloads.</p></div></header>
+            <div id="cc-top-body"><p class="cc-muted">Loading…</p></div>
+          </article>
 
+          <article class="cc-card" aria-labelledby="cc-health-title">
+            <header class="cc-card-head"><div><span class="cc-eyebrow">Operational health</span><h2 id="cc-health-title">System status</h2><p class="cc-card-desc">Live checks against the delivery API and storage ledger.</p></div></header>
+            <div id="cc-health-body"><p class="cc-muted">Checking…</p></div>
+          </article>
+        </div>
 
-
-        <!-- ===============================================
-             STORAGE
-        ================================================ -->
-
-        <article
-          class="dash-panel dash-usage-panel"
-          id="dash-usage-panel"
-        >
-
-          <div class="dash-panel-header">
-
+        <!-- STORAGE (rendered by dashboard.js) -->
+        <article class="cc-card dash-usage-panel" id="dash-usage-panel" aria-labelledby="cc-storage-title">
+          <header class="cc-card-head">
             <div>
-
-              <span class="dash-section-eyebrow">
-                STORAGE
-              </span>
-
-              <h3>
-                Storage &amp; usage
-              </h3>
-
-              <p class="dash-panel-description">
-                Live usage against the 3 GB hard cap, reconciled against the private R2 bucket.
-              </p>
-
+              <span class="cc-eyebrow">Storage</span>
+              <h2 id="cc-storage-title">Storage &amp; usage</h2>
+              <p class="cc-card-desc">Live usage against the 3 GB hard cap, reconciled against the private R2 bucket.</p>
             </div>
-
-            <span
-              class="dash-usage-status"
-              id="dash-usage-status"
-              role="status"
-            ></span>
-
-          </div>
-
-          <div
-            class="dash-usage-body"
-            id="dash-usage-body"
-            aria-live="polite"
-          >
-
-            <p class="dash-usage-message">
-              Loading usage…
-            </p>
-
-          </div>
-
+            <span class="dash-usage-status" id="dash-usage-status" role="status"></span>
+          </header>
+          <div class="dash-usage-body" id="dash-usage-body" aria-live="polite"><p class="dash-usage-message">Loading usage…</p></div>
         </article>
 
-
-        <!-- ===============================================
-             QUICK ACTIONS
-        ================================================ -->
-
-        <div class="dash-overview-grid">
-
-          <article class="dash-panel dash-quick-actions">
-
-            <div class="dash-panel-header">
-
-              <div>
-
-                <span class="dash-section-eyebrow">
-                  QUICK ACTIONS
-                </span>
-
-                <h3>
-                  Start something new
-                </h3>
-
-              </div>
-
-            </div>
-
-
+        <!-- QUICK ACTIONS + RECENT -->
+        <div class="cc-grid-2">
+          <article class="cc-card dash-quick-actions" aria-labelledby="cc-quick-title">
+            <header class="cc-card-head"><div><span class="cc-eyebrow">Quick actions</span><h2 id="cc-quick-title">Start a delivery</h2></div></header>
             <div class="dash-action-grid">
-
-              <button
-                type="button"
-                class="dash-action-card"
-                data-create-source="private"
-              >
-
-                <span class="dash-action-icon">
-                  🔒
-                </span>
-
-                <span>
-
-                  <strong>
-                    Private Client
-                  </strong>
-
-                  <small>
-                    Secure client delivery
-                  </small>
-
-                </span>
-
-              </button>
-
-
-              <button
-                type="button"
-                class="dash-action-card"
-                data-create-source="paid"
-              >
-
-                <span class="dash-action-icon">
-                  💳
-                </span>
-
-                <span>
-
-                  <strong>
-                    Paid Client
-                  </strong>
-
-                  <small>
-                    Completed paid project
-                  </small>
-
-                </span>
-
-              </button>
-
-
-              <button
-                type="button"
-                class="dash-action-card"
-                data-create-source="free"
-              >
-
-                <span class="dash-action-icon">
-                  ✨
-                </span>
-
-                <span>
-
-                  <strong>
-                    Free Edit
-                  </strong>
-
-                  <small>
-                    Complimentary edit
-                  </small>
-
-                </span>
-
-              </button>
-
-
-              <!-- PHOTOSHOPBATTLES -->
-
-              <button
-                type="button"
-                class="dash-action-card dash-action-card-battle"
-                data-create-source="photoshop_battles"
-              >
-
-                <span class="dash-action-icon">
-                  ⚔
-                </span>
-
-                <span>
-
-                  <strong>
-                    PhotoshopBattles
-                  </strong>
-
-                  <small>
-                    Direct Reddit image
-                  </small>
-
-                </span>
-
-              </button>
-
-
-              <button
-                type="button"
-                class="dash-action-card"
-                data-create-source="returning"
-              >
-
-                <span class="dash-action-icon">
-                  ↻
-                </span>
-
-                <span>
-
-                  <strong>
-                    Returning Client
-                  </strong>
-
-                  <small>
-                    Repeat client delivery
-                  </small>
-
-                </span>
-
-              </button>
-
-
-              <button
-                type="button"
-                class="dash-action-card"
-                data-create-source="other"
-              >
-
-                <span class="dash-action-icon">
-                  +
-                </span>
-
-                <span>
-
-                  <strong>
-                    Other
-                  </strong>
-
-                  <small>
-                    Custom delivery
-                  </small>
-
-                </span>
-
-              </button>
-
+              <button type="button" class="dash-action-card" data-create-source="private"><span class="dash-action-icon" aria-hidden="true">🔒</span><span><strong>Private client</strong><small>Secure client delivery</small></span></button>
+              <button type="button" class="dash-action-card" data-create-source="paid"><span class="dash-action-icon" aria-hidden="true">💳</span><span><strong>Paid client</strong><small>Completed paid project</small></span></button>
+              <button type="button" class="dash-action-card" data-create-source="free"><span class="dash-action-icon" aria-hidden="true">✨</span><span><strong>Free edit</strong><small>Complimentary edit</small></span></button>
+              <button type="button" class="dash-action-card dash-action-card-battle" data-create-source="photoshop_battles"><span class="dash-action-icon" aria-hidden="true">⚔</span><span><strong>PhotoshopBattles</strong><small>Direct Reddit image</small></span></button>
+              <button type="button" class="dash-action-card" data-create-source="returning"><span class="dash-action-icon" aria-hidden="true">↻</span><span><strong>Returning client</strong><small>Repeat client delivery</small></span></button>
+              <button type="button" class="dash-action-card" data-create-source="other"><span class="dash-action-icon" aria-hidden="true">+</span><span><strong>Other</strong><small>Custom delivery</small></span></button>
             </div>
-
           </article>
 
-
-          <!-- =============================================
-               RECENT DELIVERIES
-          ============================================== -->
-
-          <article class="dash-panel">
-
-            <div class="dash-panel-header">
-
-              <div>
-
-                <span class="dash-section-eyebrow">
-                  RECENT
-                </span>
-
-                <h3>
-                  Recent deliveries
-                </h3>
-
-              </div>
-
-              <button
-                type="button"
-                class="dash-text-button"
-                data-go-tab="deliveries"
-              >
-                View all
-              </button>
-
-            </div>
-
-            <div
-              id="overview-recent-deliveries"
-              class="dash-recent-list"
-            >
-
-              <div class="dash-empty-state compact">
-
-                <span class="dash-empty-icon">
-                  ▣
-                </span>
-
-                <p>
-                  Loading deliveries…
-                </p>
-
-              </div>
-
-            </div>
-
+          <article class="cc-card" aria-labelledby="cc-recent-title">
+            <header class="cc-card-head">
+              <div><span class="cc-eyebrow">Recent</span><h2 id="cc-recent-title">Latest deliveries</h2></div>
+              <button type="button" class="dash-text-button" data-go-tab="deliveries">View all</button>
+            </header>
+            <div id="overview-recent-deliveries" class="dash-recent-list"><p class="cc-muted">Loading deliveries…</p></div>
           </article>
-
         </div>
 
-
-        <!-- ===============================================
-             RECENT ACTIVITY
-        ================================================ -->
-
-        <article class="dash-panel dash-activity-panel">
-
-          <div class="dash-panel-header">
-
-            <div>
-
-              <span class="dash-section-eyebrow">
-                ACTIVITY
-              </span>
-
-              <h3>
-                Recent activity
-              </h3>
-
-            </div>
-
-            <span
-              class="dash-live-indicator"
-              id="dash-activity-status"
-            >
-              Live
-            </span>
-
-          </div>
-
-          <div
-            id="overview-activity-list"
-            class="dash-activity-list"
-          >
-
-            <div class="dash-empty-state compact">
-
-              <span class="dash-empty-icon">
-                ◉
-              </span>
-
-              <p>
-                Loading activity…
-              </p>
-
-            </div>
-
-          </div>
-
+        <!-- RECENT ACTIVITY -->
+        <article class="cc-card dash-activity-panel" aria-labelledby="cc-activity-title">
+          <header class="cc-card-head">
+            <div><span class="cc-eyebrow">Activity</span><h2 id="cc-activity-title">Latest client activity</h2><p class="cc-card-desc">The most recent view or download on each delivery.</p></div>
+            <span class="cc-count" id="dash-activity-status" data-state="clear">Live</span>
+          </header>
+          <div id="overview-activity-list" class="dash-activity-list"><p class="cc-muted">Loading activity…</p></div>
         </article>
 
       </section>
@@ -2046,358 +1511,71 @@
            TAB: ANALYTICS
       ================================================== -->
 
-      <section
-        id="panel-analytics"
-        class="dash-tab-panel"
-        role="tabpanel"
-        aria-labelledby="tab-analytics"
-        data-panel="analytics"
-        hidden
-      >
+      <!-- =================================================
+           TAB: ANALYTICS
+      ================================================== -->
 
-        <div class="dash-section-heading">
+      <section id="panel-analytics" class="dash-tab-panel" role="tabpanel" aria-labelledby="tab-analytics" data-panel="analytics" hidden>
 
-          <div>
+        <article class="cc-card cc-headline" aria-labelledby="cc-an-title">
+          <header class="cc-card-head">
+            <div><span class="cc-eyebrow">Last 30 days</span><h2 id="cc-an-title">Analytics</h2></div>
+          </header>
+          <p id="cc-analytics-headline" class="cc-headline-text">Loading…</p>
+          <div id="cc-analytics-trend" class="cc-trend-wrap"></div>
+          <ul class="cc-legend" aria-hidden="true"><li><i class="cc-key cc-key-bar"></i>Views</li><li><i class="cc-key cc-key-line"></i>Downloads</li></ul>
+        </article>
 
-            <span class="dash-section-eyebrow">
-              PERFORMANCE
-            </span>
-
-            <h2>
-              Delivery analytics
-            </h2>
-
-            <p>
-              Track views and downloads across all your deliveries.
-            </p>
-
-          </div>
-
+        <div class="cc-kpis cc-kpis--totals" role="group" aria-label="Totals">
+          <article class="cc-kpi"><header><span>Views · <span id="dash-analytics-month-label">this month</span></span><svg class="cc-i" aria-hidden="true" focusable="false"><use href="#i-eye"/></svg></header><strong class="cc-kpi-val" id="analytics-monthly-views">0</strong></article>
+          <article class="cc-kpi"><header><span>Downloads · this month</span><svg class="cc-i" aria-hidden="true" focusable="false"><use href="#i-download"/></svg></header><strong class="cc-kpi-val" id="analytics-monthly-downloads">0</strong></article>
+          <article class="cc-kpi"><header><span>Views · all time</span><svg class="cc-i" aria-hidden="true" focusable="false"><use href="#i-eye"/></svg></header><strong class="cc-kpi-val" id="analytics-lifetime-views">0</strong></article>
+          <article class="cc-kpi"><header><span>Downloads · all time</span><svg class="cc-i" aria-hidden="true" focusable="false"><use href="#i-download"/></svg></header><strong class="cc-kpi-val" id="analytics-lifetime-downloads">0</strong></article>
         </div>
 
-
-        <!-- ===============================================
-             ANALYTICS SUMMARY
-        ================================================ -->
-
-        <div class="dash-stat-grid dash-stat-grid-analytics">
-
-          <article class="dash-stat-card">
-
-            <div class="dash-stat-top">
-
-              <span class="dash-stat-label">
-                Monthly views
-              </span>
-
-              <span class="dash-stat-icon">
-                ◉
-              </span>
-
-            </div>
-
-            <strong
-              class="dash-stat-value"
-              id="analytics-monthly-views"
-            >
-              0
-            </strong>
-
-            <span class="dash-stat-meta">
-              Current calendar month
-            </span>
-
+        <div class="cc-grid-2">
+          <article class="cc-card" aria-labelledby="cc-fun-title">
+            <header class="cc-card-head"><div><span class="cc-eyebrow">Follow-through</span><h2 id="cc-fun-title">What happens after you deliver</h2></div></header>
+            <div id="cc-funnel-body"><p class="cc-muted">Loading…</p></div>
           </article>
-
-
-          <article class="dash-stat-card">
-
-            <div class="dash-stat-top">
-
-              <span class="dash-stat-label">
-                Monthly downloads
-              </span>
-
-              <span class="dash-stat-icon">
-                ↓
-              </span>
-
-            </div>
-
-            <strong
-              class="dash-stat-value"
-              id="analytics-monthly-downloads"
-            >
-              0
-            </strong>
-
-            <span class="dash-stat-meta">
-              Current calendar month
-            </span>
-
+          <article class="cc-card" aria-labelledby="cc-src-title">
+            <header class="cc-card-head"><div><span class="cc-eyebrow">By delivery type</span><h2 id="cc-src-title">Where the attention goes</h2></div></header>
+            <div id="cc-sources-body"><p class="cc-muted">Loading…</p></div>
           </article>
-
-
-          <article class="dash-stat-card">
-
-            <div class="dash-stat-top">
-
-              <span class="dash-stat-label">
-                Lifetime views
-              </span>
-
-              <span class="dash-stat-icon">
-                ↗
-              </span>
-
-            </div>
-
-            <strong
-              class="dash-stat-value"
-              id="analytics-lifetime-views"
-            >
-              0
-            </strong>
-
-            <span class="dash-stat-meta">
-              All-time delivery views
-            </span>
-
-          </article>
-
-
-          <article class="dash-stat-card">
-
-            <div class="dash-stat-top">
-
-              <span class="dash-stat-label">
-                Lifetime downloads
-              </span>
-
-              <span class="dash-stat-icon">
-                ⇩
-              </span>
-
-            </div>
-
-            <strong
-              class="dash-stat-value"
-              id="analytics-lifetime-downloads"
-            >
-              0
-            </strong>
-
-            <span class="dash-stat-meta">
-              All-time delivery downloads
-            </span>
-
-          </article>
-
         </div>
 
+        <article class="cc-card" aria-labelledby="cc-pages-title">
+          <header class="cc-card-head"><div><span class="cc-eyebrow">Public website</span><h2 id="cc-pages-title">Which pages people open</h2><p class="cc-card-desc">Anonymous page-view counts for the public site, last 30 days.</p></div></header>
+          <div id="cc-pages-body"><p class="cc-muted">Loading…</p></div>
+        </article>
 
-        <article class="dash-analytics-spotlight" aria-label="Analytics highlights">
-          <div>
-            <span class="dash-section-eyebrow">AT A GLANCE</span>
-            <h3 id="dash-analytics-headline">Loading delivery performance…</h3>
-            <p id="dash-analytics-summary">Your most useful delivery insights will appear here.</p>
-          </div>
-          <div class="dash-analytics-rate">
-            <span>All-time view rate</span>
-            <strong id="dash-analytics-view-rate">—</strong>
-            <small id="dash-analytics-top-delivery">No delivery activity yet</small>
+        <article class="cc-card dash-battle-analytics-panel" aria-labelledby="cc-battle-title">
+          <header class="cc-card-head">
+            <div><span class="cc-eyebrow">PhotoshopBattles</span><h2 id="cc-battle-title">Reddit image performance</h2><p class="cc-card-desc">Direct image requests are counted as views, the same way as client deliveries.</p></div>
+            <span class="cc-badge">Reddit</span>
+          </header>
+          <div class="cc-kpis cc-kpis--totals">
+            <article class="cc-kpi"><header><span>Views · this month</span></header><strong class="cc-kpi-val" id="battle-monthly-views">0</strong></article>
+            <article class="cc-kpi"><header><span>Views · all time</span></header><strong class="cc-kpi-val" id="battle-lifetime-views">0</strong></article>
+            <article class="cc-kpi"><header><span>Downloads · this month</span></header><strong class="cc-kpi-val" id="battle-monthly-downloads">0</strong></article>
+            <article class="cc-kpi"><header><span>Downloads · all time</span></header><strong class="cc-kpi-val" id="battle-lifetime-downloads">0</strong></article>
           </div>
         </article>
 
-
-        <!-- ===============================================
-             PHOTOSHOPBATTLES ANALYTICS
-        ================================================ -->
-
-        <article class="dash-panel dash-battle-analytics-panel">
-
-          <div class="dash-panel-header">
-
-            <div>
-
-              <span class="dash-section-eyebrow">
-                PHOTOSHOPBATTLES
-              </span>
-
-              <h3>
-                Reddit image performance
-              </h3>
-
-              <p>
-                Direct image requests are counted as views in
-                the same analytics system as your client deliveries.
-              </p>
-
-            </div>
-
-            <span class="dash-battle-badge">
-              Reddit
-            </span>
-
-          </div>
-
-
-          <div class="dash-battle-analytics-grid">
-
-            <div class="dash-mini-stat">
-
-              <span>
-                Monthly views
-              </span>
-
-              <strong
-                id="battle-monthly-views"
-              >
-                0
-              </strong>
-
-            </div>
-
-
-            <div class="dash-mini-stat">
-
-              <span>
-                Lifetime views
-              </span>
-
-              <strong
-                id="battle-lifetime-views"
-              >
-                0
-              </strong>
-
-            </div>
-
-
-            <div class="dash-mini-stat">
-
-              <span>
-                Monthly downloads
-              </span>
-
-              <strong
-                id="battle-monthly-downloads"
-              >
-                0
-              </strong>
-
-            </div>
-
-
-            <div class="dash-mini-stat">
-
-              <span>
-                Lifetime downloads
-              </span>
-
-              <strong
-                id="battle-lifetime-downloads"
-              >
-                0
-              </strong>
-
-            </div>
-
-          </div>
-
-        </article>
-
-
-        <!-- ===============================================
-             ANALYTICS TABLE
-        ================================================ -->
-
-        <article class="dash-panel">
-
-          <div class="dash-panel-header">
-
-            <div>
-
-              <span class="dash-section-eyebrow">
-                DELIVERY PERFORMANCE
-              </span>
-
-              <h3>
-                Performance by delivery
-              </h3>
-
-            </div>
-
-            <div class="dash-analytics-month">
-
-              <span>
-                Month
-              </span>
-
-              <strong id="dash-analytics-month-label">
-                —
-              </strong>
-
-            </div>
-
-          </div>
-
-
-          <div class="dash-table-wrap">
-
-            <table class="dash-table">
-
-              <thead>
-
-                <tr>
-
-                  <th>
-                    Delivery
-                  </th>
-
-                  <th>
-                    Type
-                  </th>
-
-                  <th>
-                    Views
-                  </th>
-
-                  <th>
-                    Downloads
-                  </th>
-
-                  <th>
-                    Last viewed
-                  </th>
-
-                  <th>
-                    Last downloaded
-                  </th>
-
-                </tr>
-
-              </thead>
-
-              <tbody id="dash-analytics-table-body">
-
-                <tr>
-
-                  <td
-                    colspan="6"
-                    class="dash-table-empty"
-                  >
-                    Loading analytics…
-                  </td>
-
-                </tr>
-
-              </tbody>
-
+        <article class="cc-card" aria-labelledby="cc-table-title">
+          <header class="cc-card-head"><div><span class="cc-eyebrow">Every delivery</span><h2 id="cc-table-title">Delivery performance</h2><p class="cc-card-desc">Sorted by all-time views.</p></div></header>
+          <div class="cc-table-wrap">
+            <table class="cc-table dash-table">
+              <caption class="cc-sr">All deliveries with views, downloads and last activity</caption>
+              <thead><tr><th scope="col">Delivery</th><th scope="col">Type</th><th scope="col" class="num">Views</th><th scope="col" class="num">Downloads</th><th scope="col">Last viewed</th><th scope="col">Last downloaded</th></tr></thead>
+              <tbody id="dash-analytics-table-body"><tr><td colspan="6" class="dash-table-empty">Loading…</td></tr></tbody>
             </table>
-
           </div>
+        </article>
 
+        <article class="cc-card cc-notrack" aria-labelledby="cc-nt-title">
+          <header class="cc-card-head"><div><span class="cc-eyebrow">Good to know</span><h2 id="cc-nt-title">What is not tracked</h2></div></header>
+          <p>Boztik records simple counters: how many times each delivery was opened or downloaded, per day, and how many times each public page was loaded. It does <strong>not</strong> record visitor location, device, browser or referring site, and it stores no IP addresses or cookies for analytics. That is deliberate — it also means there is no location or device breakdown to show here, and any such chart would have to be invented.</p>
         </article>
 
       </section>

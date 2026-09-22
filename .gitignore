@@ -1,2 +1,16 @@
-
+# Dependencies
 node_modules/
+
+# Cloudflare Worker local state and secrets — never commit (GitHub Pages publishes everything in this repo)
+.wrangler/
+.dev.vars
+.dev.vars.*
+admin-hash.txt
+**/admin-hash.txt
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# Environment files
+.env
+.env.*

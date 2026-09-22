@@ -196,6 +196,20 @@ export const fetchDeliveryAnalytics = id => request("GET", `/api/admin/deliverie
 export const fetchOverview = () => request("GET", "/api/admin/analytics/overview");
 export const fetchTimeseries = range => request("GET", `/api/admin/analytics/timeseries?range=${encodeURIComponent(range)}`);
 export const fetchTopDeliveries = () => request("GET", "/api/admin/analytics/top");
+/** Per-page view counts (last 30 days) recorded by the site's first-party page-view counter. */
+export const fetchPageAnalytics = () => request("GET", "/api/admin/analytics/pages");
+
+/** Unauthenticated reachability probe of the Worker. Never throws; reports latency for the health chip. */
+export async function pingHealth() {
+  const started = performance.now();
+  try {
+    const response = await fetch(`${config.apiBaseUrl}/api/health`, { cache: "no-store" });
+    const data = await response.json().catch(() => null);
+    return { ok: response.ok && data?.status === "ok", ms: Math.round(performance.now() - started), status: response.status };
+  } catch {
+    return { ok: false, ms: null, status: 0 };
+  }
+}
 
 /* ----------------------------------------------------------------- public */
 /** null => not found (shown as the "expired" state). Expired deliveries come back with expired:true and no files. */
