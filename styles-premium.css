@@ -2955,3 +2955,113 @@ footer h3 {
   .ecosystem-card:hover { transform: none; }
   .portfolio-card:hover .portfolio-compare img { transform: none; }
 }
+
+/* ============================================================
+   Creative Toolkit 3.2 release section (index.html #toolkit-update)
+   Appended additively. Reuses .whats-new-*, .v3-pill,
+   .support-button, .secondary-link and existing design tokens.
+   ============================================================ */
+.toolkit-release__top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 40px;
+  margin-bottom: 44px;
+}
+
+.toolkit-release__copy h2 {
+  font-size: clamp(1.9rem, 4vw, 2.8rem);
+  line-height: 1.1;
+  margin-bottom: 14px;
+}
+
+.toolkit-release__copy > p:not(.toolkit-release__note) {
+  max-width: 62ch;
+  color: var(--text-muted);
+  font-size: 1.05rem;
+}
+
+.toolkit-release__cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.toolkit-release__note {
+  margin-top: 14px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.toolkit-release__badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 190px;
+  padding: 26px 30px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.toolkit-release__badge img {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+}
+
+.toolkit-release__badge-name {
+  margin-top: 8px;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.toolkit-release__badge-version {
+  font-family: var(--font-heading);
+  font-size: 3.6rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--primary);
+}
+
+@media (max-width: 820px) {
+  .toolkit-release__top {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .toolkit-release__badge {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 16px;
+    min-width: 0;
+    padding: 18px 22px;
+    order: -1;
+  }
+  .toolkit-release__badge-name { margin-top: 0; flex: 1; }
+  .toolkit-release__badge-version { font-size: 2.6rem; }
+}
+
+@media (max-width: 520px) {
+  .toolkit-release__cta { flex-direction: column; align-items: stretch; }
+  .toolkit-release__cta .support-button,
+  .toolkit-release__cta .secondary-link { width: 100%; }
+}
+
+/* 3.2 release: six highlights laid out as an even 3 x 2 grid */
+.toolkit-release .whats-new-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 820px) {
+  .toolkit-release .whats-new-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 520px) {
+  .toolkit-release .whats-new-grid { grid-template-columns: 1fr; gap: 22px; }
+}
