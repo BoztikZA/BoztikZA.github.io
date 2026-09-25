@@ -1317,17 +1317,30 @@ a:focus-visible {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  min-height: 48px;
-  padding: 12px 26px;
-  border: 1px solid var(--deliver-border);
+  gap: 12px;
+  min-height: 52px;
+  padding: 14px 28px;
+  border: 1px solid var(--deliver-accent-border);
   border-radius: 99px;
-  background: transparent;
+  background: var(--deliver-accent-soft);
   color: var(--deliver-text);
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 700;
   cursor: pointer;
-  transition: all var(--deliver-transition);
+  box-shadow:
+    0 8px 24px rgba(142, 255, 61, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition:
+    border-color var(--deliver-transition),
+    background var(--deliver-transition),
+    color var(--deliver-transition),
+    box-shadow var(--deliver-transition),
+    transform var(--deliver-transition);
+}
+
+.deliver-share-button__icon {
+  flex-shrink: 0;
+  color: var(--deliver-accent);
 }
 
 /* [hidden] must win over the display above so the button stays
@@ -1338,15 +1351,24 @@ a:focus-visible {
   display: none !important;
 }
 
-.deliver-share-button:hover {
-  border-color: rgba(142, 255, 61, 0.5);
+.deliver-share-button:hover,
+.deliver-share-button:focus-visible {
+  border-color: var(--deliver-accent);
   background: linear-gradient(
     135deg,
-    rgba(142, 255, 61, 0.12),
-    rgba(142, 255, 61, 0.05)
+    rgba(142, 255, 61, 0.16),
+    rgba(142, 255, 61, 0.06)
   );
-  color: var(--deliver-text-strong, var(--deliver-text));
+  color: var(--deliver-text);
   transform: translateY(-1px);
+  box-shadow:
+    0 12px 30px rgba(142, 255, 61, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.deliver-share-button:hover .deliver-share-button__icon,
+.deliver-share-button:focus-visible .deliver-share-button__icon {
+  color: var(--deliver-accent-hover);
 }
 
 .deliver-share-backdrop {
