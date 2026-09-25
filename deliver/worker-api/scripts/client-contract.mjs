@@ -72,6 +72,15 @@ ok("recordDownload is a no-op (counted server-side)", (await api.recordDownload(
 const after = (await api.listDeliveries()).find(d => d.id === id);
 ok("counters: 1 real view (preview w/ session skipped) + 1 download", after.lifetime_views === 1 && after.lifetime_downloads === 1, `${after.lifetime_views}/${after.lifetime_downloads}`);
 
+console.log("\n[share tracking]");
+ok("recordShare copy -> counted", (await api.recordShare(id, "copy")) === true);
+ok("recordShare whatsapp -> counted", (await api.recordShare(id, "whatsapp")) === true);
+ok("recordShare unknown method -> not counted", (await api.recordShare(id, "carrier-pigeon")) === false);
+const shareStats = await api.fetchShareAnalytics();
+ok("fetchShareAnalytics: totals + methods + deliveries",
+  shareStats.ok === true && shareStats.totals.total >= 2 && shareStats.methods.copy >= 1 && shareStats.methods.whatsapp >= 1 && shareStats.page_types.deliveries >= 2,
+  JSON.stringify(shareStats.totals));
+
 console.log("\n[dashboard operations]");
 const upd = await api.updateDelivery(id, { project_name: "Renamed", notes: "x" });
 ok("updateDelivery returns delivery", upd.project_name === "Renamed" && upd.delivery_files.length === 2);

@@ -301,6 +301,7 @@ body.deliver-dashboard-body .dash-range.is-active { color: var(--cc-text); backg
 .cc-pagelist { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
 .cc-pagelist li { display: grid; grid-template-columns: minmax(150px, 34%) minmax(0, 1fr); gap: 14px; align-items: center; padding: 4px 0; font-size: 0.88rem; }
 .cc-pl-name { color: var(--cc-muted); }
+.cc-delid { color: var(--cc-dim); font-variant-numeric: tabular-nums; margin-right: 6px; }
 .cc-headline-text { margin: 0 0 6px; font-size: 1.05rem; color: var(--cc-text); font-weight: 600; }
 
 /* ---------------------------------------------- legacy widgets, restyled */

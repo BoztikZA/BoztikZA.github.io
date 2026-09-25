@@ -4,11 +4,11 @@
 import type { Env } from "../types";
 import { HttpError } from "../types";
 import { optionalSession } from "../lib/auth";
-import { getDelivery, getDeliveryFile, getDeliveryFiles, iso, nowSec, parseJson, recordDownload, recordPageView, recordView } from "../lib/db";
+import { getDelivery, getDeliveryFile, getDeliveryFiles, iso, nowSec, parseJson, recordDownload, recordPageView, recordShare, recordView } from "../lib/db";
 import { timingSafeEqual } from "../lib/ids";
 import { signFileAccess, verifyFileAccess } from "../lib/sign";
 import {
-  extensionOf, isPreviewExtension, isValidDeliveryId, isValidFileId, mimeForExtension,
+  extensionOf, isPreviewExtension, isValidDeliveryId, isValidFileId, isValidShareMethod, mimeForExtension,
 } from "../lib/validate";
 import {
   assertSameSiteOrigin, checkPublicRate, corsHeaders, error, json, readJson, requireJson, segments, wrap,
@@ -55,6 +55,10 @@ async function routeDelivery(request: Request, seg: string[], env: Env): Promise
   if (action === "view" && seg.length === 3) {
     if (request.method !== "POST") return error("Method not allowed", 405);
     return trackView(request, id, env);
+  }
+  if (action === "share" && seg.length === 3) {
+    if (request.method !== "POST") return error("Method not allowed", 405);
+    return trackShare(request, id, env);
   }
   if (action === "files" && seg.length === 5 && seg[4] === "access") {
     if (request.method !== "POST") return error("Method not allowed", 405);
@@ -119,6 +123,17 @@ async function trackView(request: Request, id: string, env: Env): Promise<Respon
   // preview=1 only suppresses counting when it comes with a VALID admin session.
   if (preview && (await optionalSession(request, env))) return json({ ok: true, counted: false, reason: "admin_preview" });
   return json({ ok: true, counted: await recordView(env, id) });
+}
+
+/** Records a share/copy action fired from the delivery page. Never throws — sharing
+ *  must never be blocked or slowed by analytics. Unknown methods are ignored, and
+ *  only ACTIVE deliveries count (recordShare enforces that). */
+async function trackShare(request: Request, id: string, env: Env): Promise<Response> {
+  assertSameSiteOrigin(request, env);
+  let method = "";
+  try { const b = await readJson(request, 1024); method = typeof b.method === "string" ? b.method : ""; } catch { /* no body -> nothing to record */ }
+  if (!isValidShareMethod(method)) return json({ ok: true, counted: false });
+  return json({ ok: true, counted: await recordShare(env, id, method) });
 }
 
 async function fileAccess(request: Request, deliveryId: string, fileId: string, env: Env): Promise<Response> {

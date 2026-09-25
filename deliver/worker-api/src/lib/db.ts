@@ -285,6 +285,33 @@ export async function recordDownload(env: Env, id: string): Promise<boolean> {
   return true;
 }
 
+/** Which methods classify as a completed share/copy vs an externally-opened attempt. */
+export const shareKind = (method: string): "completed" | "attempted" | null =>
+  method === "native" || method === "copy"
+    ? "completed"
+    : method === "whatsapp" || method === "facebook" || method === "x" || method === "reddit"
+      ? "attempted"
+      : null;
+
+/** Records a share/copy action for an ACTIVE delivery. Returns false when nothing was counted. */
+export async function recordShare(env: Env, id: string, method: string): Promise<boolean> {
+  const kind = shareKind(method);
+  if (!kind) return false;
+  const ts = nowSec();
+  // Only ever count for a live delivery, and derive the page type server-side so a
+  // client can't mislabel a battle page as a normal delivery (or vice-versa).
+  const row = await env.DB.prepare("SELECT is_photoshop_battles FROM deliveries WHERE id = ?1 AND expires_at > ?2 AND files_removed_at IS NULL")
+    .bind(id, ts).first<{ is_photoshop_battles: number | null }>();
+  if (!row) return false;
+  const pageType = row.is_photoshop_battles === 1 ? "photoshop_battles" : "delivery";
+  await env.DB.prepare(
+    `INSERT INTO share_metrics (delivery_id, day, page_type, method, kind, count)
+       VALUES (?1, ?2, ?3, ?4, ?5, 1)
+       ON CONFLICT (delivery_id, day, page_type, method, kind) DO UPDATE SET count = count + 1`,
+  ).bind(id, localDay(env, ts), pageType, method, kind).run();
+  return true;
+}
+
 export const PAGE_KEYS = ["homepage", "portfolio", "tools", "guides", "about", "support", "contact", "services", "deliver"] as const;
 
 export async function recordPageView(env: Env, page: string): Promise<boolean> {
@@ -404,6 +431,50 @@ export async function getTopDeliveries(env: Env, limit = 8): Promise<TopDelivery
 export async function getPageAnalytics(env: Env, days = 30): Promise<Array<{ page: string; views: number }>> {
   const since = localDay(env, nowSec() - (days - 1) * 86400);
   return (await env.DB.prepare("SELECT page, SUM(views) AS views FROM page_analytics WHERE day >= ? GROUP BY page ORDER BY views DESC").bind(since).all<{ page: string; views: number }>()).results;
+}
+
+export interface ShareSnapshot {
+  totals: { total: number; today: number; last_7d: number; month: number };
+  page_types: { deliveries: number; photoshop_battles: number };
+  methods: Record<string, number>;
+  top: Array<{ delivery_id: string; project_name: string | null; page_type: string; shares: number }>;
+}
+
+export async function getShareAnalytics(env: Env): Promise<ShareSnapshot> {
+  const now = nowSec();
+  const day = localDay(env);
+  const since7 = localDay(env, now - 6 * 86400);
+  const month = localMonth(env);
+  const [t, pt, m, top] = await Promise.all([
+    env.DB.prepare(
+      `SELECT COALESCE(SUM(count),0) AS total,
+              COALESCE(SUM(CASE WHEN day = ?1 THEN count END),0) AS today,
+              COALESCE(SUM(CASE WHEN day >= ?2 THEN count END),0) AS w7,
+              COALESCE(SUM(CASE WHEN substr(day,1,7) = ?3 THEN count END),0) AS month
+         FROM share_metrics`,
+    ).bind(day, since7, month).first<{ total: number; today: number; w7: number; month: number }>(),
+    env.DB.prepare("SELECT page_type, SUM(count) AS n FROM share_metrics GROUP BY page_type").all<{ page_type: string; n: number }>(),
+    env.DB.prepare("SELECT method, SUM(count) AS n FROM share_metrics GROUP BY method ORDER BY n DESC").all<{ method: string; n: number }>(),
+    env.DB.prepare(
+      `SELECT s.delivery_id, d.project_name, s.page_type, SUM(s.count) AS shares
+         FROM share_metrics s LEFT JOIN deliveries d ON d.id = s.delivery_id
+        GROUP BY s.delivery_id, s.page_type, d.project_name
+        ORDER BY shares DESC LIMIT 10`,
+    ).all<{ delivery_id: string; project_name: string | null; page_type: string; shares: number }>(),
+  ]);
+  const pageTypes = { deliveries: 0, photoshop_battles: 0 };
+  for (const r of pt?.results ?? []) {
+    if (r.page_type === "photoshop_battles") pageTypes.photoshop_battles = r.n;
+    else pageTypes.deliveries += r.n;
+  }
+  const methods: Record<string, number> = {};
+  for (const r of m?.results ?? []) methods[r.method] = r.n;
+  return {
+    totals: { total: t?.total ?? 0, today: t?.today ?? 0, last_7d: t?.w7 ?? 0, month: t?.month ?? 0 },
+    page_types: pageTypes,
+    methods,
+    top: top?.results ?? [],
+  };
 }
 
 export async function getDeliveryDailySeries(env: Env, id: string, days = 30): Promise<SeriesPoint[]> {

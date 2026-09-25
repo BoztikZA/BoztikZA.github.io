@@ -5,7 +5,7 @@
 // Nothing here estimates, extrapolates or invents a metric. Where data does not exist
 // (visitor location, device, browser, referrer are NOT collected by design) nothing is shown.
 import { escapeHtml, formatBytes, formatDate } from "./shared.js";
-import { fetchPageAnalytics, pingHealth } from "./api.js";
+import { fetchPageAnalytics, fetchShareAnalytics, pingHealth } from "./api.js";
 import { insightsSnapshot, percentChange, trendChart } from "./insights.js";
 
 const HOUR = 3600 * 1000;
@@ -227,6 +227,44 @@ export async function renderPages() {
     <p class="cc-fineprint">Last 30 days. A page is counted once per browser session; no cookies, IP addresses or personal data are stored, and visitors who send Do Not Track or Global Privacy Control are not counted. Numbers are page loads, not unique people.</p>`;
 }
 
+/* ------------------------------------------ analytics: how it gets shared */
+const SHARE_METHOD_LABELS = { native: "System share sheet", copy: "Copied link", whatsapp: "WhatsApp", facebook: "Facebook", x: "X (Twitter)", reddit: "Reddit" };
+
+export async function renderShares() {
+  const host = $("cc-shares-body");
+  if (!host) return;
+  let shares;
+  try { shares = await fetchShareAnalytics(); }
+  catch (e) { host.innerHTML = `<p class="cc-inline-error" role="alert">${escapeHtml(e?.message || "Could not load share analytics.")}</p>`; return; }
+
+  const t = shares.totals || {};
+  const set = (id, val) => { const el = $(id); if (el) el.textContent = nf(val); };
+  set("share-today", t.today ?? 0); set("share-7d", t.last_7d ?? 0); set("share-month", t.month ?? 0); set("share-total", t.total ?? 0);
+
+  const total = t.total ?? 0;
+  if (!total) {
+    host.innerHTML = `<p class="cc-empty">No delivery has been shared yet.</p>
+      <p class="cc-fineprint">When someone taps <strong>Share</strong> on a delivery page or a PhotoshopBattles image and copies the link, opens the system share sheet, or opens a social sheet, the method is counted here as an aggregate (method, day, page type) — never per visitor.</p>`;
+    return;
+  }
+
+  const methods = Object.entries(shares.methods || {}).sort((a, b) => b[1] - a[1]);
+  const maxMethod = Math.max(1, ...methods.map(([, n]) => n));
+  const pt = shares.page_types || { deliveries: 0, photoshop_battles: 0 };
+  const top = (shares.top || []);
+  const topList = top.length
+    ? `<div class="cc-table-wrap"><table class="cc-table"><caption class="cc-sr">Deliveries with the most shares</caption>
+        <thead><tr><th scope="col">Delivery</th><th scope="col">Page</th><th scope="col" class="num">Shares</th></tr></thead>
+        <tbody>${top.map((r, i) => `<tr><td><span title="${escapeHtml(r.delivery_id)}" class="cc-delid">${i + 1}.</span> ${escapeHtml(r.project_name || r.delivery_id)}</td><td>${r.page_type === "photoshop_battles" ? "PhotoshopBattles" : "Delivery"}</td><td class="num">${nf(r.shares)}</td></tr>`).join("")}</tbody></table></div>`
+    : "";
+
+  host.innerHTML = `
+    <ul class="cc-pagelist">${methods.map(([m, n]) => `<li><span class="cc-pl-name">${escapeHtml(SHARE_METHOD_LABELS[m] || m)}</span><div class="cc-inline-bar"><span style="width:${Math.round((n / maxMethod) * 100)}%"></span><b>${nf(n)}</b></div></li>`).join("")}</ul>
+    <p class="cc-note">${icon("info")}<span>${nf(pt.deliveries ?? 0)} shares on client deliveries and ${nf(pt.photoshop_battles ?? 0)} on PhotoshopBattles pages across ${nf(total)} total.</span></p>
+    ${topList}
+    <p class="cc-fineprint">A copy or a completed system share counts as a share; opening a WhatsApp / Facebook / X / Reddit sheet is recorded as an attempt, since we can't confirm whether the post was published. Counts come from the delivery page, not from deleted deliveries.</p>`;
+}
+
 /* -------------------------------------------------- analytics: 30-day summary */
 export function renderAnalyticsTrend() {
   const s30 = insightsSnapshot().series30;
@@ -263,4 +301,5 @@ export async function refreshAnalyticsExtras({ deliveries, overview }) {
   renderFunnel(deliveries, overview?.deliveries?.total);
   renderSources(deliveries);
   await renderPages();
+  await renderShares();
 }

@@ -25,6 +25,8 @@ import {
   formatLabelFor
 } from "./fileinfo.js";
 
+import { initShare } from "./share.js";
+
 
 /* =========================================================
    DOM HELPER
@@ -3922,6 +3924,21 @@ async function init() {
       );
 
     }
+
+
+    /* =====================================================
+       SHARE BUTTON + TRACKING
+    ===================================================== */
+
+    /*
+      Wire the share button now that we know the delivery is
+      live and has files. Recorded server-side as an
+      aggregate counter (never per-visitor).
+    */
+
+    initShare(
+      delivery
+    );
 
 
     /* =====================================================

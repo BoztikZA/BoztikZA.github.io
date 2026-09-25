@@ -10,6 +10,8 @@ export const ALLOWED_EXTENSIONS = ["zip", "jpg", "jpeg", "png", "webp", "gif", "
 export const BATTLE_EXTENSIONS = ["jpg", "jpeg", "png"] as const;
 /** Types a browser may render inline for preview; everything else is forced to download. */
 export const PREVIEW_EXTENSIONS = ["jpg", "jpeg", "png", "webp", "gif"] as const;
+/** Share methods the delivery page can record. Native + copy are "completed", the rest are opened share sheets. */
+export const SHARE_METHODS = ["native", "copy", "whatsapp", "facebook", "x", "reddit"] as const;
 
 const MIME_BY_EXT: Record<string, string> = {
   jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp", gif: "image/gif",
@@ -62,6 +64,7 @@ export function isValidDeliveryId(id: unknown): id is string {
 export function isValidFileId(id: unknown): id is string {
   return typeof id === "string" && /^[a-z0-9]{8,32}$/.test(id);
 }
+export const isValidShareMethod = (m: unknown): boolean => typeof m === "string" && (SHARE_METHODS as readonly string[]).includes(m);
 
 export const MAX_NOTES_LENGTH = 4000;
 export const MAX_NAME_LENGTH = 200;

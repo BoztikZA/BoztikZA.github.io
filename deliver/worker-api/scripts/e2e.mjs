@@ -126,6 +126,21 @@ async function main() {
   ok("7d timeseries has 7 buckets", (await api("GET", "/api/admin/analytics/timeseries?range=7d")).json.series.length === 7);
   ok("top deliveries lists it", (await api("GET", "/api/admin/analytics/top")).json.top[0]?.id === A.id);
 
+  console.log("\n[3b] share tracking (anonymous POST -> aggregate only)");
+  const srCopy = await api("POST", `/api/public/delivery/${A.id}/share`, { method: "copy" }, { anon: true });
+  ok("copy on active delivery -> counted", srCopy.status === 200 && srCopy.json.ok === true && srCopy.json.counted === true, JSON.stringify(srCopy.json));
+  const srWa = await api("POST", `/api/public/delivery/${A.id}/share`, { method: "whatsapp" }, { anon: true });
+  ok("whatsapp share-sheet open -> counted", srWa.status === 200 && srWa.json.counted === true, JSON.stringify(srWa.json));
+  const srBad = await api("POST", `/api/public/delivery/${A.id}/share`, { method: "carrier-pigeon" }, { anon: true });
+  ok("unknown method -> accepted but not counted", srBad.status === 200 && srBad.json.ok === true && srBad.json.counted === false, JSON.stringify(srBad.json));
+  const srNone = await api("POST", `/api/public/delivery/${A.id}/share`, {}, { anon: true });
+  ok("missing method -> accepted but not counted", srNone.status === 200 && srNone.json.counted === false, JSON.stringify(srNone.json));
+  const srStats = (await api("GET", "/api/admin/analytics/shares")).json;
+  ok("share analytics: 2 total, copy+whatsapp counted, deliveries x2",
+    srStats.totals.total === 2 && srStats.methods.copy === 1 && srStats.methods.whatsapp === 1 && srStats.page_types.deliveries === 2,
+    JSON.stringify(srStats));
+  ok("share analytics top delivery lists A", srStats.top[0]?.delivery_id === A.id && srStats.top[0]?.shares === 2, JSON.stringify(srStats.top));
+
   console.log("\n[4] reddit source validation");
   const badR = await makeDelivery("r.png", png(500), { reddit_source: { canonicalUrl: "javascript:alert(1)" } });
   ok("javascript: url rejected (422)", badR.c?.status === 422);
@@ -208,6 +223,10 @@ async function main() {
   const pubE = await api("GET", `/api/public/delivery/${E.id}`, null, { anon: true });
   ok("expired delivery: public payload has no files/names", pubE.json.delivery.expired === true && pubE.json.delivery.delivery_files.length === 0 && !("project_name" in pubE.json.delivery));
   ok("expired: still-valid signed URL is refused (410)", (await fetch(local(acc2.json.url))).status === 410);
+  const sExp = await api("POST", `/api/public/delivery/${E.id}/share`, { method: "copy" }, { anon: true });
+  ok("expired delivery share is not counted", sExp.status === 200 && sExp.json.counted === false, JSON.stringify(sExp.json));
+  const shAfter = (await api("GET", "/api/admin/analytics/shares")).json;
+  ok("expired share left aggregate total unchanged", shAfter.totals.total === 2, `total=${shAfter.totals.total}`);
   ok("expired: new access refused (410)", (await api("POST", `/api/public/delivery/${E.id}/files/${E.file_id}/access`, { intent: "download" }, { anon: true })).status === 410);
   ok("expired: view not counted", (await api("POST", `/api/public/delivery/${E.id}/view`, {}, { anon: true })).json.counted === false);
   ok("files still occupy storage until cleanup", (await storage()).used_bytes === 200_000);

@@ -198,6 +198,8 @@ export const fetchTimeseries = range => request("GET", `/api/admin/analytics/tim
 export const fetchTopDeliveries = () => request("GET", "/api/admin/analytics/top");
 /** Per-page view counts (last 30 days) recorded by the site's first-party page-view counter. */
 export const fetchPageAnalytics = () => request("GET", "/api/admin/analytics/pages");
+/** Share-event analytics for delivery + Photoshop Battles pages (Command Centre). */
+export const fetchShareAnalytics = () => request("GET", "/api/admin/analytics/shares");
 
 /** Unauthenticated reachability probe of the Worker. Never throws; reports latency for the health chip. */
 export async function pingHealth() {
@@ -236,6 +238,19 @@ export async function recordView(id, { preview = false } = {}) {
 
 /** Downloads are counted server-side when the file actually starts streaming, so this is a no-op. */
 export const recordDownload = async () => true;
+
+/** Records a share/copy action fired from the delivery page. Never throws — analytics
+ *  must never block or slow a share. The Worker validates the method and only counts
+ *  ACTIVE deliveries; returns whether this event was counted. */
+export async function recordShare(id, method) {
+  try {
+    const response = await fetch(`${config.apiBaseUrl}/api/public/delivery/${encodeURIComponent(id)}/share`, {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ method })
+    });
+    const data = await response.json().catch(() => null);
+    return data && typeof data.counted === "boolean" ? data.counted : response.ok;
+  } catch (error) { console.error("[Boztik Deliver] recordShare failed:", error); return false; }
+}
 
 async function signedUrl(file, intent) {
   const response = await fetch(`${config.apiBaseUrl}/api/public/delivery/${encodeURIComponent(file.delivery_id)}/files/${encodeURIComponent(file.id)}/access`, {
