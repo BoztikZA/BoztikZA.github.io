@@ -25,7 +25,7 @@ import {
   formatLabelFor
 } from "./fileinfo.js";
 
-import { initShare } from "./share.js";
+import { createDeliveryAnimationController } from "./animations/controller.js";
 
 
 /* =========================================================
@@ -56,6 +56,12 @@ const els = {
 
   errorDetail:
     $("deliver-error-detail"),
+
+  animationLayer:
+    $("deliver-animation-layer"),
+
+  animationReplay:
+    $("deliver-animation-replay"),
 
 
   title:
@@ -3927,21 +3933,6 @@ async function init() {
 
 
     /* =====================================================
-       SHARE BUTTON + TRACKING
-    ===================================================== */
-
-    /*
-      Wire the share button now that we know the delivery is
-      live and has files. Recorded server-side as an
-      aggregate counter (never per-visitor).
-    */
-
-    initShare(
-      delivery
-    );
-
-
-    /* =====================================================
        BUILD FILE LIST
     ===================================================== */
 
@@ -4255,6 +4246,37 @@ async function init() {
     if (isPhotoshopBattlesDelivery) {
       applyPhotoshopBattlesPresentation();
       loadAd();
+    }
+
+    /*
+      Premium Delivery Animations — entirely optional and backend-free.
+      The chosen animation (if any) travels as a query param on this
+      page's own URL, e.g. ?id=BZ-XXXX&anim=congratulations — nothing
+      is read from the delivery record itself. PhotoshopBattles pages
+      are a Reddit utility, not a personal delivery, so they never play
+      one even if a stray "anim" param is present.
+
+      Wrapped in its own try/catch, separate from the outer one: an
+      animation failing to initialize must never surface the full-page
+      error state or affect anything else on this page.
+    */
+    try {
+      if (!isPhotoshopBattlesDelivery) {
+        const animationId =
+          new URLSearchParams(location.search)
+            .get("anim")
+            ?.trim()
+            .toLowerCase();
+
+        const animationController =
+          createDeliveryAnimationController(
+            els.animationLayer,
+            els.animationReplay
+          );
+        animationController.start(animationId);
+      }
+    } catch (animationError) {
+      console.error("[Boztik Deliver] Animation failed to initialize:", animationError);
     }
 
 

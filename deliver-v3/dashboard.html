@@ -22,6 +22,7 @@
   <link rel="stylesheet" href="../styles-premium.css">
   <link rel="stylesheet" href="css/deliver.css?v=8">
   <link rel="stylesheet" href="css/command-centre.css?v=1">
+  <link rel="stylesheet" href="css/deliver-animations.css?v=1">
 
   <style>
     /* =====================================================
@@ -882,6 +883,63 @@
 
 
               <!-- =========================================
+                   DELIVERY EXPERIENCE — Premium Delivery Animations
+                   Entirely optional, explicit opt-in only. Never
+                   inferred from the notes above. Options are built
+                   from js/animations/registry.js at runtime — this
+                   list is never hand-duplicated in markup.
+              ========================================== -->
+
+              <div class="dash-form-section" id="dash-animation-section">
+
+                <div class="dash-form-section-heading">
+
+                  <span class="dash-section-eyebrow">
+                    Delivery Experience
+                  </span>
+
+                  <span class="dash-form-section-note">
+                    Optional
+                  </span>
+
+                </div>
+
+                <p class="dash-field-help">
+                  Plays once when the client opens the link. Purely
+                  decorative — it never changes what the delivery
+                  notes say.
+                </p>
+
+                <div class="dash-field">
+
+                  <label for="dash-animation">
+                    Animation
+                  </label>
+
+                  <div class="dash-animation-row">
+
+                    <select
+                      id="dash-animation"
+                      name="animation"
+                    ></select>
+
+                    <button
+                      type="button"
+                      class="dash-btn--ghost dash-compact"
+                      id="dash-animation-preview"
+                      disabled
+                    >
+                      Preview
+                    </button>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+
+              <!-- =========================================
                    REDDIT SOURCE (OPTIONAL)
                    Independent of Delivery Type above — attaches the
                    original Reddit post this edit is based on, shown
@@ -1549,19 +1607,6 @@
           <div id="cc-pages-body"><p class="cc-muted">Loading…</p></div>
         </article>
 
-        <article class="cc-card" aria-labelledby="cc-shares-title">
-          <header class="cc-card-head">
-            <div><span class="cc-eyebrow">Deliveries + PhotoshopBattles</span><h2 id="cc-shares-title">How deliveries get shared</h2><p class="cc-card-desc">Share / copy actions fired from public delivery pages.</p></div>
-          </header>
-          <div class="cc-kpis cc-kpis--totals">
-            <article class="cc-kpi"><header><span>Shares · today</span></header><strong class="cc-kpi-val" id="share-today">0</strong></article>
-            <article class="cc-kpi"><header><span>Shares · 7 days</span></header><strong class="cc-kpi-val" id="share-7d">0</strong></article>
-            <article class="cc-kpi"><header><span>Shares · 30 days</span></header><strong class="cc-kpi-val" id="share-month">0</strong></article>
-            <article class="cc-kpi"><header><span>Shares · all time</span></header><strong class="cc-kpi-val" id="share-total">0</strong></article>
-          </div>
-          <div id="cc-shares-body"><p class="cc-muted">Loading…</p></div>
-        </article>
-
         <article class="cc-card dash-battle-analytics-panel" aria-labelledby="cc-battle-title">
           <header class="cc-card-head">
             <div><span class="cc-eyebrow">PhotoshopBattles</span><h2 id="cc-battle-title">Reddit image performance</h2><p class="cc-card-desc">Direct image requests are counted as views, the same way as client deliveries.</p></div>
@@ -1789,6 +1834,78 @@
 
 
       <!-- =================================================
+           ANIMATION PREVIEW MODAL
+           Shared by the Create form and Edit modal's Preview
+           buttons. Runs the exact production animation
+           implementation (js/animations/registry.js) — never a
+           separate demo version. Purely local: no network call,
+           no analytics, no effect on any stored delivery.
+      ================================================== -->
+
+      <div
+        id="dash-animation-preview-modal"
+        class="dash-modal"
+        hidden
+        aria-hidden="true"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="dash-animation-preview-title"
+      >
+
+        <div class="dash-modal-backdrop"></div>
+
+        <div class="dash-modal-card" id="dash-animation-preview-modal-card">
+
+          <button
+            type="button"
+            class="dash-modal-close"
+            id="dash-animation-preview-close"
+            aria-label="Close preview"
+          >
+            ×
+          </button>
+
+          <span class="dash-section-eyebrow">
+            ANIMATION PREVIEW
+          </span>
+
+          <h2 id="dash-animation-preview-title">
+            Animation
+          </h2>
+
+          <p
+            id="dash-animation-preview-description"
+            class="dash-field-help"
+          ></p>
+
+          <div
+            id="dash-animation-preview-stage"
+            class="dash-animation-preview-stage"
+          ></div>
+
+          <div class="dash-animation-preview-caption">
+
+            <span>
+              Plays automatically. Replaying here does not affect
+              any delivery.
+            </span>
+
+            <button
+              type="button"
+              class="dash-btn--ghost dash-compact"
+              id="dash-animation-preview-replay"
+            >
+              Replay
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- =================================================
            EDIT DELIVERY MODAL
       ================================================== -->
 
@@ -1974,6 +2091,65 @@
                 id="dash-edit-notes"
                 rows="5"
               ></textarea>
+
+            </div>
+
+
+            <!-- =========================================
+                 DELIVERY EXPERIENCE — Premium Delivery Animations
+                 Local-only: this choice reaches the client through
+                 the delivery LINK itself, never through the server.
+                 Remembered on this browser only, so it can be
+                 pre-filled here after the fact — but changing it
+                 has no effect on a link already sent; the client
+                 must be given a freshly copied link to see it.
+            ========================================== -->
+
+            <div class="dash-form-section" id="dash-edit-animation-section">
+
+              <div class="dash-form-section-heading">
+
+                <span class="dash-section-eyebrow">
+                  Delivery Experience
+                </span>
+
+                <span class="dash-form-section-note">
+                  Optional
+                </span>
+
+              </div>
+
+              <p class="dash-field-help">
+                Remembered on this device only. Changing this has no
+                effect on a link you've already sent — copy the link
+                again afterward so the client sees it.
+              </p>
+
+              <div class="dash-field">
+
+                <label for="dash-edit-animation">
+                  Animation
+                </label>
+
+                <div class="dash-animation-row">
+
+                  <select
+                    id="dash-edit-animation"
+                    name="animation"
+                  ></select>
+
+                  <button
+                    type="button"
+                    class="dash-btn--ghost dash-compact"
+                    id="dash-edit-animation-preview"
+                    disabled
+                  >
+                    Preview
+                  </button>
+
+                </div>
+
+              </div>
 
             </div>
 

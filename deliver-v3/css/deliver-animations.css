@@ -1,0 +1,183 @@
+/* =========================================================
+   BOZTIK DELIVER — Premium Delivery Animations
+   Layer, canvas, light-sweep, reduced-motion badge and the
+   small replay control on the public delivery page, plus the
+   Command Centre's Preview stage. Additive — no existing rule
+   in deliver.css is touched or overridden here.
+========================================================= */
+
+/* ---- Live delivery page: full-viewport animation layer ---- */
+#deliver-animation-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 350;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.deliver-anim-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+/* ---- Light sweep (Welcome / Best Wishes / Thank You) ---- */
+.deliver-anim-sweep {
+  position: absolute;
+  top: -20%;
+  left: -50%;
+  width: var(--sweep-width, 34%);
+  height: 140%;
+  transform: rotate(var(--sweep-angle, 8deg));
+  background: linear-gradient(90deg, transparent, var(--sweep-color-mid, rgba(142, 255, 61, 0.5)), transparent);
+  filter: blur(2px);
+  animation: deliverSweepMove var(--sweep-duration, 2200ms) ease-in-out forwards;
+}
+
+@keyframes deliverSweepMove {
+  0%   { left: -50%; opacity: 0; }
+  12%  { opacity: 1; }
+  82%  { opacity: 1; }
+  100% { left: 130%; opacity: 0; }
+}
+
+/* ---- Reduced-motion presentation (replaces all elaborate motion) ---- */
+.deliver-anim-reduced-badge {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  transform: translate(-50%, -6px);
+  border: 1px solid var(--badge-color, #8eff3d);
+  border-radius: 999px;
+  background: rgba(10, 13, 18, 0.82);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  opacity: 0;
+  transition: opacity 400ms ease, transform 400ms ease;
+}
+
+.deliver-anim-reduced-badge.is-visible {
+  transform: translate(-50%, 0);
+  opacity: 1;
+}
+
+.deliver-anim-reduced-badge-icon {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--badge-color, #8eff3d);
+}
+
+/* ---- Replay control ---- */
+#deliver-animation-replay {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 360;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px 9px 12px;
+  border: 1px solid var(--deliver-border-strong, rgba(255, 255, 255, 0.14));
+  border-radius: 999px;
+  background: rgba(10, 13, 18, 0.78);
+  backdrop-filter: blur(8px);
+  color: var(--deliver-text-soft, #e2e8f0);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, transform 120ms ease;
+}
+
+#deliver-animation-replay svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+#deliver-animation-replay:hover {
+  border-color: var(--deliver-accent, #8eff3d);
+  background: rgba(14, 18, 14, 0.9);
+}
+
+#deliver-animation-replay:focus-visible {
+  outline: 2px solid var(--deliver-accent, #8eff3d);
+  outline-offset: 2px;
+}
+
+#deliver-animation-replay:active {
+  transform: scale(0.97);
+}
+
+@media (max-width: 640px) {
+  #deliver-animation-replay {
+    left: 12px;
+    bottom: 12px;
+    padding: 8px 14px 8px 11px;
+    font-size: 0.78rem;
+  }
+}
+
+/* ---- Command Centre: "Delivery Experience" field + Preview stage ---- */
+.dash-animation-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.dash-animation-row select {
+  flex: 1;
+}
+
+.dash-animation-row .dash-btn--ghost {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.dash-animation-row .dash-btn--ghost:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+#dash-animation-preview-modal .dash-modal-card {
+  width: min(640px, 100%);
+}
+
+.dash-animation-preview-stage {
+  position: relative;
+  overflow: hidden;
+  height: 320px;
+  margin: 18px 0 6px;
+  border: 1px solid var(--deliver-border, rgba(255, 255, 255, 0.06));
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 22% 20%, rgba(142, 255, 61, 0.10), transparent 55%),
+    radial-gradient(circle at 78% 82%, rgba(95, 227, 194, 0.08), transparent 55%),
+    var(--deliver-bg, #05070a);
+}
+
+.dash-animation-preview-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.82rem;
+  color: var(--deliver-text-muted, #94a3b8);
+}
+
+@media (max-width: 640px) {
+  .dash-animation-preview-stage { height: 240px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deliver-anim-sweep { animation: none; opacity: 0; }
+  #deliver-animation-replay,
+  .deliver-anim-reduced-badge { transition: none; }
+}
