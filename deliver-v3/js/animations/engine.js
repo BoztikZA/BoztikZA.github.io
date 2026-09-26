@@ -141,6 +141,25 @@ export const shapes = {
     ctx.restore();
   },
 
+  /** Generic jagged comic-impact starburst outline — a plain geometric
+   *  shape (alternating outer/inner radius), not tied to any brand,
+   *  character, or person. */
+  burstStar(ctx, size, color, alpha = 1, points = 10) {
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    for (let i = 0; i < points * 2; i++) {
+      const r = i % 2 === 0 ? size : size * 0.46;
+      const angle = (Math.PI / points) * i - Math.PI / 2;
+      const x = Math.cos(angle) * r, y = Math.sin(angle) * r;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  },
+
   petal(ctx, size, color, alpha = 1) {
     ctx.save();
     ctx.globalAlpha = alpha;

@@ -327,6 +327,18 @@ const CATALOG = [
     build(root) {
       return createRadialBurst(root, { duration: 4000, count: 20, color: "#fff3d0", originY: 0.4 });
     }
+  },
+
+  {
+    id: "big-laugh", name: "Big Laugh", label: "Comic Burst",
+    description: "A punchy comic-style starburst pops and resolves into a quick scatter of particles — playful, fast, and fun for lighter edits.",
+    duration: 3400, color: "#ffb238",
+    build(root) {
+      return createRadialBurst(root, {
+        duration: 3400, count: 26, color: "#ffb238", originY: 0.42,
+        icon: (ctx, size, a) => shapes.burstStar(ctx, size * 1.35, "#ff5d73", a, 9)
+      });
+    }
   }
 ];
 
