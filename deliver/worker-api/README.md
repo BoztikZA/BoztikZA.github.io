@@ -40,10 +40,29 @@ Create `.dev.vars` (git-ignored) with the three secret names, then:
 npm run db:migrate:local
 npx wrangler dev --local --port 8787 --var STORAGE_LIMIT_BYTES:5242880 --var ALLOWED_ORIGINS:http://localhost:8000
 BASE=http://localhost:8787 E2E_USER=<user> E2E_PASS=<pass> npm run test:e2e        # API suite
+node scripts/milestone-test.mts                                                   # unit tests for milestone rules
 node scripts/client-contract.mjs                                                    # real frontend modules vs the Worker
 # real 3 GiB boundary: restart WITHOUT the STORAGE_LIMIT_BYTES override, then E2E_HARD=1 ... npm run test:e2e
 ```
 Note: under `wrangler dev` signed URLs carry the route hostname (`deliver-api.boztik.com`); the tests rewrite it.
+
+## Milestone notification emails (backend-only)
+
+When a cumulative lifetime count reaches a milestone, the Command Centre emails the owner. Milestones are
+checked in the **background** (`ctx.waitUntil`) so a slow/failed email can never block, slow, or break the
+analytics event that triggered it. Deduplication is database-backed (`notify_milestones`, PK `metric+milestone`
+claimed with `INSERT OR IGNORE`), so concurrent events cannot double-send.
+
+Metrics & spacing: **views** every 1,000 · **downloads** every 10 · **shares** (completed shares only) every 10 ·
+**deliveries** a fixed ladder `10, 25, 50, 100, 250, 500, 1000` then ×2.5 / ×2 / ×2.
+
+- First run per metric records a baseline — already-passed thresholds are marked as sent **without emailing**, so
+  existing production data never triggers a flood of historical emails.
+- Master switch: var `MILESTONE_EMAILS_ENABLED` (default `"1"`; set `"0"` to disable without touching code).
+- Secrets (see `src/types.ts`): `NOTIFY_EMAIL_TO`, `NOTIFY_EMAIL_FROM`, `EMAIL_PROVIDER_URL`,
+  `EMAIL_PROVIDER_KEY` (optional bearer key) — set with `npx wrangler secret put …`.
+- Rules live in `src/lib/milestones.ts` (pure, unit-tested by `scripts/milestone-test.mts`); the engine is
+  `src/lib/notify.ts`. Requires migration `0004_milestone_notifications.sql`.
 
 ## Cutover
 Completed: the active frontend lives in `deliver-v3/` and talks only to this Worker. The legacy Supabase

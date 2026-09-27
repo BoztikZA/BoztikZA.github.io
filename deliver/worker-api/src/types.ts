@@ -21,6 +21,15 @@ export interface Env {
   ADMIN_USERNAME: string;
   ADMIN_PASSWORD_HASH: string;
   AUTH_TOKEN_SALT: string;
+
+  // Milestone notification emails (backend-only; all optional).
+  // MILESTONE_EMAILS_ENABLED  var,   default "1"; set "0" to disable the feature.
+  // The rest are secrets, never committed. See README "Email notifications".
+  MILESTONE_EMAILS_ENABLED?: string;
+  NOTIFY_EMAIL_TO?: string;        // owner / admin recipient address
+  NOTIFY_EMAIL_FROM?: string;      // verified sender address
+  EMAIL_PROVIDER_URL?: string;     // outbound email HTTP API endpoint
+  EMAIL_PROVIDER_KEY?: string;     // API key for that endpoint
 }
 
 export interface DeliveryRow {

@@ -8,7 +8,7 @@ import { scheduled as runScheduled } from "./scheduled";
 const API = "/api";
 
 export default {
-  async fetch(request: Request, env: Env, _ctx: ExecutionContext): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const path = new URL(request.url).pathname;
     const scope = path.startsWith(`${API}/public/`) ? "public" : "admin";
 
@@ -22,11 +22,11 @@ export default {
       if (path === `${API}/health` || path === "/health") {
         response = json({ status: "ok", service: "boztik-deliver-api", time: new Date().toISOString() });
       } else if (path.startsWith(`${API}/public/`)) {
-        response = await handlePublic(request, path.slice(`${API}/public/`.length), env);
+        response = await handlePublic(request, path.slice(`${API}/public/`.length), env, ctx);
       } else if (path.startsWith(`${API}/auth/`)) {
         response = await handleAuth(request, path.slice(`${API}/auth/`.length), env);
       } else if (path.startsWith(`${API}/admin/`)) {
-        response = await handleAdmin(request, path.slice(`${API}/admin/`.length), env);
+        response = await handleAdmin(request, path.slice(`${API}/admin/`.length), env, ctx);
       } else {
         response = error("Not found", 404);
       }

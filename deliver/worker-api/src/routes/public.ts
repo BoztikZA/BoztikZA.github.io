@@ -17,20 +17,20 @@ import {
 const PREVIEW_TTL = 300;
 const DOWNLOAD_TTL = 120;
 
-export function handlePublic(request: Request, path: string, env: Env): Promise<Response> {
+export function handlePublic(request: Request, path: string, env: Env, ctx: ExecutionContext): Promise<Response> {
   return wrap(async () => {
     const seg = segments(path);
     switch (seg[0]) {
       case "health":
         return json({ status: "ok", service: "boztik-deliver-api", time: new Date().toISOString() });
       case "delivery":
-        return routeDelivery(request, seg, env);
+        return routeDelivery(request, seg, env, ctx);
       case "blob":
         checkPublicRate(request, env, "blob", 4);
-        return serveBlob(request, seg, env);
+        return serveBlob(request, seg, env, ctx);
       case "photoshop-battles-image":
         checkPublicRate(request, env, "blob", 4);
-        return servePhotoshopBattlesImage(request, seg[1] ?? "", env);
+        return servePhotoshopBattlesImage(request, seg[1] ?? "", env, ctx);
       case "pageview":
         return pageView(request, env);
       default:
@@ -42,7 +42,7 @@ export function handlePublic(request: Request, path: string, env: Env): Promise<
 const isActive = (row: { expires_at: number; files_removed_at: number | null }) =>
   row.expires_at > nowSec() && row.files_removed_at === null;
 
-async function routeDelivery(request: Request, seg: string[], env: Env): Promise<Response> {
+async function routeDelivery(request: Request, seg: string[], env: Env, ctx: ExecutionContext): Promise<Response> {
   checkPublicRate(request, env);
   const id = seg[1];
   if (!isValidDeliveryId(id)) return error("Not found", 404);
@@ -54,11 +54,11 @@ async function routeDelivery(request: Request, seg: string[], env: Env): Promise
   }
   if (action === "view" && seg.length === 3) {
     if (request.method !== "POST") return error("Method not allowed", 405);
-    return trackView(request, id, env);
+    return trackView(request, id, env, ctx);
   }
   if (action === "share" && seg.length === 3) {
     if (request.method !== "POST") return error("Method not allowed", 405);
-    return trackShare(request, id, env);
+    return trackShare(request, id, env, ctx);
   }
   if (action === "files" && seg.length === 5 && seg[4] === "access") {
     if (request.method !== "POST") return error("Method not allowed", 405);
@@ -116,24 +116,24 @@ async function publicDelivery(id: string, env: Env): Promise<Response> {
   });
 }
 
-async function trackView(request: Request, id: string, env: Env): Promise<Response> {
+async function trackView(request: Request, id: string, env: Env, ctx: ExecutionContext): Promise<Response> {
   assertSameSiteOrigin(request, env);
   let preview = false;
   try { preview = (await readJson(request, 1024)).preview === true; } catch { /* no body is fine */ }
   // preview=1 only suppresses counting when it comes with a VALID admin session.
   if (preview && (await optionalSession(request, env))) return json({ ok: true, counted: false, reason: "admin_preview" });
-  return json({ ok: true, counted: await recordView(env, id) });
+  return json({ ok: true, counted: await recordView(env, id, ctx) });
 }
 
 /** Records a share/copy action fired from the delivery page. Never throws — sharing
  *  must never be blocked or slowed by analytics. Unknown methods are ignored, and
  *  only ACTIVE deliveries count (recordShare enforces that). */
-async function trackShare(request: Request, id: string, env: Env): Promise<Response> {
+async function trackShare(request: Request, id: string, env: Env, ctx: ExecutionContext): Promise<Response> {
   assertSameSiteOrigin(request, env);
   let method = "";
   try { const b = await readJson(request, 1024); method = typeof b.method === "string" ? b.method : ""; } catch { /* no body -> nothing to record */ }
   if (!isValidShareMethod(method)) return json({ ok: true, counted: false });
-  return json({ ok: true, counted: await recordShare(env, id, method) });
+  return json({ ok: true, counted: await recordShare(env, id, method, ctx) });
 }
 
 async function fileAccess(request: Request, deliveryId: string, fileId: string, env: Env): Promise<Response> {
@@ -199,7 +199,7 @@ const FILE_SECURITY = {
   "Cache-Control": "private, no-store",
 };
 
-async function serveBlob(request: Request, seg: string[], env: Env): Promise<Response> {
+async function serveBlob(request: Request, seg: string[], env: Env, ctx: ExecutionContext): Promise<Response> {
   if (request.method !== "GET" && request.method !== "HEAD") return error("Method not allowed", 405);
   const deliveryId = seg[1];
   const fileId = seg[2];
@@ -237,14 +237,14 @@ async function serveBlob(request: Request, seg: string[], env: Env): Promise<Res
 
   // Count a download only when a full download actually starts (not HEAD, not a resumed range).
   if (mode === "d" && request.method === "GET" && (!range || range.offset === 0)) {
-    try { await recordDownload(env, deliveryId); } catch (e) { console.error("recordDownload failed", e); }
+    try { await recordDownload(env, deliveryId, ctx); } catch (e) { console.error("recordDownload failed", e); }
   }
   if (request.method === "HEAD") { await obj.body?.cancel(); return new Response(null, { status: range ? 206 : 200, headers }); }
   return new Response(obj.body, { status: range ? 206 : 200, headers });
 }
 
 /** Stable direct image URL for Reddit: /photoshop-battles-image/<id>--<token>.<jpg|png> */
-async function servePhotoshopBattlesImage(request: Request, name: string, env: Env): Promise<Response> {
+async function servePhotoshopBattlesImage(request: Request, name: string, env: Env, ctx: ExecutionContext): Promise<Response> {
   if (request.method !== "GET" && request.method !== "HEAD") return error("Method not allowed", 405);
   const m = /^(BZ-[A-Z0-9]{6,12})--([a-f0-9]{32})\.(jpg|jpeg|png)$/i.exec(decodeURIComponent(name).slice(0, 120));
   if (!m) return error("Invalid PhotoshopBattles image URL.", 400);
@@ -269,7 +269,7 @@ async function servePhotoshopBattlesImage(request: Request, name: string, env: E
   if (!obj) return error("Image not found.", 404);
 
   if (request.method === "GET") {
-    try { await recordView(env, id); } catch (e) { console.error("battle view failed", e); }
+    try { await recordView(env, id, ctx); } catch (e) { console.error("battle view failed", e); }
   }
   const headers = {
     ...corsHeaders(request, env, "public"),

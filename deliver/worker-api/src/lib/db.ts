@@ -1,5 +1,6 @@
 import type { DeliveryFileRow, DeliveryRow, Env } from "../types";
 import { HttpError } from "../types";
+import { milestoneNotificationsEnabled, queueMilestoneCheck } from "./notify";
 
 export const nowSec = () => Math.floor(Date.now() / 1000);
 export const iso = (s: number): string => new Date(s * 1000).toISOString();
@@ -191,7 +192,7 @@ export interface NewDelivery {
 /** Creates the delivery and converts its stored uploads into file rows in ONE
  *  transaction. If any upload is not in the `stored` state for this delivery
  *  (e.g. swept, never finished) nothing is created. */
-export async function createDeliveryFromUploads(env: Env, a: NewDelivery): Promise<void> {
+export async function createDeliveryFromUploads(env: Env, a: NewDelivery, ctx: ExecutionContext): Promise<void> {
   const ph = a.uploadIds.map(() => "?").join(",");
   const created = nowSec();
   const stmts: D1PreparedStatement[] = [
@@ -237,6 +238,7 @@ export async function createDeliveryFromUploads(env: Env, a: NewDelivery): Promi
   if ((results[0]?.meta.changes ?? 0) !== 1) {
     throw new HttpError(409, "uploads_not_ready", "One or more uploads are missing, unfinished, or were already used. Upload the files again.");
   }
+  if (milestoneNotificationsEnabled(env)) queueMilestoneCheck(env, ctx, "deliveries");
 }
 
 const UPDATABLE = new Set([
@@ -256,7 +258,7 @@ export async function updateDeliveryFields(env: Env, id: string, fields: Record<
 // Analytics writes. These are aggregates only (no per-visitor rows, no IPs).
 // -----------------------------------------------------------------------------
 /** Counts a view for an ACTIVE delivery. Returns false when nothing was counted. */
-export async function recordView(env: Env, id: string): Promise<boolean> {
+export async function recordView(env: Env, id: string, ctx: ExecutionContext): Promise<boolean> {
   const ts = nowSec();
   const r = await env.DB.prepare(
     "UPDATE deliveries SET view_count = view_count + 1, last_viewed_at = ?1 WHERE id = ?2 AND expires_at > ?1 AND files_removed_at IS NULL",
@@ -268,10 +270,12 @@ export async function recordView(env: Env, id: string): Promise<boolean> {
     env.DB.prepare("INSERT INTO site_hourly_metrics (hour, views, downloads) VALUES (?1, 1, 0) ON CONFLICT (hour) DO UPDATE SET views = views + 1").bind(localHour(env, ts)),
     env.DB.prepare("INSERT INTO page_analytics (day, page, views) VALUES (?1, 'deliver', 1) ON CONFLICT (day, page) DO UPDATE SET views = views + 1").bind(localDay(env, ts)),
   ]);
+  // Milestone emails run in the background; they can never break this event.
+  if (milestoneNotificationsEnabled(env)) queueMilestoneCheck(env, ctx, "views");
   return true;
 }
 
-export async function recordDownload(env: Env, id: string): Promise<boolean> {
+export async function recordDownload(env: Env, id: string, ctx: ExecutionContext): Promise<boolean> {
   const ts = nowSec();
   const r = await env.DB.prepare(
     "UPDATE deliveries SET download_count = download_count + 1, last_downloaded_at = ?1 WHERE id = ?2 AND expires_at > ?1 AND files_removed_at IS NULL",
@@ -282,6 +286,7 @@ export async function recordDownload(env: Env, id: string): Promise<boolean> {
     env.DB.prepare("INSERT INTO delivery_daily_metrics (delivery_id, day, views, downloads) VALUES (?1, ?2, 0, 1) ON CONFLICT (delivery_id, day) DO UPDATE SET downloads = downloads + 1").bind(id, localDay(env, ts)),
     env.DB.prepare("INSERT INTO site_hourly_metrics (hour, views, downloads) VALUES (?1, 0, 1) ON CONFLICT (hour) DO UPDATE SET downloads = downloads + 1").bind(localHour(env, ts)),
   ]);
+  if (milestoneNotificationsEnabled(env)) queueMilestoneCheck(env, ctx, "downloads");
   return true;
 }
 
@@ -294,7 +299,7 @@ export const shareKind = (method: string): "completed" | "attempted" | null =>
       : null;
 
 /** Records a share/copy action for an ACTIVE delivery. Returns false when nothing was counted. */
-export async function recordShare(env: Env, id: string, method: string): Promise<boolean> {
+export async function recordShare(env: Env, id: string, method: string, ctx: ExecutionContext): Promise<boolean> {
   const kind = shareKind(method);
   if (!kind) return false;
   const ts = nowSec();
@@ -309,6 +314,7 @@ export async function recordShare(env: Env, id: string, method: string): Promise
        VALUES (?1, ?2, ?3, ?4, ?5, 1)
        ON CONFLICT (delivery_id, day, page_type, method, kind) DO UPDATE SET count = count + 1`,
   ).bind(id, localDay(env, ts), pageType, method, kind).run();
+  if (kind === "completed" && milestoneNotificationsEnabled(env)) queueMilestoneCheck(env, ctx, "shares");
   return true;
 }
 

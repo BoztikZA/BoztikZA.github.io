@@ -22,13 +22,13 @@ import {
 } from "../lib/validate";
 import { error, json, readJson, requireJson, segments, wrap } from "./util";
 
-export function handleAdmin(request: Request, path: string, env: Env): Promise<Response> {
+export function handleAdmin(request: Request, path: string, env: Env, ctx: ExecutionContext): Promise<Response> {
   return wrap(async () => {
     await requireSession(request, env); // EVERY admin route is authenticated, no exceptions
     const seg = segments(path); // e.g. ['deliveries', 'BZ-XXXX', 'duplicate']
     switch (seg[0]) {
       case "uploads": return routeUploads(request, seg, env);
-      case "deliveries": return routeDeliveries(request, seg, env);
+      case "deliveries": return routeDeliveries(request, seg, env, ctx);
       case "cleanup": return request.method === "POST" ? runCleanup(env) : error("Method not allowed", 405);
       case "storage": return routeStorage(request, seg, env);
       case "analytics": return routeAnalytics(request, seg, env);
@@ -177,11 +177,11 @@ async function abortUpload(uploadId: string, env: Env): Promise<Response> {
 // =============================================================================
 // DELIVERIES
 // =============================================================================
-async function routeDeliveries(request: Request, seg: string[], env: Env): Promise<Response> {
+async function routeDeliveries(request: Request, seg: string[], env: Env, ctx: ExecutionContext): Promise<Response> {
   const id = seg[1];
   if (!id) {
     if (request.method === "GET") return listDeliveries(request, env);
-    if (request.method === "POST") return createDelivery(request, env);
+    if (request.method === "POST") return createDelivery(request, env, ctx);
     return error("Method not allowed", 405);
   }
   if (!isValidDeliveryId(id)) throw new HttpError(400, "invalid_delivery_id", "Invalid delivery id.");
@@ -197,7 +197,7 @@ async function routeDeliveries(request: Request, seg: string[], env: Env): Promi
     if (!(await getDelivery(env, id))) throw new HttpError(404, "not_found", "Delivery not found.");
     return json({ ok: true, series: await getDeliveryDailySeries(env, id, 30) });
   }
-  if (request.method === "POST" && action === "duplicate") return duplicateDelivery(id, env);
+  if (request.method === "POST" && action === "duplicate") return duplicateDelivery(id, env, ctx);
   if (request.method === "POST" && action === "expire") return expireNow(id, env);
   if (request.method === "POST" && action === "remove-file") return removeFile(request, id, env);
   return error("Not found", 404);
@@ -225,7 +225,7 @@ async function deliveryDetail(id: string, env: Env, status = 200): Promise<Respo
 }
 
 /** Step 3. Turn stored uploads into a delivery (atomically). */
-async function createDelivery(request: Request, env: Env): Promise<Response> {
+async function createDelivery(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
   requireJson(request);
   const b = await readJson(request);
 
@@ -286,7 +286,7 @@ async function createDelivery(request: Request, env: Env): Promise<Response> {
     redditUrl: rs?.url ?? null,
     redditSource: rs?.json ?? null,
     uploadIds,
-  });
+  }, ctx);
   return deliveryDetail(id, env, 201);
 }
 
@@ -364,7 +364,7 @@ async function deleteDelivery(id: string, env: Env): Promise<Response> {
 
 /** Copy a delivery (new id, new direct token, fresh counters). Every byte is
  *  reserved against the 3 GB cap BEFORE it is copied, exactly like an upload. */
-async function duplicateDelivery(id: string, env: Env): Promise<Response> {
+async function duplicateDelivery(id: string, env: Env, ctx: ExecutionContext): Promise<Response> {
   const src = await getDelivery(env, id);
   if (!src) throw new HttpError(404, "not_found", "Delivery not found.");
   if (src.files_removed_at !== null || src.expires_at <= nowSec()) throw new HttpError(409, "expired", "An expired delivery cannot be duplicated.");
@@ -410,7 +410,7 @@ async function duplicateDelivery(id: string, env: Env): Promise<Response> {
       redditUrl: src.reddit_url,
       redditSource: src.reddit_source,
       uploadIds: made.map((m) => m.upload_id),
-    });
+    }, ctx);
   } catch (e) {
     for (const p of made) await rollbackDuplicatePart(env, p);
     throw e;
