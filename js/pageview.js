@@ -29,6 +29,7 @@
       "/portfolio.html": "portfolio",
       "/image-inspector.html": "tools",
       "/creative-assistant.html": "tools",
+      "/creative-toolkit.html": "toolkit",
       "/guides.html": "guides",
       "/guide-photo-restoration.html": "guides",
       "/guide-object-removal.html": "guides",

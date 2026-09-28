@@ -3065,3 +3065,132 @@ footer h3 {
 @media (max-width: 520px) {
   .toolkit-release .whats-new-grid { grid-template-columns: 1fr; gap: 22px; }
 }
+
+/* ============================================================
+   Boztik Creative Toolkit — product landing page (creative-toolkit.html)
+   Appended additively. Reuses design tokens and existing components
+   (.page-hero, .v3-pill, .support-button, .cta-green, .section-heading,
+   .policy-card, .accordion, .cta-card, .adsense-*).
+   ============================================================ */
+.toolkits-pad { padding: 60px 24px; }
+
+.toolkits-hero__lede { margin: 18px auto 26px; }
+
+.toolkits-cta-row {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 10px;
+}
+.toolkits-cta-row .support-button,
+.toolkits-cta-row .secondary-link { min-width: 210px; justify-content: center; }
+
+.toolkits-hero__note {
+  margin: 20px auto 0;
+  max-width: 540px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.toolkits-showcase {
+  max-width: 1000px;
+  margin: 26px auto 0;
+  padding: 0 24px;
+}
+.toolkits-showcase img {
+  width: 100%;
+  height: auto;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+}
+
+.toolkitf-grid {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+@media (max-width: 1000px) { .toolkitf-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px)  { .toolkitf-grid { grid-template-columns: 1fr; } }
+.toolkitf-card {
+  background: rgba(17, 24, 26, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 18px;
+  padding: 22px;
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+.toolkitf-card:hover { transform: translateY(-5px); border-color: var(--primary); }
+.toolkitf-card h3 {
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  margin-bottom: 10px;
+}
+.toolkitf-card p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; }
+
+.toolkit-steps {
+  max-width: 980px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+@media (max-width: 760px) { .toolkit-steps { grid-template-columns: 1fr; } }
+.toolkit-step {
+  background: rgba(17, 24, 26, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+  padding: 26px;
+}
+.toolkit-step__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #041107;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  margin-bottom: 14px;
+}
+.toolkit-step h3 { font-family: var(--font-heading); font-size: 1.15rem; margin-bottom: 8px; }
+.toolkit-step p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; }
+
+.toolkits-privacy__grid {
+  max-width: 1080px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+@media (max-width: 860px) { .toolkits-privacy__grid { grid-template-columns: 1fr; } }
+.toolkits-privacy__grid .policy-card { background: rgba(17, 24, 26, 0.7); }
+.toolkits-privacy__legal {
+  max-width: 1080px;
+  margin: 22px auto 0;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+.toolkits-privacy__legal a { color: var(--primary); }
+
+.toolkits-faq__accordion { max-width: 760px; margin: 0 auto; }
+.toolkits-final-cta .cta-card { text-align: center; }
+.toolkits-final-cta .support-actions { justify-content: center; }
+
+/* Creative Toolkit link inside homepage ecosystem card */
+.ecosystem-card a.ecosystem-link {
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 0.92rem;
+  text-decoration: none;
+}
+.ecosystem-card a.ecosystem-link:hover { text-decoration: underline; }
+
+@media (prefers-reduced-motion: reduce) {
+  .toolkitf-card, .toolkit-step { transition: none; }
+}
