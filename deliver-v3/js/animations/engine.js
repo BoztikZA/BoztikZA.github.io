@@ -281,6 +281,222 @@ export const shapes = {
     ctx.arc(size * 0.55, size * 0.58, size * 0.06, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
+  },
+
+  /** Round jack-o'-lantern silhouette with glowing carved features —
+   *  tasteful/simple, not a detailed cartoon character. */
+  pumpkin(ctx, size, color, alpha = 1, glowColor = "#ffb238") {
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = color;
+    for (const dx of [-size * 0.45, 0, size * 0.45]) {
+      ctx.beginPath();
+      ctx.ellipse(dx, 0, size * 0.58, size * 0.72, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = colorWithAlpha("#5a6b2e", alpha);
+    ctx.fillRect(-size * 0.08, -size * 0.95, size * 0.16, size * 0.28);
+    ctx.fillStyle = colorWithAlpha(glowColor, alpha);
+    ctx.save();
+    ctx.shadowColor = glowColor;
+    ctx.shadowBlur = size * 0.5;
+    const eye = size * 0.16;
+    for (const dx of [-size * 0.24, size * 0.24]) {
+      ctx.beginPath();
+      ctx.moveTo(dx - eye * 0.5, size * 0.02);
+      ctx.lineTo(dx + eye * 0.5, size * 0.02);
+      ctx.lineTo(dx, -eye * 0.55);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.beginPath();
+    const mw = size * 0.5, my = size * 0.32, teeth = 5;
+    ctx.moveTo(-mw, my);
+    for (let i = 0; i <= teeth; i++) {
+      const x = -mw + (mw * 2 * i) / teeth;
+      ctx.lineTo(x, my + (i % 2 === 0 ? size * 0.14 : 0));
+    }
+    ctx.lineTo(mw, my + size * 0.16);
+    ctx.lineTo(-mw, my + size * 0.16);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+    ctx.restore();
+  },
+
+  /** Original, simple laughing-face — squinting eyes, open laughing
+   *  mouth, one small tear. Generic/iconic, not a copy of any specific
+   *  emoji artwork or real person. */
+  laughFace(ctx, size, color, alpha = 1) {
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(0, 0, size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = colorWithAlpha("#3a2b0a", alpha);
+    ctx.lineWidth = Math.max(1, size * 0.09);
+    ctx.lineCap = "round";
+    for (const dx of [-size * 0.36, size * 0.36]) {
+      ctx.beginPath();
+      ctx.arc(dx, -size * 0.12, size * 0.22, Math.PI * 1.15, Math.PI * 1.85);
+      ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.arc(0, size * 0.2, size * 0.46, 0.15 * Math.PI, 0.85 * Math.PI);
+    ctx.stroke();
+    ctx.fillStyle = colorWithAlpha("#7a2b2b", alpha * 0.85);
+    ctx.beginPath();
+    ctx.arc(0, size * 0.24, size * 0.34, 0.2 * Math.PI, 0.8 * Math.PI);
+    ctx.fill();
+    ctx.fillStyle = colorWithAlpha("#7ec8f2", alpha * 0.9);
+    ctx.beginPath();
+    ctx.moveTo(size * 0.58, size * 0.02);
+    ctx.quadraticCurveTo(size * 0.72, size * 0.28, size * 0.58, size * 0.4);
+    ctx.quadraticCurveTo(size * 0.44, size * 0.28, size * 0.58, size * 0.02);
+    ctx.fill();
+    ctx.restore();
+  },
+
+  /** Two overlapping ring outlines — wedding rings, drawn as plain
+   *  stroked circles (no gems/detail), fully generic. */
+  ring(ctx, size, color, alpha = 1) {
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = Math.max(1.4, size * 0.16);
+    ctx.beginPath();
+    ctx.arc(-size * 0.32, size * 0.1, size * 0.55, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(size * 0.32, -size * 0.1, size * 0.55, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  },
+
+  /** Simple baby-bottle silhouette. */
+  bottle(ctx, size, color, alpha = 1) {
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.roundRect(-size * 0.32, -size * 0.1, size * 0.64, size * 1.05, size * 0.16);
+    ctx.fill();
+    ctx.fillStyle = colorWithAlpha("#ffffff", alpha * 0.55);
+    ctx.fillRect(-size * 0.24, size * 0.12, size * 0.48, size * 0.1);
+    ctx.fillRect(-size * 0.24, size * 0.34, size * 0.48, size * 0.1);
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.roundRect(-size * 0.16, -size * 0.42, size * 0.32, size * 0.36, size * 0.08);
+    ctx.fill();
+    ctx.fillStyle = colorWithAlpha("#f4e4c1", alpha);
+    ctx.beginPath();
+    ctx.ellipse(0, -size * 0.5, size * 0.14, size * 0.1, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  },
+
+  /** Simple front-facing pacifier: wide shield, ring handle, nipple. */
+  pacifier(ctx, size, color, alpha = 1) {
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, size * 0.66, size * 0.36, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = colorWithAlpha("#fdf6e8", alpha);
+    ctx.beginPath();
+    ctx.ellipse(0, -size * 0.44, size * 0.15, size * 0.24, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = colorWithAlpha("#fdf6e8", alpha);
+    ctx.lineWidth = Math.max(1.4, size * 0.13);
+    ctx.beginPath();
+    ctx.arc(0, size * 0.06, size * 0.22, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = colorWithAlpha("#ffffff", alpha * 0.35);
+    ctx.beginPath();
+    ctx.ellipse(-size * 0.3, -size * 0.08, size * 0.14, size * 0.07, -0.3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  },
+
+  /** Classic five-point star. */
+  star5(ctx, size, color, alpha = 1) {
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    for (let k = 0; k < 10; k++) {
+      const r = k % 2 === 0 ? size : size * 0.45;
+      const a = (Math.PI / 5) * k - Math.PI / 2;
+      k === 0 ? ctx.moveTo(Math.cos(a) * r, Math.sin(a) * r) : ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  },
+
+  /** Simple trophy cup silhouette (cup, two handles, stem, base). */
+  trophy(ctx, size, color, alpha = 1) {
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = color;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = Math.max(1.2, size * 0.1);
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(-size * 0.5, -size * 0.7);
+    ctx.lineTo(size * 0.5, -size * 0.7);
+    ctx.quadraticCurveTo(size * 0.5, size * 0.2, 0, size * 0.28);
+    ctx.quadraticCurveTo(-size * 0.5, size * 0.2, -size * 0.5, -size * 0.7);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(-size * 0.56, -size * 0.4, size * 0.24, Math.PI * 0.5, Math.PI * 1.5);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(size * 0.56, -size * 0.4, size * 0.24, -Math.PI * 0.5, Math.PI * 0.5);
+    ctx.stroke();
+    ctx.fillRect(-size * 0.08, size * 0.26, size * 0.16, size * 0.3);
+    ctx.fillRect(-size * 0.34, size * 0.54, size * 0.68, size * 0.16);
+    ctx.restore();
+  },
+
+  /** Rolled diploma scroll with a ribbon band. */
+  diploma(ctx, size, color, alpha = 1) {
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = color;
+    ctx.fillRect(-size * 0.55, -size * 0.17, size * 1.1, size * 0.34);
+    ctx.fillStyle = colorWithAlpha("#000000", 0.2);
+    for (const dx of [-size * 0.55, size * 0.55]) {
+      ctx.beginPath();
+      ctx.ellipse(dx, 0, size * 0.08, size * 0.17, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = "#c0392b";
+    ctx.fillRect(-size * 0.07, -size * 0.19, size * 0.14, size * 0.38);
+    ctx.restore();
+  },
+
+  /** Four-leaf clover made of four heart-shaped leaves plus a stem. */
+  clover(ctx, size, color, alpha = 1) {
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    for (let k = 0; k < 4; k++) {
+      ctx.save();
+      ctx.rotate((Math.PI / 2) * k);
+      ctx.translate(0, -size * 0.36);
+      shapes.heart(ctx, size * 0.72, color, alpha);
+      ctx.restore();
+    }
+    ctx.strokeStyle = color;
+    ctx.lineWidth = Math.max(1, size * 0.09);
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.quadraticCurveTo(size * 0.2, size * 0.5, size * 0.1, size * 0.95);
+    ctx.stroke();
+    ctx.restore();
   }
 };
 
@@ -583,7 +799,7 @@ export function createSnowfall(root, cfg) {
     const n = scaleCount(layerCfg.count);
     return Array.from({ length: n }, () => ({
       x: Math.random() * stage.width,
-      y: -20 - Math.random() * stage.height * 0.6,
+      y: -20 + Math.random() * (stage.height + 20),
       vy: layerCfg.speed * (0.8 + Math.random() * 0.4),
       vx: (Math.random() - 0.5) * layerCfg.sway,
       size: layerCfg.size * (0.75 + Math.random() * 0.5),
@@ -624,6 +840,61 @@ export function createSnowfall(root, cfg) {
 }
 
 /* ============================================================
+   FLOATING TEXT — DOM+CSS traveling text (anniversary and any
+   future text-based occasion). A plain, real heading element
+   fading in, drifting slowly across a wide arc, and fading out —
+   kept large enough to stay legible at common viewport widths,
+   never clipped.
+============================================================ */
+export function createFloatingText(root, cfg) {
+  let el = null;
+  let raf = null;
+
+  return {
+    play() {
+      el = document.createElement("div");
+      el.className = "deliver-anim-floating-text";
+      el.style.setProperty("--text-color", cfg.color);
+      el.textContent = cfg.text;
+      root.appendChild(el);
+
+      const decorEls = (cfg.accents || []).map(() => {
+        const d = document.createElement("span");
+        d.className = "deliver-anim-floating-text-accent";
+        el.appendChild(d);
+        return d;
+      });
+
+      let start = null;
+      const step = ts => {
+        if (start === null) start = ts;
+        const elapsed = ts - start;
+        const p = Math.min(1, elapsed / cfg.duration);
+        const env = envelope(p, 0.18, 0.3);
+        const travel = ease.inOutSine(p);
+        el.style.opacity = String(env);
+        el.style.transform =
+          `translate(-50%, -50%) translateX(${(travel - 0.5) * (cfg.travel ?? 60)}vw) translateY(${Math.sin(p * Math.PI) * -18}px)`;
+        decorEls.forEach((d, i) => {
+          const a = cfg.accents[i];
+          const local = Math.max(0, Math.min(1, (p - a.delay) / a.span));
+          d.style.opacity = String(envelope(local, 0.2, 0.3) * env);
+          d.style.transform = `translate(${a.x}px, ${a.y + Math.sin(p * Math.PI * 2 + i) * 6}px) scale(${a.scale ?? 1})`;
+        });
+        if (p < 1) raf = requestAnimationFrame(step);
+        else { el?.remove(); el = null; }
+      };
+      raf = requestAnimationFrame(step);
+    },
+    destroy() {
+      if (raf) cancelAnimationFrame(raf);
+      el?.remove();
+      el = null;
+    }
+  };
+}
+
+/* ============================================================
    REDUCED-MOTION FALLBACK — used for every animation id when the
    viewer has requested reduced motion. Never elaborate: a single
    soft badge fade in/out, no movement, no flashing.
@@ -645,5 +916,18 @@ export function createReducedMotionFallback(root, cfg) {
       el?.remove();
       el = null;
     }
+  };
+}
+
+/* ============================================================
+   COMBINE — run several effects as one play()/destroy() unit, so a
+   registry entry can layer (for example) a light sweep, floating
+   text and a particle field without any new lifecycle rules: the
+   controller still sees exactly one { play, destroy } object.
+============================================================ */
+export function combineEffects(...effects) {
+  return {
+    play() { effects.forEach(e => e.play()); },
+    destroy() { effects.forEach(e => e.destroy()); }
   };
 }

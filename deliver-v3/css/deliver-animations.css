@@ -41,6 +41,35 @@
   100% { left: 130%; opacity: 0; }
 }
 
+/* ---- Floating text (Anniversary and any future text occasion) ---- */
+.deliver-anim-floating-text {
+  position: absolute;
+  top: 38%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-weight: 800;
+  font-size: clamp(1.5rem, 5vw, 3.2rem);
+  color: var(--text-color, #f2c98a);
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5), 0 0 30px rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
+  max-width: 92vw;
+  text-align: center;
+  opacity: 0;
+  letter-spacing: 0.01em;
+}
+
+.deliver-anim-floating-text-accent {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--text-color, #f2c98a) 0%, transparent 70%);
+  opacity: 0;
+}
+
 /* ---- Reduced-motion presentation (replaces all elaborate motion) ---- */
 .deliver-anim-reduced-badge {
   position: absolute;

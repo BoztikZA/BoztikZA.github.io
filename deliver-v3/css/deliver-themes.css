@@ -1,0 +1,252 @@
+/* =========================================================
+   BOZTIK DELIVER — Persistent Occasion Themes
+   Applied once by js/animations/theme.js as
+   body[data-deliver-theme="<id>"] and left in place for the whole
+   viewing session — never removed by the animation controller's
+   stop()/destroy()/replay path.
+
+   Scope, deliberately: each theme re-tints the existing
+   --deliver-accent* custom properties (already used everywhere —
+   buttons, links, status pills, borders) and the ambient
+   .background-glow colors. Base --deliver-bg/-surface/-text/-border
+   tokens are never touched, so every theme is guaranteed to keep
+   the same text contrast and card readability as the default page —
+   no per-theme contrast audit required. A couple of the most
+   atmosphere-specific occasions (Halloween, Christmas) get one or two
+   additional decorative touches beyond color: a fixed, pointer-events:
+   none, negative-z-index ::before/::after wash — the same pattern
+   already used for the ambient .background-glow, so it never sits
+   above page content and never intercepts a click.
+
+   Nothing in this file ever obscures the header, modals, files, or
+   toasts, and no selector here ever changes an existing element's
+   position, size, or pointer-events — only colors and backgrounds,
+   on either an existing element or one of the fixed washes above.
+========================================================= */
+
+/* ---- condolences — ivory/silver, quiet and understated ---- */
+body[data-deliver-theme="condolences"] {
+  --deliver-accent: #c9d4e2;
+  --deliver-accent-hover: #dde4ee;
+  --deliver-accent-soft: rgba(201, 212, 226, 0.08);
+  --deliver-accent-border: rgba(201, 212, 226, 0.22);
+}
+body[data-deliver-theme="condolences"] .background-glow .glow1 { background: rgba(201, 212, 226, 0.1); }
+body[data-deliver-theme="condolences"] .background-glow .glow2 { background: rgba(180, 190, 205, 0.07); }
+
+/* ---- congratulations — Boztik green, unchanged (default identity) ---- */
+body[data-deliver-theme="congratulations"] .background-glow .glow1 { background: rgba(142, 255, 61, 0.16); }
+
+/* ---- birthday — festive multicolor, warm gold accent ---- */
+body[data-deliver-theme="birthday"] {
+  --deliver-accent: #ffd166;
+  --deliver-accent-hover: #ffdd8a;
+  --deliver-accent-soft: rgba(255, 209, 102, 0.09);
+  --deliver-accent-border: rgba(255, 209, 102, 0.24);
+}
+body[data-deliver-theme="birthday"] .background-glow .glow1 { background: rgba(255, 209, 102, 0.14); }
+body[data-deliver-theme="birthday"] .background-glow .glow2 { background: rgba(167, 139, 250, 0.09); }
+
+/* ---- anniversary — champagne gold, romantic ---- */
+body[data-deliver-theme="anniversary"] {
+  --deliver-accent: #f2c98a;
+  --deliver-accent-hover: #f6d8a8;
+  --deliver-accent-soft: rgba(242, 201, 138, 0.09);
+  --deliver-accent-border: rgba(242, 201, 138, 0.24);
+}
+body[data-deliver-theme="anniversary"] .background-glow .glow1 { background: rgba(242, 201, 138, 0.14); }
+body[data-deliver-theme="anniversary"] .background-glow .glow2 { background: rgba(231, 155, 176, 0.08); }
+
+/* ---- thank-you — warm gold appreciation ---- */
+body[data-deliver-theme="thank-you"] {
+  --deliver-accent: #ffcf6b;
+  --deliver-accent-hover: #ffdb8e;
+  --deliver-accent-soft: rgba(255, 207, 107, 0.09);
+  --deliver-accent-border: rgba(255, 207, 107, 0.22);
+}
+body[data-deliver-theme="thank-you"] .background-glow .glow1 { background: rgba(255, 207, 107, 0.14); }
+
+/* ---- wedding — champagne gold + blush, refined ---- */
+body[data-deliver-theme="wedding"] {
+  --deliver-accent: #e8c468;
+  --deliver-accent-hover: #eed489;
+  --deliver-accent-soft: rgba(232, 196, 104, 0.09);
+  --deliver-accent-border: rgba(232, 196, 104, 0.24);
+}
+body[data-deliver-theme="wedding"] .background-glow .glow1 { background: rgba(232, 196, 104, 0.12); }
+body[data-deliver-theme="wedding"] .background-glow .glow2 { background: rgba(231, 155, 176, 0.1); }
+
+/* ---- new-baby — soft pastel, gender-neutral ---- */
+body[data-deliver-theme="new-baby"] {
+  --deliver-accent: #c9e8d6;
+  --deliver-accent-hover: #ddf0e5;
+  --deliver-accent-soft: rgba(201, 232, 214, 0.09);
+  --deliver-accent-border: rgba(201, 232, 214, 0.24);
+}
+body[data-deliver-theme="new-baby"] .background-glow .glow1 { background: rgba(201, 232, 214, 0.13); }
+body[data-deliver-theme="new-baby"] .background-glow .glow2 { background: rgba(220, 211, 242, 0.1); }
+
+/* ---- graduation — gold achievement ---- */
+body[data-deliver-theme="graduation"] {
+  --deliver-accent: #ffd166;
+  --deliver-accent-hover: #ffdd8a;
+  --deliver-accent-soft: rgba(255, 209, 102, 0.09);
+  --deliver-accent-border: rgba(255, 209, 102, 0.24);
+}
+body[data-deliver-theme="graduation"] .background-glow .glow1 { background: rgba(255, 209, 102, 0.14); }
+
+/* ---- good-luck — green + gold, hopeful ---- */
+body[data-deliver-theme="good-luck"] {
+  --deliver-accent: #8eff3d;
+  --deliver-accent-hover: #a1ff63;
+}
+body[data-deliver-theme="good-luck"] .background-glow .glow1 { background: rgba(142, 255, 61, 0.14); }
+body[data-deliver-theme="good-luck"] .background-glow .glow2 { background: rgba(255, 209, 102, 0.08); }
+
+/* ---- get-well — calm, caring, non-medical green/blush ---- */
+body[data-deliver-theme="get-well"] {
+  --deliver-accent: #bfe3c9;
+  --deliver-accent-hover: #d2ecda;
+  --deliver-accent-soft: rgba(191, 227, 201, 0.09);
+  --deliver-accent-border: rgba(191, 227, 201, 0.22);
+}
+body[data-deliver-theme="get-well"] .background-glow .glow1 { background: rgba(191, 227, 201, 0.12); }
+
+/* ---- christmas — festive winter: cool blue, deep green, restrained red ---- */
+body[data-deliver-theme="christmas"] {
+  --deliver-accent: #bcdcff;
+  --deliver-accent-hover: #d3e8ff;
+  --deliver-accent-soft: rgba(188, 220, 255, 0.09);
+  --deliver-accent-border: rgba(188, 220, 255, 0.24);
+}
+body[data-deliver-theme="christmas"] .background-glow .glow1 { background: rgba(188, 220, 255, 0.14); }
+body[data-deliver-theme="christmas"] .background-glow .glow2 { background: rgba(45, 122, 80, 0.12); }
+body[data-deliver-theme="christmas"]::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  /* a single restrained red glow, low-alpha and corner-anchored so it
+     reads as a seasonal accent rather than a dominant color */
+  background: radial-gradient(ellipse 420px 320px at 8% 96%, rgba(198, 60, 70, 0.1), transparent 70%);
+}
+body[data-deliver-theme="christmas"] .deliver-meta-refined,
+body[data-deliver-theme="christmas"] .deliver-meta-compact {
+  border-color: rgba(188, 220, 255, 0.16);
+}
+
+/* ---- new-year — midnight blue + gold ---- */
+body[data-deliver-theme="new-year"] {
+  --deliver-accent: #8fb8ff;
+  --deliver-accent-hover: #aac9ff;
+  --deliver-accent-soft: rgba(143, 184, 255, 0.09);
+  --deliver-accent-border: rgba(143, 184, 255, 0.24);
+}
+body[data-deliver-theme="new-year"] .background-glow .glow1 { background: rgba(143, 184, 255, 0.15); }
+body[data-deliver-theme="new-year"] .background-glow .glow2 { background: rgba(255, 209, 102, 0.08); }
+
+/* ---- welcome — Boztik green, warm and inviting (default identity) ---- */
+body[data-deliver-theme="welcome"] .background-glow .glow1 { background: rgba(142, 255, 61, 0.16); }
+
+/* ---- best-wishes — soft periwinkle ---- */
+body[data-deliver-theme="best-wishes"] {
+  --deliver-accent: #dfe8ff;
+  --deliver-accent-hover: #eef2ff;
+  --deliver-accent-soft: rgba(223, 232, 255, 0.08);
+  --deliver-accent-border: rgba(223, 232, 255, 0.2);
+}
+body[data-deliver-theme="best-wishes"] .background-glow .glow1 { background: rgba(223, 232, 255, 0.12); }
+
+/* ---- with-love — rose + warm gold ---- */
+body[data-deliver-theme="with-love"] {
+  --deliver-accent: #f0a8bb;
+  --deliver-accent-hover: #f4bdcb;
+  --deliver-accent-soft: rgba(240, 168, 187, 0.09);
+  --deliver-accent-border: rgba(240, 168, 187, 0.24);
+}
+body[data-deliver-theme="with-love"] .background-glow .glow1 { background: rgba(240, 168, 187, 0.13); }
+body[data-deliver-theme="with-love"] .background-glow .glow2 { background: rgba(245, 201, 161, 0.08); }
+
+/* ---- farewell — autumn amber, reflective ---- */
+body[data-deliver-theme="farewell"] {
+  --deliver-accent: #c98a4b;
+  --deliver-accent-hover: #d69d64;
+  --deliver-accent-soft: rgba(201, 138, 75, 0.09);
+  --deliver-accent-border: rgba(201, 138, 75, 0.22);
+}
+body[data-deliver-theme="farewell"] .background-glow .glow1 { background: rgba(201, 138, 75, 0.12); }
+
+/* ---- achievement — warm gold-white ---- */
+body[data-deliver-theme="achievement"] {
+  --deliver-accent: #fff3d0;
+  --deliver-accent-hover: #fff8e6;
+  --deliver-accent-soft: rgba(255, 243, 208, 0.09);
+  --deliver-accent-border: rgba(255, 243, 208, 0.22);
+}
+body[data-deliver-theme="achievement"] .background-glow .glow1 { background: rgba(255, 243, 208, 0.14); }
+
+/* ---- big-laugh — playful coral + gold ---- */
+body[data-deliver-theme="big-laugh"] {
+  --deliver-accent: #ffcf5c;
+  --deliver-accent-hover: #ffdb80;
+  --deliver-accent-soft: rgba(255, 207, 92, 0.09);
+  --deliver-accent-border: rgba(255, 207, 92, 0.24);
+}
+body[data-deliver-theme="big-laugh"] .background-glow .glow1 { background: rgba(255, 93, 115, 0.12); }
+body[data-deliver-theme="big-laugh"] .background-glow .glow2 { background: rgba(255, 207, 92, 0.1); }
+
+/* ---- halloween — spooky, playful, orange + deep purple ---- */
+body[data-deliver-theme="halloween"] {
+  --deliver-accent: #ff8c1a;
+  --deliver-accent-hover: #ffa440;
+  --deliver-accent-soft: rgba(255, 140, 26, 0.1);
+  --deliver-accent-border: rgba(255, 140, 26, 0.26);
+}
+body[data-deliver-theme="halloween"] .background-glow .glow1 { background: rgba(255, 140, 26, 0.16); }
+body[data-deliver-theme="halloween"] .background-glow .glow2 { background: rgba(122, 58, 171, 0.14); }
+body[data-deliver-theme="halloween"]::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 120%, rgba(122, 58, 171, 0.16), transparent 60%);
+}
+/* Subtle drifting fog along the lower third — the one deliberate
+   exception to "themes are static": kept slow and low-contrast enough
+   to read as ambient rather than motion, and fully paused under
+   prefers-reduced-motion below. */
+body[data-deliver-theme="halloween"]::before {
+  content: "";
+  position: fixed;
+  left: -20%;
+  right: -20%;
+  bottom: -10%;
+  height: 42vh;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 55% 100% at 20% 100%, rgba(90, 70, 120, 0.1), transparent 70%),
+    radial-gradient(ellipse 60% 100% at 75% 100%, rgba(60, 50, 70, 0.09), transparent 70%);
+  filter: blur(2px);
+  animation: deliverHalloweenFogDrift 26s ease-in-out infinite alternate;
+}
+@keyframes deliverHalloweenFogDrift {
+  0%   { transform: translateX(-2%); }
+  100% { transform: translateX(2%); }
+}
+
+/* =========================================================
+   Reduced motion: themes are static color/background, with one
+   deliberate exception — Halloween's slow fog drift — which is
+   paused here, leaving its static gradient in place.
+========================================================= */
+@media (prefers-reduced-motion: reduce) {
+  body[data-deliver-theme="halloween"]::before {
+    animation: none;
+  }
+  body[data-deliver-theme] * {
+    transition: none !important;
+  }
+}

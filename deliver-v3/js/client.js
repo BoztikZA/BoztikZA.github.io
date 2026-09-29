@@ -26,8 +26,7 @@ import {
 } from "./fileinfo.js";
 
 import { createDeliveryAnimationController } from "./animations/controller.js";
-
-import { initShare } from "./share.js";
+import { applyDeliveryTheme } from "./animations/theme.js";
 
 
 /* =========================================================
@@ -3935,21 +3934,6 @@ async function init() {
 
 
     /* =====================================================
-       SHARE BUTTON + TRACKING
-    ===================================================== */
-
-    /*
-      Wire the share button now that we know the delivery is
-      live and has files. Recorded server-side as an
-      aggregate counter (never per-visitor).
-    */
-
-    initShare(
-      delivery
-    );
-
-
-    /* =====================================================
        BUILD FILE LIST
     ===================================================== */
 
@@ -4284,6 +4268,16 @@ async function init() {
             .get("anim")
             ?.trim()
             .toLowerCase();
+
+        // Persistent theme is applied independently of the transient
+        // animation canvas below: it is never removed by the animation
+        // controller's stop()/destroy()/replay path, and its own failure
+        // (or the animation's) can never affect the other.
+        try {
+          applyDeliveryTheme(animationId);
+        } catch (themeError) {
+          console.error("[Boztik Deliver] Theme failed to apply:", themeError);
+        }
 
         const animationController =
           createDeliveryAnimationController(
