@@ -27,6 +27,7 @@ import {
 
 import { createDeliveryAnimationController } from "./animations/controller.js";
 import { applyDeliveryTheme } from "./animations/theme.js";
+import { initShare } from "./share.js";
 
 
 /* =========================================================
@@ -3932,6 +3933,19 @@ async function init() {
 
     }
 
+/* =====================================================
+       SHARE BUTTON + TRACKING
+    ===================================================== */
+
+    /*
+      Wire the share button now that we know the delivery is
+      live and has files. Recorded server-side as an
+      aggregate counter (never per-visitor).
+    */
+
+    initShare(
+      delivery
+    );
 
     /* =====================================================
        BUILD FILE LIST
