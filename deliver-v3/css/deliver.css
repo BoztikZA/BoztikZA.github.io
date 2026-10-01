@@ -7490,6 +7490,32 @@ body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-button.
   body:not(.is-photoshop-battles) #deliver-support-details .boztik-support-actions {
     grid-template-columns: 1fr;
   }
+
+  /* Mobile (<=840px only): bring the existing payment/support card up so the
+     Ko-fi / PayPal / help actions sit immediately below the delivered image and
+     above Download + Share, instead of buried below the whole files column.
+
+     The files column is flattened (display: contents) so its children and the
+     single support card all participate in the same one-column grid, then
+     order re-sequences them. There is exactly ONE DOM instance — the payment
+     links are not duplicated.
+
+     Scoped to normal deliveries (body:not(.is-photoshop-battles)) and to this
+     mobile breakpoint only, so desktop/tablet (>=841px) and PhotoshopBattles
+     pages remain visually and functionally unchanged. */
+  body:not(.is-photoshop-battles) .boztik-files-column { display: contents; }
+
+  body:not(.is-photoshop-battles) .deliver-gallery-header { order: 1; }
+  body:not(.is-photoshop-battles) #deliver-gallery { order: 2; }
+  body:not(.is-photoshop-battles) #deliver-support-details { order: 3; }
+  body:not(.is-photoshop-battles) .deliver-primary-action-wrap { order: 4; }
+
+  /* With the files column flattened the grid gap supplies the vertical rhythm,
+     so drop the block-flow margins that would otherwise double up and create
+     large gaps. Desktop/tablet keep their original block-flow spacing. */
+  body:not(.is-photoshop-battles) .deliver-gallery-header { margin-bottom: 0; }
+  body:not(.is-photoshop-battles) #deliver-gallery { margin-bottom: 0; }
+  body:not(.is-photoshop-battles) .deliver-primary-action-wrap { margin-top: 0; }
 }
 
 @media (max-width: 560px) {
