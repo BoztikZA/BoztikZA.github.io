@@ -3194,3 +3194,49 @@ footer h3 {
 @media (prefers-reduced-motion: reduce) {
   .toolkitf-card, .toolkit-step { transition: none; }
 }
+
+/* ==========================================================
+   MASTER BOZTIK MARK (portrait logo) - brand identity correction
+   images/boztik-mark.png is the umbrella-brand mark used in the site
+   header, home hero, footer and support cards. The tile styling earlier
+   in this file (rounded corners + glow box, fixed square sizes) was built
+   for the square Creative Toolkit icon (images/logo.png) and would box
+   or clip the portrait, so it is switched off for this image only.
+   The Toolkit icon rules above are untouched.
+========================================================== */
+.logo-area img[src$="boztik-mark.png"] {
+  width: auto;
+  height: 48px;
+  border-radius: 0;
+  box-shadow: none;
+  object-fit: contain;
+}
+.logo-area:hover img[src$="boztik-mark.png"] {
+  transform: none;
+}
+.hero-logo[src$="boztik-mark.png"] {
+  width: min(220px, 50vw);
+  height: auto;
+  border-radius: 0;
+}
+.footer-logo[src$="boztik-mark.png"] {
+  width: auto;
+  height: 80px;
+  border-radius: 0;
+  box-shadow: none;
+}
+.support-card img[src$="boztik-mark.png"] {
+  width: auto;
+  height: 88px;
+}
+@media (max-width: 820px) {
+  .logo-area img[src$="boztik-mark.png"] {
+    width: auto;
+    height: 40px;
+  }
+}
+@media (max-width: 640px) {
+  .hero-logo[src$="boztik-mark.png"] {
+    width: min(170px, 50vw);
+  }
+}
