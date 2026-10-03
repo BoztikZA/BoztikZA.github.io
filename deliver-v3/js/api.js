@@ -274,3 +274,68 @@ export async function fetchRedditMetadata(url) {
       canonicalUrl: r.canonicalUrl || r.redditUrl || url, redditUrl: r.redditUrl || url };
   } finally { clearTimeout(timeout); }
 }
+
+/* ------------------------------------------------------------------- growth */
+// Boztik Growth — private marketing/content assistant (Phase 1).
+// All calls are admin-only and travel through the same authenticated `request`.
+
+export async function growthDashboard() {
+  const { dashboard } = await request("GET", "/api/admin/growth/dashboard");
+  return dashboard;
+}
+
+export async function growthGenerate() {
+  return request("POST", "/api/admin/growth/generate", { body: {} });
+}
+
+export async function listGrowthKnowledge() {
+  const { items } = await request("GET", "/api/admin/growth/knowledge");
+  return items;
+}
+export async function createGrowthKnowledge(payload) {
+  return request("POST", "/api/admin/growth/knowledge", { body: payload });
+}
+export async function updateGrowthKnowledge(id, payload) {
+  return request("PUT", `/api/admin/growth/knowledge/${id}`, { body: payload });
+}
+export async function deleteGrowthKnowledge(id) {
+  return request("DELETE", `/api/admin/growth/knowledge/${id}`);
+}
+
+export async function listGrowthDrafts(params = {}) {
+  const q = new URLSearchParams(params).toString();
+  const { items } = await request("GET", `/api/admin/growth/drafts${q ? "?" + q : ""}`);
+  return items;
+}
+export async function createGrowthDraft(payload) {
+  return request("POST", "/api/admin/growth/drafts", { body: payload });
+}
+export async function updateGrowthDraft(id, payload) {
+  return request("PUT", `/api/admin/growth/drafts/${id}`, { body: payload });
+}
+export async function deleteGrowthDraft(id) {
+  return request("DELETE", `/api/admin/growth/drafts/${id}`);
+}
+
+export async function listGrowthCalendar() {
+  const { items } = await request("GET", "/api/admin/growth/calendar");
+  return items;
+}
+export async function createGrowthCalendar(payload) {
+  return request("POST", "/api/admin/growth/calendar", { body: payload });
+}
+export async function updateGrowthCalendar(id, payload) {
+  return request("PUT", `/api/admin/growth/calendar/${id}`, { body: payload });
+}
+export async function deleteGrowthCalendar(id) {
+  return request("DELETE", `/api/admin/growth/calendar/${id}`);
+}
+
+export async function getGrowthSettings() {
+  const { settings } = await request("GET", "/api/admin/growth/settings");
+  return settings;
+}
+export async function updateGrowthSettings(payload) {
+  const r = await request("PUT", "/api/admin/growth/settings", { body: payload });
+  return r.settings || r;
+}
