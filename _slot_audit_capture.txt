@@ -1,0 +1,92 @@
+﻿=====AD SLOT RECONCILIATION=====
+FILE: index.html
+  data-ad-slot slots: 7204038822,9670531718
+  google_ad_slot=     : 
+  pubs: ca-pub-3739684241868984
+  adssby count: 7
+FILE: portfolio.html
+  data-ad-slot slots: 7204038822
+  google_ad_slot=     : 
+  pubs: ca-pub-3739684241868984
+  adssby count: 4
+MISSING: d:\Boztik Website\dashboard.html
+FILE: index.html
+  data-ad-slot slots: 9342555903
+  google_ad_slot=     : 
+  pubs: ca-pub-3739684241868984
+  adssby count: 2
+FILE: portfolio-content-block.html
+  data-ad-slot slots: 
+  google_ad_slot=     : 
+  pubs: 
+  adssby count: 0
+FILE: about.html
+  data-ad-slot slots: 7204038822
+  google_ad_slot=     : 
+  pubs: ca-pub-3739684241868984
+  adssby count: 4
+FILE: services.html
+  data-ad-slot slots: 7204038822
+  google_ad_slot=     : 
+  pubs: ca-pub-3739684241868984
+  adssby count: 4
+FILE: contact.html
+  data-ad-slot slots: 7204038822
+  google_ad_slot=     : 
+  pubs: ca-pub-3739684241868984
+  adssby count: 4
+FILE: privacy.html
+  data-ad-slot slots: 7204038822
+  google_ad_slot=     : 
+  pubs: ca-pub-3739684241868984
+  adssby count: 4
+FILE: terms.html
+  data-ad-slot slots: 7204038822
+  google_ad_slot=     : 
+  pubs: ca-pub-3739684241868984
+  adssby count: 4
+FILE: support.html
+  data-ad-slot slots: 7204038822
+  google_ad_slot=     : 
+  pubs: ca-pub-3739684241868984
+  adssby count: 4
+=====SITEMAP=====
+https://www.boztik.com/
+https://www.boztik.com/creative-toolkit.html
+https://www.boztik.com/services.html
+https://www.boztik.com/image-inspector.html
+https://www.boztik.com/creative-assistant.html
+https://www.boztik.com/guides.html
+https://www.boztik.com/portfolio.html
+https://www.boztik.com/guide-photo-restoration.html
+https://www.boztik.com/guide-object-removal.html
+https://www.boztik.com/guide-ai-vs-professional-editing.html
+https://www.boztik.com/guide-overedited-look.html
+https://www.boztik.com/support.html
+https://www.boztik.com/contact.html
+https://www.boztik.com/about.html
+https://www.boztik.com/privacy.html
+https://www.boztik.com/terms.html
+=====ROBOTS=====
+# Boztik â€” https://www.boztik.com
+# Public pages are crawlable. Private areas are kept out of search with a
+# noindex meta tag on the page itself (dashboard.html and the delivery pages),
+# which crawlers can only read if they are allowed to fetch the page, so those
+# paths are deliberately NOT blocked here.
+
+User-agent: *
+Allow: /
+Disallow: /deliver/
+
+# Google's ad crawlers ignore the "*" group above, so they are named explicitly.
+User-agent: Mediapartners-Google
+Disallow:
+
+User-agent: Google-Display-Ads-Bot
+Disallow:
+
+User-agent: AdsBot-Google
+Disallow:
+
+Sitemap: https://www.boztik.com/sitemap.xml
+

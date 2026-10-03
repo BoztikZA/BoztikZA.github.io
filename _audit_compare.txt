@@ -1,0 +1,4 @@
+﻿===== PUBLISHER IDS PER DIRECTORY =====
+D:\Boztik Website\deliver\worker-api\node_modules\miniflare\dist\local-explorer-ui\index.html pubs=[] slots=[]
+D:\Boztik Website\deliver-v3\dashboard.html pubs=[] slots=[]
+D:\Boztik Website\deliver-v3\index.html pubs=[ca-pub-3739684241868984] slots=[data-ad-slot="9342555903"]

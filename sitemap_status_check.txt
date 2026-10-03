@@ -1,0 +1,17 @@
+﻿TOTAL SITEMAP URLS: 16
+200	https://www.boztik.com/
+200	https://www.boztik.com/creative-toolkit.html
+200	https://www.boztik.com/services.html
+200	https://www.boztik.com/image-inspector.html
+200	https://www.boztik.com/creative-assistant.html
+200	https://www.boztik.com/guides.html
+200	https://www.boztik.com/portfolio.html
+200	https://www.boztik.com/guide-photo-restoration.html
+200	https://www.boztik.com/guide-object-removal.html
+200	https://www.boztik.com/guide-ai-vs-professional-editing.html
+200	https://www.boztik.com/guide-overedited-look.html
+200	https://www.boztik.com/support.html
+200	https://www.boztik.com/contact.html
+200	https://www.boztik.com/about.html
+200	https://www.boztik.com/privacy.html
+200	https://www.boztik.com/terms.html

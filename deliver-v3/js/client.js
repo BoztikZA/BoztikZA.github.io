@@ -893,7 +893,7 @@ function setupExplorePanel() {
         label.textContent =
           nextOpen
             ? "Show Less"
-            : "Explore More";
+            : "Explore Boztik";
 
       }
 
