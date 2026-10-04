@@ -7354,6 +7354,23 @@ body.is-photoshop-battles .deliver-battle-ad-host #deliver-adsense-slot {
   margin-top: 0;
 }
 
+/* PhotoshopBattles — keep the existing Contact Boztik section quiet and
+   secondary to the delivered image (it already sits below the image/actions
+   and reuses the site's ../contact.html destination). */
+body.is-photoshop-battles .deliver-contact-section {
+  margin-top: 24px;
+  padding: 8px 16px 4px;
+}
+body.is-photoshop-battles .deliver-contact-section h2 {
+  margin: 6px 0 8px;
+  font-size: 1.05rem;
+}
+body.is-photoshop-battles .deliver-contact-intro {
+  max-width: 560px;
+  margin-bottom: 12px;
+  font-size: 0.85rem;
+}
+
 .dash-stat-card--attention .dash-stat-icon {
   color: #ffc267;
 }

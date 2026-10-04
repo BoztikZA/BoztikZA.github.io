@@ -208,8 +208,6 @@ function applyPhotoshopBattlesPresentation() {
   hide(els.support);
   hide(els.supportModal);
   hide(els.privateRequests);
-  hide(els.discover);
-  hide(els.explore);
   hide(els.footer);
   hide(els.footerSupport);
 
@@ -222,10 +220,6 @@ function applyPhotoshopBattlesPresentation() {
     els.battleAdHost.append(els.adSlot);
     els.battleAdHost.hidden = false;
     els.adSlot.hidden = false;
-  }
-
-  if (els.explorePanel) {
-    els.explorePanel.classList.add("is-open");
   }
 }
 
@@ -686,6 +680,12 @@ function state(
     name === "active" &&
     !isPhotoshopBattlesDelivery;
 
+  /* Explore Boztik / discovery is offered on an active delivery in both the
+     normal and PhotoshopBattles presentations. On battles it stays collapsed
+     by default (opened on demand); private requests remain normal-only. */
+  const showExplore =
+    name === "active";
+
   const showAd =
     name === "active";
 
@@ -695,7 +695,7 @@ function state(
   ) {
 
     els.discover.hidden =
-      !showPromo;
+      !showExplore;
 
   }
 
@@ -705,7 +705,7 @@ function state(
   ) {
 
     els.explore.hidden =
-      !showPromo;
+      !showExplore;
 
   }
 
