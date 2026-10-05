@@ -318,7 +318,9 @@ export async function recordShare(env: Env, id: string, method: string, ctx: Exe
   return true;
 }
 
-export const PAGE_KEYS = ["homepage", "portfolio", "tools", "guides", "about", "support", "contact", "services", "deliver"] as const;
+// "toolkit" = creative-toolkit.html. js/pageview.js has always sent it, but it was missing from this
+// allow-list, so those page views were silently dropped (recordPageView returns false for unknown keys).
+export const PAGE_KEYS = ["homepage", "portfolio", "tools", "toolkit", "guides", "about", "support", "contact", "services", "deliver"] as const;
 
 export async function recordPageView(env: Env, page: string): Promise<boolean> {
   if (!(PAGE_KEYS as readonly string[]).includes(page)) return false;
@@ -437,6 +439,101 @@ export async function getTopDeliveries(env: Env, limit = 8): Promise<TopDelivery
 export async function getPageAnalytics(env: Env, days = 30): Promise<Array<{ page: string; views: number }>> {
   const since = localDay(env, nowSec() - (days - 1) * 86400);
   return (await env.DB.prepare("SELECT page, SUM(views) AS views FROM page_analytics WHERE day >= ? GROUP BY page ORDER BY views DESC").bind(since).all<{ page: string; views: number }>()).results;
+}
+
+// -----------------------------------------------------------------------------
+// Analytics summary (Command Centre → Analytics). READ-ONLY aggregation over tables that
+// already exist (page_analytics, delivery_daily_metrics, share_metrics, deliveries). It adds no
+// table, stores nothing and exposes nothing per visitor. Website page views and Deliver
+// activity are returned in SEPARATE blocks on purpose: Deliver views (including direct
+// PhotoshopBattles image requests) must never be mixed into public-website numbers.
+// -----------------------------------------------------------------------------
+export const SUMMARY_PERIODS = { "7d": 7, "30d": 30, "90d": 90, all: null } as const;
+export type SummaryPeriod = keyof typeof SUMMARY_PERIODS;
+
+export interface SummaryDeliverType {
+  type: string;                 // private | paid | free | returning | other | reddit | photoshop_battles | deleted
+  deliveries_active: number;    // distinct deliveries with at least one view/download in the window
+  views: number; downloads: number; shares: number;
+  prev_views: number | null; prev_downloads: number | null; prev_shares: number | null;
+}
+
+export interface AnalyticsSummary {
+  period: { key: SummaryPeriod; days: number | null; since: string | null; until: string; previous: { since: string; until: string } | null };
+  website: { pages: Array<{ page: string; views: number; prev_views: number | null }>; total_views: number; prev_total_views: number | null; data_since: string | null };
+  deliver: { types: SummaryDeliverType[]; stored: Record<string, number> };
+}
+
+interface TypeAgg { active: number; views: number; downloads: number; shares: number }
+
+/** Deliver activity per delivery type inside [since, until] (inclusive local days). A deleted delivery keeps its
+ *  daily rows but no longer has a type, so it is reported as "deleted" rather than guessed. */
+async function deliverTypeAggregates(env: Env, since: string, until: string): Promise<Map<string, TypeAgg>> {
+  const [activity, shares] = await Promise.all([
+    env.DB.prepare(
+      `SELECT CASE WHEN d.id IS NULL THEN 'deleted' WHEN d.is_photoshop_battles = 1 THEN 'photoshop_battles' ELSE COALESCE(d.source, 'private') END AS type,
+              COUNT(DISTINCT m.delivery_id) AS active, COALESCE(SUM(m.views), 0) AS views, COALESCE(SUM(m.downloads), 0) AS downloads
+         FROM delivery_daily_metrics m LEFT JOIN deliveries d ON d.id = m.delivery_id
+        WHERE m.day >= ?1 AND m.day <= ?2
+        GROUP BY type`,
+    ).bind(since, until).all<{ type: string; active: number; views: number; downloads: number }>(),
+    env.DB.prepare(
+      `SELECT CASE WHEN d.id IS NULL THEN 'deleted' WHEN d.is_photoshop_battles = 1 THEN 'photoshop_battles' ELSE COALESCE(d.source, 'private') END AS type,
+              COALESCE(SUM(s.count), 0) AS shares
+         FROM share_metrics s LEFT JOIN deliveries d ON d.id = s.delivery_id
+        WHERE s.day >= ?1 AND s.day <= ?2
+        GROUP BY type`,
+    ).bind(since, until).all<{ type: string; shares: number }>(),
+  ]);
+  const out = new Map<string, TypeAgg>();
+  const slot = (t: string): TypeAgg => { let a = out.get(t); if (!a) { a = { active: 0, views: 0, downloads: 0, shares: 0 }; out.set(t, a); } return a; };
+  for (const r of activity.results) { const a = slot(r.type); a.active = r.active; a.views = r.views; a.downloads = r.downloads; }
+  for (const r of shares.results) slot(r.type).shares = r.shares;
+  return out;
+}
+
+async function websitePageViews(env: Env, since: string, until: string): Promise<Map<string, number>> {
+  const rows = (await env.DB.prepare("SELECT page, COALESCE(SUM(views), 0) AS views FROM page_analytics WHERE day >= ?1 AND day <= ?2 AND page != 'deliver' GROUP BY page")
+    .bind(since, until).all<{ page: string; views: number }>()).results;
+  return new Map(rows.map((r) => [r.page, r.views]));
+}
+
+export async function getAnalyticsSummary(env: Env, key: SummaryPeriod): Promise<AnalyticsSummary> {
+  const now = nowSec();
+  const days = SUMMARY_PERIODS[key];
+  const until = localDay(env, now);
+  const since = days === null ? "" : localDay(env, now - (days - 1) * 86400);
+  // The comparison window is the same number of days immediately before; "all available" has nothing to compare to.
+  const prev = days === null ? null : { since: localDay(env, now - (2 * days - 1) * 86400), until: localDay(env, now - days * 86400) };
+
+  const [pages, prevPages, firstDay, types, prevTypes, stored] = await Promise.all([
+    websitePageViews(env, since, until),
+    prev ? websitePageViews(env, prev.since, prev.until) : Promise.resolve(null),
+    env.DB.prepare("SELECT MIN(day) AS d FROM page_analytics WHERE page != 'deliver'").first<{ d: string | null }>(),
+    deliverTypeAggregates(env, since, until),
+    prev ? deliverTypeAggregates(env, prev.since, prev.until) : Promise.resolve(null),
+    env.DB.prepare("SELECT CASE WHEN is_photoshop_battles = 1 THEN 'photoshop_battles' ELSE COALESCE(source, 'private') END AS type, COUNT(*) AS n FROM deliveries GROUP BY type").all<{ type: string; n: number }>(),
+  ]);
+
+  const pageKeys = new Set<string>([...pages.keys(), ...(prevPages ? [...prevPages.keys()] : [])]);
+  const pageRows = [...pageKeys].map((page) => ({ page, views: pages.get(page) ?? 0, prev_views: prevPages ? prevPages.get(page) ?? 0 : null }))
+    .sort((a, b) => b.views - a.views || a.page.localeCompare(b.page));
+  const sum = (m: Map<string, number> | null) => (m ? [...m.values()].reduce((t, n) => t + n, 0) : null);
+
+  const typeKeys = new Set<string>([...types.keys(), ...(prevTypes ? [...prevTypes.keys()] : [])]);
+  const typeRows: SummaryDeliverType[] = [...typeKeys].map((type) => {
+    const cur = types.get(type); const old = prevTypes ? prevTypes.get(type) : undefined;
+    return {
+      type, deliveries_active: cur?.active ?? 0, views: cur?.views ?? 0, downloads: cur?.downloads ?? 0, shares: cur?.shares ?? 0,
+      prev_views: prevTypes ? old?.views ?? 0 : null, prev_downloads: prevTypes ? old?.downloads ?? 0 : null, prev_shares: prevTypes ? old?.shares ?? 0 : null,
+    };
+  }).sort((a, b) => b.views - a.views || a.type.localeCompare(b.type));
+
+  return {
+    period: { key, days, since: days === null ? firstDay?.d ?? null : since, until, previous: prev },
+    website: { pages: pageRows, total_views: sum(pages) ?? 0, prev_total_views: sum(prevPages), data_since: firstDay?.d ?? null },
+    deliver: { types: typeRows, stored: Object.fromEntries(stored.results.map((r) => [r.type, r.n])) },
+  };
 }
 
 export interface ShareSnapshot {

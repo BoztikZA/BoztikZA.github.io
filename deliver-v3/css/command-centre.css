@@ -399,3 +399,75 @@ body.deliver-dashboard-body .dash-analytics-body small { color: var(--cc-dim); }
   .cc-pulse, .cc-chip.is-loading .cc-dot { animation: none; }
   .cc-btn, body.deliver-dashboard-body .dash-tab { transition: none; }
 }
+
+/* =============================================================================
+   Analytics tab — website & business decision dashboard (js/site-analytics.js)
+   Additive block: reuses the tokens, cards, KPIs and tables above.
+   ============================================================================= */
+.cc-site { display: grid; gap: 18px; margin: 0 0 18px; }
+.cc-site > .cc-card, .cc-site > .cc-kpis { margin: 0; }
+
+.cc-btn--primary { color: #061003; background: var(--cc-accent); border-color: var(--cc-accent); font-weight: 700; display: inline-flex; align-items: center; gap: 8px; }
+.cc-btn--primary:hover { background: #a6ff63; border-color: #a6ff63; }
+.cc-btn--primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.cc-btn-inline { min-height: 32px; margin-left: 8px; padding: 6px 10px; }
+
+.cc-site-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+.cc-site-controls .cc-toolbar { margin-bottom: 0; }
+#cc-site-notice:empty { display: none; }
+#cc-site-notice .cc-note { margin-top: 14px; }
+.cc-note--warn { background: var(--cc-warn-soft); border-color: rgba(251, 191, 36, 0.4); }
+.cc-note--warn .cc-i { color: var(--cc-warn); }
+.cc-note--error { background: var(--cc-danger-soft); border-color: rgba(255, 92, 92, 0.45); }
+.cc-note--error .cc-i { color: var(--cc-danger); }
+.cc-note code { font-size: 0.92em; color: var(--cc-muted); }
+
+.cc-kpi-val--text { font-size: 1.2rem; line-height: 1.25; overflow-wrap: anywhere; }
+
+/* What stands out */
+.cc-standout { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.cc-standout li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: baseline; padding: 11px 14px; border-radius: 10px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--cc-line); font-size: 0.9rem; line-height: 1.5; color: var(--cc-text); }
+.cc-standout li.cc-empty, .cc-standout li.cc-muted { display: block; }
+.cc-standout-tag { padding: 2px 9px; border-radius: 999px; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; border: 1px solid var(--cc-line-2); color: var(--cc-muted); white-space: nowrap; }
+.cc-standout-tag.is-website { color: var(--cc-accent); border-color: var(--cc-accent-line); background: var(--cc-accent-soft); }
+.cc-standout-tag.is-deliver { color: var(--cc-teal); border-color: rgba(95, 227, 194, 0.35); }
+
+/* GA4-not-connected card */
+.cc-ga4-lead { margin: 0 0 10px; font-size: 0.9rem; color: var(--cc-muted); }
+.cc-ga4-list { margin: 0 0 14px; padding-left: 20px; display: grid; gap: 6px; font-size: 0.88rem; line-height: 1.5; color: var(--cc-muted); }
+.cc-ga4-list strong { color: var(--cc-text); }
+.cc-ga4-list code, .cc-ga4-how code { font-size: 0.92em; color: var(--cc-text); }
+.cc-ga4-how { border: 1px solid var(--cc-line); border-radius: 10px; padding: 10px 14px; background: rgba(255, 255, 255, 0.02); }
+.cc-ga4-how summary { cursor: pointer; font-weight: 600; font-size: 0.88rem; color: var(--cc-text); }
+.cc-ga4-how ol { margin: 10px 0 0; padding-left: 20px; display: grid; gap: 6px; font-size: 0.86rem; line-height: 1.5; color: var(--cc-muted); }
+
+/* Deliver-by-type table */
+.cc-table--wide { min-width: 0; }
+.cc-table--wide thead th { white-space: normal; line-height: 1.3; vertical-align: bottom; }
+.cc-table--wide th, .cc-table--wide td { padding-inline: 8px; }
+@media (max-width: 900px) { .cc-table--wide { min-width: 760px; } }
+.cc-table .cc-total th, .cc-table .cc-total td { font-weight: 700; border-top: 1px solid var(--cc-line-2); }
+.cc-table th .cc-badge { margin-left: 6px; vertical-align: middle; }
+
+/* Report */
+.cc-report { border-color: var(--cc-accent-line); }
+.cc-report-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.cc-report-text {
+  display: block; width: 100%; min-height: 320px; resize: vertical; padding: 14px 16px; border-radius: 12px;
+  background: #070a0f; border: 1px solid var(--cc-line-2); color: var(--cc-text);
+  font: 0.82rem/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; box-sizing: border-box;
+}
+.cc-report-status { min-height: 1.3em; margin: 10px 0 0; font-size: 0.85rem; color: var(--cc-ok); }
+.cc-report-status[data-kind="warn"] { color: var(--cc-warn); }
+
+.cc-divider { display: flex; align-items: center; gap: 14px; margin: 6px 0 0; color: var(--cc-dim); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+.cc-divider::before, .cc-divider::after { content: ""; flex: 1; height: 1px; background: var(--cc-line-2); }
+
+@media (max-width: 720px) {
+  .cc-site-head .cc-card-head, .cc-report .cc-card-head, .cc-ga4-card .cc-card-head, .cc-deliver-card .cc-card-head { flex-direction: column; align-items: stretch; }
+  .cc-site-head .cc-btn--primary, .cc-report-actions .cc-btn { width: 100%; justify-content: center; min-height: 44px; }
+  .cc-report-actions { display: grid; grid-template-columns: 1fr 1fr; }
+  .cc-standout li { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .cc-standout-tag { justify-self: start; }
+  .cc-report-text { min-height: 280px; font-size: 0.78rem; }
+}

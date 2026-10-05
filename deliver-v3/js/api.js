@@ -200,6 +200,9 @@ export const fetchTopDeliveries = () => request("GET", "/api/admin/analytics/top
 export const fetchPageAnalytics = () => request("GET", "/api/admin/analytics/pages");
 /** Share-event analytics for delivery + Photoshop Battles pages (Command Centre). */
 export const fetchShareAnalytics = () => request("GET", "/api/admin/analytics/shares");
+/** Period summary for the Command Centre Analytics page: website page views and Deliver activity by type,
+ *  returned as two separate blocks, each with a previous-period comparison. period: 7d | 30d | 90d | all. */
+export const fetchAnalyticsSummary = (period = "30d") => request("GET", `/api/admin/analytics/summary?period=${encodeURIComponent(period)}`);
 
 /** Unauthenticated reachability probe of the Worker. Never throws; reports latency for the health chip. */
 export async function pingHealth() {

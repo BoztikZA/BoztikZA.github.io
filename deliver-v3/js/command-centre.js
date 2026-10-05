@@ -7,6 +7,7 @@
 import { escapeHtml, formatBytes, formatDate } from "./shared.js";
 import { fetchPageAnalytics, fetchShareAnalytics, pingHealth } from "./api.js";
 import { insightsSnapshot, percentChange, trendChart } from "./insights.js";
+import { initSiteAnalytics, refreshSiteAnalytics } from "./site-analytics.js";
 
 const HOUR = 3600 * 1000;
 const nf = n => Number(n || 0).toLocaleString();
@@ -283,6 +284,7 @@ export function initCommandCentre(options) {
     const b = event.target.closest("[data-att]");
     if (b) cfg.onAction(b.dataset.att, b.dataset.id || null);
   });
+  initSiteAnalytics(); // Analytics tab: period selector + "Generate Analysis Report" (js/site-analytics.js)
 }
 
 /** Refreshes everything on the Overview tab that isn't owned by dashboard.js / insights.js. */
@@ -297,9 +299,12 @@ export async function refreshCommandCentre({ deliveries, overview, session }) {
 }
 
 export async function refreshAnalyticsExtras({ deliveries, overview }) {
+  // The website/business block loads independently: if it fails, every Deliver panel below still renders.
+  const siteDone = refreshSiteAnalytics().catch(e => console.error("[Boztik Command Centre] site analytics failed:", e));
   renderAnalyticsTrend();
   renderFunnel(deliveries, overview?.deliveries?.total);
   renderSources(deliveries);
   await renderPages();
   await renderShares();
+  await siteDone;
 }

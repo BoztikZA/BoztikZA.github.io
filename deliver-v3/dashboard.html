@@ -21,7 +21,7 @@
 
   <link rel="stylesheet" href="../styles-premium.css">
   <link rel="stylesheet" href="css/deliver.css?v=13">
-  <link rel="stylesheet" href="css/command-centre.css?v=1">
+  <link rel="stylesheet" href="css/command-centre.css?v=3">
   <link rel="stylesheet" href="css/growth.css?v=1">
   <link rel="stylesheet" href="css/deliver-animations.css?v=1">
 
@@ -1584,9 +1584,92 @@
 
       <section id="panel-analytics" class="dash-tab-panel" role="tabpanel" aria-labelledby="tab-analytics" data-panel="analytics" hidden>
 
+        <!-- ===== Website & business decision dashboard (js/site-analytics.js) =====
+             Website numbers = Boztik's first-party page-view counter. Deliver numbers = Deliver's own counters.
+             The two are rendered in separate cards and are never added together. -->
+        <div id="cc-site-analytics" class="cc-site" role="region" aria-labelledby="cc-site-title">
+
+          <article class="cc-card cc-site-head">
+            <header class="cc-card-head">
+              <div>
+                <span class="cc-eyebrow">Boztik decision dashboard</span>
+                <h2 id="cc-site-title">Website &amp; business analytics</h2>
+                <p class="cc-card-desc">Where visitors go on the public site, and how Deliver is performing. Website traffic and Deliver are kept separate.</p>
+              </div>
+              <button type="button" class="cc-btn cc-btn--primary" id="cc-report-btn" disabled>
+                <svg class="cc-i" aria-hidden="true" focusable="false"><use href="#i-list"/></svg> Generate Analysis Report
+              </button>
+            </header>
+            <div class="cc-site-controls">
+              <div class="cc-toolbar" id="cc-period-toolbar" role="group" aria-label="Reporting period"></div>
+              <span class="cc-muted" id="cc-site-range" role="status"></span>
+            </div>
+            <div id="cc-site-notice"></div>
+          </article>
+
+          <article class="cc-card cc-report" id="cc-report-panel" aria-labelledby="cc-report-title" hidden>
+            <header class="cc-card-head">
+              <div><span class="cc-eyebrow">Plain text · ready for ChatGPT</span><h2 id="cc-report-title">Analysis report</h2>
+                <p class="cc-card-desc">Copy this and paste it into ChatGPT for strategic analysis. If the copy button is blocked, the text is already selected — press Ctrl+C (Cmd+C on Mac).</p></div>
+              <div class="cc-report-actions">
+                <button type="button" class="cc-btn cc-btn--primary" id="cc-report-copy">Copy Report</button>
+                <button type="button" class="cc-btn" id="cc-report-close">Close</button>
+              </div>
+            </header>
+            <label class="cc-sr" for="cc-report-text">Analysis report text</label>
+            <textarea id="cc-report-text" class="cc-report-text" rows="22" readonly spellcheck="false" wrap="soft"></textarea>
+            <p id="cc-report-status" class="cc-report-status" role="status" aria-live="polite"></p>
+          </article>
+
+          <div class="cc-kpis" id="cc-site-kpis" role="group" aria-label="Overview"></div>
+
+          <article class="cc-card cc-standout-card" aria-labelledby="cc-standout-title">
+            <header class="cc-card-head"><div><span class="cc-eyebrow">What stands out</span><h2 id="cc-standout-title">Observations from the data</h2>
+              <p class="cc-card-desc">Only what the counters show. They can point at a pattern; they cannot explain it.</p></div></header>
+            <ul class="cc-standout" id="cc-standout-list" aria-live="polite"><li class="cc-muted">Loading…</li></ul>
+          </article>
+
+          <article class="cc-card" aria-labelledby="cc-site-pages-title">
+            <header class="cc-card-head"><div><span class="cc-eyebrow">Public website</span><h2 id="cc-site-pages-title">Page performance</h2>
+              <p class="cc-card-desc">Which pages attract attention, and which do not.</p></div></header>
+            <div id="cc-site-pages"><p class="cc-muted">Loading…</p></div>
+          </article>
+
+          <article class="cc-card cc-ga4-card" aria-labelledby="cc-ga4-title">
+            <header class="cc-card-head"><div><span class="cc-eyebrow">Google Analytics 4</span><h2 id="cc-ga4-title">Traffic sources, users &amp; clicks</h2></div><span class="cc-badge">Not connected</span></header>
+            <p class="cc-ga4-lead">These measures exist only in GA4, and Command Centre cannot read GA4 yet — so they are <strong>not shown rather than shown as zero</strong>:</p>
+            <ul class="cc-ga4-list">
+              <li><strong>Overview:</strong> users, sessions, engagement rate, new vs returning users</li>
+              <li><strong>Traffic sources:</strong> Google, Reddit, Direct, Social, Referral, Other</li>
+              <li><strong>Per page:</strong> entrances and engagement</li>
+              <li><strong>Actions:</strong> clicks to the Chrome Web Store, Edge store, Ko-fi, PayPal, email and portfolio. These are now sent to GA4 as the event <code>boztik_action</code> (parameters <code>action</code>, <code>destination</code>, <code>position</code>, <code>page_key</code>); see them in GA4 under Reports → Engagement → Events.</li>
+            </ul>
+            <details class="cc-ga4-how">
+              <summary>What would bring these into Command Centre?</summary>
+              <ol>
+                <li>In Google Cloud, enable the <em>Google Analytics Data API</em> and create a service account.</li>
+                <li>In GA4 → Admin → Property access, add that service account's email as a <em>Viewer</em>.</li>
+                <li>Store its key and the GA4 property ID as Worker secrets (never in the repo).</li>
+                <li>Add one read-only admin route to the Worker that calls the Data API <code>runReport</code> and returns sources, users, sessions, engagement and the <code>boztik_action</code> counts.</li>
+                <li>In GA4 → Admin → Custom definitions, register <code>action</code>, <code>destination</code>, <code>position</code> and <code>page_key</code> as event-scoped dimensions so the Data API can group by them.</li>
+              </ol>
+              <p class="cc-fineprint">Nothing here has been set up; this page deliberately does not invent a workaround.</p>
+            </details>
+          </article>
+
+          <article class="cc-card cc-deliver-card" aria-labelledby="cc-site-deliver-title">
+            <header class="cc-card-head"><div><span class="cc-eyebrow">Deliver analytics · separate from website traffic</span><h2 id="cc-site-deliver-title">Deliver performance</h2>
+              <p class="cc-card-desc">Views, downloads and shares by delivery type for the selected period.</p></div><span class="cc-badge">Deliver</span></header>
+            <div id="cc-site-deliver"><p class="cc-muted">Loading…</p></div>
+          </article>
+
+          <div class="cc-divider" role="separator"><span>All-time Deliver detail</span></div>
+
+        </div>
+
         <article class="cc-card cc-headline" aria-labelledby="cc-an-title">
           <header class="cc-card-head">
-            <div><span class="cc-eyebrow">Last 30 days</span><h2 id="cc-an-title">Analytics</h2></div>
+            <div><span class="cc-eyebrow">Deliver · last 30 days</span><h2 id="cc-an-title">Deliver activity</h2></div>
           </header>
           <p id="cc-analytics-headline" class="cc-headline-text">Loading…</p>
           <div id="cc-analytics-trend" class="cc-trend-wrap"></div>
@@ -1610,11 +1693,6 @@
             <div id="cc-sources-body"><p class="cc-muted">Loading…</p></div>
           </article>
         </div>
-
-        <article class="cc-card" aria-labelledby="cc-pages-title">
-          <header class="cc-card-head"><div><span class="cc-eyebrow">Public website</span><h2 id="cc-pages-title">Which pages people open</h2><p class="cc-card-desc">Anonymous page-view counts for the public site, last 30 days.</p></div></header>
-          <div id="cc-pages-body"><p class="cc-muted">Loading…</p></div>
-        </article>
 
         <article class="cc-card" aria-labelledby="cc-shares-title">
           <header class="cc-card-head">
@@ -1655,7 +1733,8 @@
 
         <article class="cc-card cc-notrack" aria-labelledby="cc-nt-title">
           <header class="cc-card-head"><div><span class="cc-eyebrow">Good to know</span><h2 id="cc-nt-title">What is not tracked</h2></div></header>
-          <p>Boztik records simple counters: how many times each delivery was opened or downloaded, per day, and how many times each public page was loaded. It does <strong>not</strong> record visitor location, device, browser or referring site, and it stores no IP addresses or cookies for analytics. That is deliberate — it also means there is no location or device breakdown to show here, and any such chart would have to be invented.</p>
+          <p><strong>Boztik's own counters</strong> record how many times each delivery was opened, downloaded or shared, per day, and how many times each public page was loaded. They do <strong>not</strong> record visitor location, device, browser or referring site, and store no IP addresses or cookies. That is deliberate, so there is no location or device breakdown to show here.</p>
+          <p><strong>Google Analytics 4</strong> runs separately on the public website pages only. It is not on any Deliver page, and Deliver and PhotoshopBattles views are never sent to it. GA4 holds richer data (traffic sources, users, sessions, clicks), but Command Centre cannot read it yet, so none of it appears on this page.</p>
         </article>
 
       </section>
