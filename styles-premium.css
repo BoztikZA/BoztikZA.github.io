@@ -2689,6 +2689,17 @@ html { scroll-padding-top: 96px; }
   align-self: flex-start;
 }
 
+/* Secondary "Download Extension" CTA in the Creative Toolkit path card:
+   keep it a light, content-width action instead of stretching full width
+   (overrides the .secondary-link { width: 100% } mobile rule). */
+.path-download-link {
+  margin-top: 12px;
+  align-self: flex-start;
+  width: auto;
+  padding: 7px 16px;
+  font-size: 0.92rem;
+}
+
 /* Small guides preview on the homepage */
 .guides-preview {
   padding: 1rem 1.5rem 2.5rem;
