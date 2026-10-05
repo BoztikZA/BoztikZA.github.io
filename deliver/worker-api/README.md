@@ -34,6 +34,13 @@ curl https://deliver-api.boztik.com/api/health
 test first on `*.workers.dev`, remember browser calls from www.boztik.com are still CORS-restricted to
 `ALLOWED_ORIGINS`.
 
+## Analytics summary
+
+The authenticated, read-only endpoint `GET /api/admin/analytics/summary` powers the Command Centre Analytics
+period selector. It accepts `period=7d`, `30d` (default), `90d`, or `all` and returns separate `website` and
+`deliver` aggregates, with current and previous-period counts where a comparison period exists. It reads the
+existing analytics tables only; no migration or visitor-level data is required.
+
 ## Local development & tests
 Create `.dev.vars` (git-ignored) with the three secret names, then:
 ```bash
