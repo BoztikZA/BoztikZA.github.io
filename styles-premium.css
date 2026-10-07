@@ -3251,3 +3251,235 @@ footer h3 {
     width: min(170px, 50vw);
   }
 }
+
+/* ============================================================
+   HOMEPAGE REFINEMENT (index.html)
+   Why Boztik (editorial statement + process motif), Deliver
+   callout, and featured-work case-study detail. Additive only.
+   Reuses existing design tokens and the dark/neon Boztik language.
+   These sections were added to the homepage alone; no other page
+   depends on them.
+   ============================================================ */
+
+/* ---- Why Boztik — editorial two-column brand statement ---- */
+.why-section {
+  padding-top: 30px;
+  padding-bottom: 70px;
+}
+.why-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: clamp(40px, 6vw, 72px);
+  align-items: start;
+}
+.why-statement .section-label {
+  letter-spacing: 0.22em;
+}
+.why-statement .section-label::after {
+  content: "";
+  display: block;
+  width: 46px;
+  height: 2px;
+  margin: 10px 0 0;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--primary), transparent);
+}
+.why-statement h2 {
+  font-size: clamp(1.9rem, 3.2vw, 2.6rem);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  margin-bottom: 16px;
+}
+.why-lede {
+  color: var(--text-muted);
+  font-size: 1.04rem;
+  line-height: 1.7;
+  max-width: 520px;
+  margin-bottom: 6px;
+}
+
+/* SOURCE -> CRAFT -> RESULT signature (the Boztik editing process) */
+.bz-process {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 30px;
+}
+.bz-process__step {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.bz-process__step .bz-process__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.bz-process__step.is-result {
+  color: var(--primary);
+}
+.bz-process__step.is-result .bz-process__dot {
+  background: var(--primary);
+  border-color: var(--primary);
+  box-shadow: 0 0 14px rgba(142, 255, 61, 0.5);
+}
+.bz-process__line {
+  flex: 1;
+  min-width: 18px;
+  height: 1px;
+  background: repeating-linear-gradient(90deg, var(--border) 0 5px, transparent 5px 9px);
+}
+
+.why-statement-foot {
+  margin-top: 18px;
+  color: var(--text-muted);
+  font-size: 0.94rem;
+  max-width: 520px;
+}
+
+/* ---- Why Boztik — three pillars as editorial rows ---- */
+.why-pillars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--border);
+}
+.why-pillar {
+  display: flex;
+  gap: 18px;
+  padding: 20px 4px;
+  border-bottom: 1px solid var(--border);
+  transition: background-color 0.2s ease;
+}
+.why-pillar:hover {
+  background: rgba(142, 255, 61, 0.04);
+}
+.why-pillar__n {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: var(--primary);
+  padding-top: 3px;
+  flex: 0 0 auto;
+}
+.why-pillar h3 {
+  font-size: 1.14rem;
+  margin-bottom: 5px;
+  color: var(--text);
+}
+.why-pillar p {
+  color: var(--text-muted);
+  font-size: 0.94rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ---- Featured-work mini case study detail ---- */
+.featured-detail {
+  margin: 10px 0 0;
+  padding: 10px 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+.featured-detail > div {
+  margin-bottom: 9px;
+}
+.featured-detail > div:last-child {
+  margin-bottom: 0;
+}
+.featured-detail dt {
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--primary);
+  opacity: 0.9;
+  margin-bottom: 1px;
+}
+.featured-detail dd {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+/* ---- Boztik Deliver callout ---- */
+.deliver-home-section {
+  padding-top: 12px;
+  padding-bottom: 30px;
+}
+.deliver-home-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 24px;
+  align-items: center;
+  padding: 34px 38px;
+  border-radius: 26px;
+  border: 1px solid var(--border);
+  background:
+    radial-gradient(120% 160% at 0% 0%, rgba(142, 255, 61, 0.1), transparent 45%),
+    linear-gradient(160deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015));
+  box-shadow: var(--shadow);
+}
+.deliver-home__icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  font-size: 1.9rem;
+  background: rgba(142, 255, 61, 0.1);
+  border: 1px solid var(--border);
+}
+.deliver-home__copy .section-label {
+  margin-bottom: 10px;
+}
+.deliver-home__copy h2 {
+  font-size: clamp(1.5rem, 2.6vw, 2rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin-bottom: 10px;
+}
+.deliver-home__copy p {
+  color: var(--text-muted);
+  max-width: 620px;
+  margin-bottom: 22px;
+}
+.deliver-home__actions {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+@media (max-width: 920px) {
+  .why-layout {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+  .deliver-home-card {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 560px) {
+  .deliver-home-card {
+    padding: 26px 22px;
+  }
+  .bz-process {
+    flex-wrap: wrap;
+    row-gap: 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .why-pillar,
+  .featured-detail {
+    transition: none;
+  }
+}
