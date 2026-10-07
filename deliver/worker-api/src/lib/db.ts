@@ -264,11 +264,14 @@ export async function recordView(env: Env, id: string, ctx: ExecutionContext): P
     "UPDATE deliveries SET view_count = view_count + 1, last_viewed_at = ?1 WHERE id = ?2 AND expires_at > ?1 AND files_removed_at IS NULL",
   ).bind(ts, id).run();
   if ((r.meta.changes ?? 0) === 0) return false;
+  // Private Deliver views (delivery pages AND direct PhotoshopBattles image requests) are counted only in the
+  // Deliver-specific tables below. They deliberately do NOT touch page_analytics: the 'deliver' key there is
+  // reserved for public website traffic to deliver.html (written by recordPageView from js/pageview.js), and
+  // Command Centre keeps website traffic and private Deliver activity in separate blocks.
   await env.DB.batch([
     env.DB.prepare("INSERT INTO delivery_analytics (delivery_id, month, views, downloads) VALUES (?1, ?2, 1, 0) ON CONFLICT (delivery_id, month) DO UPDATE SET views = views + 1").bind(id, localMonth(env, ts)),
     env.DB.prepare("INSERT INTO delivery_daily_metrics (delivery_id, day, views, downloads) VALUES (?1, ?2, 1, 0) ON CONFLICT (delivery_id, day) DO UPDATE SET views = views + 1").bind(id, localDay(env, ts)),
     env.DB.prepare("INSERT INTO site_hourly_metrics (hour, views, downloads) VALUES (?1, 1, 0) ON CONFLICT (hour) DO UPDATE SET views = views + 1").bind(localHour(env, ts)),
-    env.DB.prepare("INSERT INTO page_analytics (day, page, views) VALUES (?1, 'deliver', 1) ON CONFLICT (day, page) DO UPDATE SET views = views + 1").bind(localDay(env, ts)),
   ]);
   // Milestone emails run in the background; they can never break this event.
   if (milestoneNotificationsEnabled(env)) queueMilestoneCheck(env, ctx, "views");
