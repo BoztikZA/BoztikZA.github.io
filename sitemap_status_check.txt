@@ -1,7 +1,8 @@
-﻿TOTAL SITEMAP URLS: 16
+﻿TOTAL SITEMAP URLS: 17
 200	https://www.boztik.com/
 200	https://www.boztik.com/creative-toolkit.html
 200	https://www.boztik.com/services.html
+200	https://www.boztik.com/deliver.html
 200	https://www.boztik.com/image-inspector.html
 200	https://www.boztik.com/creative-assistant.html
 200	https://www.boztik.com/guides.html

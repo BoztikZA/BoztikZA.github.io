@@ -5,8 +5,9 @@
 // (fixed 30 days) so the page still works, clearly labelled as limited.
 //
 // Nothing here is estimated. GA4-only measures (users, sessions, traffic sources, engagement, clicks) cannot be
-// read from here and are shown as "not connected", never as zero. Deliver analytics are rendered in their own
-// section and are never added to website numbers.
+// read from here and are shown as "not connected", never as zero. The public Deliver page (deliver.html) is
+// counted here as a website page; private delivery activity is rendered in its own section and never added to
+// website numbers.
 import { fetchAnalyticsSummary, fetchPageAnalytics } from "./api.js";
 import { escapeHtml } from "./shared.js";
 import {

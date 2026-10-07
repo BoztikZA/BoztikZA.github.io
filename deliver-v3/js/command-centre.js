@@ -205,7 +205,7 @@ export function renderSources(deliveries) {
 }
 
 /* --------------------------------------------------- analytics: site pages */
-const PAGE_LABELS = { homepage: "Home", services: "Services", portfolio: "Portfolio", tools: "Tools (Image Inspector, Creative Assistant)", guides: "Guides", about: "About", support: "Support", contact: "Contact", deliver: "Delivery pages (client views)" };
+const PAGE_LABELS = { homepage: "Home", services: "Services", portfolio: "Portfolio", tools: "Tools (Image Inspector, Creative Assistant)", guides: "Guides", about: "About", support: "Support", contact: "Contact", deliver: "Deliver (public page)" };
 
 export async function renderPages() {
   const host = $("cc-pages-body");
@@ -214,7 +214,7 @@ export async function renderPages() {
   let pages;
   try { ({ pages } = await fetchPageAnalytics()); }
   catch (e) { host.innerHTML = `<p class="cc-inline-error" role="alert">${escapeHtml(e?.message || "Could not load page views.")}</p>`; return; }
-  const site = pages.filter(p => p.page !== "deliver");
+  const site = pages;  // the public Deliver page (deliver.html) is website traffic
   const total = site.reduce((t, p) => t + p.views, 0);
   if (!total) {
     host.innerHTML = `<p class="cc-empty">No public page views recorded yet.</p>

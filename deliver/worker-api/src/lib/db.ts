@@ -492,8 +492,11 @@ async function deliverTypeAggregates(env: Env, since: string, until: string): Pr
   return out;
 }
 
+/** Public website page views per page key. The public Deliver page (deliver.html) records under the 'deliver'
+ *  key and is a normal website page; private Deliver activity lives in delivery_daily_metrics/share_metrics and
+ *  is returned separately (never here). */
 async function websitePageViews(env: Env, since: string, until: string): Promise<Map<string, number>> {
-  const rows = (await env.DB.prepare("SELECT page, COALESCE(SUM(views), 0) AS views FROM page_analytics WHERE day >= ?1 AND day <= ?2 AND page != 'deliver' GROUP BY page")
+  const rows = (await env.DB.prepare("SELECT page, COALESCE(SUM(views), 0) AS views FROM page_analytics WHERE day >= ?1 AND day <= ?2 GROUP BY page")
     .bind(since, until).all<{ page: string; views: number }>()).results;
   return new Map(rows.map((r) => [r.page, r.views]));
 }
@@ -509,7 +512,7 @@ export async function getAnalyticsSummary(env: Env, key: SummaryPeriod): Promise
   const [pages, prevPages, firstDay, types, prevTypes, stored] = await Promise.all([
     websitePageViews(env, since, until),
     prev ? websitePageViews(env, prev.since, prev.until) : Promise.resolve(null),
-    env.DB.prepare("SELECT MIN(day) AS d FROM page_analytics WHERE page != 'deliver'").first<{ d: string | null }>(),
+    env.DB.prepare("SELECT MIN(day) AS d FROM page_analytics").first<{ d: string | null }>(),
     deliverTypeAggregates(env, since, until),
     prev ? deliverTypeAggregates(env, prev.since, prev.until) : Promise.resolve(null),
     env.DB.prepare("SELECT CASE WHEN is_photoshop_battles = 1 THEN 'photoshop_battles' ELSE COALESCE(source, 'private') END AS type, COUNT(*) AS n FROM deliveries GROUP BY type").all<{ type: string; n: number }>(),

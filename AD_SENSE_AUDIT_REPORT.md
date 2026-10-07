@@ -52,7 +52,7 @@ Every public page loads the AdSense script and declares one responsive ad unit.
 
 ## 3. Sitemap / Robots / Ads.txt Integrity
 
-- **sitemap.xml:** 16 URLs, all return HTTP `200` (see `sitemap_status_check.txt`). Well-formed XML.
+- **sitemap.xml:** 17 URLs, all return HTTP `200` (see `sitemap_status_check.txt`). Well-formed XML.
 - **robots.txt:** references `Sitemap: https://www.boztik.com/sitemap.xml`; blocks `/deliver/`; explicitly allows Google ad crawlers (`Mediapartners-Google`, `Google-Display-Ads-Bot`, `AdsBot-Google`).
 - Sitemap includes **no** `/deliver*` or `dashboard.html` URLs — correct, consistent with the noindex strategy.
 - **ads.txt:** `google.com, pub-3739684241868984, DIRECT, f08c47fec0942fa0` — valid format, correct publisher id.

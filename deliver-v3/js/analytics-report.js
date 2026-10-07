@@ -7,10 +7,13 @@
 // House rules (the same ones the brief sets):
 //   * Only state what the data shows. Never explain WHY something happened.
 //   * Website analytics and Deliver analytics are different systems and are never added together.
+//     The public Deliver page (deliver.html) is counted as a website page; private delivery
+//     activity (views/downloads/types) is Deliver analytics and stays in its own block.
 //   * Anything that cannot be known from the available data is listed under DATA NOTES, not guessed.
 
 export const PAGE_LABELS = {
   homepage: "Home",
+  deliver: "Deliver (public page)",
   services: "Services",
   portfolio: "Portfolio",
   toolkit: "Creative Toolkit",
@@ -21,7 +24,7 @@ export const PAGE_LABELS = {
   contact: "Contact"
 };
 /** Public pages that should normally receive traffic; used to spot pages with no recorded views. */
-export const KEY_PAGES = ["homepage", "services", "portfolio", "toolkit", "tools", "guides", "about", "support", "contact"];
+export const KEY_PAGES = ["homepage", "deliver", "services", "portfolio", "toolkit", "tools", "guides", "about", "support", "contact"];
 
 export const TYPE_LABELS = {
   photoshop_battles: "PhotoshopBattles",
@@ -100,7 +103,7 @@ export function buildModel({ periodKey, summary, fallbackPages = null }) {
       prevTotals: hasPrev ? { views: sum("prevViews"), downloads: sum("prevDownloads"), shares: sum("prevShares") } : null
     };
   } else if (Array.isArray(fallbackPages)) {
-    const rows = fallbackPages.filter(p => p.page !== "deliver");
+    const rows = fallbackPages;  // the public Deliver page (deliver.html) is website traffic
     model.website = { available: true, pages: rows.map(p => ({ page: p.page, label: PAGE_LABELS[p.page] || p.page, views: n0(p.views), prev: null })), total: rows.reduce((t, p) => t + n0(p.views), 0), prevTotal: null, dataSince: null };
     model.periodLabel = "Last 30 days (fixed — Worker update not deployed)";
   }
@@ -220,7 +223,7 @@ export function buildReport(model, { generatedAt = new Date() } = {}) {
   line(`Reporting period: ${model.periodLabel}${model.range?.since ? ` (${model.range.since} to ${model.range.until})` : ""}`);
   if (model.previous) line(`Compared with: previous equal period (${model.previous.since} to ${model.previous.until})`);
   line(`Generated: ${stamp(generatedAt)} (local time)`);
-  line("Two separate data sources are used below. Website traffic (first-party page-view counter) and Deliver activity (Deliver's own counters) are never added together.");
+  line("Two separate data sources are used below. Website traffic (first-party page-view counter, including the public Deliver page deliver.html) and private Deliver activity (Deliver's own counters) are never added together.");
   if (model.limited) line("NOTE: limited mode — the Worker summary endpoint is not deployed yet, so only the last 30 days of website page views are available.");
 
   line();
@@ -249,7 +252,7 @@ export function buildReport(model, { generatedAt = new Date() } = {}) {
   line("NOT AVAILABLE here. Clicks on the Chrome Web Store, Edge store, Ko-fi, PayPal, email, portfolio and product links are sent to GA4 as the event 'boztik_action' (parameters: action, destination, position, page_key). They can be read in GA4 (Reports > Engagement > Events) but not in Command Centre until the GA4 Data API is connected.");
 
   line();
-  line("DELIVER PERFORMANCE (Deliver analytics — separate from website/GA4 traffic)");
+  line("DELIVER USAGE (PRIVATE DELIVERY ACTIVITY — separate from website/GA4 traffic; the public Deliver page deliver.html is counted under website traffic above)");
   if (d.available) {
     line(`Totals: ${plural(d.totals.views, "view")}, ${plural(d.totals.downloads, "download")}, ${plural(d.totals.shares, "share")}${d.prevTotals ? `; views: ${changeCore(d.totals.views, d.prevTotals.views)}` : ""}`);
     for (const t of d.types) {
@@ -273,7 +276,7 @@ export function buildReport(model, { generatedAt = new Date() } = {}) {
   line(`- Website counter data begins ${w.dataSince ? `on ${w.dataSince}` : "on an unknown date"}; earlier traffic is not in these numbers.${model.periodKey === "all" ? " 'All available' therefore starts there." : ""}`);
   line("- Numbers here will not match GA4: GA4 counts differently (users, sessions, consent and filtering) and is not connected to Command Centre.");
   line("- Creative Toolkit page views are only counted after the Worker update adding the 'toolkit' page key is deployed; earlier views were not recorded.");
-  line("- Legal pages (Privacy, Terms) and Deliver pages are not counted as website traffic.");
+  line("- Legal pages (Privacy, Terms) send no page-view and are not counted as website traffic. The public Deliver page (deliver.html) IS counted as a website page; private delivery activity is reported below under Deliver usage.");
   line("- Deliver views count every load of a delivery page or direct image link, including repeat views. PhotoshopBattles images are public direct links, so they register views only (no downloads), and Reddit/browser caching can hide repeat views.");
   line("- Deliver shares include completed copies/system shares and opened WhatsApp/Facebook/X/Reddit sheets (attempts); a published post cannot be confirmed.");
   line("- Deliveries that were deleted keep their historical counts but no longer have a stored type; they appear as 'Deleted deliveries'. 'Views per active delivery' divides by deliveries with at least one view or download in the period.");
