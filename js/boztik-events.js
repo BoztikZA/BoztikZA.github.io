@@ -36,6 +36,7 @@
       "/image-inspector.html": "tools",
       "/creative-assistant.html": "tools",
       "/creative-toolkit.html": "toolkit",
+      "/deliver.html": "deliver",
       "/guides.html": "guides",
       "/guide-photo-restoration.html": "guides",
       "/guide-object-removal.html": "guides",

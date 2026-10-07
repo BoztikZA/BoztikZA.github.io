@@ -3512,6 +3512,41 @@ async function download(
    INITIALIZE CLIENT DELIVERY
 ========================================================= */
 
+/* Tailor the shared "unavailable delivery" message for the case where the
+   page was opened with no delivery ID at all (a public visitor), so the copy
+   is accurate and points to the public Boztik Deliver page. For invalid or
+   expired IDs we keep the original generic copy (no internal detail leaked). */
+function setExpiredMessage(
+  title,
+  subtitle
+) {
+
+  const titleEl =
+    document.getElementById(
+      "deliver-expired-title"
+    );
+
+  if (
+    titleEl
+  ) {
+    titleEl.textContent =
+      title;
+  }
+
+  const subEl =
+    document.getElementById(
+      "deliver-expired-sub"
+    );
+
+  if (
+    subEl
+  ) {
+    subEl.textContent =
+      subtitle;
+  }
+
+}
+
 async function init() {
 
   /*
@@ -3522,15 +3557,48 @@ async function init() {
     Normalize it once.
   */
 
-  const id =
-    new URLSearchParams(
-      location.search
-    )
-      .get(
-        "id"
+  const raw =
+    (
+      new URLSearchParams(
+        location.search
       )
-      ?.trim()
+        .get(
+          "id"
+        ) ||
+      ""
+    )
+      .trim();
+
+  const id =
+    raw
       .toUpperCase();
+
+
+  /*
+    Landed on the delivery page without a delivery ID — this is a
+    public visitor, not a private delivery. There is nothing private
+    to show, so don't pretend the image expired: give a clear message
+    that points at the public Boztik Deliver page. The private,
+    valid-ID flow below is left fully intact.
+  */
+
+  if (
+    !raw
+  ) {
+
+    setExpiredMessage(
+      "No delivery link provided",
+      "This page shows private Boztik deliveries and needs a link that includes an ID. If you were sent a file, check that you opened the complete link you received — or contact Boztik to request help, a re-upload, or extended access."
+    );
+
+    state(
+      "expired"
+    );
+
+
+    return;
+
+  }
 
 
   /*
@@ -3541,7 +3609,6 @@ async function init() {
   */
 
   if (
-    !id ||
     !/^BZ-[A-Z2-9-]+$/.test(
       id
     )

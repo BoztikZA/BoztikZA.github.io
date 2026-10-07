@@ -1,12 +1,13 @@
 # Boztik — https://www.boztik.com
-# Public pages are crawlable. Private areas are kept out of search with a
-# noindex meta tag on the page itself (dashboard.html and the delivery pages),
-# which crawlers can only read if they are allowed to fetch the page, so those
-# paths are deliberately NOT blocked here.
+# Public pages are crawlable. The private delivery area (deliver-v3/ — the client
+# delivery page and the Command Centre dashboard) carries a noindex,follow meta tag
+# on the page itself and is also disallowed here so the private area can never
+# become an indexable directory. Public pages (including /deliver.html) stay crawlable.
 
 User-agent: *
 Allow: /
 Disallow: /deliver/
+Disallow: /deliver-v3/
 
 # Google's ad crawlers ignore the "*" group above, so they are named explicitly.
 User-agent: Mediapartners-Google
