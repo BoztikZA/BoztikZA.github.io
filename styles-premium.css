@@ -3508,7 +3508,6 @@ footer h3 {
 .support-payment-option {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 16px;
   width: 100%;
   min-height: 76px;
@@ -3530,10 +3529,42 @@ footer h3 {
   background: rgba(142, 255, 61, 0.07);
 }
 
+.support-payment-option--paypal {
+  border-color: rgba(0, 112, 186, 0.42);
+}
+
+.support-payment-option--paypal:hover,
+.support-payment-option--paypal:focus-visible {
+  border-color: #0070ba;
+  background: rgba(0, 112, 186, 0.1);
+}
+
+.support-payment-option--kofi {
+  border-color: rgba(255, 94, 91, 0.4);
+}
+
+.support-payment-option--kofi:hover,
+.support-payment-option--kofi:focus-visible {
+  border-color: #ff5e5b;
+  background: rgba(255, 94, 91, 0.09);
+}
+
 .support-payment-option:focus-visible,
 .support-site-footer__toggle:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
+}
+
+.support-payment-option__logo {
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.support-payment-option__details {
+  flex: 1;
+  min-width: 0;
 }
 
 .support-payment-option strong,
@@ -3555,8 +3586,16 @@ footer h3 {
 
 .support-payment-option__arrow {
   flex: 0 0 auto;
-  color: var(--primary);
+  color: currentColor;
   font-size: 1.15rem;
+}
+
+.support-payment-option--paypal .support-payment-option__arrow {
+  color: #0070ba;
+}
+
+.support-payment-option--kofi .support-payment-option__arrow {
+  color: #ff5e5b;
 }
 
 .support-payment-note {
