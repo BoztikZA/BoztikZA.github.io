@@ -21,8 +21,29 @@
     }
   };
 
+  const setupFooterCollapse = () => {
+    const footer = document.querySelector('.support-site-footer');
+    const toggle = document.getElementById('boztik-footer-toggle');
+    const label = toggle && toggle.querySelector('.support-site-footer__toggle-label');
+
+    if (!footer || !toggle) return;
+
+    toggle.addEventListener('click', () => {
+      const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
+      footer.classList.toggle('is-collapsed', isExpanded);
+      toggle.setAttribute('aria-expanded', String(!isExpanded));
+
+      if (label) {
+        label.textContent = isExpanded ? 'Expand footer' : 'Collapse footer';
+      }
+    });
+  };
+
   const init = () => {
-    createFloatingButton();
+    if (!document.body.hasAttribute('data-no-support-float')) {
+      createFloatingButton();
+    }
+    setupFooterCollapse();
   };
 
   if (document.readyState === 'loading') {
