@@ -325,11 +325,49 @@ export async function recordShare(env: Env, id: string, method: string, ctx: Exe
 // allow-list, so those page views were silently dropped (recordPageView returns false for unknown keys).
 export const PAGE_KEYS = ["homepage", "portfolio", "tools", "toolkit", "guides", "about", "support", "contact", "services", "deliver"] as const;
 
-export async function recordPageView(env: Env, page: string): Promise<boolean> {
+export async function recordPageView(env: Env, page: string, sessionId?: string): Promise<boolean> {
   if (!(PAGE_KEYS as readonly string[]).includes(page)) return false;
+  const ts = nowSec();
   await env.DB.prepare("INSERT INTO page_analytics (day, page, views) VALUES (?1, ?2, 1) ON CONFLICT (day, page) DO UPDATE SET views = views + 1")
     .bind(localDay(env), page).run();
+
+  const cleanSession = typeof sessionId === "string" ? sessionId.trim() : "";
+  if (cleanSession && /^[a-f0-9]{32}$/.test(cleanSession)) {
+    await env.DB.prepare("INSERT INTO page_session_events (session_id, seen_at, page) VALUES (?1, ?2, ?3)")
+      .bind(cleanSession, ts, page).run();
+  }
   return true;
+}
+
+export interface PageFlowSummary {
+  path: string;
+  sessions: number;
+}
+
+export async function getPageFlow(env: Env, days = 30, limit = 8): Promise<PageFlowSummary[]> {
+  const cutoff = nowSec() - days * 86400;
+  const rows = await env.DB.prepare("SELECT session_id, page, seen_at FROM page_session_events WHERE seen_at >= ?1 ORDER BY seen_at ASC")
+    .bind(cutoff)
+    .all<{ session_id: string; page: string; seen_at: number }>();
+
+  const bySession = new Map<string, string[]>();
+  for (const row of rows.results) {
+    const list = bySession.get(row.session_id) ?? [];
+    if (!list.includes(row.page) || list[list.length - 1] !== row.page) list.push(row.page);
+    bySession.set(row.session_id, list);
+  }
+
+  const counts = new Map<string, number>();
+  for (const pages of bySession.values()) {
+    const path = pages.length > 1 ? pages.join(" → ") : pages[0] ?? "";
+    if (!path) continue;
+    counts.set(path, (counts.get(path) ?? 0) + 1);
+  }
+
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .slice(0, limit)
+    .map(([path, sessions]) => ({ path, sessions }));
 }
 
 // -----------------------------------------------------------------------------

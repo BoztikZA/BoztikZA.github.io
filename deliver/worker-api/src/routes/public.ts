@@ -290,5 +290,6 @@ async function pageView(request: Request, env: Env): Promise<Response> {
   if (env.PAGE_ANALYTICS_ALLOWED !== "1") return json({ ok: true, counted: false });
   const b = await readJson(request, 512);
   const page = typeof b.page === "string" ? b.page : "";
-  return json({ ok: true, counted: await recordPageView(env, page) });
+  const sessionId = typeof b.session_id === "string" ? b.session_id.trim() : "";
+  return json({ ok: true, counted: await recordPageView(env, page, sessionId) });
 }

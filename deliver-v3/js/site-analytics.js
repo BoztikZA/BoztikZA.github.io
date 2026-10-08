@@ -8,7 +8,7 @@
 // read from here and are shown as "not connected", never as zero. The public Deliver page (deliver.html) is
 // counted here as a website page; private delivery activity is rendered in its own section and never added to
 // website numbers.
-import { fetchAnalyticsSummary, fetchPageAnalytics } from "./api.js";
+import { fetchAnalyticsSummary, fetchPageAnalytics, fetchPageFlow } from "./api.js";
 import { escapeHtml } from "./shared.js";
 import {
   PERIODS, KEY_PAGES, PAGE_LABELS, buildModel, buildObservations, buildReport,
@@ -50,6 +50,7 @@ const rangeText = m => {
   const cur = m.range.since ? `${m.range.since} → ${m.range.until}` : "no data yet";
   return m.previous ? `${cur} · compared with ${m.previous.since} → ${m.previous.until}` : `${cur} · no earlier period to compare`;
 };
+const flowDaysForPeriod = key => key === "7d" ? 7 : key === "90d" ? 90 : key === "all" ? 90 : 30;
 
 /* ----------------------------------------------------------------- renderers */
 function renderPeriodBar() {
@@ -97,6 +98,7 @@ function renderPages() {
   const rows = [...KEY_PAGES.filter(k => !byKey.has(k)).map(k => ({ page: k, label: PAGE_LABELS[k], views: 0, prev: null })), ...w.pages];
   rows.sort((a, b) => b.views - a.views || (KEY_PAGES.indexOf(a.page) + 1 || 99) - (KEY_PAGES.indexOf(b.page) + 1 || 99));
   const max = Math.max(1, ...rows.map(r => r.views));
+  const flow = model.pageFlow || [];
   host.innerHTML = `<div class="cc-table-wrap"><table class="cc-table">
       <caption class="cc-sr">Public website pages ranked by counted page views</caption>
       <thead><tr><th scope="col">Page</th><th scope="col">Page views</th><th scope="col" class="num">Share</th><th scope="col" class="num">vs previous</th></tr></thead>
@@ -104,7 +106,11 @@ function renderPages() {
         <td>${r.views ? `<div class="cc-inline-bar"><span style="width:${Math.round((r.views / max) * 100)}%"></span><b>${fmt(r.views)}</b></div>` : `<span class="cc-muted">No views counted</span>`}</td>
         <td class="num">${r.views ? `${pctOf(r.views, w.total)}%` : "—"}</td>
         <td class="num">${rowChange(r.views, model.previous ? (r.prev ?? 0) : null)}</td></tr>`).join("")}</tbody></table></div>
-    <p class="cc-fineprint">Page loads counted by Boztik's own counter${w.dataSince ? ` since ${escapeHtml(w.dataSince)}` : ""} — not unique people, and visitors who send Do Not Track / Global Privacy Control are not counted. Entrances, engagement and onward clicks per page exist only in GA4 and are not shown here. Creative Toolkit views are only recorded once the Worker update is deployed.</p>`;
+    <div class="cc-flow-box">
+      <h3 class="cc-subhead">Top visitor paths</h3>
+      ${flow.length ? `<ol class="cc-flow-list">${flow.slice(0, 6).map(item => `<li><span class="cc-flow-path">${escapeHtml(item.path)}</span><span class="cc-flow-sessions">${fmt(item.sessions)} sessions</span></li>`).join("")}</ol>` : `<p class="cc-empty">Not enough anonymous session data yet to show page paths.</p>`}
+    </div>
+    <p class="cc-fineprint">Page loads counted by Boztik's own counter${w.dataSince ? ` since ${escapeHtml(w.dataSince)}` : ""} — not unique people, and visitors who send Do Not Track / Global Privacy Control are not counted. Entrances, engagement and onward clicks per page exist only in GA4 and are not shown here. Creative Toolkit views are only recorded once the Worker update is deployed. Visitor paths are built from anonymous first-party session IDs and never include names, emails or personal details.</p>`;
 }
 
 function renderDeliver() {
@@ -190,12 +196,18 @@ async function load() {
   if (btn) btn.disabled = true;
   renderNotice("");
   let summary = null, fallback = null, failure = null;
+  let pageFlow = [];
   try {
     summary = await fetchAnalyticsSummary(periodKey);
   } catch (error) {
     failure = error;
     // Worker not updated yet (404) or summary failed: keep the page useful with the older fixed-30-day page views.
     try { fallback = (await fetchPageAnalytics()).pages; } catch { /* reported below */ }
+  }
+  try {
+    pageFlow = (await fetchPageFlow(flowDaysForPeriod(periodKey))).paths || [];
+  } catch {
+    pageFlow = [];
   }
   if (mine !== loadSeq) return; // a newer period was picked while this was loading
 
@@ -206,6 +218,7 @@ async function load() {
     return;
   }
   model = buildModel({ periodKey, summary, fallbackPages: fallback });
+  model.pageFlow = pageFlow;
   if (model.limited) {
     renderNotice(`<strong>Limited mode.</strong> The Worker has not been updated with the analytics summary route yet (${escapeHtml(failure?.status === 404 ? "not found" : failure?.message || "request failed")}). Showing the last 30 days of website page views only; period selection, comparisons and Deliver-by-period need <code>deliver/worker-api</code> to be deployed.`, "warn");
   }
