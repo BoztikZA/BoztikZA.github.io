@@ -35,17 +35,9 @@
   >
 
   <link rel="stylesheet" href="../styles-premium.css">
-  <link rel="stylesheet" href="css/deliver.css?v=13">
+  <link rel="stylesheet" href="css/deliver.css?v=14">
   <link rel="stylesheet" href="css/deliver-animations.css?v=2">
   <link rel="stylesheet" href="css/deliver-themes.css?v=1">
-
-  <!-- Google AdSense -->
-  <script
-    async
-    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3739684241868984"
-    crossorigin="anonymous"
-  ></script>
-
 
   <!-- =====================================================
        BOZTIK DELIVERY PAGE REFINEMENT
@@ -1009,77 +1001,6 @@
 
 
     /* =====================================================
-       ADSENSE
-    ====================================================== */
-
-    #deliver-adsense-slot.boztik-ad-area {
-      width: 100%;
-
-      margin: 28px 0 0;
-
-      padding: 17px 0 8px;
-
-      opacity: 0.62;
-    }
-
-
-    .boztik-ad-heading {
-      display: flex;
-
-      align-items: center;
-
-      gap: 12px;
-
-      margin-bottom: 10px;
-    }
-
-
-    .boztik-ad-heading::before,
-    .boztik-ad-heading::after {
-      content: "";
-
-      flex: 1;
-
-      height: 1px;
-
-      background:
-        rgba(255,255,255,0.055);
-    }
-
-
-    .boztik-ad-heading span {
-      color:
-        rgba(255,255,255,0.28);
-
-      font-size: 0.57rem;
-
-      font-weight: 700;
-
-      letter-spacing: 0.15em;
-
-      text-transform: uppercase;
-
-      white-space: nowrap;
-    }
-
-
-    .boztik-ad-slot-inner {
-      min-height: 90px;
-
-      padding: 12px;
-
-      border:
-        1px solid
-        rgba(255,255,255,0.045);
-
-      border-radius: 12px;
-
-      background:
-        rgba(255,255,255,0.012);
-    }
-
-
-    /* =====================================================
        PROFESSIONAL FOOTER
     ====================================================== */
 
@@ -1230,6 +1151,111 @@
 
       color:
         var(--deliver-accent);
+    }
+
+
+    .boztik-footer-legal {
+      display: inline-flex;
+
+      align-items: center;
+
+      gap: 14px;
+    }
+
+
+    .boztik-footer-legal a {
+      color:
+        rgba(255,255,255,0.4);
+
+      font-size: 0.63rem;
+
+      text-decoration: none;
+
+      transition: color 180ms ease;
+    }
+
+
+    .boztik-footer-legal a:hover {
+      color:
+        var(--deliver-accent);
+    }
+
+
+    .boztik-footer-toggle-wrap {
+      display: flex;
+
+      justify-content: center;
+
+      margin-bottom: 26px;
+    }
+
+
+    .boztik-footer-toggle {
+      display: inline-flex;
+
+      align-items: center;
+
+      gap: 7px;
+
+      padding:
+        7px 14px;
+
+      border:
+        1px solid
+        rgba(255,255,255,0.09);
+
+      border-radius: 999px;
+
+      background:
+        rgba(255,255,255,0.03);
+
+      color:
+        rgba(255,255,255,0.55);
+
+      font-size: 0.66rem;
+
+      font-weight: 700;
+
+      letter-spacing: 0.05em;
+
+      cursor: pointer;
+
+      transition:
+        color 180ms ease,
+        border-color 180ms ease,
+        background 180ms ease;
+    }
+
+
+    .boztik-footer-toggle:hover {
+      color:
+        var(--deliver-accent);
+
+      border-color:
+        rgba(89,163,255,0.4);
+
+      background:
+        rgba(255,255,255,0.05);
+    }
+
+
+    .boztik-footer-toggle-chevron {
+      width: 13px;
+      height: 13px;
+
+      transition: transform 220ms ease;
+    }
+
+
+    .boztik-professional-footer.is-collapsed
+    .boztik-footer-toggle-chevron {
+      transform: rotate(180deg);
+    }
+
+
+    .boztik-professional-footer.is-collapsed
+    .boztik-footer-body {
+      display: none;
     }
 
 
@@ -2108,11 +2134,6 @@
 
             </div>
 
-            <!-- PhotoshopBattles moves the one shared AdSense unit here at
-                 runtime, so its image page stays free of client support and
-                 promotional content. -->
-            <div id="deliver-battle-ad-host" class="deliver-battle-ad-host" hidden></div>
-
           </div>
 
 
@@ -2701,42 +2722,6 @@
       </div>
 
 
-      <!-- =====================================================
-           ADSENSE
-      ====================================================== -->
-
-      <div
-        id="deliver-adsense-slot"
-        class="deliver-section boztik-ad-area"
-        hidden
-      >
-
-        <div class="boztik-ad-heading">
-
-          <span>
-            Advertisement
-          </span>
-
-        </div>
-
-
-        <div class="boztik-ad-slot-inner">
-
-          <ins
-            class="adsbygoogle"
-            style="display:block"
-            data-ad-client="ca-pub-3739684241868984"
-            data-ad-slot="9342555903"
-            data-ad-format="auto"
-            data-full-width-responsive="true"
-          ></ins>
-          <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-
-        </div>
-
-      </div>
-
-
         </div>
 
       </div>
@@ -2979,8 +2964,26 @@
 
     <footer class="boztik-professional-footer">
 
+      <!-- COLLAPSE TOGGLE -->
+      <div class="boztik-footer-toggle-wrap">
+        <button
+          type="button"
+          class="boztik-footer-toggle"
+          id="boztik-footer-toggle"
+          aria-expanded="true"
+          aria-controls="boztik-footer-body"
+        >
+          <svg class="boztik-footer-toggle-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M6 15l6-6 6 6"/>
+          </svg>
+          <span class="boztik-footer-toggle-label">Collapse footer</span>
+        </button>
+      </div>
 
-      <div class="boztik-footer-main">
+
+      <div class="boztik-footer-body" id="boztik-footer-body">
+
+        <div class="boztik-footer-main">
 
 
         <!-- BRAND -->
@@ -3115,6 +3118,12 @@
         </p>
 
 
+        <div class="boztik-footer-legal">
+          <a href="../terms.html">Terms</a>
+          <a href="../privacy.html">Privacy</a>
+        </div>
+
+
         <div class="boztik-footer-security">
 
           <svg
@@ -3133,6 +3142,8 @@
           Secure private delivery
 
         </div>
+
+      </div>
 
       </div>
 
@@ -3287,7 +3298,7 @@
 
   <script
     type="module"
-    src="js/client.js?v=expired-tipjar-1"
+    src="js/client.js?v=footer-collapse-1"
   ></script>
 
 </body>

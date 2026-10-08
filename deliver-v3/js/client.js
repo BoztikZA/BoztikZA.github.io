@@ -152,12 +152,6 @@ const els = {
   explorePanel:
     $("deliver-explore-panel"),
 
-  adSlot:
-    $("deliver-adsense-slot"),
-
-  battleAdHost:
-    $("deliver-battle-ad-host"),
-
   support:
     $("deliver-support"),
 
@@ -212,15 +206,6 @@ function applyPhotoshopBattlesPresentation() {
   hide(els.footerSupport);
 
   document.body.classList.add("is-photoshop-battles");
-
-  /* Keep the approved AdSense unit, but relocate it below the image action.
-     Its normal home is in the optional promotional panel, which is absent on
-     PhotoshopBattles pages. */
-  if (els.adSlot && els.battleAdHost) {
-    els.battleAdHost.append(els.adSlot);
-    els.battleAdHost.hidden = false;
-    els.adSlot.hidden = false;
-  }
 }
 
 
@@ -686,9 +671,6 @@ function state(
   const showExplore =
     name === "active";
 
-  const showAd =
-    name === "active";
-
 
   if (
     els.discover
@@ -706,24 +688,6 @@ function state(
 
     els.explore.hidden =
       !showExplore;
-
-  }
-
-
-  if (
-    els.adSlot
-  ) {
-
-    els.adSlot.hidden =
-      !showAd;
-
-    /*
-      The ad no longer auto-loads here — it now loads lazily the
-      first time the "Explore More" panel is opened (see
-      setupExplorePanel), since the ad slot lives inside that
-      panel and starts visually collapsed. Loading it while
-      collapsed risked AdSense measuring a 0-height container.
-    */
 
   }
 
@@ -784,61 +748,15 @@ function state(
 
 
 /* =========================================================
-   ADSENSE
-========================================================= */
-
-let adLoaded =
-  false;
-
-
-function loadAd() {
-
-  if (
-    adLoaded
-  ) {
-
-    return;
-
-  }
-
-
-  adLoaded =
-    true;
-
-
-  try {
-
-    (
-      window.adsbygoogle =
-        window.adsbygoogle ||
-        []
-    ).push({});
-
-
-  } catch (
-    error
-  ) {
-
-    console.error(
-      "Boztik Deliver: AdSense failed to load:",
-      error
-    );
-
-  }
-
-}
-
-
-/* =========================================================
    EXPLORE MORE PANEL
 ========================================================= */
 
 /*
-  Toggles the secondary/promotional content (services, the
-  Creative Toolkit promo, and the ad slot) between a collapsed
-  and expanded state. The panel's own visibility (shown only for
-  an active delivery) is already handled by state() via
-  els.explore.hidden — this only wires the open/close interaction.
+  Toggles the secondary/promotional content (services and the
+  Creative Toolkit promo) between a collapsed and expanded state.
+  The panel's own visibility (shown only for an active delivery) is
+  already handled by state() via els.explore.hidden — this only
+  wires the open/close interaction.
 */
 
 function setupExplorePanel() {
@@ -897,17 +815,79 @@ function setupExplorePanel() {
 
       }
 
+    }
+  );
 
-      /*
-        Lazy-load the AdSense slot the first time the panel is
-        opened, since it lives inside this panel and starts
-        visually collapsed (see the CSS grid-rows collapse).
-        loadAd() is already idempotent via the adLoaded flag.
-      */
+}
 
-      if (nextOpen) {
 
-        loadAd();
+setupExplorePanel();
+
+/* =========================================================
+   FOOTER COLLAPSE
+   Lets the visitor collapse the professional Boztik footer on
+   the deliver page so it never consumes unnecessary space.
+========================================================= */
+
+function setupFooterCollapse() {
+
+  const footer =
+    document.querySelector(
+      ".boztik-professional-footer"
+    );
+
+  const toggle =
+    document.getElementById(
+      "boztik-footer-toggle"
+    );
+
+  const label =
+    toggle &&
+    toggle.querySelector(
+      ".boztik-footer-toggle-label"
+    );
+
+
+  if (
+    !footer ||
+    !toggle
+  ) {
+
+    return;
+
+  }
+
+
+  toggle.addEventListener(
+    "click",
+    () => {
+
+      const nowExpanded =
+        toggle.getAttribute(
+          "aria-expanded"
+        ) === "true";
+
+
+      footer.classList.toggle(
+        "is-collapsed",
+        nowExpanded
+      );
+
+
+      toggle.setAttribute(
+        "aria-expanded",
+        String(
+          !nowExpanded
+        )
+      );
+
+
+      if (label) {
+
+        label.textContent =
+          nowExpanded
+            ? "Expand footer"
+            : "Collapse footer";
 
       }
 
@@ -917,7 +897,7 @@ function setupExplorePanel() {
 }
 
 
-setupExplorePanel();
+setupFooterCollapse();
 /* =========================================================
    FULL RESOLUTION IMAGE VIEWER
 ========================================================= */
@@ -4327,7 +4307,6 @@ async function init() {
 
     if (isPhotoshopBattlesDelivery) {
       applyPhotoshopBattlesPresentation();
-      loadAd();
     }
 
     /*

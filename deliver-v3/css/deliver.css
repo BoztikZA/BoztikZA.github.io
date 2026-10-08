@@ -1945,62 +1945,6 @@ body.is-photoshop-battles .deliver-share-button {
 
 
 /* =========================================================
-   ADSENSE AREA
-========================================================= */
-
-.deliver-ad-container {
-
-  width:
-    100%;
-
-  min-height:
-    90px;
-
-  margin:
-    28px 0;
-
-  padding:
-    14px;
-
-  border:
-    1px solid rgba(255,255,255,0.055);
-
-  border-radius:
-    var(--deliver-radius-small);
-
-  background:
-    rgba(255,255,255,0.012);
-
-}
-
-
-.deliver-ad-label {
-
-  margin:
-    0 0 10px;
-
-  color:
-    rgba(255,255,255,0.30);
-
-  font-size:
-    0.62rem;
-
-  font-weight:
-    700;
-
-  letter-spacing:
-    0.14em;
-
-  text-align:
-    center;
-
-  text-transform:
-    uppercase;
-
-}
-
-
-/* =========================================================
    FOOTER
 ========================================================= */
 
@@ -7343,15 +7287,6 @@ body.is-photoshop-battles .deliver-gallery-refined.single-file .deliver-file-con
 body.is-photoshop-battles .deliver-file-download,
 body.is-photoshop-battles .deliver-download-all {
   min-width: min(100%, 280px);
-}
-
-.deliver-battle-ad-host {
-  width: min(100%, 900px);
-  margin: 20px auto 0;
-}
-
-body.is-photoshop-battles .deliver-battle-ad-host #deliver-adsense-slot {
-  margin-top: 0;
 }
 
 /* PhotoshopBattles — keep the existing Contact Boztik section quiet and
