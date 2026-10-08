@@ -612,148 +612,6 @@
 
 
     /* =====================================================
-       EXPLORE MORE TOGGLE
-    ====================================================== */
-
-    .deliver-explore-toggle-wrap {
-      display: flex;
-      justify-content: center;
-      margin: 40px 0;
-    }
-
-    .deliver-explore-toggle {
-      display: inline-flex;
-      align-items: center;
-      gap: 14px;
-
-      padding: 0;
-      border: none;
-      background: none;
-
-      color: var(--deliver-text-muted);
-      cursor: pointer;
-
-      transition:
-        color 200ms ease;
-    }
-
-    .deliver-explore-toggle:hover,
-    .deliver-explore-toggle:focus-visible {
-      color: var(--deliver-accent);
-    }
-
-    .deliver-explore-toggle-line {
-      width: 44px;
-      height: 1px;
-      background:
-        linear-gradient(
-          90deg,
-          transparent,
-          currentColor
-        );
-      opacity: 0.35;
-      transition: opacity 200ms ease;
-    }
-
-    .deliver-explore-toggle-line:last-child {
-      background:
-        linear-gradient(
-          90deg,
-          currentColor,
-          transparent
-        );
-    }
-
-    .deliver-explore-toggle:hover .deliver-explore-toggle-line,
-    .deliver-explore-toggle:focus-visible .deliver-explore-toggle-line {
-      opacity: 0.7;
-    }
-
-    .deliver-explore-toggle-label {
-      font-size: 0.78rem;
-      font-weight: 700;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      white-space: nowrap;
-    }
-
-    .deliver-explore-toggle-icon {
-      width: 16px;
-      height: 16px;
-      flex: 0 0 auto;
-      transition: transform 320ms cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .deliver-explore-toggle[aria-expanded="true"] .deliver-explore-toggle-icon {
-      transform: rotate(180deg);
-    }
-
-
-    /*
-      Grid-based collapse: animating grid-template-rows between
-      0fr and 1fr gives a smooth height transition without ever
-      measuring or hardcoding a pixel height, so it can't break
-      on tablets/mobile or when content length changes.
-    */
-
-    .deliver-explore-panel {
-      display: grid;
-      grid-template-rows: 0fr;
-      transition: grid-template-rows 480ms cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .deliver-explore-panel.is-open {
-      grid-template-rows: 1fr;
-    }
-
-    .deliver-explore-panel-inner {
-      min-height: 0;
-      overflow: hidden;
-    }
-
-    /*
-      Staggered reveal: each direct section inside the panel
-      fades/slides in with an increasing delay once opened, so
-      the secondary content cascades rather than appearing at once.
-    */
-
-    .deliver-explore-panel-inner > * {
-      opacity: 0;
-      transform: translateY(10px);
-      transition:
-        opacity 380ms ease,
-        transform 380ms ease;
-    }
-
-    .deliver-explore-panel.is-open .deliver-explore-panel-inner > * {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .deliver-explore-panel.is-open .deliver-explore-panel-inner > *:nth-child(1) {
-      transition-delay: 80ms;
-    }
-
-    .deliver-explore-panel.is-open .deliver-explore-panel-inner > *:nth-child(2) {
-      transition-delay: 160ms;
-    }
-
-    .deliver-explore-panel.is-open .deliver-explore-panel-inner > *:nth-child(3) {
-      transition-delay: 240ms;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-
-      .deliver-explore-panel,
-      .deliver-explore-toggle-icon,
-      .deliver-explore-panel-inner > * {
-        transition-duration: 1ms !important;
-      }
-
-    }
-
-
-    /* =====================================================
        SERVICES SECTION
     ====================================================== */
 
@@ -2507,224 +2365,59 @@
 
 
       <!-- =====================================================
-          EXPLORE MORE TOGGLE
-      ====================================================== -->
-
-      <div class="deliver-explore-toggle-wrap">
-
-        <button
-          type="button"
-          id="deliver-explore"
-          class="deliver-explore-toggle"
-          aria-expanded="false"
-          aria-controls="deliver-explore-panel"
-          hidden
-        >
-
-          <span class="deliver-explore-toggle-line"></span>
-
-          <span class="deliver-explore-toggle-label">
-            Explore Boztik
-          </span>
-
-          <svg
-            class="deliver-explore-toggle-icon"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <polyline points="6 9 12 15 18 9"/>
-          </svg>
-
-          <span class="deliver-explore-toggle-line"></span>
-
-        </button>
-
-      </div>
-
-
-      <div
-        id="deliver-explore-panel"
-        class="deliver-explore-panel"
-      >
-
-        <div class="deliver-explore-panel-inner">
-
-
-      <!-- =====================================================
-           EXPLORE BOZTIK - universal discovery
-           Boztik is the umbrella brand. Each group lists only things
-           that are live today. To add a launch later, copy an existing
-           list item inside the matching group; to add a whole new
-           category, copy one of the boztik-discover-group blocks.
-           Keep the discover container's id: client.js shows/hides it.
+          MADE WITH BOZTIK - subtle discovery
+          A quiet, professional line that tells visitors Boztik
+          created this work and opens a path to the main site.
+          It appears only after the delivery has successfully
+          loaded, never interferes with downloading, and stays
+          visually subtle. PhotoshopBattles keeps the minimal
+          "Made with Boztik" treatment; other deliveries get a
+          slightly stronger, but still non-pushy, prompt.
       ====================================================== -->
 
       <div
         id="deliver-discover"
         class="boztik-discover"
-        aria-labelledby="boztik-discover-title"
+        aria-label="Discover Boztik"
         hidden
       >
 
-        <div class="boztik-discover-head">
+        <!-- PhotoshopBattles: very quiet "Made with Boztik" -->
+        <div class="boztik-discover-copy boztik-discover-copy--battles">
 
-          <span class="deliver-eyebrow">
-            Boztik
-          </span>
-
-          <h2
-            id="boztik-discover-title"
-            class="boztik-discover-title"
-          >
-            Software, services and tools
-          </h2>
-
-          <p class="boztik-discover-lead">
-            Independent creative work and practical tools, built by Boztik.
+          <p class="boztik-discover-wordmark">
+            Made with Boztik
           </p>
 
-        </div>
+          <p class="boztik-discover-sub">
+            Curious what else we can do?
+          </p>
 
-
-        <div class="boztik-discover-grid">
-
-          <!-- SOFTWARE -->
-          <div class="boztik-discover-group" role="group" aria-labelledby="bd-software">
-
-            <h3 id="bd-software">Software</h3>
-
-            <ul>
-
-              <li class="boztik-discover-item boztik-discover-item--product">
-
-                <a class="boztik-discover-link" href="../creative-toolkit.html">
-
-                  <img
-                    class="boztik-discover-product-icon"
-                    src="../images/logo.png"
-                    alt=""
-                    width="40"
-                    height="40"
-                    loading="lazy"
-                    decoding="async"
-                  >
-
-                  <span class="boztik-discover-text">
-                    <strong>Creative Toolkit</strong>
-                    <small>Free Chrome and Edge extension for inspecting images, colours and type.</small>
-                  </span>
-
-                </a>
-
-                <div class="boztik-discover-store">
-
-                  <a
-                    href="https://chromewebstore.google.com/detail/boztik-creative-toolkit/maaebbajegilfcpmljlpcclebdpngign"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <img src="../images/chrome.png" width="18" height="18" alt="" loading="lazy" decoding="async">
-                    Chrome
-                  </a>
-
-                  <a
-                    href="https://microsoftedge.microsoft.com/addons/detail/ajpnibmfjlajpgijgaionelkdjgiemfi"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <img src="../images/edge.png" width="18" height="18" alt="" loading="lazy" decoding="async">
-                    Edge
-                  </a>
-
-                </div>
-
-              </li>
-
-            </ul>
-
-          </div>
-
-
-          <!-- SERVICES -->
-          <div class="boztik-discover-group" role="group" aria-labelledby="bd-services">
-
-            <h3 id="bd-services">Services</h3>
-
-            <ul>
-
-              <li class="boztik-discover-item">
-                <a class="boztik-discover-link" href="../services.html">
-                  <span class="boztik-discover-text">
-                    <strong>Photo editing &amp; restoration</strong>
-                    <small>Restoration, portraits, object removal and image enhancement.</small>
-                  </span>
-                </a>
-              </li>
-
-              <li class="boztik-discover-item">
-                <a
-                  class="boztik-discover-link"
-                  href="https://boztiktech9a11.myportfolio.com/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <span class="boztik-discover-text">
-                    <strong>Portfolio</strong>
-                    <small>Recent photo editing and composite work.</small>
-                  </span>
-                </a>
-              </li>
-
-            </ul>
-
-          </div>
-
-
-          <!-- TOOLS -->
-          <div class="boztik-discover-group" role="group" aria-labelledby="bd-tools">
-
-            <h3 id="bd-tools">Tools</h3>
-
-            <ul>
-
-              <li class="boztik-discover-item">
-                <a class="boztik-discover-link" href="../image-inspector.html">
-                  <span class="boztik-discover-text">
-                    <strong>Image Inspector</strong>
-                    <small>Check an image's size, format and colours.</small>
-                  </span>
-                </a>
-              </li>
-
-              <li class="boztik-discover-item">
-                <a class="boztik-discover-link" href="../creative-assistant.html">
-                  <span class="boztik-discover-text">
-                    <strong>Creative Assistant</strong>
-                    <small>Creative direction and prompts, using your own AI key.</small>
-                  </span>
-                </a>
-              </li>
-
-            </ul>
-
-          </div>
+          <a class="boztik-discover-cta" href="../index.html">
+            Explore Boztik <span aria-hidden="true">→</span>
+          </a>
 
         </div>
 
-        <p class="boztik-discover-all">
-          <a href="../index.html">Visit boztik.com</a>
-        </p>
+        <!-- Other deliveries: slightly stronger, still professional -->
+        <div class="boztik-discover-copy boztik-discover-copy--standard">
 
-      </div>
+          <p class="boztik-discover-wordmark">
+            Need something edited?
+          </p>
 
+          <p class="boztik-discover-sub">
+            Photo restoration, retouching, Photoshop manipulation, composites and more.
+          </p>
+
+          <a class="boztik-discover-cta" href="../services.html">
+            See what Boztik can do <span aria-hidden="true">→</span>
+          </a>
 
         </div>
 
       </div>
+
 
     </section>
 

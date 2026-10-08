@@ -146,12 +146,6 @@ const els = {
   discover:
     $("deliver-discover"),
 
-  explore:
-    $("deliver-explore"),
-
-  explorePanel:
-    $("deliver-explore-panel"),
-
   support:
     $("deliver-support"),
 
@@ -665,28 +659,17 @@ function state(
     name === "active" &&
     !isPhotoshopBattlesDelivery;
 
-  /* Explore Boztik / discovery is offered on an active delivery in both the
-     normal and PhotoshopBattles presentations. On battles it stays collapsed
-     by default (opened on demand); private requests remain normal-only. */
+  /* The subtle "Made with Boztik" discovery line appears on an active delivery
+     in both the normal and PhotoshopBattles presentations. It never obscures
+     the download and stays visually quiet regardless of promo state. */
   const showExplore =
     name === "active";
-
 
   if (
     els.discover
   ) {
 
     els.discover.hidden =
-      !showExplore;
-
-  }
-
-
-  if (
-    els.explore
-  ) {
-
-    els.explore.hidden =
       !showExplore;
 
   }
@@ -746,82 +729,6 @@ function state(
 
 }
 
-
-/* =========================================================
-   EXPLORE MORE PANEL
-========================================================= */
-
-/*
-  Toggles the secondary/promotional content (services and the
-  Creative Toolkit promo) between a collapsed and expanded state.
-  The panel's own visibility (shown only for an active delivery) is
-  already handled by state() via els.explore.hidden — this only
-  wires the open/close interaction.
-*/
-
-function setupExplorePanel() {
-
-  const toggle =
-    els.explore;
-
-  const panel =
-    els.explorePanel;
-
-
-  if (
-    !toggle ||
-    !panel
-  ) {
-
-    return;
-
-  }
-
-
-  const label =
-    toggle.querySelector(
-      ".deliver-explore-toggle-label"
-    );
-
-
-  toggle.addEventListener(
-    "click",
-    () => {
-
-      const nextOpen =
-        toggle.getAttribute(
-          "aria-expanded"
-        ) !== "true";
-
-
-      toggle.setAttribute(
-        "aria-expanded",
-        String(nextOpen)
-      );
-
-
-      panel.classList.toggle(
-        "is-open",
-        nextOpen
-      );
-
-
-      if (label) {
-
-        label.textContent =
-          nextOpen
-            ? "Show Less"
-            : "Explore Boztik";
-
-      }
-
-    }
-  );
-
-}
-
-
-setupExplorePanel();
 
 /* =========================================================
    FOOTER COLLAPSE
