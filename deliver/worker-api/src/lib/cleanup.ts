@@ -19,6 +19,38 @@ import {
 
 const nowSec = () => Math.floor(Date.now() / 1000);
 
+const PAGE_VIEW_EVENT_RETENTION_SECONDS = 90 * 24 * 60 * 60;
+const PAGE_VIEW_EVENT_CLEANUP_BATCH_SIZE = 1000;
+const PAGE_VIEW_EVENT_CLEANUP_MAX_BATCHES = 5;
+
+/**
+ * Remove only individual public website page-flow events older than 90 days.
+ * The timestamp index bounds each delete; the per-run cap lets later cron
+ * executions catch up without making one scheduled invocation unbounded.
+ */
+export async function cleanupPageViewEvents(env: Env): Promise<number> {
+  const cutoff = nowSec() - PAGE_VIEW_EVENT_RETENTION_SECONDS;
+  let deleted = 0;
+
+  for (let batch = 0; batch < PAGE_VIEW_EVENT_CLEANUP_MAX_BATCHES; batch += 1) {
+    const result = await env.DB.prepare(
+      `DELETE FROM page_session_events
+        WHERE rowid IN (
+          SELECT rowid FROM page_session_events
+           WHERE seen_at < ?1
+           ORDER BY seen_at
+           LIMIT ?2
+        )`,
+    ).bind(cutoff, PAGE_VIEW_EVENT_CLEANUP_BATCH_SIZE).run();
+
+    const changes = result.meta.changes ?? 0;
+    deleted += changes;
+    if (changes < PAGE_VIEW_EVENT_CLEANUP_BATCH_SIZE) break;
+  }
+
+  return deleted;
+}
+
 export interface RemovalResult {
   removed_files: number;
   removed_bytes: number;
@@ -221,6 +253,7 @@ export async function housekeeping(env: Env): Promise<void> {
 export interface CronReport {
   expiry: ExpiryReport | null;
   abandoned: { released: number; failed: number } | null;
+  page_view_events_deleted: number | null;
   orphans: { deleted: number; failed: number } | null;
   reconcile: { drift_bytes: number; deferred: boolean } | null;
   errors: string[];
@@ -228,7 +261,14 @@ export interface CronReport {
 
 /** The whole scheduled job. Each step is isolated so one failure cannot starve the others. */
 export async function runMaintenance(env: Env): Promise<CronReport> {
-  const report: CronReport = { expiry: null, abandoned: null, orphans: null, reconcile: null, errors: [] };
+  const report: CronReport = {
+    expiry: null,
+    abandoned: null,
+    page_view_events_deleted: null,
+    orphans: null,
+    reconcile: null,
+    errors: [],
+  };
   const step = async <T>(name: string, fn: () => Promise<T>): Promise<T | null> => {
     try { return await fn(); } catch (e) {
       console.error(`maintenance step failed: ${name}`, e);
@@ -238,6 +278,7 @@ export async function runMaintenance(env: Env): Promise<CronReport> {
   };
   report.expiry = await step("expiry", () => cleanupExpired(env, 25));
   report.abandoned = await step("abandoned", () => sweepAbandonedUploads(env));
+  report.page_view_events_deleted = await step("page-view-event-retention", () => cleanupPageViewEvents(env));
   report.orphans = await step("orphans", () => sweepOrphans(env));
   const rec = await step("reconcile", () => reconcileStorage(env));
   if (rec) {

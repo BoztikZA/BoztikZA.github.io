@@ -30,8 +30,9 @@ binding = "BUCKET"
 bucket_name = "boztik-deliveries"
 
 # ---------------------------------------------------------------------------
-# Cron (Worker scheduled handler): expiry cleanup, abandoned-upload sweep,
-# orphan sweep, storage reconciliation, housekeeping — every 10 minutes.
+# Cron (Worker scheduled handler): expiry and page-view event cleanup,
+# abandoned-upload and orphan sweeps, storage reconciliation, housekeeping —
+# every 10 minutes.
 # ---------------------------------------------------------------------------
 [triggers]
 crons = ["*/10 * * * *"]

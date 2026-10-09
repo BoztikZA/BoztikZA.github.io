@@ -345,10 +345,15 @@ For each eligible page view, the browser sends the page key and cookie
 identifier to Boztik's page-view API. When the endpoint is enabled and the
 request succeeds, the API records both an individual event (identifier, page
 key and server-generated timestamp) and an aggregate count for the page and
-day. The reporting query uses a 30-day window by default, but that is a
-reporting filter, not a deletion period. The reviewed source contains no
-cleanup for these event or aggregate records, so their actual retention
-period cannot be determined from the repository.
+day. The Worker source schedules cleanup of individual events strictly older
+than 90 days, in batches of up to 5,000 events per scheduled run. Because this
+cleanup is bounded and can fail or fall behind, an event may remain longer
+than 90 days. The repository configures the Worker to run scheduled
+maintenance every 10 minutes, but it cannot establish whether that Worker
+version and trigger are currently deployed and active. Aggregate daily counts
+are separate and are not removed by this event cleanup; no aggregate cleanup
+period is configured in the reviewed source. The 30-day page-flow report
+window is a reporting filter, not a deletion period.
 </p>
 
 <p>
@@ -628,11 +633,15 @@ Because Boztik Creative Toolkit does not collect personal information on Boztik-
 
 <p>
 The public website page-view counter stores individual page events and
-aggregate daily counts as described in Section 1. The repository contains no
-cleanup for those records, so their actual retention period is unknown; the
-30-day page-flow report window does not delete older events. Google Analytics
-and Google AdSense have separate processing and retention governed by their
-settings and policies, which cannot be verified from this repository.
+aggregate daily counts as described in Section 1. The Worker source schedules
+bounded cleanup of individual events older than 90 days; events may remain
+longer if cleanup fails or falls behind. Whether the configured Worker and
+scheduled trigger are currently deployed and active cannot be verified from
+the repository. Aggregate daily counts are not part of this cleanup and have
+no configured deletion period in the reviewed source. The 30-day page-flow
+report window does not delete older events. Google Analytics and Google
+AdSense have separate processing and retention governed by their settings and
+policies, which cannot be verified from this repository.
 </p>
 
 <p>
