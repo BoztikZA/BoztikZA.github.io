@@ -2807,17 +2807,11 @@ h1, h2, h3 { font-weight: 800; }
   letter-spacing: 0.02em;
   text-transform: uppercase;
   line-height: 0.98;
+  /* Keep the brand wordmark solid to match the black / neon-green Boztik
+     aesthetic instead of a generic SaaS gradient that clashes with the palette. */
   color: var(--text);
   filter: drop-shadow(0 2px 24px rgba(142, 255, 61, 0.18));
   margin-bottom: 8px;
-}
-@supports ((-webkit-background-clip: text) or (background-clip: text)) {
-  .hero-wordmark {
-    background: linear-gradient(180deg, #ffffff 0%, #ddfcc9 48%, var(--primary) 130%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
 }
 .hero-tagline {
   font-size: clamp(1.05rem, 2.4vw, 1.5rem);
