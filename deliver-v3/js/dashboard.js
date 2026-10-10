@@ -31,7 +31,6 @@ import { loadInsights, openDeliveryAnalytics } from "./insights.js";
 import { initCommandCentre, refreshCommandCentre, refreshAnalyticsExtras, formatRate } from "./command-centre.js";
 import { StorageLimitError, readStorageUsage, monitorLevel, storageLimitBytes, storageLimitLabel, usagePercent } from "./storage-guard.js";
 import { ANIMATION_CATALOG, getAnimation } from "./animations/registry.js";
-import { initGrowth } from "./growth/growth.js";
 
 const $ = id => document.getElementById(id);
 
@@ -2174,7 +2173,6 @@ async function init() {
   if (session) {
     showDashboardView();
     await bootstrapDashboard();
-    initGrowth();
   } else {
     showLoginView();
   }

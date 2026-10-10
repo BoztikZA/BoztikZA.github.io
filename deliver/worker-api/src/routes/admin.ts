@@ -21,7 +21,6 @@ import {
   extensionOf, isAllowedExtension, isBattleExtension, isValidDeliveryId, magicMatches, mimeForExtension, parseExpiry,
 } from "../lib/validate";
 import { error, json, readJson, requireJson, segments, wrap } from "./util";
-import { handleGrowth } from "./growth";
 
 export function handleAdmin(request: Request, path: string, env: Env, ctx: ExecutionContext): Promise<Response> {
   return wrap(async () => {
@@ -34,7 +33,6 @@ export function handleAdmin(request: Request, path: string, env: Env, ctx: Execu
       case "storage": return routeStorage(request, seg, env);
       case "analytics": return routeAnalytics(request, seg, env);
       case "reddit-metadata": return redditMetadata(request, env);
-      case "growth": return handleGrowth(request, seg.slice(1).join("/"), env); // Boztik Growth (additive)
       default: return error("Not found", 404);
     }
   });
