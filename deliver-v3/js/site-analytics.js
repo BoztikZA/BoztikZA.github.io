@@ -25,6 +25,11 @@ let model = null;
 let loadSeq = 0;
 let wired = false;
 let reportOpen = false;
+let lastSuccessfulRefresh = null;
+let lastRefreshFailed = false;
+let siteAnalyticsTimer = null;
+let siteAnalyticsRefreshInFlight = false;
+const SITE_ANALYTICS_REFRESH_MS = 5 * 60 * 1000;
 
 /* ----------------------------------------------------------------- helpers */
 function deltaHtml(current, previous, base = MIN_COMPARE_BASE) {
@@ -64,6 +69,35 @@ function renderNotice(html, kind = "info") {
   const host = $("cc-site-notice");
   if (!host) return;
   host.innerHTML = html ? `<p class="cc-note cc-note--${kind}" role="${kind === "error" ? "alert" : "status"}">${icon(kind === "error" ? "alert" : "info")}<span>${html}</span></p>` : "";
+}
+
+function formatLocalDateTime(value) {
+  if (!value) return "never";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "never";
+  return d.toLocaleString([], { dateStyle: "short", timeStyle: "short" });
+}
+
+function renderStatusBar() {
+  const host = $("cc-site-status");
+  if (!host) return;
+  if (lastRefreshFailed && model) {
+    host.innerHTML = `<span class="cc-status-pill is-failed">Refresh failed</span><span>Last successful refresh: ${escapeHtml(formatLocalDateTime(lastSuccessfulRefresh))}</span><span>Reporting period: ${escapeHtml(model.periodLabel || periodKey)}</span><span>Data source: ${escapeHtml(model.limited ? "Fallback: website page views only" : "Full summary endpoint")}</span>`;
+    return;
+  }
+  let state = "loading";
+  let label = "Loading";
+  if (model) {
+    if (model.limited) { state = "limited"; label = "Limited mode"; }
+    else if (model.website?.available && model.website.total === 0 && (!model.deliver || !model.deliver.available || (model.deliver.totals.views === 0 && model.deliver.totals.downloads === 0 && model.deliver.totals.shares === 0))) {
+      state = "empty"; label = "No data for this period";
+    }
+    else { state = "full"; label = "Full analytics"; }
+  }
+  const source = model?.limited ? "Fallback: website page views only" : model ? "Full summary endpoint" : "Loading";
+  const period = model?.periodLabel || periodKey;
+  const last = formatLocalDateTime(lastSuccessfulRefresh);
+  host.innerHTML = `<span class="cc-status-pill is-${state}">${escapeHtml(label)}</span><span>Last successful refresh: ${escapeHtml(last)}</span><span>Reporting period: ${escapeHtml(period)}</span><span>Data source: ${escapeHtml(source)}</span>`;
 }
 
 function renderKpis() {
@@ -140,6 +174,7 @@ function renderDeliver() {
 function renderAll() {
   const range = $("cc-site-range");
   if (range) range.textContent = rangeText(model);
+  renderStatusBar();
   renderKpis();
   renderStandout();
   renderPages();
@@ -194,7 +229,11 @@ async function load() {
   const mine = ++loadSeq;
   const btn = $("cc-report-btn");
   if (btn) btn.disabled = true;
+  const previousModel = model;
+  lastRefreshFailed = false;
   renderNotice("");
+  // Keep the last known-good figures while a refresh is in progress or fails; only clear them when nothing useful is available.
+  renderStatusBar();
   let summary = null, fallback = null, failure = null;
   let pageFlow = [];
   try {
@@ -212,13 +251,21 @@ async function load() {
   if (mine !== loadSeq) return; // a newer period was picked while this was loading
 
   if (!summary && !fallback) {
-    model = null;
+    model = previousModel;
+    lastRefreshFailed = true;
     renderNotice(`${escapeHtml(failure?.message || "Could not load analytics.")} <button type="button" class="cc-btn cc-btn-inline" data-retry>Try again</button>`, "error");
-    for (const id of ["cc-site-kpis", "cc-standout-list", "cc-site-pages", "cc-site-deliver"]) { const el = $(id); if (el) el.innerHTML = ""; }
+    if (!model) {
+      for (const id of ["cc-site-kpis", "cc-standout-list", "cc-site-pages", "cc-site-deliver"]) { const el = $(id); if (el) el.innerHTML = ""; }
+    } else {
+      renderAll();
+    }
+    renderStatusBar();
     return;
   }
   model = buildModel({ periodKey, summary, fallbackPages: fallback });
   model.pageFlow = pageFlow;
+  lastSuccessfulRefresh = Date.now();
+  lastRefreshFailed = false;
   if (model.limited) {
     renderNotice(`<strong>Limited mode.</strong> The Worker has not been updated with the analytics summary route yet (${escapeHtml(failure?.status === 404 ? "not found" : failure?.message || "request failed")}). Showing the last 30 days of website page views only; period selection, comparisons and Deliver-by-period need <code>deliver/worker-api</code> to be deployed.`, "warn");
   }
@@ -226,6 +273,25 @@ async function load() {
 }
 
 /* ------------------------------------------------------------------- public */
+function stopPeriodicRefresh() {
+  if (siteAnalyticsTimer) {
+    window.clearInterval(siteAnalyticsTimer);
+    siteAnalyticsTimer = null;
+  }
+}
+
+function startPeriodicRefresh() {
+  if (document.hidden) {
+    stopPeriodicRefresh();
+    return;
+  }
+  stopPeriodicRefresh();
+  siteAnalyticsTimer = window.setInterval(() => {
+    if (document.hidden || siteAnalyticsRefreshInFlight) return;
+    void refreshSiteAnalytics();
+  }, SITE_ANALYTICS_REFRESH_MS);
+}
+
 export function initSiteAnalytics() {
   if (wired) return;
   wired = true;
@@ -241,10 +307,22 @@ export function initSiteAnalytics() {
   $("cc-report-btn")?.addEventListener("click", () => { if (model) fillReport(true); });
   $("cc-report-copy")?.addEventListener("click", () => void copyReport());
   $("cc-report-close")?.addEventListener("click", () => { const p = $("cc-report-panel"); if (p) p.hidden = true; reportOpen = false; $("cc-report-btn")?.focus(); });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) stopPeriodicRefresh();
+    else startPeriodicRefresh();
+  });
+  startPeriodicRefresh();
 }
 
 export async function refreshSiteAnalytics() {
   if (!$("cc-site-analytics")) return;
   initSiteAnalytics();
-  await load();
+  if (siteAnalyticsRefreshInFlight) return;
+  siteAnalyticsRefreshInFlight = true;
+  try {
+    await load();
+  } finally {
+    siteAnalyticsRefreshInFlight = false;
+    startPeriodicRefresh();
+  }
 }
