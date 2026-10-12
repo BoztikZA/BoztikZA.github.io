@@ -31,7 +31,7 @@ jobs:
           # Publish only the public static site. The Cloudflare Worker (deliver/, incl. wrangler.toml),
           # audit/docs scratch and .github are deployed elsewhere and must NOT be published as Pages.
           mkdir -p _site
-          cp -r js images includes deliver-v3 _site/
+          cp -r js images deliver-v3 _site/
           cp -- *.html *.css CNAME robots.txt ads.txt sitemap.xml .nojekyll _site/
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
