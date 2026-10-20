@@ -1,6 +1,7 @@
 import type { DeliveryFileRow, DeliveryRow, Env } from "../types";
 import { HttpError } from "../types";
 import { milestoneNotificationsEnabled, queueMilestoneCheck } from "./notify";
+import type { TrafficSourceVisit } from "./traffic-sources";
 
 export const nowSec = () => Math.floor(Date.now() / 1000);
 export const iso = (s: number): string => new Date(s * 1000).toISOString();
@@ -336,7 +337,51 @@ export async function recordPageView(env: Env, page: string, sessionId?: string)
     await env.DB.prepare("INSERT INTO page_session_events (session_id, seen_at, page) VALUES (?1, ?2, ?3)")
       .bind(cleanSession, ts, page).run();
   }
+
   return true;
+}
+
+export async function recordTrafficSourceVisit(env: Env, visit: TrafficSourceVisit): Promise<boolean> {
+  const result = await env.DB.prepare(
+    `INSERT OR IGNORE INTO traffic_source_visits
+       (session_id, seen_at, source, utm_source, utm_medium, utm_campaign)
+     VALUES (?1, ?2, ?3, ?4, ?5, ?6)`,
+  ).bind(visit.sessionId, nowSec(), visit.source, visit.utmSource, visit.utmMedium, visit.utmCampaign).run();
+  return (result.meta.changes ?? 0) > 0;
+}
+
+export async function getTrafficSourceSummary(env: Env, key: SummaryPeriod) {
+  const now = nowSec();
+  const days = SUMMARY_PERIODS[key];
+  const until = localDay(env, now);
+  const since = days === null ? null : localDay(env, now - (days - 1) * 86400);
+  const start = since === null ? null : localDayStartTs(env, Date.parse(`${since}T00:00:00Z`) / 1000);
+  const timeClause = start === null ? "seen_at <= ?1" : "seen_at >= ?1 AND seen_at <= ?2";
+  const timeBindings = start === null ? [now] : [start, now];
+  const [sourceRows, campaignRows, firstVisit] = await Promise.all([
+    env.DB.prepare(`SELECT source, COUNT(*) AS visits FROM traffic_source_visits WHERE ${timeClause} GROUP BY source`)
+      .bind(...timeBindings).all<{ source: string; visits: number }>(),
+    env.DB.prepare(
+      `SELECT utm_source, utm_medium, utm_campaign, COUNT(*) AS visits
+         FROM traffic_source_visits
+        WHERE (${timeClause}) AND (utm_source IS NOT NULL OR utm_medium IS NOT NULL OR utm_campaign IS NOT NULL)
+        GROUP BY utm_source, utm_medium, utm_campaign
+        ORDER BY visits DESC, utm_campaign, utm_source, utm_medium
+        LIMIT 20`,
+    ).bind(...timeBindings).all<{ utm_source: string | null; utm_medium: string | null; utm_campaign: string | null; visits: number }>(),
+    days === null
+      ? env.DB.prepare("SELECT MIN(seen_at) AS seen_at FROM traffic_source_visits").first<{ seen_at: number | null }>()
+      : Promise.resolve(null),
+  ]);
+  const sourceCounts = new Map(sourceRows.results.map(row => [row.source, row.visits]));
+  const sources = ["reddit", "organic_search", "social", "referral", "direct_unknown"]
+    .map(source => ({ source, visits: sourceCounts.get(source) ?? 0 }));
+  return {
+    period: { key, since: since ?? (firstVisit?.seen_at ? localDay(env, firstVisit.seen_at) : null), until },
+    total: sources.reduce((sum, row) => sum + row.visits, 0),
+    sources,
+    campaigns: campaignRows.results,
+  };
 }
 
 export interface PageFlowSummary {

@@ -41,6 +41,11 @@ period selector. It accepts `period=7d`, `30d` (default), `90d`, or `all` and re
 `deliver` aggregates, with current and previous-period counts where a comparison period exists. It reads the
 existing analytics tables only; no migration or visitor-level data is required.
 
+Traffic-source attribution is isolated in `traffic_source_visits`, collected by `POST /api/public/traffic-source`,
+and aggregated for admins by `GET /api/admin/analytics/traffic-sources?period=7d|30d|90d|all`. It stores a
+random per-tab session identifier, a derived referrer category, and validated UTM fields only; entries are
+removed after 90 days. Apply migration `0007_traffic_source_visits.sql` locally with `npm run db:migrate:local`.
+
 ## Local development & tests
 Create `.dev.vars` (git-ignored) with the three secret names, then:
 ```bash
@@ -48,6 +53,7 @@ npm run db:migrate:local
 npx wrangler dev --local --port 8787 --var STORAGE_LIMIT_BYTES:5242880 --var ALLOWED_ORIGINS:http://localhost:8000
 BASE=http://localhost:8787 E2E_USER=<user> E2E_PASS=<pass> npm run test:e2e        # API suite
 node scripts/milestone-test.mts                                                   # unit tests for milestone rules
+node scripts/traffic-source-test.mts                                             # isolated source attribution tests
 node scripts/client-contract.mjs                                                    # real frontend modules vs the Worker
 # real 3 GiB boundary: restart WITHOUT the STORAGE_LIMIT_BYTES override, then E2E_HARD=1 ... npm run test:e2e
 ```

@@ -4,8 +4,9 @@
 import type { Env } from "../types";
 import { HttpError } from "../types";
 import { optionalSession } from "../lib/auth";
-import { getDelivery, getDeliveryFile, getDeliveryFiles, iso, nowSec, parseJson, recordDownload, recordPageView, recordShare, recordView } from "../lib/db";
+import { getDelivery, getDeliveryFile, getDeliveryFiles, iso, nowSec, parseJson, recordDownload, recordPageView, recordShare, recordTrafficSourceVisit, recordView } from "../lib/db";
 import { timingSafeEqual } from "../lib/ids";
+import { validateTrafficSourceVisit } from "../lib/traffic-sources";
 import { signFileAccess, verifyFileAccess } from "../lib/sign";
 import {
   extensionOf, isPreviewExtension, isValidDeliveryId, isValidFileId, isValidShareMethod, mimeForExtension,
@@ -33,6 +34,8 @@ export function handlePublic(request: Request, path: string, env: Env, ctx: Exec
         return servePhotoshopBattlesImage(request, seg[1] ?? "", env, ctx);
       case "pageview":
         return pageView(request, env);
+      case "traffic-source":
+        return trafficSourceVisit(request, env);
       default:
         return error("Not found", 404);
     }
@@ -292,4 +295,14 @@ async function pageView(request: Request, env: Env): Promise<Response> {
   const page = typeof b.page === "string" ? b.page : "";
   const sessionId = typeof b.session_id === "string" ? b.session_id.trim() : "";
   return json({ ok: true, counted: await recordPageView(env, page, sessionId) });
+}
+
+async function trafficSourceVisit(request: Request, env: Env): Promise<Response> {
+  checkPublicRate(request, env, "traffic-source");
+  if (request.method !== "POST") return error("Method not allowed", 405);
+  assertSameSiteOrigin(request, env);
+  if (env.PAGE_ANALYTICS_ALLOWED !== "1") return json({ ok: true, counted: false });
+  requireJson(request);
+  const visit = validateTrafficSourceVisit(await readJson(request, 2048));
+  return json({ ok: true, counted: await recordTrafficSourceVisit(env, visit) });
 }

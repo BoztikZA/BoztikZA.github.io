@@ -205,6 +205,8 @@ export const fetchShareAnalytics = () => request("GET", "/api/admin/analytics/sh
 /** Period summary for the Command Centre Analytics page: website page views and Deliver activity by type,
  *  returned as two separate blocks, each with a previous-period comparison. period: 7d | 30d | 90d | all. */
 export const fetchAnalyticsSummary = (period = "30d") => request("GET", `/api/admin/analytics/summary?period=${encodeURIComponent(period)}`);
+/** Isolated first-party traffic-source visits for the selected reporting period. */
+export const fetchTrafficSourceSummary = (period = "30d") => request("GET", `/api/admin/analytics/traffic-sources?period=${encodeURIComponent(period)}`);
 
 /** Unauthenticated reachability probe of the Worker. Never throws; reports latency for the health chip. */
 export async function pingHealth() {

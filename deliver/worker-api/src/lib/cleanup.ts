@@ -22,6 +22,7 @@ const nowSec = () => Math.floor(Date.now() / 1000);
 const PAGE_VIEW_EVENT_RETENTION_SECONDS = 90 * 24 * 60 * 60;
 const PAGE_VIEW_EVENT_CLEANUP_BATCH_SIZE = 1000;
 const PAGE_VIEW_EVENT_CLEANUP_MAX_BATCHES = 5;
+const TRAFFIC_SOURCE_RETENTION_SECONDS = 90 * 24 * 60 * 60;
 
 /**
  * Remove only individual public website page-flow events older than 90 days.
@@ -48,6 +49,27 @@ export async function cleanupPageViewEvents(env: Env): Promise<number> {
     if (changes < PAGE_VIEW_EVENT_CLEANUP_BATCH_SIZE) break;
   }
 
+  return deleted;
+}
+
+/** Retain session-level traffic-source visits for at most 90 days. */
+export async function cleanupTrafficSourceVisits(env: Env): Promise<number> {
+  const cutoff = nowSec() - TRAFFIC_SOURCE_RETENTION_SECONDS;
+  let deleted = 0;
+  for (let batch = 0; batch < PAGE_VIEW_EVENT_CLEANUP_MAX_BATCHES; batch += 1) {
+    const result = await env.DB.prepare(
+      `DELETE FROM traffic_source_visits
+        WHERE rowid IN (
+          SELECT rowid FROM traffic_source_visits
+           WHERE seen_at < ?1
+           ORDER BY seen_at
+           LIMIT ?2
+        )`,
+    ).bind(cutoff, PAGE_VIEW_EVENT_CLEANUP_BATCH_SIZE).run();
+    const changes = result.meta.changes ?? 0;
+    deleted += changes;
+    if (changes < PAGE_VIEW_EVENT_CLEANUP_BATCH_SIZE) break;
+  }
   return deleted;
 }
 
@@ -254,6 +276,7 @@ export interface CronReport {
   expiry: ExpiryReport | null;
   abandoned: { released: number; failed: number } | null;
   page_view_events_deleted: number | null;
+  traffic_source_visits_deleted: number | null;
   orphans: { deleted: number; failed: number } | null;
   reconcile: { drift_bytes: number; deferred: boolean } | null;
   errors: string[];
@@ -265,6 +288,7 @@ export async function runMaintenance(env: Env): Promise<CronReport> {
     expiry: null,
     abandoned: null,
     page_view_events_deleted: null,
+    traffic_source_visits_deleted: null,
     orphans: null,
     reconcile: null,
     errors: [],
@@ -279,6 +303,7 @@ export async function runMaintenance(env: Env): Promise<CronReport> {
   report.expiry = await step("expiry", () => cleanupExpired(env, 25));
   report.abandoned = await step("abandoned", () => sweepAbandonedUploads(env));
   report.page_view_events_deleted = await step("page-view-event-retention", () => cleanupPageViewEvents(env));
+  report.traffic_source_visits_deleted = await step("traffic-source-retention", () => cleanupTrafficSourceVisits(env));
   report.orphans = await step("orphans", () => sweepOrphans(env));
   const rec = await step("reconcile", () => reconcileStorage(env));
   if (rec) {
