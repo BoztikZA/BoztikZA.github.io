@@ -1985,6 +1985,66 @@ html { scroll-padding-top: 96px; }
 .nav-links a:hover::after,
 .nav-links a[aria-current="page"]::after { transform: scaleX(1); }
 
+/* Compact Store brand mark used in the primary navigation. */
+.nav-links .nav-store-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+.nav-store-mark {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  padding: 3px 5px 4px;
+  border: 1px solid rgba(142, 255, 61, 0.34);
+  border-radius: 4px;
+  background: rgba(142, 255, 61, 0.06);
+  color: #aaff74;
+  line-height: 1;
+}
+
+.nav-store-mark b {
+  font: 800 0.67rem/1 "Plus Jakarta Sans", sans-serif;
+  letter-spacing: -0.06em;
+  text-shadow: 0 0 8px rgba(142, 255, 61, 0.45);
+}
+
+.nav-store-mark i {
+  color: #d5ffc0;
+  font: 800 0.38rem/1 Inter, sans-serif;
+  font-style: normal;
+  letter-spacing: 0.08em;
+}
+
+.nav-links .nav-store-link:hover .nav-store-mark,
+.nav-links .nav-store-link[aria-current="page"] .nav-store-mark {
+  border-color: var(--primary);
+  background: rgba(142, 255, 61, 0.12);
+}
+
+/* stores.html is intentionally compact/minified; preserve its existing active
+   link while giving it the same decorative Store mark. */
+.nav-links > a[href="stores.html"][aria-current="page"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+.nav-links > a[href="stores.html"][aria-current="page"]::before {
+  content: "BOZTIK STORES";
+  padding: 3px 5px 4px;
+  border: 1px solid var(--primary);
+  border-radius: 4px;
+  background: rgba(142, 255, 61, 0.12);
+  color: #aaff74;
+  font: 800 0.54rem/1 "Plus Jakarta Sans", sans-serif;
+  letter-spacing: -0.04em;
+  text-shadow: 0 0 8px rgba(142, 255, 61, 0.45);
+}
+
 .nav-toggle { display: none; }
 
 /* V3.1 New Styles */
@@ -2155,6 +2215,7 @@ html { scroll-padding-top: 96px; }
   }
 
   .nav-links a { padding: 11px 12px; border-radius: 10px; }
+  .nav-links .nav-store-link { gap: 8px; }
   .nav-links a:hover, .nav-links a[aria-current="page"] { background: rgba(142, 255, 61, 0.1); }
   .nav-links a::after { display: none; }
 
