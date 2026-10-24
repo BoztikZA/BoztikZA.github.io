@@ -213,7 +213,7 @@ function changeCore(current, previous, base = MIN_COMPARE_BASE) {
 }
 const changeText = (current, previous) => { const t = changeCore(current, previous); return t ? ` (${t})` : ""; };
 
-/** The plain-text report Clint pastes into ChatGPT. Returns a string. */
+/** The plain-text report shared with ChatGPT. Returns a string. */
 export function buildReport(model, { generatedAt = new Date() } = {}) {
   const w = model.website, d = model.deliver;
   const L = [];
