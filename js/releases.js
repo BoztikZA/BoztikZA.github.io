@@ -9,7 +9,8 @@ if (root) {
   let items = [], current = 0, timer, pointerStart = null;
   const escape = value => String(value).replace(/[&<>"']/g, character => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[character]));
   const imageUrl = item => item.image_url.startsWith("/api/") ? API + item.image_url : item.image_url;
-  const card = item => `<article class="release-card" aria-live="polite"><img src="${escape(imageUrl(item))}" alt=""><div><span>${escape(item.store === "redbubble" ? "Redbubble" : "TeePublic")}</span><h2>${escape(item.title)}</h2><p>${escape(item.description)}</p><a class="support-button cta-green" href="${escape(item.destination_url)}" target="_blank" rel="noopener noreferrer">${escape(item.cta_label)}</a></div></article>`;
+  const storeLabel = { redbubble:"Redbubble", teepublic:"TeePublic", kofi:"Ko-fi Wallpapers" };
+  const card = item => `<article class="release-card" aria-live="polite"><img src="${escape(imageUrl(item))}" alt=""><div><span>${escape(storeLabel[item.store] || item.store)}</span><h2>${escape(item.title)}</h2><p>${escape(item.description)}</p><a class="support-button cta-green" href="${escape(item.destination_url)}" target="_blank" rel="noopener noreferrer" data-store-destination="${escape(item.store)}" data-store-placement="new_releases">${escape(item.cta_label)}</a></div></article>`;
   function show(index, immediate = false) {
     if (!items.length) return;
     current = (index + items.length) % items.length;

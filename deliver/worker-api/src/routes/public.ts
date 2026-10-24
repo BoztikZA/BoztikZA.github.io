@@ -4,7 +4,8 @@
 import type { Env } from "../types";
 import { HttpError } from "../types";
 import { optionalSession } from "../lib/auth";
-import { getDelivery, getDeliveryFile, getDeliveryFiles, iso, nowSec, parseJson, recordDownload, recordPageView, recordShare, recordTrafficSourceVisit, recordView } from "../lib/db";
+import { getDelivery, getDeliveryFile, getDeliveryFiles, iso, nowSec, parseJson, recordDownload, recordPageView, recordShare, recordStoreClick, recordTrafficSourceVisit, recordView, STORE_CLICK_DESTINATIONS } from "../lib/db";
+import type { StoreClickDestination } from "../lib/db";
 import { timingSafeEqual } from "../lib/ids";
 import { validateTrafficSourceVisit } from "../lib/traffic-sources";
 import { signFileAccess, verifyFileAccess } from "../lib/sign";
@@ -36,6 +37,8 @@ export function handlePublic(request: Request, path: string, env: Env, ctx: Exec
         return pageView(request, env);
       case "traffic-source":
         return trafficSourceVisit(request, env);
+      case "store-click":
+        return recordStoreClickVisit(request, env);
       default:
         return error("Not found", 404);
     }
@@ -305,4 +308,26 @@ async function trafficSourceVisit(request: Request, env: Env): Promise<Response>
   requireJson(request);
   const visit = validateTrafficSourceVisit(await readJson(request, 2048));
   return json({ ok: true, counted: await recordTrafficSourceVisit(env, visit) });
+}
+
+/** Records one store-link click from the public site. Public (no session)
+ *  because the public site must be able to send it; rate-limited by IP;
+ *  idempotent by event_id (see lib/db.ts recordStoreClick). No personal data
+ *  is collected: session_id is the anonymous first-party session id only. */
+async function recordStoreClickVisit(request: Request, env: Env): Promise<Response> {
+  checkPublicRate(request, env, "store-click", 2);
+  if (request.method !== "POST") return error("Method not allowed", 405);
+  requireJson(request);
+  const b = await readJson(request, 1024);
+  const event_id = typeof b.event_id === "string" ? b.event_id.trim() : "";
+  const destination = typeof b.destination === "string" ? b.destination : "";
+  const source_placement = typeof b.source_placement === "string" ? b.source_placement.trim().slice(0, 64) : "";
+  const session_id = typeof b.session_id === "string" ? b.session_id.trim().slice(0, 128) : "";
+  const event_version = Number.isFinite(b.event_version) ? Number(b.event_version) : 1;
+  if (!/^[a-zA-Z0-9_-]{8,64}$/.test(event_id)) throw new HttpError(422, "invalid_event_id", "A valid event id is required.");
+  if (!STORE_CLICK_DESTINATIONS.includes(destination as StoreClickDestination)) throw new HttpError(422, "invalid_destination", "Unknown store destination.");
+  if (!source_placement) throw new HttpError(422, "invalid_source", "A source placement is required.");
+  if (session_id && !/^[a-f0-9]{32}$/.test(session_id)) throw new HttpError(422, "invalid_session", "Invalid session id.");
+  const counted = await recordStoreClick(env, { event_id, destination: destination as StoreClickDestination, source_placement, session_id, event_version: event_version >= 1 ? event_version : 1 });
+  return json({ ok: true, counted }, 200, { "Cache-Control": "no-store" });
 }

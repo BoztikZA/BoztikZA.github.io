@@ -30,7 +30,6 @@ export function cleanPromotion(input: Record<string, unknown>, existing?: Promot
   const description = "description" in input ? String(input.description ?? "").trim().slice(0,600) : existing?.description ?? "";
   const status = "status" in input ? (isStatus(input.status) ? input.status : (()=>{throw new HttpError(422,"invalid_status","Invalid status.");})()) : existing?.status ?? "draft";
   const featured = "homepage_featured" in input ? input.homepage_featured === true : !!existing?.homepage_featured;
-  if (store === "kofi" && featured) throw new HttpError(422,"kofi_not_featureable","Ko-fi wallpaper promotions cannot appear in New Releases.");
   const cta = "cta_label" in input ? String(input.cta_label ?? "").trim().slice(0,48) : existing?.cta_label ?? DEFAULTS[store].cta;
   if (!cta) throw new HttpError(422,"invalid_cta","A CTA label is required.");
   return {store,title,description,status,homepage_featured:featured?1:0,cta_label:cta,destination_url:validDestination(input.destination_url ?? existing?.destination_url,store)};

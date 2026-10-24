@@ -6,7 +6,7 @@ import {
 } from "../lib/cleanup";
 import {
   createDeliveryFromUploads, getAdminDelivery, getDelivery, getDeliveryDailySeries, getDeliveryFile, getDeliveryFiles,
-  getAnalyticsSummary, getOverview, getPageAnalytics, getPageFlow, getShareAnalytics, getTimeseries, getTopDeliveries, getTrafficSourceSummary, listDeliveriesForAdmin, nowSec, parseJson, updateDeliveryFields,
+  getAnalyticsSummary, getOverview, getPageAnalytics, getPageFlow, getShareAnalytics, getStoreClickSummary, getTimeseries, getTopDeliveries, getTrafficSourceSummary, listDeliveriesForAdmin, nowSec, parseJson, updateDeliveryFields,
 } from "../lib/db";
 import { newDeliveryId, newFileId, newUploadId, displayFileName, r2KeyFor, sanitizeFilename } from "../lib/ids";
 import { deleteObject, headObject, readHead } from "../lib/r2";
@@ -490,6 +490,11 @@ async function routeAnalytics(request: Request, seg: string[], env: Env): Promis
     const p = new URL(request.url).searchParams.get("period");
     const period = p === "7d" || p === "90d" || p === "all" ? p : "30d";
     return json({ ok: true, ...(await getTrafficSourceSummary(env, period)) });
+  }
+  if (section === "store-clicks") {
+    const p = new URL(request.url).searchParams.get("period");
+    const period = p === "7d" || p === "90d" || p === "all" ? p : "30d";
+    return json({ ok: true, ...(await getStoreClickSummary(env, period)) });
   }
   return error("Not found", 404);
 }

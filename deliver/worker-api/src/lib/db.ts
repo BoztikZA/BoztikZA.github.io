@@ -677,3 +677,155 @@ export async function getDeliveryDailySeries(env: Env, id: string, days = 30): P
   const by = new Map(rows.map((r) => [r.day, r]));
   return labels.map((label) => ({ label, views: by.get(label)?.views ?? 0, downloads: by.get(label)?.downloads ?? 0 }));
 }
+
+/** Aggregated store-link click statistics for the Command Centre Stores
+ *  Analytics tab. Bucketing follows the site's existing analytics timezone
+ *  convention (ANALYTICS_UTC_OFFSET_MINUTES, default SAST/UTC+2). */
+export async function getStoreClickSummary(env: Env, key: SummaryPeriod): Promise<StoreClickSummary> {
+  const now = nowSec();
+  const days = SUMMARY_PERIODS[key];
+  const until = localDay(env, now);
+  const since = days === null ? null : localDay(env, now - (days - 1) * 86400);
+  const start = since === null ? null : localDayStartTs(env, Date.parse(`${since}T00:00:00Z`) / 1000);
+  const timeClause = start === null ? "created_at <= ?1" : "created_at >= ?1 AND created_at <= ?2";
+  const timeBindings = start === null ? [now] : [start, now];
+  const offset = utcOffsetSeconds(env);
+
+  const [destRows, seriesRows, sourceRows, totalSessions, firstEvent] = await Promise.all([
+    env.DB.prepare(
+      `SELECT destination, COUNT(*) AS clicks, COUNT(DISTINCT session_id) AS unique_sessions
+         FROM store_clicks
+        WHERE ${timeClause}
+        GROUP BY destination`,
+    ).bind(...timeBindings).all<StoreClickDestinationRow>(),
+    env.DB.prepare(
+      `SELECT strftime('%Y-%m-%d', datetime(created_at + ?1, 'unixepoch')) AS day,
+              destination, COUNT(*) AS clicks
+         FROM store_clicks
+        WHERE ${timeClause}
+        GROUP BY day, destination`,
+    ).bind(offset, ...timeBindings).all<StoreClickSeriesPoint>(),
+    env.DB.prepare(
+      `SELECT destination, source_placement, COUNT(*) AS clicks
+         FROM store_clicks
+        WHERE ${timeClause}
+        GROUP BY destination, source_placement`,
+    ).bind(...timeBindings).all<{ destination: string; source_placement: string; clicks: number }>(),
+    env.DB.prepare(`SELECT COUNT(DISTINCT session_id) AS n FROM store_clicks WHERE ${timeClause}`).bind(...timeBindings).first<{ n: number }>(),
+    env.DB.prepare("SELECT MIN(created_at) AS created_at FROM store_clicks").first<{ created_at: number | null }>(),
+  ]);
+
+  const byDestination = new Map<string, { clicks: number; unique_sessions: number }>();
+  for (const r of destRows.results) byDestination.set(r.destination, { clicks: r.clicks, unique_sessions: r.unique_sessions });
+
+  const topSourceByDestination = new Map<string, string>();
+  for (const r of sourceRows.results) {
+    const current = topSourceByDestination.get(r.destination);
+    const currentClicks = current == null ? -1 : sourceRows.results.filter(x => x.destination === r.destination && x.source_placement === current).reduce((a, b) => a + b.clicks, 0);
+    if (current == null || r.clicks > currentClicks) topSourceByDestination.set(r.destination, r.source_placement);
+  }
+
+  const dayLabels: string[] = [];
+  if (since) {
+    const sinceSec = Date.parse(`${since}T00:00:00Z`) / 1000;
+    const untilSec = Date.parse(`${until}T00:00:00Z`) / 1000;
+    for (let d = 0; sinceSec + d * 86400 <= untilSec; d++) dayLabels.push(localDay(env, sinceSec + d * 86400));
+  } else {
+    const startTs = firstEvent?.created_at ?? now;
+    const spanDays = Math.min(366, Math.max(1, Math.ceil((now - startTs) / 86400) + 1));
+    for (let d = spanDays - 1; d >= 0; d--) dayLabels.push(localDay(env, now - d * 86400));
+  }
+
+  const clicksByDayDest = new Map<string, number>();
+  for (const r of seriesRows.results) clicksByDayDest.set(`${r.day}|${r.destination}`, r.clicks);
+
+  const series: StoreClickSeriesPoint[] = [];
+  for (const day of dayLabels) {
+    for (const destination of STORE_CLICK_DESTINATIONS) {
+      series.push({ day, destination, clicks: clicksByDayDest.get(`${day}|${destination}`) ?? 0 });
+    }
+  }
+
+  const by_destination = STORE_CLICK_DESTINATIONS.map(destination => {
+    const row = byDestination.get(destination);
+    return {
+      destination,
+      clicks: row?.clicks ?? 0,
+      unique_sessions: row?.unique_sessions ?? 0,
+      top_source: topSourceByDestination.get(destination) ?? null,
+    };
+  });
+
+  const sourceTotals = new Map<string, number>();
+  for (const r of sourceRows.results) sourceTotals.set(r.source_placement, (sourceTotals.get(r.source_placement) ?? 0) + r.clicks);
+  const sources: StoreClickSourceRow[] = [];
+  for (const [source_placement, clicks] of sourceTotals) sources.push({ source_placement, clicks });
+  sources.sort((a, b) => b.clicks - a.clicks || a.source_placement.localeCompare(b.source_placement));
+
+  return {
+    period: { key, since: since ?? null, until },
+    total: destRows.results.reduce((sum, r) => sum + r.clicks, 0),
+    unique_sessions: totalSessions?.n ?? 0,
+    by_destination,
+    series,
+    sources,
+    data_since: firstEvent?.created_at != null ? localDay(env, firstEvent.created_at) : null,
+  };
+}
+
+/* -----------------------------------------------------------------------------
+   Store-link clicks (Command Centre -> Stores Analytics)
+   ---------------------------------------------------------------------------- */
+
+export const STORE_CLICK_DESTINATIONS = ["boztik_store", "redbubble", "teepublic", "kofi"] as const;
+export type StoreClickDestination = (typeof STORE_CLICK_DESTINATIONS)[number];
+
+export interface StoreClickInput {
+  event_id: string;
+  destination: StoreClickDestination;
+  source_placement: string;
+  session_id: string;
+  event_version: number;
+}
+
+export interface StoreClickDestinationRow {
+  destination: string;
+  clicks: number;
+  unique_sessions: number;
+  top_source: string | null;
+}
+
+export interface StoreClickSeriesPoint {
+  day: string;
+  destination: string;
+  clicks: number;
+}
+
+export interface StoreClickSourceRow {
+  source_placement: string;
+  clicks: number;
+}
+
+export interface StoreClickSummary {
+  period: { key: SummaryPeriod; since: string | null; until: string };
+  total: number;
+  unique_sessions: number;
+  by_destination: StoreClickDestinationRow[];
+  series: StoreClickSeriesPoint[];
+  sources: StoreClickSourceRow[];
+  data_since: string | null;
+}
+
+/** Records one store-link click. Idempotent: re-sending the same event_id is
+ *  a no-op because event_id is the primary key. Returns whether the event was
+ *  newly counted. */
+export async function recordStoreClick(env: Env, click: StoreClickInput): Promise<boolean> {
+  const result = await env.DB.prepare(
+    `INSERT OR IGNORE INTO store_clicks
+       (event_id, destination, source_placement, session_id, event_version, created_at)
+     VALUES (?1, ?2, ?3, ?4, ?5, ?6)`,
+  )
+    .bind(click.event_id, click.destination, click.source_placement, click.session_id, click.event_version, nowSec())
+    .run();
+  return (result.meta.changes ?? 0) > 0;
+}
