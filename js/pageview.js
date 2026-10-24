@@ -29,6 +29,7 @@
     var PAGE_KEYS = {
       "/": "homepage",
       "/index.html": "homepage",
+      "/stores.html": "stores",
       "/services.html": "services",
       "/portfolio.html": "portfolio",
       "/image-inspector.html": "tools",

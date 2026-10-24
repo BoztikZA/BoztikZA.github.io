@@ -207,6 +207,8 @@ export const fetchShareAnalytics = () => request("GET", "/api/admin/analytics/sh
 export const fetchAnalyticsSummary = (period = "30d") => request("GET", `/api/admin/analytics/summary?period=${encodeURIComponent(period)}`);
 /** Isolated first-party traffic-source visits for the selected reporting period. */
 export const fetchTrafficSourceSummary = (period = "30d") => request("GET", `/api/admin/analytics/traffic-sources?period=${encodeURIComponent(period)}`);
+/** First-party clicks to the Boztik Store and its configured external storefronts. */
+export const fetchStoreClickSummary = (period = "30d") => request("GET", `/api/admin/analytics/store-clicks?period=${encodeURIComponent(period)}`);
 
 /** Unauthenticated reachability probe of the Worker. Never throws; reports latency for the health chip. */
 export async function pingHealth() {

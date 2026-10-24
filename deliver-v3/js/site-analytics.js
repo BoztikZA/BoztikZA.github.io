@@ -8,7 +8,7 @@
 // read from here and are shown as "not connected", never as zero. The public Deliver page (deliver.html) is
 // counted here as a website page; private delivery activity is rendered in its own section and never added to
 // website numbers.
-import { fetchAnalyticsSummary, fetchPageAnalytics, fetchPageFlow, fetchTrafficSourceSummary } from "./api.js";
+import { fetchAnalyticsSummary, fetchPageAnalytics, fetchPageFlow, fetchStoreClickSummary, fetchTrafficSourceSummary } from "./api.js";
 import { escapeHtml } from "./shared.js";
 import {
   PERIODS, KEY_PAGES, PAGE_LABELS, buildModel, buildObservations, buildReport,
@@ -25,6 +25,9 @@ let model = null;
 let trafficSourceSummary = null;
 let trafficSourceFailure = null;
 let trafficSourceLoading = false;
+let storeClickSummary = null;
+let storeClickFailure = null;
+let storeClickLoading = false;
 let loadSeq = 0;
 let wired = false;
 let reportOpen = false;
@@ -208,6 +211,23 @@ function renderTrafficSources() {
     <p class="cc-fineprint">Referrer classification and UTM values are client-supplied and may be missing or spoofed. Only the top 20 UTM combinations are shown.</p>`;
 }
 
+function renderStoreClicks() {
+  const host = $("cc-store-clicks");
+  if (!host) return;
+  if (storeClickLoading && !storeClickSummary) { host.innerHTML = `<p class="cc-muted">Loading Store activity…</p>`; return; }
+  if (storeClickFailure || !storeClickSummary) {
+    host.innerHTML = `<p class="cc-empty">Store activity could not be loaded. <button type="button" class="cc-btn cc-btn-inline" data-retry>Try again</button></p>`;
+    return;
+  }
+  const labels = { boztik_store: "Boztik Stores", redbubble: "Redbubble", teepublic: "TeePublic", kofi: "Ko-fi Wallpapers" };
+  const data = storeClickSummary;
+  const rows = data.by_destination.map(row => `<tr><th scope="row">${labels[row.destination] || row.destination}</th><td class="num">${fmt(row.clicks)}</td><td class="num">${fmt(row.unique_sessions)}</td><td>${escapeHtml(row.top_source || "—")}</td></tr>`).join("");
+  const range = data.period.since ? `${data.period.since} → ${data.period.until}` : `All recorded activity through ${data.period.until}`;
+  host.innerHTML = `<div class="cc-store-kpis"><span><b>${fmt(data.total)}</b> tracked clicks</span><span><b>${fmt(data.unique_sessions)}</b> anonymous sessions</span></div>
+    <div class="cc-table-wrap"><table class="cc-table"><caption class="cc-sr">Store-link clicks by destination</caption><thead><tr><th scope="col">Destination</th><th scope="col" class="num">Clicks</th><th scope="col" class="num">Sessions</th><th scope="col">Top placement</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <p class="cc-fineprint">${escapeHtml(range)}. A click records an activation of a Store link, not a completed external purchase. Data begins ${escapeHtml(data.data_since || "when the first click is recorded")}.</p>`;
+}
+
 function renderAll() {
   const range = $("cc-site-range");
   if (range) range.textContent = rangeText(model);
@@ -217,6 +237,7 @@ function renderAll() {
   renderPages();
   renderDeliver();
   renderTrafficSources();
+  renderStoreClicks();
   const btn = $("cc-report-btn");
   if (btn) btn.disabled = false;
   if (reportOpen) fillReport(false);
@@ -275,9 +296,13 @@ async function load() {
   let summary = null, fallback = null, failure = null;
   let pageFlow = [];
   let trafficResult = null, trafficFailure = null;
+  let storeResult = null, storeFailure = null;
   trafficSourceLoading = true;
+  storeClickLoading = true;
   renderTrafficSources();
+  renderStoreClicks();
   const trafficRequest = fetchTrafficSourceSummary(periodKey).then(value => { trafficResult = value; }).catch(error => { trafficFailure = error; });
+  const storeRequest = fetchStoreClickSummary(periodKey).then(value => { storeResult = value; }).catch(error => { storeFailure = error; });
   try {
     summary = await fetchAnalyticsSummary(periodKey);
   } catch (error) {
@@ -291,17 +316,21 @@ async function load() {
     pageFlow = [];
   }
   await trafficRequest;
+  await storeRequest;
   if (mine !== loadSeq) return; // a newer period was picked while this was loading
   trafficSourceSummary = trafficResult;
   trafficSourceFailure = trafficFailure;
   trafficSourceLoading = false;
+  storeClickSummary = storeResult;
+  storeClickFailure = storeFailure;
+  storeClickLoading = false;
 
   if (!summary && !fallback) {
     model = previousModel;
     lastRefreshFailed = true;
     renderNotice(`${escapeHtml(failure?.message || "Could not load analytics.")} <button type="button" class="cc-btn cc-btn-inline" data-retry>Try again</button>`, "error");
     if (!model) {
-      for (const id of ["cc-site-kpis", "cc-standout-list", "cc-site-pages", "cc-site-deliver"]) { const el = $(id); if (el) el.innerHTML = ""; }
+      for (const id of ["cc-site-kpis", "cc-standout-list", "cc-site-pages", "cc-site-deliver", "cc-store-clicks"]) { const el = $(id); if (el) el.innerHTML = ""; }
       renderTrafficSources();
     } else {
       renderAll();
@@ -311,6 +340,7 @@ async function load() {
   }
   model = buildModel({ periodKey, summary, fallbackPages: fallback });
   model.pageFlow = pageFlow;
+  model.storeClicks = storeClickSummary;
   lastSuccessfulRefresh = Date.now();
   lastRefreshFailed = false;
   if (model.limited) {

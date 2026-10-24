@@ -13,6 +13,7 @@
 
 export const PAGE_LABELS = {
   homepage: "Home",
+  stores: "Boztik Stores",
   deliver: "Deliver (public page)",
   services: "Services",
   portfolio: "Portfolio",
@@ -24,7 +25,7 @@ export const PAGE_LABELS = {
   contact: "Contact"
 };
 /** Public pages that should normally receive traffic; used to spot pages with no recorded views. */
-export const KEY_PAGES = ["homepage", "deliver", "services", "portfolio", "toolkit", "tools", "guides", "about", "support", "contact"];
+export const KEY_PAGES = ["homepage", "stores", "deliver", "services", "portfolio", "toolkit", "tools", "guides", "about", "support", "contact"];
 
 export const TYPE_LABELS = {
   photoshop_battles: "PhotoshopBattles",
@@ -249,7 +250,13 @@ export function buildReport(model, { generatedAt = new Date() } = {}) {
 
   line();
   line("IMPORTANT ACTIONS (clicks)");
-  line("NOT AVAILABLE here. Clicks on the Chrome Web Store, Edge store, Ko-fi, PayPal, email, portfolio and product links are sent to GA4 as the event 'boztik_action' (parameters: action, destination, position, page_key). They can be read in GA4 (Reports > Engagement > Events) but not in Command Centre until the GA4 Data API is connected.");
+  const storeClicks = model.storeClicks;
+  if (storeClicks) {
+    line(`Store-link clicks: ${fmt(storeClicks.total)} from ${fmt(storeClicks.unique_sessions)} anonymous sessions.`);
+    const storeLabels = { boztik_store: "Boztik Stores", redbubble: "Redbubble", teepublic: "TeePublic", kofi: "Ko-fi Wallpapers" };
+    storeClicks.by_destination.forEach(row => line(`- ${storeLabels[row.destination] || row.destination}: ${fmt(row.clicks)} clicks from ${fmt(row.unique_sessions)} sessions${row.top_source ? `; top placement: ${row.top_source}` : ""}.`));
+  } else line("Store-link click data is unavailable.");
+  line("Other clicks (Chrome Web Store, Edge store, PayPal, email, portfolio and other product links) are sent to GA4 as 'boztik_action' and are not available in Command Centre until the GA4 Data API is connected.");
 
   line();
   line("DELIVER USAGE (PRIVATE DELIVERY ACTIVITY — separate from website/GA4 traffic; the public Deliver page deliver.html is counted under website traffic above)");

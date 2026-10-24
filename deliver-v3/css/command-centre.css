@@ -220,6 +220,9 @@ body.deliver-dashboard-body .dash-tab.is-active::after { display: none; }
 .cc-kpi-delta { margin: 0; min-height: 1.2em; }
 .cc-kpi-sub { margin: auto 0 0; padding-top: 8px; font-size: 0.8rem; line-height: 1.45; color: var(--cc-dim); }
 .cc-kpi-sub b { color: var(--cc-text); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .cc-store-kpis { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 14px; }
+  .cc-store-kpis span { padding: 8px 11px; border: 1px solid var(--cc-line); border-radius: 9px; background: rgba(255,255,255,0.025); color: var(--cc-muted); font-size: 0.84rem; }
+  .cc-store-kpis b { color: var(--cc-text); font-variant-numeric: tabular-nums; }
 .cc-delta { display: inline-flex; align-items: baseline; gap: 5px; font-size: 0.8rem; font-weight: 700; color: var(--cc-muted); }
 .cc-delta small { font-weight: 500; color: var(--cc-dim); font-size: 0.74rem; }
 .cc-delta.is-up { color: var(--cc-ok); }

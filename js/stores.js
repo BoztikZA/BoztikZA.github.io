@@ -1,3 +1,5 @@
+import "./pageview.js";
+
 const API = (location.hostname === "localhost" || location.hostname === "127.0.0.1") ? "http://localhost:8787" : "https://deliver-api.boztik.com";
 const grid = document.querySelector("#store-promotion-grid");
 const status = document.querySelector("#store-promotion-status");
