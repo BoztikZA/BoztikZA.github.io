@@ -12,7 +12,7 @@ Readiness work, not a guarantee of approval. The repeated "site down or unavaila
 - Untouched: DNS/CNAME, robots.txt, ads.txt, sitemap, workflows, analytics, AdSense loader tags, deliver-v3.
 
 ## Needs the owner
-- Confirm LaunchZone/Edge listings; rights/consent for every portfolio source image.
+- LaunchZone references removed from the site (owner decision). Portfolio image consent confirmed by the owner.
 - Confirm method claims ("done by hand", "manually, layer by layer"), extension feature claims, "free forever".
 - Authentic extension screenshots; decide on images/extension-preview.png as og:image (shows Pro/Level/"No ads").
 - Decide whether to publish a name/location/bio on About; confirm the funding statement and guide dates.
