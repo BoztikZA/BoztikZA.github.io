@@ -1,3 +1,32 @@
-const API=(location.hostname==="localhost"||location.hostname==="127.0.0.1")?"http://localhost:8787":"https://deliver-api.boztik.com",root=document.querySelector("#new-releases");
-if(root){const stage=root.querySelector(".new-releases__stage"),prev=root.querySelector("[data-release-prev]"),next=root.querySelector("[data-release-next]"),reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;let items=[],index=0,timer;
-const e=v=>String(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); const show=i=>{if(!items.length)return;index=(i+items.length)%items.length;const x=items[index],image=x.image_url.startsWith("/api/")?API+x.image_url:x.image_url;stage.innerHTML=`<article class="release-card"><img src="${e(image)}" alt=""><div><span>${e(x.store==="redbubble"?"Redbubble":"TeePublic")}</span><h2>${e(x.title)}</h2><p>${e(x.description)}</p><a class="support-button cta-green" href="${e(x.destination_url)}" target="_blank" rel="noopener noreferrer">${e(x.cta_label)}</a></div></article>`;};const pause=()=>clearInterval(timer),play=()=>{pause();if(!reduce&&items.length>1)timer=setInterval(()=>show(index+1),6000)};prev.onclick=()=>{show(index-1);pause()};next.onclick=()=>{show(index+1);pause()};root.onmouseenter=pause;root.onmouseleave=play;root.onfocusin=pause;root.onfocusout=play;root.onkeydown=e=>{if(e.key==="ArrowLeft"){show(index-1);pause()}if(e.key==="ArrowRight"){show(index+1);pause()}};fetch(`${API}/api/public/promotions?featured=1`).then(r=>r.ok?r.json():Promise.reject()).then(d=>{items=d.items||[];if(items.length){root.hidden=false;show(0);play();}}).catch(()=>{});}
+const API = (location.hostname === "localhost" || location.hostname === "127.0.0.1") ? "http://localhost:8787" : "https://deliver-api.boztik.com";
+const root = document.querySelector("#new-releases");
+
+if (root) {
+  const stage = root.querySelector(".new-releases__stage");
+  const previous = root.querySelector("[data-release-prev]");
+  const next = root.querySelector("[data-release-next]");
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let items = [], current = 0, timer, pointerStart = null;
+  const escape = value => String(value).replace(/[&<>"']/g, character => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[character]));
+  const imageUrl = item => item.image_url.startsWith("/api/") ? API + item.image_url : item.image_url;
+  const card = item => `<article class="release-card" aria-live="polite"><img src="${escape(imageUrl(item))}" alt=""><div><span>${escape(item.store === "redbubble" ? "Redbubble" : "TeePublic")}</span><h2>${escape(item.title)}</h2><p>${escape(item.description)}</p><a class="support-button cta-green" href="${escape(item.destination_url)}" target="_blank" rel="noopener noreferrer">${escape(item.cta_label)}</a></div></article>`;
+  function show(index, immediate = false) {
+    if (!items.length) return;
+    current = (index + items.length) % items.length;
+    const incoming = document.createRange().createContextualFragment(card(items[current])).firstElementChild;
+    const outgoing = stage.querySelector(".release-card.is-current");
+    incoming.classList.add("is-current", "is-entering"); stage.append(incoming);
+    if (immediate || reducedMotion) { outgoing?.remove(); incoming.classList.remove("is-entering"); incoming.classList.add("is-visible"); return; }
+    requestAnimationFrame(() => incoming.classList.add("is-visible"));
+    if (outgoing) { outgoing.classList.remove("is-visible"); outgoing.classList.add("is-leaving"); setTimeout(() => outgoing.remove(), 720); }
+    setTimeout(() => incoming.classList.remove("is-entering"), 720);
+  }
+  function pause() { clearInterval(timer); }
+  function play() { pause(); if (!reducedMotion && items.length > 1) timer = setInterval(() => show(current + 1), 6500); }
+  function empty(message) { root.hidden = false; previous.hidden = next.hidden = true; stage.innerHTML = `<div class="new-releases__empty"><span>Boztik Stores</span><h2>${message}</h2><p>New pieces selected in Command Centre will appear here.</p><a href="stores.html">Explore the collection <b>→</b></a></div>`; }
+  previous.addEventListener("click", () => { show(current - 1); pause(); }); next.addEventListener("click", () => { show(current + 1); pause(); });
+  root.addEventListener("mouseenter", pause); root.addEventListener("mouseleave", play); root.addEventListener("focusin", pause); root.addEventListener("focusout", play);
+  root.addEventListener("keydown", event => { if (event.key === "ArrowLeft") { show(current - 1); pause(); } if (event.key === "ArrowRight") { show(current + 1); pause(); } });
+  stage.addEventListener("pointerdown", event => { pointerStart = event.clientX; }); stage.addEventListener("pointerup", event => { if (pointerStart === null) return; const distance = event.clientX - pointerStart; pointerStart = null; if (Math.abs(distance) > 42) { show(current + (distance < 0 ? 1 : -1)); pause(); } });
+  fetch(`${API}/api/public/promotions?featured=1`).then(response => response.ok ? response.json() : Promise.reject()).then(data => { items = Array.isArray(data.items) ? data.items : []; if (!items.length) return empty("The next drop is being curated."); root.hidden = false; show(0, true); play(); }).catch(() => empty("New releases are on their way."));
+}
