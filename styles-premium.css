@@ -3873,3 +3873,11 @@ footer h3 {
   transform: translateY(12px);
   transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s linear 0.3s;
 }
+
+/* Creative Assistant: on phones the key field is stacked in a column, where its 220px row width became a 220px
+   height and drew a tall oval. Letting it size to its content restores a normal single-line field. */
+@media (max-width: 640px) {
+  .ai-connect-form input {
+    flex: 0 0 auto;
+  }
+}

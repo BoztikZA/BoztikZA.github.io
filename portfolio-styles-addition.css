@@ -178,3 +178,13 @@
   .portfolio-hero { padding: 3rem 1.25rem 1.5rem; }
   .portfolio-grid { grid-template-columns: 1fr; }
 }
+
+/* The cards use an h2 for the example title, but the spacing rule above targeted h3 only, so the title sat flush
+   against the card edge while the text below it was indented. Same look as the h3 rule. */
+.portfolio-card h2 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.15rem;
+  line-height: 1.35;
+  color: var(--text);
+  margin: 0.75rem 1.25rem 0.5rem;
+}
