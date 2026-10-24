@@ -1,5 +1,5 @@
 /**
- * Boztik — first-party page-view counter.
+ * Boztik — first-party page-view and traffic-source counters.
  *
  * What this does: on a real page load, sends one POST with the page's key
  * (e.g. "homepage") to the Boztik Deliver Worker, which increments one
@@ -8,10 +8,12 @@
  *
  * What this deliberately does NOT do:
  *  - no names, emails, personal data, or localStorage fingerprint
- *  - no IP address is read or stored by this script (the Worker does not
- *    log request IPs for this endpoint)
- *  - no invasive multi-site tracking: it only keeps a short-lived anonymous
- *    first-party session cookie on the Boztik domain to understand page flow
+ *  - this script does not read or send IP addresses; the Worker uses the
+ *    proxy-provided address only for in-memory public rate limiting and does
+ *    not store it in either analytics dataset
+ *  - the existing page-view counter keeps its first-party session cookie to
+ *    understand page flow; traffic-source attribution uses a separate,
+ *    sessionStorage-only identifier
  *  - no third-party request of any kind
  *  - nothing is sent if the browser has Do Not Track or Global Privacy
  *    Control enabled, or if this is a Command Centre / admin page
@@ -63,6 +65,75 @@
       }
       return (Date.now().toString(16) + Math.random().toString(16).slice(2) + "0000000000000000").slice(0, 32);
     }
+    function trafficSessionId() {
+      var idKey = "boztik_traffic_session";
+      var activityKey = "boztik_traffic_last_activity";
+      var now = Date.now();
+      var id = "";
+      var lastActivity = 0;
+      try {
+        id = sessionStorage.getItem(idKey) || "";
+        lastActivity = Number(sessionStorage.getItem(activityKey)) || 0;
+        if (!/^[a-f0-9]{32}$/.test(id) || now - lastActivity >= 30 * 60 * 1000 || now < lastActivity) {
+          if (!window.crypto || typeof window.crypto.getRandomValues !== "function") return "";
+          var bytes = new Uint8Array(16);
+          window.crypto.getRandomValues(bytes);
+          id = Array.prototype.map.call(bytes, function (b) { return b.toString(16).padStart(2, "0"); }).join("");
+          sessionStorage.setItem(idKey, id);
+        }
+        sessionStorage.setItem(activityKey, String(now));
+      } catch (e) {
+        return "";
+      }
+      return id;
+    }
+    function watchTrafficActivity() {
+      var activityKey = "boztik_traffic_last_activity";
+      var lastWrite = Date.now();
+      var mark = function () {
+        var now = Date.now();
+        if (now - lastWrite < 10000) return;
+        try {
+          sessionStorage.setItem(activityKey, String(now));
+          lastWrite = now;
+        } catch (e) {
+          /* storage restrictions must not affect page behaviour */
+        }
+      };
+      ["pointerdown", "keydown", "scroll", "touchstart"].forEach(function (eventName) {
+        window.addEventListener(eventName, mark, { passive: true });
+      });
+    }
+    function sendTrafficSource(apiBaseUrl) {
+      try {
+        var id = trafficSessionId();
+        if (!id) return;
+        watchTrafficActivity();
+        var referrerHost = "";
+        var searchReferrer = false;
+        if (document.referrer) {
+          var referrer = new URL(document.referrer);
+          referrerHost = referrer.hostname.toLowerCase();
+          searchReferrer = ["q", "query", "p", "text"].some(function (key) {
+            return referrer.searchParams.has(key);
+          });
+        }
+        var currentParams = new URLSearchParams(location.search);
+        var body = JSON.stringify({
+          session_id: id,
+          referrer_host: referrerHost,
+          search_referrer: searchReferrer,
+          utm_source: currentParams.get("utm_source"),
+          utm_medium: currentParams.get("utm_medium"),
+          utm_campaign: currentParams.get("utm_campaign")
+        });
+        var url = apiBaseUrl + "/api/public/traffic-source";
+        if (navigator.sendBeacon && navigator.sendBeacon(url, new Blob([body], { type: "application/json" }))) return;
+        fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: body, keepalive: true, mode: "cors" }).catch(function () {});
+      } catch (e) {
+        /* attribution must never be able to break a page */
+      }
+    }
 
     var path = location.pathname.replace(/\/index\.html$/, "/");
     var page = PAGE_KEYS[path];
@@ -87,6 +158,7 @@
       fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: body, keepalive: true, mode: "cors" }).catch(function () {});
     };
 
+    sendTrafficSource(apiBaseUrl);
     if (document.readyState === "complete") send();
     else window.addEventListener("load", send, { once: true });
   } catch (e) {

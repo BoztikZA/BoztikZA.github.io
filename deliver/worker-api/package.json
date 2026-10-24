@@ -12,7 +12,8 @@
     "hash-password": "node scripts/hash-password.mjs",
     "test:e2e": "node scripts/e2e.mjs",
     "test:unit": "node scripts/milestone-test.mts",
-    "test:retention": "node scripts/page-view-retention-test.mts"
+    "test:retention": "node scripts/page-view-retention-test.mts",
+    "test:traffic-source": "node scripts/traffic-source-test.mts"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260901.0",

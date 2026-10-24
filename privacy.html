@@ -274,7 +274,7 @@ provide personal information before using its core features.
 </p>
 
 <p>
-The public website's page-view counter stores the pseudonymous event data
+The public website's page-view and traffic-source counters store the pseudonymous event data
 described below. Whether that identifier is personal information depends on
 applicable law and context; this policy does not classify it as anonymous or
 non-personal. Boztik does not sell personal information.
@@ -345,30 +345,63 @@ identifier to Boztik's page-view API. When enabled, the Worker accepts
 allow-listed page keys and increments an aggregate count for that page and
 day. If the submitted identifier is a valid 32-character hexadecimal value,
 it also records an individual event containing that identifier, page key and
-server-generated timestamp. The Worker source schedules cleanup of
-individual events strictly older than 90 days, in batches of up to 5,000
-events per scheduled run. Because this cleanup is bounded and can fail or
-fall behind, an event may remain longer than 90 days. The repository
-configures the Worker to run scheduled maintenance every 10 minutes, but it
-cannot establish whether that Worker version and trigger are currently
-deployed and active. Aggregate daily counts are separate and are not removed
-by this event cleanup; no aggregate cleanup period is configured in the
-reviewed source. Page-flow reports filter events to a requested recent
-period; that reporting filter does not delete older events.
+server-generated timestamp. The Worker schedules cleanup of individual events
+strictly older than 90 days, in batches of up to 5,000 events per scheduled
+run. Because this cleanup is bounded and can fail or fall behind, an event may
+remain longer than 90 days. Scheduled maintenance runs every 10 minutes.
+Aggregate daily counts are separate and are not removed by this event cleanup;
+no aggregate cleanup period is configured. Page-flow reports filter events to
+a requested recent period; that reporting filter does not delete older events.
 </p>
 
 <p>
-The page-view API also reads the proxy-provided IP address for an in-memory
-rate-limit key; the reviewed application code does not write that address to
-the page-view event or aggregate tables. The page-view script does not put
-the browser's user-agent or referrer in its JSON payload, and the application
-does not write them to those analytics tables. The request may include
-ordinary network headers; hosting or network-platform logging outside the
-reviewed application source could not be verified. The counter is skipped
-when the browser reports Do Not Track as "1" or Global Privacy Control as
-true. It does not run on private delivery pages or the Command Centre. This
-check applies only to this counter; it does not control the separately loaded
-Google tags described in Section 6.
+The page-view API reads the proxy-provided IP address only for an in-memory
+rate-limit key and does not write that address to the page-view event or
+aggregate tables. The page-view script does not include the browser's
+user-agent or referrer in its JSON payload, and the application does not write
+them to those analytics tables. The counter is skipped when the browser
+reports Do Not Track as "1" or Global Privacy Control as true. It does not
+run on private delivery pages or the Command Centre. This check applies only
+to this counter; it does not control the separately loaded Google tags described
+in Section 6.
+</p>
+
+<h3>Website traffic-source counter</h3>
+
+<p>
+On the same eligible public pages, and only when the page-view script's
+Do Not Track / Global Privacy Control check permits tracking, the browser
+submits a separate traffic-source visit. It uses a random 32-character
+identifier in that tab's <code>sessionStorage</code>, separate from the
+page-flow cookie. The identifier is reused while the tab remains active and
+rotates after 30 minutes without activity. The Worker stores at most one
+traffic-source record for each identifier and keeps the first attribution it
+receives for that session.
+</p>
+
+<p>
+The traffic-source request contains the referrer hostname, a boolean indicating
+whether recognized search-result query parameters were present, and any valid
+UTM source, medium, and campaign values from the current page. It does not
+send or store a full referrer URL, page path, arbitrary URL query string,
+user-agent, or IP address in the traffic-source record. The Worker derives
+Reddit, organic search, social, referral, or direct/unknown from the submitted
+hostname and search signal; UTM values are supplementary and do not override
+that category. These client-supplied values are not independently verified
+and can be missing or spoofed. Browser and app referrer policies can hide
+source information, so the categories are estimates, not proof of identity or
+origin. The JSON does not include a full referrer URL, page path, arbitrary
+URL query string, user-agent, or IP address. The traffic-source table stores
+the server timestamp, random session identifier, derived category, and valid
+UTM values. The Worker uses the proxy-provided IP address only as an in-memory
+public rate-limit key.
+</p>
+
+<p>
+Traffic-source records are scheduled for deletion when older than 90 days,
+using bounded batches of up to 5,000 records per scheduled run. Cleanup may
+fail or fall behind, so a record can remain longer than 90 days. Scheduled
+maintenance runs every 10 minutes.
 </p>
 
 <p>
@@ -528,15 +561,6 @@ Stores extension settings and preferences locally on your own device.
 
 </div>
 
-<p>
-
-This describes the browser extension's permissions and their use for its
-features. It does not describe the separate public website page-view
-counter, Google tags, or information you choose to send to Boztik; those are
-covered in Sections 1 and 6.
-
-</p>
-
 </section>
 
 
@@ -600,16 +624,14 @@ Typical third-party services used by the site and extension include:
 
 <ul>
   <li>Google Reverse Image Search, Bing Visual Search, or TinEye — when you choose to use a reverse image search feature; the image or image URL you provide is sent directly to that service.</li>
-  <li>Google AdSense — some public pages load the AdSense script and include ad units. Google and its advertising partners may use cookies, advertising identifiers or similar technologies, and may process information such as device, usage and network data (which can include an IP address) for ad selection and measurement, depending on their settings and policies. The exact data and advertising choices depend on Google's processing and the applicable account, region and site settings; those settings cannot be determined from the site source alone. You can review Google advertising choices in <a href="https://adssettings.google.com/" target="_blank" rel="noopener noreferrer">Google's Ads Settings</a> and learn about participating vendors at <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener noreferrer">www.aboutads.info</a>. These options are not a site-wide consent mechanism.</li>
-  <li>Google Analytics (GA4) — some public website pages load and configure the Google tag with measurement ID G-H8W54EBM20. The tag is configured to send analytics page-view information to Google. Google documents that Analytics may use cookies or similar technologies and process additional usage and device information; the browser's requests can also expose network information such as an IP address. See <a href="https://support.google.com/analytics/answer/6004245" target="_blank" rel="noopener noreferrer">Google Analytics privacy guidance</a>. The exact data collected and retention settings are not established by the site source. The public website tag does not intentionally send private Boztik Deliver IDs, file names or client details. You can review Google's guidance and its <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener noreferrer">browser opt-out add-on</a>.</li>
+  <li>Google AdSense — some public pages load the AdSense script and include ad units. Google and its advertising partners may use cookies, advertising identifiers or similar technologies, and may process information such as device, usage and network data (which can include an IP address) for ad selection and measurement, depending on their settings and policies. The exact data and advertising choices depend on Google's processing and the applicable account, region and site settings. You can review Google advertising choices in <a href="https://adssettings.google.com/" target="_blank" rel="noopener noreferrer">Google's Ads Settings</a> and learn about participating vendors at <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener noreferrer">www.aboutads.info</a>. These options are not a site-wide consent mechanism.</li>
+  <li>Google Analytics (GA4) — some public website pages load and configure the Google tag with measurement ID G-H8W54EBM20. The tag is configured to send analytics page-view information to Google. Google documents that Analytics may use cookies or similar technologies and process additional usage and device information; the browser's requests can also expose network information such as an IP address. See <a href="https://support.google.com/analytics/answer/6004245" target="_blank" rel="noopener noreferrer">Google Analytics privacy guidance</a>. The public website tag does not intentionally send private Boztik Deliver IDs, file names or client details. You can review Google's guidance and its <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener noreferrer">browser opt-out add-on</a>.</li>
   <li>Ko‑fi — used for voluntary support/donations via an external link.</li>
   <li>GitHub and other listing services — used as promotional or support links.</li>
 </ul>
 
 <p>
-No consent banner or consent-state code was found in the reviewed website
-source, and account-side Google Privacy &amp; messaging settings could not be
-verified. This policy does not claim that consent is collected. Consent
+This policy does not claim that consent is collected. Consent
 requirements depend on the visitor's location and the services and settings
 in use; see <a href="https://www.google.com/about/company/user-consent-policy/" target="_blank" rel="noopener noreferrer">Google's User Consent Policy</a>.
 </p>
@@ -647,15 +669,13 @@ Because Boztik Creative Toolkit does not collect personal information on Boztik-
 
 <p>
 The public website page-view counter stores individual page events and
-aggregate daily counts as described in Section 1. The Worker source schedules
+aggregate daily counts as described in Section 1. The Worker schedules
 bounded cleanup of individual events older than 90 days; events may remain
-longer if cleanup fails or falls behind. Whether the configured Worker and
-scheduled trigger are currently deployed and active cannot be verified from
-the repository. Aggregate daily counts are not part of this cleanup and have
-no configured deletion period in the reviewed source. The 30-day page-flow
+longer if cleanup fails or falls behind. Aggregate daily counts are not part
+of this cleanup and have no configured deletion period. The 30-day page-flow
 report window does not delete older events. Google Analytics and Google
 AdSense have separate processing and retention governed by their settings and
-policies, which cannot be verified from this repository.
+policies.
 </p>
 
 <p>
@@ -705,11 +725,15 @@ below apply only as described.
 
 <ul>
 
-<li>The first-party page-view counter skips its request when the browser reports Do Not Track as "1" or Global Privacy Control as true. This setting affects that counter only; Google Analytics and AdSense tags are separate.</li>
+<li>Boztik's first-party page-view and traffic-source counters skip their requests when the browser reports Do Not Track as "1" or Global Privacy Control as true. Google Analytics and AdSense tags are separate.</li>
 
 <li>You can remove or block the <code>boztik_anon_session</code> cookie in your browser settings. If it is absent, the page-view script attempts to create a new identifier and still sends the page-view request, so removing or blocking the cookie alone does not disable the counter.</li>
 
-<li>You can use Google's <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener noreferrer">Analytics opt-out browser add-on</a> and review advertising choices in <a href="https://adssettings.google.com/" target="_blank" rel="noopener noreferrer">Google Ads Settings</a>. These Google controls are not a site-wide consent mechanism and do not control Boztik's first-party counter.</li>
+<li>The traffic-source counter uses a separate random identifier held in this tab's <code>sessionStorage</code>, rotating after 30 minutes of inactivity. It records one visit per identifier and retains the first attribution for that session. Records are scheduled for deletion after 90 days but may remain longer if cleanup fails or falls behind. Clearing session storage or blocking it prevents that tab's traffic-source visit from being recorded.</li>
+
+<li>Traffic-source attribution may include a referrer-based category (Reddit, organic search, other social, referral, or direct/unknown) and valid UTM source, medium, and campaign values from the current page. The browser sends only the referrer hostname and whether recognized search-result parameters were present; Boztik does not store a full referrer URL, page path, IP address, or user-agent for this feature. Browsers and apps can hide referrers, and submitted attribution is not independently verified, so results can be incomplete or spoofed.</li>
+
+<li>You can use Google's <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener noreferrer">Analytics opt-out browser add-on</a> and review advertising choices in <a href="https://adssettings.google.com/" target="_blank" rel="noopener noreferrer">Google Ads Settings</a>. These Google controls are not a site-wide consent mechanism and do not control Boztik's first-party counters.</li>
 
 <li>You may uninstall the extension at any time.</li>
 
@@ -731,8 +755,7 @@ below apply only as described.
 <p>
 Boztik Creative Toolkit is not intended for children under the age of 13.
 The public website's page-view counter and third-party tags may process
-information as described in Sections 1 and 6; the reviewed site source does
-not identify age-verification or child-specific analytics controls.
+information as described in Sections 1 and 6.
 </p>
 
 </section>

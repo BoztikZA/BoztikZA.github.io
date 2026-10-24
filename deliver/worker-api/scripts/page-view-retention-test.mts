@@ -105,6 +105,15 @@ const createDatabase = () => {
     );
     CREATE INDEX idx_page_session_events_seen_at ON page_session_events(seen_at);
     CREATE INDEX idx_page_session_events_page ON page_session_events(page, seen_at);
+    CREATE TABLE traffic_source_visits (
+      session_id TEXT PRIMARY KEY,
+      seen_at INTEGER NOT NULL,
+      source TEXT NOT NULL,
+      utm_source TEXT,
+      utm_medium TEXT,
+      utm_campaign TEXT
+    );
+    CREATE INDEX idx_traffic_source_visits_seen_at ON traffic_source_visits(seen_at);
     CREATE TABLE deliveries (id TEXT PRIMARY KEY);
     CREATE TABLE delivery_daily_metrics (
       delivery_id TEXT NOT NULL,

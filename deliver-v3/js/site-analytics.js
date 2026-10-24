@@ -8,7 +8,7 @@
 // read from here and are shown as "not connected", never as zero. The public Deliver page (deliver.html) is
 // counted here as a website page; private delivery activity is rendered in its own section and never added to
 // website numbers.
-import { fetchAnalyticsSummary, fetchPageAnalytics, fetchPageFlow } from "./api.js";
+import { fetchAnalyticsSummary, fetchPageAnalytics, fetchPageFlow, fetchTrafficSourceSummary } from "./api.js";
 import { escapeHtml } from "./shared.js";
 import {
   PERIODS, KEY_PAGES, PAGE_LABELS, buildModel, buildObservations, buildReport,
@@ -22,6 +22,9 @@ const MIN_ROW_BASE = 10;
 
 let periodKey = "30d";
 let model = null;
+let trafficSourceSummary = null;
+let trafficSourceFailure = null;
+let trafficSourceLoading = false;
 let loadSeq = 0;
 let wired = false;
 let reportOpen = false;
@@ -171,6 +174,40 @@ function renderDeliver() {
     <p class="cc-fineprint">Deliver's own counters — never added to website page views and never sent to GA4. Views count every load including repeats. “Active delivery” = a delivery with at least one view or download in the period. PhotoshopBattles images are public direct links, so they register views but no downloads. Shares include completed copies and opened WhatsApp / Facebook / X / Reddit sheets. Deleted deliveries keep their history but no longer have a type.</p>`;
 }
 
+function renderTrafficSources() {
+  const host = $("cc-traffic-sources");
+  if (!host) return;
+  if (trafficSourceLoading && !trafficSourceSummary) {
+    host.innerHTML = `<p class="cc-muted">Loading traffic sources…</p>`;
+    return;
+  }
+  if (trafficSourceFailure || !trafficSourceSummary) {
+    host.innerHTML = `<p class="cc-empty">Traffic-source data could not be loaded. <button type="button" class="cc-btn cc-btn-inline" data-retry>Try again</button></p>`;
+    return;
+  }
+  const labels = {
+    reddit: "Reddit",
+    organic_search: "Organic search",
+    social: "Other social",
+    referral: "Other website referrals",
+    direct_unknown: "Direct / unknown"
+  };
+  const data = trafficSourceSummary;
+  const sourceRows = data.sources.map(row => {
+    const percent = data.total ? Math.round(row.visits * 1000 / data.total) / 10 : 0;
+    return `<tr><th scope="row">${labels[row.source] || "Other"}</th><td class="num">${fmt(row.visits)}</td><td class="num">${percent}%</td></tr>`;
+  }).join("");
+  const campaignRows = data.campaigns.length
+    ? `<h3>UTM campaigns</h3><div class="cc-table-wrap"><table class="cc-table"><caption class="cc-sr">Top 20 UTM combinations in the selected period</caption><thead><tr><th scope="col">Campaign</th><th scope="col">Source / medium</th><th scope="col" class="num">Visits</th></tr></thead><tbody>${data.campaigns.map(row =>
+      `<tr><th scope="row">${escapeHtml(row.utm_campaign || "—")}</th><td>${escapeHtml([row.utm_source, row.utm_medium].filter(Boolean).join(" / ") || "—")}</td><td class="num">${fmt(row.visits)}</td></tr>`).join("")}</tbody></table></div>`
+    : "";
+  const range = data.period.since ? `${data.period.since} → ${data.period.until}` : `No visits recorded · ${data.period.until}`;
+  host.innerHTML = `<p class="cc-card-desc">Recorded visits: <strong>${fmt(data.total)}</strong> · ${escapeHtml(range)} · One visit per first-party 30-minute session; percentages use recorded visits as the denominator.</p>
+    <div class="cc-table-wrap"><table class="cc-table"><caption class="cc-sr">Visits by traffic source and share of total</caption><thead><tr><th scope="col">Source</th><th scope="col" class="num">Visits</th><th scope="col" class="num">Share</th></tr></thead><tbody>${sourceRows}</tbody></table></div>
+    ${campaignRows}
+    <p class="cc-fineprint">Referrer classification and UTM values are client-supplied and may be missing or spoofed. Only the top 20 UTM combinations are shown.</p>`;
+}
+
 function renderAll() {
   const range = $("cc-site-range");
   if (range) range.textContent = rangeText(model);
@@ -179,6 +216,7 @@ function renderAll() {
   renderStandout();
   renderPages();
   renderDeliver();
+  renderTrafficSources();
   const btn = $("cc-report-btn");
   if (btn) btn.disabled = false;
   if (reportOpen) fillReport(false);
@@ -236,6 +274,10 @@ async function load() {
   renderStatusBar();
   let summary = null, fallback = null, failure = null;
   let pageFlow = [];
+  let trafficResult = null, trafficFailure = null;
+  trafficSourceLoading = true;
+  renderTrafficSources();
+  const trafficRequest = fetchTrafficSourceSummary(periodKey).then(value => { trafficResult = value; }).catch(error => { trafficFailure = error; });
   try {
     summary = await fetchAnalyticsSummary(periodKey);
   } catch (error) {
@@ -248,7 +290,11 @@ async function load() {
   } catch {
     pageFlow = [];
   }
+  await trafficRequest;
   if (mine !== loadSeq) return; // a newer period was picked while this was loading
+  trafficSourceSummary = trafficResult;
+  trafficSourceFailure = trafficFailure;
+  trafficSourceLoading = false;
 
   if (!summary && !fallback) {
     model = previousModel;
@@ -256,6 +302,7 @@ async function load() {
     renderNotice(`${escapeHtml(failure?.message || "Could not load analytics.")} <button type="button" class="cc-btn cc-btn-inline" data-retry>Try again</button>`, "error");
     if (!model) {
       for (const id of ["cc-site-kpis", "cc-standout-list", "cc-site-pages", "cc-site-deliver"]) { const el = $(id); if (el) el.innerHTML = ""; }
+      renderTrafficSources();
     } else {
       renderAll();
     }
