@@ -1,7 +1,7 @@
 import type { Env } from "../types";
 import { HttpError } from "../types";
 import { requireSession } from "../lib/auth";
-import { error, json, readJson, requireJson } from "./util";
+import { error, json, readJson, requireJson, wrap } from "./util";
 import { cleanPromotion, getPromotion, isStore, listPromotions, nowSec, publicDto, publicPromotion } from "../lib/promotions";
 
 const okImage = (type:string) => ["image/jpeg","image/png","image/webp"].includes(type);
@@ -11,6 +11,7 @@ const imageKey = (id:string, ext:string) => `promotions/${id}/${crypto.randomUUI
 function ext(type:string) { return type === "image/png" ? "png" : type === "image/webp" ? "webp" : "jpg"; }
 function magic(type:string, bytes:Uint8Array) { return type === "image/jpeg" ? bytes[0]===0xff&&bytes[1]===0xd8&&bytes[2]===0xff : type === "image/png" ? bytes[0]===0x89&&bytes[1]===0x50&&bytes[2]===0x4e&&bytes[3]===0x47 : type === "image/webp" ? bytes.length>=12 && new TextDecoder().decode(bytes.slice(0,4))==="RIFF" && new TextDecoder().decode(bytes.slice(8,12))==="WEBP" : false; }
 export async function handlePromotionAdmin(request:Request, seg:string[], env:Env):Promise<Response> {
+ return wrap(async () => {
  await requireSession(request,env);
  const id=seg[0];
  if(!id) { if(request.method==="GET") { const rows=await listPromotions(env,false,new URL(request.url).searchParams.get("store")??undefined); return json({ok:true,items:rows.map(p=>({...publicDto(p),status:p.status,updated_at:p.updated_at}))}); } if(request.method==="POST") return create(request,env); return error("Method not allowed",405); }
@@ -20,6 +21,7 @@ export async function handlePromotionAdmin(request:Request, seg:string[], env:En
  if(!seg[1] && request.method==="PATCH") return patch(request,env,id);
  if(!seg[1] && request.method==="DELETE") return remove(env,id);
  return error("Not found",404);
+ });
 }
 async function create(request:Request,env:Env) { requireJson(request); const b=await readJson(request); const p=cleanPromotion(b); const id=newId(),now=nowSec(); const ref=typeof b.image_ref==="string"&&b.image_ref.startsWith("/images/stores/")?b.image_ref:""; if(!ref) throw new HttpError(422,"image_required","Upload or select an image before saving."); await env.DB.prepare("INSERT INTO store_promotions (id,store,title,description,destination_url,cta_label,image_ref,status,homepage_featured,sort_order,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)").bind(id,p.store,p.title,p.description,p.destination_url,p.cta_label,ref,p.status,p.homepage_featured,now,now,now).run(); return item(env,id,201); }
 async function patch(request:Request,env:Env,id:string) { requireJson(request); const old=await getPromotion(env,id); if(!old) return error("Not found",404); const p=cleanPromotion(await readJson(request),old); await env.DB.prepare("UPDATE store_promotions SET store=?,title=?,description=?,destination_url=?,cta_label=?,status=?,homepage_featured=?,updated_at=? WHERE id=?").bind(p.store,p.title,p.description,p.destination_url,p.cta_label,p.status,p.homepage_featured,nowSec(),id).run(); return item(env,id); }
