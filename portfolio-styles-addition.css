@@ -132,6 +132,48 @@
   margin: 0 0.4rem;
 }
 
+/* ---- Show each before/after image in full (no 4:3 crop) and explain what changed ---- */
+.portfolio-grid { align-items: start; }
+
+.portfolio-compare {
+  aspect-ratio: auto;
+}
+
+.portfolio-compare img {
+  height: auto;
+  object-fit: contain;
+}
+
+.portfolio-card .portfolio-legend {
+  margin: 0.25rem 1.25rem 0.6rem;
+  color: var(--accent);
+  opacity: 1;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.portfolio-changes {
+  margin: 0 1.25rem 1.5rem;
+  padding-left: 1.1rem;
+  color: var(--text);
+  opacity: 0.75;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.portfolio-changes li + li {
+  margin-top: 0.2rem;
+}
+
+/* The advertisement unit sits inside the grid and spans the full row, between two groups of examples. */
+.portfolio-grid > .adsense-section {
+  grid-column: 1 / -1;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
 @media (max-width: 600px) {
   .portfolio-hero { padding: 3rem 1.25rem 1.5rem; }
   .portfolio-grid { grid-template-columns: 1fr; }

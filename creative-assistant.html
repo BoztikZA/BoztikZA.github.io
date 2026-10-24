@@ -12,9 +12,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Creative Assistant | Boztik Creative Toolkit</title>
-  <meta name="description" content="A lightweight creative assistant page for Photoshop guidance, Firefly prompts, workflow tips, background removal help and image quality improvements.">
+  <meta name="description" content="Quick answers on Photoshop workflow, Firefly prompts, export settings, background removal and image quality — built in, or live with your own OpenAI, Claude or Gemini API key.">
   <meta property="og:title" content="Creative Assistant | Boztik Creative Toolkit">
-  <meta property="og:description" content="A modern creative assistant experience designed for future AI integration while remaining useful today.">
+  <meta property="og:description" content="Quick answers on Photoshop workflow, Firefly prompts and export settings, with an option to connect your own OpenAI, Claude or Gemini key for live replies.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.boztik.com/creative-assistant.html">
   <meta property="og:image" content="https://www.boztik.com/images/extension-preview.png">
@@ -25,7 +25,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles-premium.css?v=20261003a">
+  <link rel="stylesheet" href="styles-premium.css?v=20261024a">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3739684241868984"
        crossorigin="anonymous"></script>
 </head>
@@ -70,7 +70,7 @@
       <div class="section-heading" style="margin-bottom:24px;">
         <span class="section-label">Free Creative Tool</span>
         <h1>Creative Assistant</h1>
-        <p>A calm, modern assistant for Photoshop, Firefly prompts, edit workflows and instant creative guidance. The interface is ready for future AI API integration without a redesign.</p>
+        <p>Quick answers on Photoshop workflow, Firefly prompts, frequency separation, export settings and background removal. The built-in answers cover those topics; connect your own OpenAI, Claude or Gemini key for live, open-ended replies.</p>
       </div>
     </section>
 
@@ -118,11 +118,50 @@
       <div class="analysis-card">
         <h3 style="margin-bottom:12px;">What this assistant can do</h3>
         <ul class="analysis-list">
-          <li>Offer practical Photoshop workflow advice</li>
-          <li>Generate tailored Firefly prompt ideas</li>
-          <li>Explain technical editing concepts in plain language</li>
-          <li>Recommend export settings for web, print and social media</li>
-          <li>Provide simple steps for background removal and image quality improvement</li>
+          <li><strong>Without a key:</strong> short built-in answers on Photoshop workflow, the structure of a Firefly prompt, frequency separation, export settings, background removal and image quality. Anything else gets a note pointing to the key option.</li>
+          <li><strong>With your own key:</strong> open-ended questions answered by the model you choose, guided by a short Boztik instruction to keep replies practical and concise.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="reveal" id="connect-your-key">
+      <div class="article-body">
+        <h2>How to connect your own AI key</h2>
+        <p>Live replies use your own account with an AI provider, so that provider's pricing and usage limits apply. The page does not send your key or your questions to Boztik.</p>
+        <ol>
+          <li><strong>Create an API key with the provider you want to use</strong> (OpenAI, Anthropic for Claude, or Google for Gemini). If the provider lets you, set a spending limit on the account or on the key first.</li>
+          <li><strong>Choose that provider</strong> in the "Connect a real AI provider" box above the chat and paste the key into the field.</li>
+          <li><strong>Press Test.</strong> The page sends one short request ("Reply with the single word: OK") to the provider, which uses a very small amount of your credit. If the provider accepts it, the key is saved. <strong>Connect</strong> saves the key without testing it.</li>
+          <li><strong>Ask a question.</strong> Your question and a short Boztik instruction go from your browser straight to the provider, and the reply appears in the chat. If a request fails, the chat shows the error and then the built-in answer instead.</li>
+          <li><strong>Disconnect</strong>, which appears once a key is saved, removes the saved key for that provider from this browser.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="adsense-section reveal" aria-label="Advertisements">
+      <div class="adsense-card">
+        <div class="adsense-meta">
+          <span class="adsense-label">Advertisements</span>
+        </div>
+        <ins class="adsbygoogle"
+             style="display:block; width:100%; min-height:90px;"
+             data-ad-client="ca-pub-3739684241868984"
+             data-ad-slot="7204038822"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+      </div>
+    </section>
+
+    <section class="reveal" id="before-you-connect">
+      <div class="article-body">
+        <h2>What to know before you connect</h2>
+        <ul>
+          <li>The key is saved as plain text in this browser's localStorage, one entry per provider. Anyone who can use this browser profile, and any browser extension that can read this site's data, could read it. Use a key you can revoke, and do not connect on a shared computer.</li>
+          <li>Requests go only to the provider's own API address (api.openai.com, api.anthropic.com or generativelanguage.googleapis.com), and the provider's own privacy policy applies to what you send. OpenAI and Anthropic receive the key in a request header. For Gemini, this page puts the key in the request address.</li>
+          <li>This page also loads Google Analytics and Google AdSense scripts, as the <a href="privacy.html">Privacy Policy</a> describes. They run on the same page where the key is saved, which is one more reason to use a key with a spending limit.</li>
+          <li>Each question is sent on its own, so the assistant does not see earlier messages in the chat. The chat is not saved and clears when you reload the page.</li>
+          <li>Boztik picks a small, fast model for each provider and you cannot change it on this page. The instruction asks for replies under about 150 words, and Claude replies are capped at 400 tokens (roughly 300 words), so a long answer can end abruptly.</li>
         </ul>
       </div>
     </section>
@@ -149,21 +188,6 @@
           </div>
         </div>
       </section>
-
-      <section class="adsense-section reveal" aria-label="Sponsored content">
-      <div class="adsense-card">
-        <div class="adsense-meta">
-          <span class="adsense-label">Sponsored</span>
-        </div>
-        <ins class="adsbygoogle"
-             style="display:block; width:100%; min-height:90px;"
-             data-ad-client="ca-pub-3739684241868984"
-             data-ad-slot="7204038822"
-             data-ad-format="auto"
-             data-full-width-responsive="true"></ins>
-<script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-</div>
-    </section>
 
   </main>
 
@@ -253,7 +277,7 @@
       if (text.includes('background')) return 'For background removal, start with a clean mask, refine edge detail and keep a slight feather for natural transitions. A soft brush and selective refinement usually look best.';
       if (text.includes('quality')) return 'To improve image quality, first fix exposure and white balance, then sharpen selectively, remove noise carefully and preserve color depth in the final export.';
       if (text.includes('workflow')) return 'A smoother Photoshop workflow starts with a clear folder structure, smart object templates, action sets and a simple naming convention that keeps revisions easy to manage.';
-      return 'That is a strong creative question. For now, this assistant offers practical guidance and can later be connected to a real AI API without changing the interface.';
+      return 'The built-in answers cover Photoshop workflow, Firefly prompts, frequency separation, export settings, background removal and image quality. For anything else, connect your own AI key above to get a live reply.';
     }
 
     /* ============================
@@ -280,7 +304,9 @@
             { role: 'system', content: AI_SYSTEM_PROMPT },
             { role: 'user', content: prompt }
           ],
-          max_tokens: 400
+          // GPT-5 models reject "max_tokens" ("Unsupported parameter ... use max_completion_tokens") and count
+          // their internal reasoning against this budget, so it is set well above the ~150-word answer length.
+          max_completion_tokens: 1500
         }),
         parseReply: (data) => data?.choices?.[0]?.message?.content?.trim(),
         parseError: (data) => data?.error?.message
@@ -374,7 +400,7 @@
         aiKeyInput.placeholder = 'Key saved in this browser';
         aiDisconnectButton.hidden = false;
         setStatus('is-connected', `Connected · ${AI_PROVIDERS[provider].label}`);
-        aiConnectNote.textContent = `Live replies are being generated with your ${AI_PROVIDERS[provider].label} key. Nothing is sent to Boztik's servers.`;
+        aiConnectNote.textContent = `Live replies are being generated with your ${AI_PROVIDERS[provider].label} key. Your key and questions go to that provider, not to Boztik's servers.`;
       } else {
         aiKeyInput.value = '';
         aiKeyInput.placeholder = 'Paste your API key';

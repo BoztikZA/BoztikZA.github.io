@@ -1,7 +1,23 @@
 (function () {
   const SUPPORT_URL = 'https://ko-fi.com/boztik';
 
-  const isReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Keeps the floating button away from advertisements: while any ad unit is on screen (or about to be), the
+  // button is hidden, so it never covers an ad or sits where a tap could land on either one.
+  const pauseWhileAdsAreVisible = (button) => {
+    const ads = document.querySelectorAll('.adsense-section');
+    if (!ads.length || !('IntersectionObserver' in window)) return;
+
+    const onScreen = new Set();
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) onScreen.add(entry.target);
+        else onScreen.delete(entry.target);
+      });
+      button.classList.toggle('is-paused', onScreen.size > 0);
+    }, { rootMargin: '0px 0px 80px 0px' });
+
+    ads.forEach((ad) => observer.observe(ad));
+  };
 
   const createFloatingButton = () => {
     if (document.getElementById('boztik-support-float')) return;
@@ -16,9 +32,12 @@
     button.innerHTML = '<span class="support-float__icon" aria-hidden="true">\u2764\ufe0f</span><span class="support-float__label">Support Boztik</span>';
     document.body.appendChild(button);
 
-    if (!isReducedMotion()) {
-      button.classList.add('is-ready');
-    }
+    // Always show the button. The global prefers-reduced-motion rule in styles-premium.css already removes the
+    // fade-in, so visitors who ask for less motion get the button without the animation. Before, it was left at
+    // opacity 0 for them: invisible, yet still clickable.
+    button.classList.add('is-ready');
+
+    pauseWhileAdsAreVisible(button);
   };
 
   const setupFooterCollapse = () => {

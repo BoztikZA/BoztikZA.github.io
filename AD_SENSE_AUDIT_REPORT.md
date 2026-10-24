@@ -113,3 +113,4 @@ All public pages clear a ~200-word threshold; the primary landing and service pa
 
 ### 🔎 Recommend human verification
 - Confirm slot IDs `9670531718` (home page) and `9342555903` (delivery) exist in the AdSense account and are approved/active, and that `privacy.html` uses the intended slot. These are account-side facts this file audit cannot confirm.
+> **Superseded:** see docs/adsense-readiness-checklist.md for the current state (October 2026).

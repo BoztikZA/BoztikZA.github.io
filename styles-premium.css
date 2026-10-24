@@ -3778,3 +3778,98 @@ footer h3 {
     transition: none;
   }
 }
+
+/* ============================
+   Guides: byline links, publish dates, figures and related reading
+   (additive only — new classes; no existing rule is changed)
+   ============================ */
+.article-meta a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.article-meta a:hover,
+.article-meta a:focus-visible {
+  text-decoration: underline;
+}
+
+.guide-card .guide-date {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  margin-bottom: 8px;
+}
+
+.article-figure {
+  margin: 28px 0;
+}
+
+.article-figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+}
+
+.article-figure figcaption {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  margin-top: 10px;
+}
+
+.article-figure figcaption strong {
+  color: var(--text);
+}
+
+.article-figure figcaption a,
+.article-related a {
+  color: var(--primary);
+}
+
+.article-related {
+  margin: 36px 0 0;
+  padding: 18px 22px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.article-related p {
+  margin: 0 0 8px;
+}
+
+.article-related ul {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 6px;
+}
+
+/* ============================
+   Small layout fixes (additive only)
+   ============================ */
+
+/* Creative Assistant: the chat box could not shrink below the width of its message form, which pushed the whole
+   page sideways on phones. Letting the grid item and the text field shrink fixes that. */
+.chat-shell,
+.chat-form input {
+  min-width: 0;
+}
+
+/* About page: the cards were stacked with no space between them (there was no rule for the container). */
+.about-container {
+  display: grid;
+  gap: 24px;
+}
+
+/* The floating Support button steps aside while an advertisement is on screen (see js/support.js), so it never
+   sits on top of an ad where a tap could land on either. visibility is delayed so the fade-out still shows. */
+.support-float.is-paused {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(12px);
+  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s linear 0.3s;
+}

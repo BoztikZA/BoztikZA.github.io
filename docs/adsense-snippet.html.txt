@@ -1,9 +1,9 @@
-<!-- Google AdSense Placeholder -->
-<section class="adsense-section" aria-label="Sponsored content">
+<!-- Boztik ad unit. Use the label "Advertisements" exactly; do not add notes such as "support us" or "click". -->
+<!-- Place it between two content sections, never directly beside a download/CTA button, and not on privacy, terms, contact, Deliver or hub pages. -->
+<section class="adsense-section reveal" aria-label="Advertisements">
   <div class="adsense-card">
     <div class="adsense-meta">
-      <span class="adsense-label">Sponsored</span>
-      <span class="adsense-note">Placeholder for future content pages</span>
+      <span class="adsense-label">Advertisements</span>
     </div>
     <ins class="adsbygoogle"
          style="display:block; width:100%; min-height:90px;"
@@ -14,4 +14,3 @@
     <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
   </div>
 </section>
-<!-- End Google AdSense Placeholder -->
