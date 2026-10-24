@@ -82,6 +82,7 @@
       </button>
       <div class="nav-links" id="primary-navigation">
         <a href="index.html" aria-current="page">Home</a>
+        <a href="stores.html">Boztik Stores</a>
         <a href="creative-toolkit.html">Creative Toolkit</a>
         <a href="image-inspector.html">Image Inspector</a>
         <a href="creative-assistant.html">Creative Assistant</a>
@@ -304,6 +305,11 @@
     </div>
   </section>
 
+  <section id="new-releases" class="new-releases reveal" aria-label="New Releases" tabindex="0" hidden>
+    <div class="new-releases__head"><div><span class="section-label">New Releases</span><h2>Fresh from Boztik Stores.</h2></div><a class="secondary-link" href="stores.html">Browse all stores →</a></div>
+    <div class="new-releases__stage"></div><div class="new-releases__controls"><button type="button" data-release-prev aria-label="Previous release">←</button><button type="button" data-release-next aria-label="Next release">→</button></div>
+  </section>
+
   <section class="deliver-home-section reveal" aria-labelledby="deliver-home-title">
     <div class="deliver-home-card">
       <div class="deliver-home__icon" aria-hidden="true">📦</div>
@@ -514,5 +520,6 @@
   <script defer src="js/boztik-events.js?v=1"></script>
   <script src="js/site.js?v=20260805a"></script>
   <script src="js/support.js"></script>
+  <script type="module" src="js/releases.js"></script>
 </body>
 </html>

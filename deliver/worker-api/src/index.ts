@@ -2,6 +2,7 @@ import type { Env } from "./types";
 import { handleAdmin } from "./routes/admin";
 import { handleAuth } from "./routes/auth";
 import { handlePublic } from "./routes/public";
+import { handlePromotionAdmin, handlePromotionPublic } from "./routes/promotions";
 import { corsHeaders, error, json } from "./routes/util";
 import { scheduled as runScheduled } from "./scheduled";
 
@@ -22,11 +23,17 @@ export default {
       if (path === `${API}/health` || path === "/health") {
         response = json({ status: "ok", service: "boztik-deliver-api", time: new Date().toISOString() });
       } else if (path.startsWith(`${API}/public/`)) {
-        response = await handlePublic(request, path.slice(`${API}/public/`.length), env, ctx);
+        const publicPath = path.slice(`${API}/public/`.length);
+        response = publicPath.startsWith("promotions") || publicPath.startsWith("promotion-image")
+          ? await handlePromotionPublic(request, publicPath.split("/").filter(Boolean), env)
+          : await handlePublic(request, publicPath, env, ctx);
       } else if (path.startsWith(`${API}/auth/`)) {
         response = await handleAuth(request, path.slice(`${API}/auth/`.length), env);
       } else if (path.startsWith(`${API}/admin/`)) {
-        response = await handleAdmin(request, path.slice(`${API}/admin/`.length), env, ctx);
+        const adminPath = path.slice(`${API}/admin/`.length);
+        response = adminPath.startsWith("promotions")
+          ? await handlePromotionAdmin(request, adminPath.split("/").filter(Boolean).slice(1), env)
+          : await handleAdmin(request, adminPath, env, ctx);
       } else {
         response = error("Not found", 404);
       }
