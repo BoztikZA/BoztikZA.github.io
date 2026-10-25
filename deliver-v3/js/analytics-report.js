@@ -24,6 +24,11 @@ export const PAGE_LABELS = {
   support: "Support",
   contact: "Contact"
 };
+/** Short names for journeys and flow tables. */
+export const SHORT_LABELS = {
+  homepage: "Home", stores: "Stores", deliver: "Deliver", services: "Services", portfolio: "Portfolio",
+  toolkit: "Toolkit", tools: "Tools", guides: "Guides", about: "About", support: "Support", contact: "Contact"
+};
 /** Public pages that should normally receive traffic; used to spot pages with no recorded views. */
 export const KEY_PAGES = ["homepage", "stores", "deliver", "services", "portfolio", "toolkit", "tools", "guides", "about", "support", "contact"];
 

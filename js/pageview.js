@@ -18,6 +18,10 @@
  *  - nothing is sent if the browser has Do Not Track or Global Privacy
  *    Control enabled, or if this is a Command Centre / admin page
  *
+ * Session policy: boztik_anon_session is a random first-party cookie (180 days). The Worker splits it into
+ * visits after 30 minutes without a page view; traffic-source attribution uses its own sessionStorage id that
+ * also rotates after 30 minutes of inactivity.
+ *
  * Failure is always silent: analytics must never be able to break a page.
  */
 (function () {
@@ -65,6 +69,22 @@
         }).join("");
       }
       return (Date.now().toString(16) + Math.random().toString(16).slice(2) + "0000000000000000").slice(0, 32);
+    }
+    /**
+     * Transport. The body is strict JSON but is sent as text/plain, which is a CORS-safelisted content type:
+     * the browser sends it directly with NO preflight. (A JSON Blob via sendBeacon forces a credentialed
+     * preflight that the Worker's wildcard CORS answer fails, so the browser dropped every event silently.)
+     * sendBeacon's boolean only means "queued", so the fetch fallback is used only when it refuses outright.
+     */
+    function post(url, body) {
+      var type = "text/plain;charset=UTF-8";
+      try {
+        if (navigator.sendBeacon && navigator.sendBeacon(url, new Blob([body], { type: type }))) return;
+      } catch (e) { /* fall through to fetch */ }
+      fetch(url, { method: "POST", headers: { "Content-Type": type }, body: body, keepalive: true, mode: "cors", credentials: "omit" }).catch(function () {});
+    }
+    function makeEventId() {
+      return makeSessionId().slice(0, 24);
     }
     function trafficSessionId() {
       var idKey = "boztik_traffic_session";
@@ -128,9 +148,7 @@
           utm_medium: currentParams.get("utm_medium"),
           utm_campaign: currentParams.get("utm_campaign")
         });
-        var url = apiBaseUrl + "/api/public/traffic-source";
-        if (navigator.sendBeacon && navigator.sendBeacon(url, new Blob([body], { type: "application/json" }))) return;
-        fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: body, keepalive: true, mode: "cors" }).catch(function () {});
+        post(apiBaseUrl + "/api/public/traffic-source", body);
       } catch (e) {
         /* attribution must never be able to break a page */
       }
@@ -148,16 +166,11 @@
 
     var host = location.hostname;
     var apiBaseUrl = (host === "localhost" || host === "127.0.0.1") ? "http://localhost:8787" : "https://deliver-api.boztik.com";
-    var body = JSON.stringify({ page: page, session_id: sessionId });
+    // event_id makes a re-sent event harmless: the Worker ignores an event it has already stored.
+    var body = JSON.stringify({ page: page, session_id: sessionId, event_id: makeEventId() });
     var url = apiBaseUrl + "/api/public/pageview";
 
-    var send = function () {
-      if (navigator.sendBeacon) {
-        var ok = navigator.sendBeacon(url, new Blob([body], { type: "application/json" }));
-        if (ok) return;
-      }
-      fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: body, keepalive: true, mode: "cors" }).catch(function () {});
-    };
+    var send = function () { post(url, body); };
 
     sendTrafficSource(apiBaseUrl);
     if (document.readyState === "complete") send();

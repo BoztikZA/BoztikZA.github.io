@@ -2,6 +2,8 @@ import type { DeliveryFileRow, DeliveryRow, Env } from "../types";
 import { HttpError } from "../types";
 import { milestoneNotificationsEnabled, queueMilestoneCheck } from "./notify";
 import type { TrafficSourceVisit } from "./traffic-sources";
+import { buildVisits, computeFlow, MIN_VISITS_FOR_FLOW, pageEntranceExit, VISIT_GAP_SECONDS } from "./flow";
+import type { FlowEvent, FlowResult } from "./flow";
 
 export const nowSec = () => Math.floor(Date.now() / 1000);
 export const iso = (s: number): string => new Date(s * 1000).toISOString();
@@ -326,19 +328,34 @@ export async function recordShare(env: Env, id: string, method: string, ctx: Exe
 // allow-list, so those page views were silently dropped (recordPageView returns false for unknown keys).
 export const PAGE_KEYS = ["homepage", "stores", "portfolio", "tools", "toolkit", "guides", "about", "support", "contact", "services", "deliver"] as const;
 
-export async function recordPageView(env: Env, page: string, sessionId?: string): Promise<boolean> {
+/** Records one public page view. Returns whether it was COUNTED.
+ *  - Unknown page keys are never counted.
+ *  - With a valid anonymous session id the event is stored first (INSERT OR IGNORE) and the daily counter is
+ *    incremented ONLY if that insert really added a row, in the same D1 batch/transaction. A re-sent event
+ *    (same event_id, or same session + page + second) is therefore ignored by both tables and can never be
+ *    counted twice, and the counter can never move without a matching event row.
+ *  - Without a usable session id (cookies blocked, very old cached client) the view is still counted in the
+ *    daily counter but cannot be de-duplicated or placed in a journey. The dashboard reports that coverage gap. */
+export async function recordPageView(env: Env, page: string, sessionId?: string, eventId?: string): Promise<boolean> {
   if (!(PAGE_KEYS as readonly string[]).includes(page)) return false;
   const ts = nowSec();
-  await env.DB.prepare("INSERT INTO page_analytics (day, page, views) VALUES (?1, ?2, 1) ON CONFLICT (day, page) DO UPDATE SET views = views + 1")
-    .bind(localDay(env), page).run();
+  const day = localDay(env);
+  const cleanSession = typeof sessionId === "string" ? sessionId.trim().toLowerCase() : "";
+  const cleanEvent = typeof eventId === "string" && /^[A-Za-z0-9_-]{8,64}$/.test(eventId) ? eventId : null;
 
-  const cleanSession = typeof sessionId === "string" ? sessionId.trim() : "";
-  if (cleanSession && /^[a-f0-9]{32}$/.test(cleanSession)) {
-    await env.DB.prepare("INSERT INTO page_session_events (session_id, seen_at, page) VALUES (?1, ?2, ?3)")
-      .bind(cleanSession, ts, page).run();
+  if (!/^[a-f0-9]{32}$/.test(cleanSession)) {
+    await env.DB.prepare("INSERT INTO page_analytics (day, page, views) VALUES (?1, ?2, 1) ON CONFLICT (day, page) DO UPDATE SET views = views + 1")
+      .bind(day, page).run();
+    return true;
   }
 
-  return true;
+  const [inserted] = await env.DB.batch([
+    env.DB.prepare("INSERT OR IGNORE INTO page_session_events (session_id, seen_at, page, event_id) VALUES (?1, ?2, ?3, ?4)")
+      .bind(cleanSession, ts, page, cleanEvent),
+    env.DB.prepare("INSERT INTO page_analytics (day, page, views) SELECT ?1, ?2, 1 WHERE changes() > 0 ON CONFLICT (day, page) DO UPDATE SET views = views + 1")
+      .bind(day, page),
+  ]);
+  return (inserted?.meta?.changes ?? 0) > 0;
 }
 
 export async function recordTrafficSourceVisit(env: Env, visit: TrafficSourceVisit): Promise<boolean> {
@@ -373,6 +390,14 @@ export async function getTrafficSourceSummary(env: Env, key: SummaryPeriod) {
       ? env.DB.prepare("SELECT MIN(seen_at) AS seen_at FROM traffic_source_visits").first<{ seen_at: number | null }>()
       : Promise.resolve(null),
   ]);
+  // Additive fields for the dashboard: previous equivalent period, first/last recorded visit.
+  const pw = periodWindow(env, key);
+  const [prevCount, firstLast] = await Promise.all([
+    pw.previous
+      ? env.DB.prepare("SELECT COUNT(*) AS n FROM traffic_source_visits WHERE seen_at >= ?1 AND seen_at <= ?2").bind(pw.previous.startTs, pw.previous.endTs).first<{ n: number }>()
+      : Promise.resolve(null),
+    env.DB.prepare("SELECT MIN(seen_at) AS first_at, MAX(seen_at) AS last_at FROM traffic_source_visits").first<{ first_at: number | null; last_at: number | null }>(),
+  ]);
   const sourceCounts = new Map(sourceRows.results.map(row => [row.source, row.visits]));
   const sources = ["reddit", "organic_search", "social", "referral", "direct_unknown"]
     .map(source => ({ source, visits: sourceCounts.get(source) ?? 0 }));
@@ -381,6 +406,9 @@ export async function getTrafficSourceSummary(env: Env, key: SummaryPeriod) {
     total: sources.reduce((sum, row) => sum + row.visits, 0),
     sources,
     campaigns: campaignRows.results,
+    previous: pw.previous && prevCount ? { since: pw.previous.since, until: pw.previous.until, total: prevCount.n } : null,
+    data_since: firstLast?.first_at != null ? localDay(env, firstLast.first_at) : null,
+    last_visit_at: firstLast?.last_at != null ? iso(firstLast.last_at) : null,
   };
 }
 
@@ -683,67 +711,61 @@ export async function getDeliveryDailySeries(env: Env, id: string, days = 30): P
  *  convention (ANALYTICS_UTC_OFFSET_MINUTES, default SAST/UTC+2). */
 export async function getStoreClickSummary(env: Env, key: SummaryPeriod): Promise<StoreClickSummary> {
   const now = nowSec();
-  const days = SUMMARY_PERIODS[key];
-  const until = localDay(env, now);
-  const since = days === null ? null : localDay(env, now - (days - 1) * 86400);
-  const start = since === null ? null : localDayStartTs(env, Date.parse(`${since}T00:00:00Z`) / 1000);
-  const timeClause = start === null ? "created_at <= ?1" : "created_at >= ?1 AND created_at <= ?2";
-  const timeBindings = start === null ? [now] : [start, now];
+  const w = periodWindow(env, key);
   const offset = utcOffsetSeconds(env);
+  // ROOT-CAUSE FIX: the old series query bound (offset, start, now) against a clause that referenced ?1/?2, so
+  // the offset was compared with created_at and D1 rejected the extra parameter => the Store card showed an error.
+  // Every query now numbers its own placeholders explicitly.
+  const clause = (n: number) => (w.startTs === null ? `created_at <= ?${n}` : `created_at >= ?${n} AND created_at <= ?${n + 1}`);
+  const bind = w.startTs === null ? [w.endTs] : [w.startTs, w.endTs];
+  const STORE_PAGE_PLACEMENTS = "('store_grid','stores')";
 
-  const [destRows, seriesRows, sourceRows, totalSessions, firstEvent] = await Promise.all([
+  const [destRows, seriesRows, sourceRows, totalSessions, firstEvent, lastEvent, storePageClicks, storeViews, prevRows, prevStoreViews] = await Promise.all([
+    env.DB.prepare(`SELECT destination, COUNT(*) AS clicks, COUNT(DISTINCT session_id) AS unique_sessions FROM store_clicks WHERE ${clause(1)} GROUP BY destination`)
+      .bind(...bind).all<StoreClickDestinationRow>(),
     env.DB.prepare(
-      `SELECT destination, COUNT(*) AS clicks, COUNT(DISTINCT session_id) AS unique_sessions
-         FROM store_clicks
-        WHERE ${timeClause}
-        GROUP BY destination`,
-    ).bind(...timeBindings).all<StoreClickDestinationRow>(),
-    env.DB.prepare(
-      `SELECT strftime('%Y-%m-%d', datetime(created_at + ?1, 'unixepoch')) AS day,
-              destination, COUNT(*) AS clicks
-         FROM store_clicks
-        WHERE ${timeClause}
-        GROUP BY day, destination`,
-    ).bind(offset, ...timeBindings).all<StoreClickSeriesPoint>(),
-    env.DB.prepare(
-      `SELECT destination, source_placement, COUNT(*) AS clicks
-         FROM store_clicks
-        WHERE ${timeClause}
-        GROUP BY destination, source_placement`,
-    ).bind(...timeBindings).all<{ destination: string; source_placement: string; clicks: number }>(),
-    env.DB.prepare(`SELECT COUNT(DISTINCT session_id) AS n FROM store_clicks WHERE ${timeClause}`).bind(...timeBindings).first<{ n: number }>(),
+      `SELECT strftime('%Y-%m-%d', datetime(created_at + ?1, 'unixepoch')) AS day, destination, COUNT(*) AS clicks
+         FROM store_clicks WHERE ${clause(2)} GROUP BY day, destination`,
+    ).bind(offset, ...bind).all<StoreClickSeriesPoint>(),
+    env.DB.prepare(`SELECT destination, source_placement, COUNT(*) AS clicks FROM store_clicks WHERE ${clause(1)} GROUP BY destination, source_placement`)
+      .bind(...bind).all<{ destination: string; source_placement: string; clicks: number }>(),
+    env.DB.prepare(`SELECT COUNT(DISTINCT session_id) AS n FROM store_clicks WHERE ${clause(1)}`).bind(...bind).first<{ n: number }>(),
     env.DB.prepare("SELECT MIN(created_at) AS created_at FROM store_clicks").first<{ created_at: number | null }>(),
+    env.DB.prepare("SELECT MAX(created_at) AS created_at FROM store_clicks").first<{ created_at: number | null }>(),
+    env.DB.prepare(`SELECT destination, COUNT(*) AS clicks FROM store_clicks WHERE ${clause(1)} AND source_placement IN ${STORE_PAGE_PLACEMENTS} GROUP BY destination`)
+      .bind(...bind).all<{ destination: string; clicks: number }>(),
+    w.since === null
+      ? env.DB.prepare("SELECT COALESCE(SUM(views), 0) AS v FROM page_analytics WHERE page = 'stores'").first<{ v: number }>()
+      : env.DB.prepare("SELECT COALESCE(SUM(views), 0) AS v FROM page_analytics WHERE page = 'stores' AND day >= ?1 AND day <= ?2").bind(w.since, w.until).first<{ v: number }>(),
+    w.previous
+      ? env.DB.prepare("SELECT destination, COUNT(*) AS clicks FROM store_clicks WHERE created_at >= ?1 AND created_at <= ?2 GROUP BY destination").bind(w.previous.startTs, w.previous.endTs).all<{ destination: string; clicks: number }>()
+      : Promise.resolve(null),
+    w.previous
+      ? env.DB.prepare("SELECT COALESCE(SUM(views), 0) AS v FROM page_analytics WHERE page = 'stores' AND day >= ?1 AND day <= ?2").bind(w.previous.since, w.previous.until).first<{ v: number }>()
+      : Promise.resolve(null),
   ]);
 
   const byDestination = new Map<string, { clicks: number; unique_sessions: number }>();
   for (const r of destRows.results) byDestination.set(r.destination, { clicks: r.clicks, unique_sessions: r.unique_sessions });
+  const storePageByDest = new Map(storePageClicks.results.map(r => [r.destination, r.clicks]));
 
+  // Top placement per destination (ties broken alphabetically so the answer is stable).
   const topSourceByDestination = new Map<string, string>();
-  for (const r of sourceRows.results) {
-    const current = topSourceByDestination.get(r.destination);
-    const currentClicks = current == null ? -1 : sourceRows.results.filter(x => x.destination === r.destination && x.source_placement === current).reduce((a, b) => a + b.clicks, 0);
-    if (current == null || r.clicks > currentClicks) topSourceByDestination.set(r.destination, r.source_placement);
+  const best = new Map<string, number>();
+  for (const r of [...sourceRows.results].sort((a, b) => a.source_placement.localeCompare(b.source_placement))) {
+    if (r.clicks > (best.get(r.destination) ?? 0)) { best.set(r.destination, r.clicks); topSourceByDestination.set(r.destination, r.source_placement); }
   }
 
   const dayLabels: string[] = [];
-  if (since) {
-    const sinceSec = Date.parse(`${since}T00:00:00Z`) / 1000;
-    const untilSec = Date.parse(`${until}T00:00:00Z`) / 1000;
-    for (let d = 0; sinceSec + d * 86400 <= untilSec; d++) dayLabels.push(localDay(env, sinceSec + d * 86400));
-  } else {
-    const startTs = firstEvent?.created_at ?? now;
-    const spanDays = Math.min(366, Math.max(1, Math.ceil((now - startTs) / 86400) + 1));
-    for (let d = spanDays - 1; d >= 0; d--) dayLabels.push(localDay(env, now - d * 86400));
-  }
+  const startTsForLabels = w.startTs ?? firstEvent?.created_at ?? now;
+  const spanDays = Math.min(366, Math.max(1, Math.ceil((now - startTsForLabels) / 86400) + 1));
+  for (let d = spanDays - 1; d >= 0; d--) dayLabels.push(localDay(env, now - d * 86400));
 
   const clicksByDayDest = new Map<string, number>();
   for (const r of seriesRows.results) clicksByDayDest.set(`${r.day}|${r.destination}`, r.clicks);
-
   const series: StoreClickSeriesPoint[] = [];
-  for (const day of dayLabels) {
-    for (const destination of STORE_CLICK_DESTINATIONS) {
-      series.push({ day, destination, clicks: clicksByDayDest.get(`${day}|${destination}`) ?? 0 });
-    }
+  for (const day of dayLabels) for (const destination of STORE_CLICK_DESTINATIONS) {
+    series.push({ day, destination, clicks: clicksByDayDest.get(`${day}|${destination}`) ?? 0 });
   }
 
   const by_destination = STORE_CLICK_DESTINATIONS.map(destination => {
@@ -753,6 +775,7 @@ export async function getStoreClickSummary(env: Env, key: SummaryPeriod): Promis
       clicks: row?.clicks ?? 0,
       unique_sessions: row?.unique_sessions ?? 0,
       top_source: topSourceByDestination.get(destination) ?? null,
+      store_page_clicks: storePageByDest.get(destination) ?? 0,
     };
   });
 
@@ -762,14 +785,26 @@ export async function getStoreClickSummary(env: Env, key: SummaryPeriod): Promis
   for (const [source_placement, clicks] of sourceTotals) sources.push({ source_placement, clicks });
   sources.sort((a, b) => b.clicks - a.clicks || a.source_placement.localeCompare(b.source_placement));
 
+  const sumOutbound = (rows: Array<{ destination: string; clicks: number }>) => rows.filter(r => STORE_OUTBOUND.includes(r.destination)).reduce((t, r) => t + r.clicks, 0);
+  const total = destRows.results.reduce((sum, r) => sum + r.clicks, 0);
   return {
-    period: { key, since: since ?? null, until },
-    total: destRows.results.reduce((sum, r) => sum + r.clicks, 0),
+    period: { key, since: w.since, until: w.until },
+    total,
+    outbound_total: sumOutbound(destRows.results),
     unique_sessions: totalSessions?.n ?? 0,
     by_destination,
     series,
     sources,
+    store_page_views: storeViews?.v ?? 0,
+    product_card_clicks: sourceRows.results.filter(r => r.source_placement === "store_grid").reduce((t, r) => t + r.clicks, 0),
+    previous: w.previous && prevRows ? {
+      since: w.previous.since, until: w.previous.until,
+      total: prevRows.results.reduce((t, r) => t + r.clicks, 0),
+      outbound_total: sumOutbound(prevRows.results),
+      store_page_views: prevStoreViews?.v ?? 0,
+    } : null,
     data_since: firstEvent?.created_at != null ? localDay(env, firstEvent.created_at) : null,
+    last_event_at: lastEvent?.created_at != null ? iso(lastEvent.created_at) : null,
   };
 }
 
@@ -793,6 +828,8 @@ export interface StoreClickDestinationRow {
   clicks: number;
   unique_sessions: number;
   top_source: string | null;
+  /** Clicks whose placement is the Store page itself (store_grid / stores) — numerator for Store-page click-through. */
+  store_page_clicks: number;
 }
 
 export interface StoreClickSeriesPoint {
@@ -806,9 +843,20 @@ export interface StoreClickSourceRow {
   clicks: number;
 }
 
+/** Destinations that leave Boztik. "boztik_store" is an internal link to the Store page, not an outbound store click. */
+export const STORE_OUTBOUND: string[] = ["redbubble", "teepublic", "kofi"];
+
 export interface StoreClickSummary {
   period: { key: SummaryPeriod; since: string | null; until: string };
   total: number;
+  /** Clicks to Redbubble + TeePublic + Ko-fi (leaves Boztik). A click is NOT a purchase. */
+  outbound_total: number;
+  /** Public Boztik Stores page views (first-party counter) in the same window — the denominator for click-through. */
+  store_page_views: number;
+  /** Clicks on product / release cards inside the Store page grid. */
+  product_card_clicks: number;
+  previous: { since: string; until: string; total: number; outbound_total: number; store_page_views: number } | null;
+  last_event_at: string | null;
   unique_sessions: number;
   by_destination: StoreClickDestinationRow[];
   series: StoreClickSeriesPoint[];
@@ -828,4 +876,179 @@ export async function recordStoreClick(env: Env, click: StoreClickInput): Promis
     .bind(click.event_id, click.destination, click.source_placement, click.session_id, click.event_version, nowSec())
     .run();
   return (result.meta.changes ?? 0) > 0;
+}
+
+
+// -----------------------------------------------------------------------------
+// Reporting windows, visitor flow and data health (Command Centre → Analytics)
+// -----------------------------------------------------------------------------
+export interface PeriodWindow {
+  key: SummaryPeriod;
+  /** First local calendar day of the window, or null for "all available". */
+  since: string | null;
+  /** Today (local calendar day). The window ends "now": today is a partial day. */
+  until: string;
+  startTs: number | null;
+  endTs: number;
+  /** The same number of whole local days immediately before `since`. null for "all". */
+  previous: { since: string; until: string; startTs: number; endTs: number } | null;
+}
+
+/** ONE definition of "the reporting period" shared by every analytics query: whole local calendar days in the
+ *  site's analytics timezone (ANALYTICS_UTC_OFFSET_MINUTES, default SAST = UTC+2), ending now. */
+export function periodWindow(env: Env, key: SummaryPeriod): PeriodWindow {
+  const now = nowSec();
+  const days = SUMMARY_PERIODS[key];
+  const until = localDay(env, now);
+  if (days === null) return { key, since: null, until, startTs: null, endTs: now, previous: null };
+  const since = localDay(env, now - (days - 1) * 86400);
+  const startTs = localDayStartTs(env, Date.parse(`${since}T00:00:00Z`) / 1000);
+  const prevSince = localDay(env, now - (2 * days - 1) * 86400);
+  const prevUntil = localDay(env, now - days * 86400);
+  return {
+    key, since, until, startTs, endTs: now,
+    previous: { since: prevSince, until: prevUntil, startTs: localDayStartTs(env, Date.parse(`${prevSince}T00:00:00Z`) / 1000), endTs: startTs - 1 },
+  };
+}
+
+const FLOW_EVENT_CAP = 50000;
+
+export interface VisitorFlowResponse extends FlowResult {
+  period: { key: SummaryPeriod; since: string | null; until: string };
+  /** no_events = nothing recorded; limited = fewer than MIN_VISITS_FOR_FLOW visits; ok = enough to read patterns. */
+  status: "no_events" | "limited" | "ok";
+  /** Why a section is empty: real quiet traffic vs. page views arriving WITHOUT session events (instrumentation gap). */
+  reason: "none" | "no_page_views_in_period" | "page_views_without_session_events";
+  min_visits: number;
+  visit_gap_minutes: number;
+  events_used: number;
+  events_capped: boolean;
+  page_views_in_period: number;
+  /** Share of counted page views that also have a stored session event (0–100). Below 100 = some views cannot appear in journeys. */
+  session_coverage_pct: number | null;
+  session_data_since: string | null;
+  pages: Array<{ page: string; views: number; session_events: number; entrances: number; exits: number; coverage_pct: number | null }>;
+}
+
+export async function getVisitorFlow(env: Env, key: SummaryPeriod): Promise<VisitorFlowResponse> {
+  const w = periodWindow(env, key);
+  const dayClause = w.since === null ? "1=1" : "day >= ?1 AND day <= ?2";
+  const dayBind = w.since === null ? [] : [w.since, w.until];
+  const evClause = w.startTs === null ? "seen_at <= ?1" : "seen_at >= ?1 AND seen_at <= ?2";
+  const evBind = w.startTs === null ? [w.endTs] : [w.startTs, w.endTs];
+
+  const [events, views, firstEvent] = await Promise.all([
+    env.DB.prepare(`SELECT session_id, page, seen_at FROM page_session_events WHERE ${evClause} ORDER BY seen_at ASC, rowid ASC LIMIT ${FLOW_EVENT_CAP + 1}`)
+      .bind(...evBind).all<FlowEvent>(),
+    env.DB.prepare(`SELECT page, COALESCE(SUM(views), 0) AS views FROM page_analytics WHERE ${dayClause} GROUP BY page`)
+      .bind(...dayBind).all<{ page: string; views: number }>(),
+    env.DB.prepare("SELECT MIN(seen_at) AS seen_at FROM page_session_events").first<{ seen_at: number | null }>(),
+  ]);
+
+  const capped = events.results.length > FLOW_EVENT_CAP;
+  const rows = capped ? events.results.slice(0, FLOW_EVENT_CAP) : events.results;
+  const visits = buildVisits(rows);
+  const flow = computeFlow(visits);
+  const ee = pageEntranceExit(visits);
+
+  const viewsByPage = new Map(views.results.map(r => [r.page, r.views]));
+  const eventsByPage = new Map<string, number>();
+  for (const r of rows) eventsByPage.set(r.page, (eventsByPage.get(r.page) ?? 0) + 1);
+  const pageKeys = new Set<string>([...viewsByPage.keys(), ...eventsByPage.keys()]);
+  const pages = [...pageKeys].map(page => {
+    const v = viewsByPage.get(page) ?? 0;
+    const e = eventsByPage.get(page) ?? 0;
+    return { page, views: v, session_events: e, entrances: ee[page]?.entrances ?? 0, exits: ee[page]?.exits ?? 0, coverage_pct: v > 0 ? Math.min(100, Math.round((e / v) * 1000) / 10) : null };
+  }).sort((a, b) => b.views - a.views || a.page.localeCompare(b.page));
+
+  const totalViews = pages.reduce((t, p) => t + p.views, 0);
+  const totalEvents = rows.length;
+  const status = totalEvents === 0 ? "no_events" : visits.length < MIN_VISITS_FOR_FLOW ? "limited" : "ok";
+  const reason = totalEvents > 0 ? "none" : totalViews > 0 ? "page_views_without_session_events" : "no_page_views_in_period";
+
+  return {
+    ...flow,
+    period: { key, since: w.since, until: w.until },
+    status, reason,
+    min_visits: MIN_VISITS_FOR_FLOW,
+    visit_gap_minutes: VISIT_GAP_SECONDS / 60,
+    events_used: totalEvents,
+    events_capped: capped,
+    page_views_in_period: totalViews,
+    session_coverage_pct: totalViews > 0 ? Math.min(100, Math.round((totalEvents / totalViews) * 1000) / 10) : null,
+    session_data_since: firstEvent?.seen_at != null ? localDay(env, firstEvent.seen_at) : null,
+    pages,
+  };
+}
+
+export type CollectorStatus = "no_data_yet" | "receiving" | "quiet";
+export interface AnalyticsHealth {
+  generated_at: string;
+  timezone: { offset_minutes: number; label: string; boundary: string };
+  /** Latest ISO time any first-party analytics event was stored (page views are day-resolution only). */
+  last_event_at: string | null;
+  collectors: {
+    page_views: { status: CollectorStatus; first_day: string | null; last_day: string | null };
+    sessions: { status: CollectorStatus; first_at: string | null; last_at: string | null };
+    attribution: { status: CollectorStatus; first_at: string | null; last_at: string | null };
+    store_clicks: { status: CollectorStatus; first_at: string | null; last_at: string | null };
+  };
+  ga4: { status: "not_connected"; detail: string };
+  page_views_before_session_tracking: number;
+  retention_days: number;
+  privacy_exclusions: string[];
+  known_gaps: string[];
+}
+
+/** A collector with rows but nothing for 7 days is "quiet": from the database alone, low traffic and a broken
+ *  collector look identical, so it is never reported as healthy OR as failed. */
+const collectorStatus = (last: number | null, now: number): CollectorStatus => (last === null ? "no_data_yet" : now - last <= 7 * 86400 ? "receiving" : "quiet");
+
+export async function getAnalyticsHealth(env: Env): Promise<AnalyticsHealth> {
+  const now = nowSec();
+  const [pv, se, ts, sc] = await Promise.all([
+    env.DB.prepare("SELECT MIN(day) AS first_day, MAX(day) AS last_day FROM page_analytics").first<{ first_day: string | null; last_day: string | null }>(),
+    env.DB.prepare("SELECT MIN(seen_at) AS first_at, MAX(seen_at) AS last_at FROM page_session_events").first<{ first_at: number | null; last_at: number | null }>(),
+    env.DB.prepare("SELECT MIN(seen_at) AS first_at, MAX(seen_at) AS last_at FROM traffic_source_visits").first<{ first_at: number | null; last_at: number | null }>(),
+    env.DB.prepare("SELECT MIN(created_at) AS first_at, MAX(created_at) AS last_at FROM store_clicks").first<{ first_at: number | null; last_at: number | null }>(),
+  ]);
+  const lastDayTs = pv?.last_day ? Math.floor(Date.parse(`${pv.last_day}T23:59:59Z`) / 1000) - utcOffsetSeconds(env) : null;
+  const before = se?.first_at != null
+    ? (await env.DB.prepare("SELECT COALESCE(SUM(views), 0) AS v FROM page_analytics WHERE day < ?1").bind(localDay(env, se.first_at)).first<{ v: number }>())?.v ?? 0
+    : (await env.DB.prepare("SELECT COALESCE(SUM(views), 0) AS v FROM page_analytics").first<{ v: number }>())?.v ?? 0;
+  const lasts = [se?.last_at, ts?.last_at, sc?.last_at].filter((v): v is number => typeof v === "number");
+  const lastEvent = lasts.length ? Math.max(...lasts) : null;
+  const iso0 = (v: number | null | undefined) => (v == null ? null : iso(v));
+
+  const gaps: string[] = [];
+  if (se?.first_at == null) gaps.push("No visitor-path (session) event has ever been stored, so entrances, exits and journeys cannot be reported yet.");
+  else gaps.push(`Visitor paths exist only from ${localDay(env, se.first_at)}. ${before.toLocaleString("en-US")} page views counted before that date have no path data.`);
+  if (ts?.first_at == null) gaps.push("No traffic-source visit has ever been stored, so every source count is zero because nothing was recorded, not because there were no sources.");
+  else gaps.push(`Traffic sources were first recorded on ${localDay(env, ts.first_at)}; earlier visits have no source and are not estimated.`);
+  if (sc?.first_at == null) gaps.push("No Store click has ever been stored.");
+  else gaps.push(`Store clicks were first recorded on ${localDay(env, sc.first_at)}.`);
+  gaps.push("Page views are daily totals (no time of day) for the whole history; only session, source and click events have exact timestamps.");
+  gaps.push("A page view is a counted page load, not a person. Reloads and returning visitors count again.");
+
+  return {
+    generated_at: iso(now),
+    timezone: { offset_minutes: utcOffsetSeconds(env) / 60, label: `UTC${utcOffsetSeconds(env) >= 0 ? "+" : "-"}${Math.abs(utcOffsetSeconds(env) / 3600)}`, boundary: "Reporting days run local midnight to local midnight in this timezone; today is a partial day." },
+    last_event_at: iso0(lastEvent),
+    collectors: {
+      page_views: { status: collectorStatus(lastDayTs, now), first_day: pv?.first_day ?? null, last_day: pv?.last_day ?? null },
+      sessions: { status: collectorStatus(se?.last_at ?? null, now), first_at: iso0(se?.first_at), last_at: iso0(se?.last_at) },
+      attribution: { status: collectorStatus(ts?.last_at ?? null, now), first_at: iso0(ts?.first_at), last_at: iso0(ts?.last_at) },
+      store_clicks: { status: collectorStatus(sc?.last_at ?? null, now), first_at: iso0(sc?.first_at), last_at: iso0(sc?.last_at) },
+    },
+    ga4: { status: "not_connected", detail: "No GA4 Data API credentials are configured on the Worker. GA4 numbers are never estimated or shown as zero." },
+    page_views_before_session_tracking: before,
+    retention_days: 90,
+    privacy_exclusions: [
+      "Visitors sending Do Not Track or Global Privacy Control send no analytics events at all.",
+      "Command Centre, private delivery links and other unlisted pages are never counted as website pages.",
+      "No IP address, name, email or fingerprint is stored. Session and attribution identifiers are random and cannot identify a person.",
+      "Session paths and attribution rows are deleted after 90 days; daily page-view totals are kept.",
+    ],
+    known_gaps: gaps,
+  };
 }

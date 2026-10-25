@@ -5,8 +5,8 @@
  *
  *   gtag('event', 'boztik_action', { action, destination, position, page_key })
  *
- *   action       e.g. chrome_web_store, edge_store, kofi, paypal, contact_email, contact_page,
- *                portfolio_page, external_portfolio, creative_toolkit, image_inspector, services_page,
+ *   action       e.g. chrome_web_store, edge_store, kofi, paypal, redbubble_store, teepublic_store, stores_page,
+ *                contact_email, contact_page, portfolio_page, external_portfolio, creative_toolkit, image_inspector, services_page,
  *                creative_assistant, launchzone_listing, social_link, deliver
  *   destination  a hostname (external links) or a path (internal links). Never a full URL, never a query
  *                string, never an email address.
@@ -31,6 +31,7 @@
     var PAGE_KEYS = {
       "/": "homepage",
       "/index.html": "homepage",
+      "/stores.html": "stores",
       "/services.html": "services",
       "/portfolio.html": "portfolio",
       "/image-inspector.html": "tools",
@@ -55,6 +56,9 @@
       "microsoftedge.microsoft.com": "edge_store",
       "ko-fi.com": "kofi",
       "paypal.me": "paypal",
+      "paypal.com": "paypal",
+      "redbubble.com": "redbubble_store",
+      "teepublic.com": "teepublic_store",
       "launchzone.co": "launchzone_listing",
       "x.com": "social_link",
       "linkedin.com": "social_link",
@@ -62,6 +66,7 @@
       "github.com": "social_link"
     };
     var INTERNAL = {
+      "/stores.html": "stores_page",
       "/contact.html": "contact_page",
       "/portfolio.html": "portfolio_page",
       "/services.html": "services_page",

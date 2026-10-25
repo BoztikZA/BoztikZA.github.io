@@ -7,11 +7,13 @@ import { corsHeaders, error, json } from "./routes/util";
 import { scheduled as runScheduled } from "./scheduled";
 
 const API = "/api";
+/** First-party analytics ingest endpoints (see corsHeaders "ingest"). */
+const INGEST_PATHS = new Set([`${API}/public/pageview`, `${API}/public/traffic-source`, `${API}/public/store-click`]);
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const path = new URL(request.url).pathname;
-    const scope = path.startsWith(`${API}/public/`) ? "public" : "admin";
+    const scope = INGEST_PATHS.has(path) ? "ingest" : path.startsWith(`${API}/public/`) ? "public" : "admin";
 
     // CORS preflight: admin/auth answer only for the site's own origins.
     if (request.method === "OPTIONS") {
@@ -51,7 +53,7 @@ export default {
 
 /** Adds CORS + security headers. Never overrides what a route already set, and
  *  never falls back to a wildcard for admin/auth responses. */
-function finalize(response: Response, request: Request, env: Env, scope: "admin" | "public"): Response {
+function finalize(response: Response, request: Request, env: Env, scope: "admin" | "public" | "ingest"): Response {
   const headers = new Headers(response.headers);
   for (const [k, v] of Object.entries(corsHeaders(request, env, scope))) if (!headers.has(k)) headers.set(k, v);
   if (!headers.has("X-Content-Type-Options")) headers.set("X-Content-Type-Options", "nosniff");

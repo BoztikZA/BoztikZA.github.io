@@ -13,7 +13,7 @@ import {
   extensionOf, isPreviewExtension, isValidDeliveryId, isValidFileId, isValidShareMethod, mimeForExtension,
 } from "../lib/validate";
 import {
-  assertSameSiteOrigin, checkPublicRate, corsHeaders, error, json, readJson, requireJson, segments, wrap,
+  assertSameSiteOrigin, checkPublicRate, corsHeaders, error, json, readJson, requireIngestBody, requireJson, segments, wrap,
 } from "./util";
 
 const PREVIEW_TTL = 300;
@@ -294,10 +294,12 @@ async function pageView(request: Request, env: Env): Promise<Response> {
   if (request.method !== "POST") return error("Method not allowed", 405);
   assertSameSiteOrigin(request, env);
   if (env.PAGE_ANALYTICS_ALLOWED !== "1") return json({ ok: true, counted: false });
+  requireIngestBody(request);
   const b = await readJson(request, 512);
   const page = typeof b.page === "string" ? b.page : "";
   const sessionId = typeof b.session_id === "string" ? b.session_id.trim() : "";
-  return json({ ok: true, counted: await recordPageView(env, page, sessionId) });
+  const eventId = typeof b.event_id === "string" ? b.event_id.trim() : "";
+  return json({ ok: true, counted: await recordPageView(env, page, sessionId, eventId) });
 }
 
 async function trafficSourceVisit(request: Request, env: Env): Promise<Response> {
@@ -305,7 +307,7 @@ async function trafficSourceVisit(request: Request, env: Env): Promise<Response>
   if (request.method !== "POST") return error("Method not allowed", 405);
   assertSameSiteOrigin(request, env);
   if (env.PAGE_ANALYTICS_ALLOWED !== "1") return json({ ok: true, counted: false });
-  requireJson(request);
+  requireIngestBody(request);
   const visit = validateTrafficSourceVisit(await readJson(request, 2048));
   return json({ ok: true, counted: await recordTrafficSourceVisit(env, visit) });
 }
@@ -317,7 +319,9 @@ async function trafficSourceVisit(request: Request, env: Env): Promise<Response>
 async function recordStoreClickVisit(request: Request, env: Env): Promise<Response> {
   checkPublicRate(request, env, "store-click", 2);
   if (request.method !== "POST") return error("Method not allowed", 405);
-  requireJson(request);
+  assertSameSiteOrigin(request, env);
+  if (env.PAGE_ANALYTICS_ALLOWED !== "1") return json({ ok: true, counted: false });
+  requireIngestBody(request);
   const b = await readJson(request, 1024);
   const event_id = typeof b.event_id === "string" ? b.event_id.trim() : "";
   const destination = typeof b.destination === "string" ? b.destination : "";

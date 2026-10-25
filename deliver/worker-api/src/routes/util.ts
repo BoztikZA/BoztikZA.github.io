@@ -29,8 +29,19 @@ export function isAllowedOrigin(request: Request, env: Env): boolean {
 /** Admin/auth routes: only the site's own origins get CORS headers (credentials
  *  are a Bearer header, never a cookie, so there is no CSRF surface either).
  *  Public read routes are world-readable capability URLs and use `*`. */
-export function corsHeaders(request: Request, env: Env, scope: "admin" | "public"): Record<string, string> {
+export function corsHeaders(request: Request, env: Env, scope: "admin" | "public" | "ingest"): Record<string, string> {
   const base = { "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS", "Access-Control-Allow-Headers": "Content-Type, Authorization", "Access-Control-Max-Age": "600" };
+  // "ingest" = the three first-party analytics POST endpoints (pageview / traffic-source / store-click).
+  // navigator.sendBeacon always sends with credentials mode "include", and a browser rejects the preflight of a
+  // credentialed request when Access-Control-Allow-Origin is "*". That silently dropped every JSON beacon, so
+  // for our OWN origins we echo the exact origin and allow credentials. No cookie is ever read by these routes.
+  if (scope === "ingest") {
+    const origin = request.headers.get("Origin");
+    if (origin && allowedOrigins(env).includes(origin)) {
+      return { ...base, "Access-Control-Allow-Origin": origin, "Access-Control-Allow-Credentials": "true", Vary: "Origin" };
+    }
+    return { ...base, "Access-Control-Allow-Origin": "*" };
+  }
   if (scope === "public") return { ...base, "Access-Control-Allow-Origin": "*" };
   const origin = request.headers.get("Origin");
   if (origin && allowedOrigins(env).includes(origin)) return { ...base, "Access-Control-Allow-Origin": origin, Vary: "Origin" };
@@ -63,6 +74,15 @@ export async function readJson(req: Request, maxBytes = 64 * 1024): Promise<Reco
     if (v && typeof v === "object" && !Array.isArray(v)) return v as Record<string, unknown>;
   } catch { /* fallthrough */ }
   throw new HttpError(400, "invalid_json", "Request body must be a JSON object.");
+}
+
+/** Ingest endpoints accept application/json AND text/plain. text/plain is a CORS-safelisted type, so a beacon
+ *  sent with it needs no preflight at all (the most reliable transport); the body is still strict JSON. */
+export function requireIngestBody(req: Request): void {
+  const type = (req.headers.get("Content-Type") || "").toLowerCase();
+  if (!type.includes("application/json") && !type.includes("text/plain")) {
+    throw new HttpError(415, "unsupported_media_type", "Content-Type must be application/json or text/plain.");
+  }
 }
 
 export function requireJson(req: Request): void {

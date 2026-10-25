@@ -496,3 +496,47 @@ body.deliver-dashboard-body .dash-analytics-body small { color: var(--cc-dim); }
   .cc-report-text { min-height: 280px; font-size: 0.78rem; }
 }
 .promotion-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.promotion-form-grid label{display:grid;gap:7px;font-weight:700}.promotion-form-grid input,.promotion-form-grid select,.promotion-form-grid textarea{width:100%;box-sizing:border-box}.promotion-wide{grid-column:1/-1}.promotion-actions,.promotion-toolbar{display:flex;gap:12px;align-items:center;margin-top:20px;flex-wrap:wrap}.promotion-list{display:grid;gap:10px;margin-top:18px}.promotion-row{display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:center;border-top:1px solid rgba(255,255,255,.1);padding:10px 0}.promotion-row img{width:56px;height:56px;object-fit:cover;border-radius:8px}.promotion-row small{display:block;opacity:.72;margin-top:4px}.promotion-row button{margin-left:5px}@media(max-width:650px){.promotion-form-grid{grid-template-columns:1fr}.promotion-wide{grid-column:auto}.promotion-row{grid-template-columns:48px 1fr}.promotion-row>div:last-child{grid-column:1/-1}.promotion-row img{width:48px;height:48px}}
+
+/* ===================== Analytics tab: sources, flow, health (v4) ===================== */
+.cc-kpis--overview { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+.cc-empty--error { border-color: rgba(255, 92, 92, 0.45); color: #ffd0d0; background: var(--cc-danger-soft); }
+.cc-table--wide { min-width: 680px; }
+
+/* traffic-source share bar: segments are decorative, the table beside it carries the numbers */
+.cc-srcbar { display: flex; height: 14px; border-radius: 999px; overflow: hidden; margin: 12px 0 14px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--cc-line); }
+.cc-srcbar .cc-src { display: block; height: 100%; min-width: 3px; }
+.cc-src-reddit { background: #ff8a4c; }
+.cc-src-organic_search { background: var(--cc-accent); }
+.cc-src-social { background: #7aa7ff; }
+.cc-src-referral { background: var(--cc-teal); }
+.cc-src-direct_unknown { background: #8a96a8; }
+.cc-swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 9px; vertical-align: baseline; }
+
+/* visitor flow */
+.cc-flow-stats { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 12px 0 16px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--cc-accent-line); background: var(--cc-accent-soft); color: var(--cc-muted); font-size: 0.86rem; }
+.cc-flow-stats b { color: var(--cc-text); font-variant-numeric: tabular-nums; }
+.cc-flow-cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 4px 0 18px; }
+.cc-flow-col { min-width: 0; padding: 14px; border-radius: 14px; border: 1px solid var(--cc-line); background: rgba(255, 255, 255, 0.02); }
+.cc-ranklist { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.cc-ranklist li { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 10px; align-items: baseline; font-size: 0.88rem; padding-bottom: 8px; border-bottom: 1px solid var(--cc-line); }
+.cc-ranklist li:last-child { border-bottom: 0; padding-bottom: 0; }
+.cc-ranklist b { font-variant-numeric: tabular-nums; }
+.cc-ranklist small { color: var(--cc-dim); min-width: 3.2em; text-align: right; font-variant-numeric: tabular-nums; }
+.cc-flow-card .cc-flow-list { margin-bottom: 14px; }
+.cc-flow-card .cc-flow-path { flex-wrap: wrap; }
+.cc-flow-card .cc-flow-path::before { content: none; }
+.cc-flow-card details { margin-top: 14px; }
+
+/* page coverage chips and data-health pills: text + colour, never colour alone */
+.cc-cov, .cc-health-pill { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--cc-line-2); font-size: 0.78rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.cc-cov.is-ok, .cc-health-pill.is-ok { color: var(--cc-text); border-color: rgba(52, 211, 153, 0.4); background: rgba(52, 211, 153, 0.08); }
+.cc-cov.is-warn, .cc-health-pill.is-warn { color: #ffe08a; border-color: rgba(251, 191, 36, 0.45); background: var(--cc-warn-soft); }
+.cc-cov.is-bad, .cc-health-pill.is-bad { color: #ffd0d0; border-color: rgba(255, 123, 123, 0.45); background: var(--cc-danger-soft); }
+.cc-health-top { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-bottom: 14px; color: var(--cc-muted); font-size: 0.86rem; }
+.cc-health-top b { color: var(--cc-text); }
+.cc-bullets { margin: 0; padding-left: 18px; display: grid; gap: 8px; color: var(--cc-muted); font-size: 0.84rem; line-height: 1.5; }
+
+@media (max-width: 820px) {
+  .cc-flow-cols { grid-template-columns: minmax(0, 1fr); }
+  .cc-flow-stats { gap: 6px 14px; }
+}
