@@ -1,0 +1,97 @@
+diff --git a/deliver/worker-api/src/lib/db.ts b/deliver/worker-api/src/lib/db.ts
+index 8e837be..af45c9f 100644
+--- a/deliver/worker-api/src/lib/db.ts
++++ b/deliver/worker-api/src/lib/db.ts
+@@ -389,24 +389,45 @@ export interface PageFlowSummary {
+   sessions: number;
+ }
+ 
++/** Within one browser session_id, a gap longer than this starts a new sub-session.
++ *  Prevents recording fake page-to-page transitions between visits that are
++ *  hours or days apart but happen to share the same anonymous session id. */
++const SESSION_GAP_SECONDS = 30 * 60;
++
+ export async function getPageFlow(env: Env, days = 30, limit = 8): Promise<PageFlowSummary[]> {
+   const cutoff = nowSec() - days * 86400;
+-  const rows = await env.DB.prepare("SELECT session_id, page, seen_at FROM page_session_events WHERE seen_at >= ?1 ORDER BY seen_at ASC")
++  const rows = await env.DB.prepare("SELECT session_id, page, seen_at FROM page_session_events WHERE seen_at >= ?1 ORDER BY session_id, seen_at ASC")
+     .bind(cutoff)
+     .all<{ session_id: string; page: string; seen_at: number }>();
+ 
+-  const bySession = new Map<string, string[]>();
++  const bySession = new Map<string, { page: string; seen_at: number }[]>();
+   for (const row of rows.results) {
+     const list = bySession.get(row.session_id) ?? [];
+-    if (!list.includes(row.page) || list[list.length - 1] !== row.page) list.push(row.page);
++    list.push({ page: row.page, seen_at: row.seen_at });
+     bySession.set(row.session_id, list);
+   }
+ 
+   const counts = new Map<string, number>();
+-  for (const pages of bySession.values()) {
+-    const path = pages.length > 1 ? pages.join(" → ") : pages[0] ?? "";
+-    if (!path) continue;
++  const flush = (pages: string[]) => {
++    if (pages.length === 0) return;
++    const path = pages.length > 1 ? pages.join(" → ") : pages[0];
+     counts.set(path, (counts.get(path) ?? 0) + 1);
++  };
++
++  for (const events of bySession.values()) {
++    let subSession: string[] = [];
++    let lastSeen: number | null = null;
++    for (const e of events) {
++      if (lastSeen !== null && e.seen_at - lastSeen > SESSION_GAP_SECONDS) {
++        flush(subSession);
++        subSession = [];
++      }
++      if (subSession.length === 0 || subSession[subSession.length - 1] !== e.page) {
++        subSession.push(e.page);
++      }
++      lastSeen = e.seen_at;
++    }
++    flush(subSession);
+   }
+ 
+   return [...counts.entries()]
+@@ -415,6 +436,40 @@ export async function getPageFlow(env: Env, days = 30, limit = 8): Promise<PageF
+     .map(([path, sessions]) => ({ path, sessions }));
+ }
+ 
++/* -----------------------------------------------------------------------------
++   Website page-view timeseries (per-day totals for the selected period).
++   Reuses page_analytics — no new table, no new writes, read-only aggregation.
++   ---------------------------------------------------------------------------- */
++
++export interface WebsiteTimeseriesPoint {
++  day: string;
++  views: number;
++}
++
++export async function getWebsiteTimeseries(env: Env, days: number): Promise<WebsiteTimeseriesPoint[]> {
++  const now = nowSec();
++  const until = localDay(env, now);
++  const since = localDay(env, now - (days - 1) * 86400);
++
++  const rows = await env.DB.prepare(
++    "SELECT day, SUM(views) AS views FROM page_analytics WHERE day >= ?1 AND day <= ?2 GROUP BY day"
++  )
++    .bind(since, until)
++    .all<{ day: string; views: number }>();
++
++  const by = new Map(rows.results.map((r) => [r.day, r.views]));
++
++  // Build a contiguous day label list so missing days render as zero, not gaps.
++  const labels: string[] = [];
++  const sinceSec = Date.parse(`${since}T00:00:00Z`) / 1000;
++  const untilSec = Date.parse(`${until}T00:00:00Z`) / 1000;
++  for (let d = 0; sinceSec + d * 86400 <= untilSec; d++) {
++    labels.push(localDay(env, sinceSec + d * 86400));
++  }
++
++  return labels.map((day) => ({ day, views: by.get(day) ?? 0 }));
++}
++
+ // -----------------------------------------------------------------------------
+ // Analytics reads (Command Centre)
+ // -----------------------------------------------------------------------------
