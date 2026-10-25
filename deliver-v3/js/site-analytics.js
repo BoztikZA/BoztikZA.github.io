@@ -301,19 +301,6 @@ function shortDayLabel(day) {
   if (!m) return day;
   return `${new Date(+m[1], +m[2] - 1, +m[3]).toLocaleDateString(undefined, { month: "short", day: "numeric" })}`;
 }
-  const range = $("cc-site-range");
-  if (range) range.textContent = rangeText(model);
-  renderStatusBar();
-  renderKpis();
-  renderStandout();
-  renderPages();
-  renderDeliver();
-
-  renderStoreClicks();
-  const btn = $("cc-report-btn");
-  if (btn) btn.disabled = false;
-  if (reportOpen) fillReport(false);
-}
 
 /* -------------------------------------------------------------------- report */
 function fillReport(focus) {
