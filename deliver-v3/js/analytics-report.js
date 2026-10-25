@@ -71,7 +71,7 @@ export const NOTABLE_CHANGE = 25;
  * Worker has not been updated yet; `fallbackPages` (the older 30-day /analytics/pages result) then keeps the
  * website block alive in a clearly-labelled limited mode.
  */
-export function buildModel({ periodKey, summary, fallbackPages = null }) {
+export function buildModel({ periodKey, summary, fallbackPages = null, websiteTimeseries = null, websiteTimeseriesLoading = false } = {}) {
   const model = {
     periodKey,
     periodLabel: periodLabel(periodKey),
@@ -80,7 +80,9 @@ export function buildModel({ periodKey, summary, fallbackPages = null }) {
     limited: !summary,
     website: { available: false, pages: [], total: 0, prevTotal: null, dataSince: null },
     deliver: { available: false, types: [], totals: { views: 0, downloads: 0, shares: 0, active: 0 }, prevTotals: null, stored: {} },
-    ga4: { available: false }
+    ga4: { available: false },
+    websiteTimeseries: null,
+    websiteTimeseriesLoading: false
   };
 
   if (summary) {
@@ -235,9 +237,19 @@ export function buildReport(model, { generatedAt = new Date() } = {}) {
   } else line("- Page views: unavailable");
   line("- Users, sessions, engagement rate, new vs returning users: NOT AVAILABLE here (GA4 only; Command Centre has no GA4 connection).");
 
+
   line();
-  line("TRAFFIC SOURCES");
-  line("NOT AVAILABLE here. Sources (Google, Reddit, Direct, Social, Referral) exist only in GA4. The first-party counter deliberately records no referrer.");
+  line("WEBSITE PAGE VIEW TREND (counted page loads per day)");
+  const ts = model.websiteTimeseries;
+  if (ts && ts.length) {
+    const total = ts.reduce((a, b) => a + b.views, 0);
+    const activeDays = ts.filter(p => p.views > 0).length;
+    line(`- ${ts.length} days in range · ${activeDays} day${activeDays === 1 ? "" : "s"} with recorded views · ${fmt(total)} total page views.`);
+    ts.forEach(p => line(`  ${p.day}: ${fmt(p.views)}`));
+  } else {
+    line("- No page-view trend data available for this period.");
+  }
+
 
   line();
   line("TOP PAGES (website, ranked by counted page views)");
@@ -247,6 +259,16 @@ export function buildReport(model, { generatedAt = new Date() } = {}) {
     if (missing.length) line(`No counted views: ${missing.join("; ")}`);
   } else line("No page views counted in this period.");
   line("Per-page entrances, engagement and onward clicks are not available here (GA4 only).");
+
+  line();
+  line("VISITOR FLOW (recorded page-to-page movement within a 30-minute session)");
+  const flow = model.pageFlow;
+  if (flow && flow.length) {
+    flow.forEach((f, i) => line(`${i + 1}. ${f.path} · ${fmt(f.sessions)} session${f.sessions === 1 ? "" : "s"}`));
+  } else {
+    line("- No recorded page-to-page transitions in this period. A transition is only counted when a visitor moves to a different page within the same 30-minute session; single-page visits and bounces do not appear here.");
+  }
+  line("Transitions are built from the anonymous first-party session cookie only. No IP addresses, personal data or referrer URLs are stored.");
 
   line();
   line("IMPORTANT ACTIONS (clicks)");

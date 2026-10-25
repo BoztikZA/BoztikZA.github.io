@@ -1627,11 +1627,8 @@
 
           <div class="cc-kpis" id="cc-site-kpis" role="group" aria-label="Overview"></div>
 
-          <article class="cc-card" aria-labelledby="cc-traffic-sources-title">
-            <header class="cc-card-head"><div><span class="cc-eyebrow">First-party attribution</span><h2 id="cc-traffic-sources-title">Traffic sources</h2>
-              <p class="cc-card-desc">Recorded visits by referrer classification for the selected period. Source attribution is an estimate; referrers can be hidden or changed.</p></div></header>
-            <div id="cc-traffic-sources" aria-live="polite"><p class="cc-muted">Loading traffic sources…</p></div>
-          </article>
+
+
 
           <article class="cc-card cc-standout-card" aria-labelledby="cc-standout-title">
             <header class="cc-card-head"><div><span class="cc-eyebrow">What stands out</span><h2 id="cc-standout-title">Observations from the data</h2>
@@ -1676,7 +1673,28 @@
           <article class="cc-card cc-deliver-card" aria-labelledby="cc-site-deliver-title">
             <header class="cc-card-head"><div><span class="cc-eyebrow">Deliver analytics · separate from website traffic</span><h2 id="cc-site-deliver-title">Deliver performance</h2>
               <p class="cc-card-desc">Views, downloads and shares by delivery type for the selected period.</p></div><span class="cc-badge">Deliver</span></header>
-            <div id="cc-site-deliver"><p class="cc-muted">Loading…</p></div>
+                <div id="cc-site-timeseries" class="dash-panel" style="display: none">
+                  <div class="dash-panel-header">
+                    <div>
+                      <span class="dash-section-eyebrow">WEBSITE</span>
+                <div id="cc-site-flow" class="dash-panel" style="display: none">
+                  <div class="dash-panel-header">
+                    <div>
+                      <span class="dash-section-eyebrow">VISITOR FLOW</span>
+                      <h3>Page sequence</h3>
+                    </div>
+                  </div>
+                  <div class="dash-chart-wrap">
+                    <canvas id="cc-site-flow-canvas"></canvas>
+                  </div>
+                </div>
+                      <h3>Page views</h3>
+                    </div>
+                  </div>
+                  <div class="dash-chart-wrap">
+                    <canvas id="cc-site-timeseries-canvas"></canvas>
+                  </div>
+                </div>
           </article>
 
           <div class="cc-divider" role="separator"><span>All-time Deliver detail</span></div>

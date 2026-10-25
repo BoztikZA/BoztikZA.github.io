@@ -200,6 +200,8 @@ export const fetchTopDeliveries = () => request("GET", "/api/admin/analytics/top
 export const fetchPageAnalytics = () => request("GET", "/api/admin/analytics/pages");
 /** Common anonymous page paths for the last N days. */
 export const fetchPageFlow = (days = 30) => request("GET", `/api/admin/analytics/paths?days=${encodeURIComponent(days)}`);
+/** Per-day website page-view totals for the selected period (first-party counter only). */
+export const fetchWebsiteTimeseries = (days = 30) => request("GET", `/api/admin/analytics/website-timeseries?days=${encodeURIComponent(days)}`);
 /** Share-event analytics for delivery + Photoshop Battles pages (Command Centre). */
 export const fetchShareAnalytics = () => request("GET", "/api/admin/analytics/shares");
 /** Period summary for the Command Centre Analytics page: website page views and Deliver activity by type,

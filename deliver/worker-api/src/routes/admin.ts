@@ -6,7 +6,7 @@ import {
 } from "../lib/cleanup";
 import {
   createDeliveryFromUploads, getAdminDelivery, getDelivery, getDeliveryDailySeries, getDeliveryFile, getDeliveryFiles,
-  getAnalyticsSummary, getOverview, getPageAnalytics, getPageFlow, getShareAnalytics, getStoreClickSummary, getTimeseries, getTopDeliveries, getTrafficSourceSummary, listDeliveriesForAdmin, nowSec, parseJson, updateDeliveryFields,
+  getAnalyticsSummary, getOverview, getPageAnalytics, getPageFlow, getShareAnalytics, getStoreClickSummary, getTimeseries, getTopDeliveries, getTrafficSourceSummary, getWebsiteTimeseries, listDeliveriesForAdmin, nowSec, parseJson, updateDeliveryFields,
 } from "../lib/db";
 import { newDeliveryId, newFileId, newUploadId, displayFileName, r2KeyFor, sanitizeFilename } from "../lib/ids";
 import { deleteObject, headObject, readHead } from "../lib/r2";
@@ -476,6 +476,10 @@ async function routeAnalytics(request: Request, seg: string[], env: Env): Promis
   }
   if (section === "top") return json({ ok: true, top: await getTopDeliveries(env, 8) });
   if (section === "pages") return json({ ok: true, pages: await getPageAnalytics(env, 30) });
+  if (section === "website-timeseries") {
+    const days = Math.max(7, Math.min(90, Number(new URL(request.url).searchParams.get("days") ?? 30) || 30));
+    return json({ ok: true, series: await getWebsiteTimeseries(env, days) });
+  }
   if (section === "paths") {
     const days = Math.max(7, Math.min(90, Number(new URL(request.url).searchParams.get("days") ?? 30) || 30));
     return json({ ok: true, paths: await getPageFlow(env, days, 8) });
