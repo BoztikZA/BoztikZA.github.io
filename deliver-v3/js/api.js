@@ -212,6 +212,11 @@ export const fetchTrafficSourceSummary = (period = "30d") => request("GET", `/ap
 /** First-party clicks to the Boztik Store and its configured external storefronts. */
 export const fetchStoreClickSummary = (period = "30d") => request("GET", `/api/admin/analytics/store-clicks?period=${encodeURIComponent(period)}`);
 
+/** Period-aware visitor flow derived from stored session events: entries, exits, transitions, journeys, per-page entrances/exits and coverage. */
+export const fetchVisitorFlow = (period = "30d") => request("GET", `/api/admin/analytics/visitor-flow?period=${encodeURIComponent(period)}`);
+/** Data-health diagnostics: collector status, first/last event times, GA4 connection state, known gaps and privacy exclusions. */
+export const fetchAnalyticsHealth = () => request("GET", "/api/admin/analytics/health");
+
 /** Unauthenticated reachability probe of the Worker. Never throws; reports latency for the health chip. */
 export async function pingHealth() {
   const started = performance.now();

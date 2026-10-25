@@ -13,7 +13,9 @@
     "test:e2e": "node scripts/e2e.mjs",
     "test:unit": "node scripts/milestone-test.mts",
     "test:retention": "node scripts/page-view-retention-test.mts",
-    "test:traffic-source": "node scripts/traffic-source-test.mts"
+    "test:traffic-source": "node scripts/traffic-source-test.mts",
+    "test:analytics": "node scripts/analytics-pipeline-test.mts",
+    "test": "npm run test:unit && npm run test:retention && npm run test:traffic-source && npm run test:analytics"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260901.0",

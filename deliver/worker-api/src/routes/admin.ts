@@ -6,7 +6,7 @@ import {
 } from "../lib/cleanup";
 import {
   createDeliveryFromUploads, getAdminDelivery, getDelivery, getDeliveryDailySeries, getDeliveryFile, getDeliveryFiles,
-  getAnalyticsSummary, getOverview, getPageAnalytics, getPageFlow, getShareAnalytics, getStoreClickSummary, getTimeseries, getTopDeliveries, getTrafficSourceSummary, getWebsiteTimeseries, listDeliveriesForAdmin, nowSec, parseJson, updateDeliveryFields,
+  getAnalyticsHealth, getAnalyticsSummary, getOverview, getPageAnalytics, getPageFlow, getShareAnalytics, getStoreClickSummary, getTimeseries, getTopDeliveries, getTrafficSourceSummary, getVisitorFlow, getWebsiteTimeseries, listDeliveriesForAdmin, nowSec, parseJson, updateDeliveryFields,
 } from "../lib/db";
 import { newDeliveryId, newFileId, newUploadId, displayFileName, r2KeyFor, sanitizeFilename } from "../lib/ids";
 import { deleteObject, headObject, readHead } from "../lib/r2";
@@ -484,6 +484,12 @@ async function routeAnalytics(request: Request, seg: string[], env: Env): Promis
     const days = Math.max(7, Math.min(90, Number(new URL(request.url).searchParams.get("days") ?? 30) || 30));
     return json({ ok: true, paths: await getPageFlow(env, days, 8) });
   }
+  if (section === "visitor-flow") {
+    const p = new URL(request.url).searchParams.get("period");
+    const period = p === "7d" || p === "90d" || p === "all" ? p : "30d";
+    return json({ ok: true, ...(await getVisitorFlow(env, period)) });
+  }
+  if (section === "health") return json({ ok: true, ...(await getAnalyticsHealth(env)) });
   if (section === "shares") return json({ ok: true, ...(await getShareAnalytics(env)) });
   if (section === "summary") {
     const p = new URL(request.url).searchParams.get("period");

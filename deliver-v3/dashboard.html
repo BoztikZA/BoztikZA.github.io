@@ -21,7 +21,7 @@
 
   <link rel="stylesheet" href="../styles-premium.css">
   <link rel="stylesheet" href="css/deliver.css?v=13">
-  <link rel="stylesheet" href="css/command-centre.css?v=3">
+  <link rel="stylesheet" href="css/command-centre.css?v=4">
   <link rel="stylesheet" href="css/deliver-animations.css?v=1">
 
   <style>
@@ -1625,10 +1625,7 @@
             <p id="cc-report-status" class="cc-report-status" role="status" aria-live="polite"></p>
           </article>
 
-          <div class="cc-kpis" id="cc-site-kpis" role="group" aria-label="Overview"></div>
-
-
-
+          <div class="cc-kpis cc-kpis--overview" id="cc-site-kpis" role="group" aria-label="1 · Overview"></div>
 
           <article class="cc-card cc-standout-card" aria-labelledby="cc-standout-title">
             <header class="cc-card-head"><div><span class="cc-eyebrow">What stands out</span><h2 id="cc-standout-title">Observations from the data</h2>
@@ -1636,38 +1633,50 @@
             <ul class="cc-standout" id="cc-standout-list" aria-live="polite"><li class="cc-muted">Loading…</li></ul>
           </article>
 
+          <article class="cc-card" aria-labelledby="cc-traffic-sources-title">
+            <header class="cc-card-head"><div><span class="cc-eyebrow">2 · First-party attribution</span><h2 id="cc-traffic-sources-title">Traffic sources</h2>
+              <p class="cc-card-desc">Where recorded visits came from in the selected period. Attribution is an estimate: referrers can be hidden or changed.</p></div></header>
+            <div id="cc-traffic-sources" aria-live="polite"><p class="cc-muted">Loading traffic sources…</p></div>
+          </article>
+
           <article class="cc-card" aria-labelledby="cc-site-pages-title">
-            <header class="cc-card-head"><div><span class="cc-eyebrow">Public website</span><h2 id="cc-site-pages-title">Page performance</h2>
-              <p class="cc-card-desc">Which pages attract attention, and which do not.</p></div></header>
+            <header class="cc-card-head"><div><span class="cc-eyebrow">3 · Public website</span><h2 id="cc-site-pages-title">Page performance</h2>
+              <p class="cc-card-desc">Which pages attract attention, where visits begin and end, and how complete the tracking is.</p></div></header>
             <div id="cc-site-pages"><p class="cc-muted">Loading…</p></div>
           </article>
 
+          <article class="cc-card cc-flow-card" aria-labelledby="cc-visitor-flow-title">
+            <header class="cc-card-head"><div><span class="cc-eyebrow">4 · Anonymous sessions</span><h2 id="cc-visitor-flow-title">Visitor flow</h2>
+              <p class="cc-card-desc">How visits actually moved between pages, built only from stored events. Entry pages, common steps, journeys and last-seen pages.</p></div></header>
+            <div id="cc-visitor-flow" aria-live="polite"><p class="cc-muted">Loading visitor flow…</p></div>
+          </article>
+
           <article class="cc-card" aria-labelledby="cc-store-clicks-title">
-            <header class="cc-card-head"><div><span class="cc-eyebrow">Boztik Stores</span><h2 id="cc-store-clicks-title">Store performance</h2>
-              <p class="cc-card-desc">Visits to the Store page appear in Page performance. This card shows clicks to the Store and its configured storefronts.</p></div></header>
+            <header class="cc-card-head"><div><span class="cc-eyebrow">5 · Boztik Stores</span><h2 id="cc-store-clicks-title">Store performance</h2>
+              <p class="cc-card-desc">Store page views and clicks to the configured storefronts. Clicks are not purchases.</p></div></header>
             <div id="cc-store-clicks" aria-live="polite"><p class="cc-muted">Loading Store activity…</p></div>
           </article>
 
-          <article class="cc-card cc-ga4-card" aria-labelledby="cc-ga4-title">
-            <header class="cc-card-head"><div><span class="cc-eyebrow">Google Analytics 4</span><h2 id="cc-ga4-title">Additional metrics not shown here</h2></div><span class="cc-badge">Not connected</span></header>
-            <p class="cc-ga4-lead">These measures exist only in GA4, and Command Centre cannot read GA4 yet — so they are <strong>not shown rather than shown as zero</strong>:</p>
-            <ul class="cc-ga4-list">
-              <li><strong>Overview:</strong> users, sessions, engagement rate, new vs returning users</li>
-              <li><strong>Traffic sources:</strong> Google, Reddit, Direct, Social, Referral, Other</li>
-              <li><strong>Per page:</strong> entrances and engagement</li>
-              <li><strong>Actions:</strong> clicks to the Chrome Web Store, Edge store, Ko-fi, PayPal, email and portfolio. These are now sent to GA4 as the event <code>boztik_action</code> (parameters <code>action</code>, <code>destination</code>, <code>position</code>, <code>page_key</code>); see them in GA4 under Reports → Engagement → Events.</li>
-            </ul>
+          <article class="cc-card cc-ga4-card" aria-labelledby="cc-actions-title">
+            <header class="cc-card-head"><div><span class="cc-eyebrow">6 · Important actions</span><h2 id="cc-actions-title">Product, contact &amp; store actions</h2>
+              <p class="cc-card-desc">Every row names its data source. First-party and GA4 numbers are kept apart and never added together.</p></div><span class="cc-badge">GA4: not connected</span></header>
+            <div id="cc-actions" aria-live="polite"><p class="cc-muted">Loading…</p></div>
             <details class="cc-ga4-how">
-              <summary>What would bring these into Command Centre?</summary>
+              <summary>What would bring GA4 metrics (users, engagement, other actions) into Command Centre?</summary>
               <ol>
                 <li>In Google Cloud, enable the <em>Google Analytics Data API</em> and create a service account.</li>
                 <li>In GA4 → Admin → Property access, add that service account's email as a <em>Viewer</em>.</li>
-                <li>Store its key and the GA4 property ID as Worker secrets (never in the repo).</li>
-                <li>Add one read-only admin route to the Worker that calls the Data API <code>runReport</code> and returns sources, users, sessions, engagement and the <code>boztik_action</code> counts.</li>
-                <li>In GA4 → Admin → Custom definitions, register <code>action</code>, <code>destination</code>, <code>position</code> and <code>page_key</code> as event-scoped dimensions so the Data API can group by them.</li>
+                <li>Store its key (<code>GA4_SERVICE_ACCOUNT_JSON</code>) and the numeric property ID (<code>GA4_PROPERTY_ID</code>) as Worker secrets (never in the repo).</li>
+                <li>In GA4 → Admin → Custom definitions, register <code>action</code>, <code>destination</code>, <code>position</code> and <code>page_key</code> as event-scoped dimensions so reports can group by them.</li>
+                <li>Then one read-only admin route calling <code>runReport</code> can be added. Nothing is set up yet and this page deliberately invents no workaround.</li>
               </ol>
-              <p class="cc-fineprint">Nothing here has been set up; this page deliberately does not invent a workaround.</p>
             </details>
+          </article>
+
+          <article class="cc-card" aria-labelledby="cc-health-title">
+            <header class="cc-card-head"><div><span class="cc-eyebrow">7 · Diagnostics</span><h2 id="cc-health-title">Data health</h2>
+              <p class="cc-card-desc">Is the analytics system itself collecting and reporting correctly? Distinguishes “nothing happened” from “nothing was collected”.</p></div></header>
+            <div id="cc-data-health" aria-live="polite"><p class="cc-muted">Loading data health…</p></div>
           </article>
 
           <article class="cc-card cc-deliver-card" aria-labelledby="cc-site-deliver-title">
@@ -2606,7 +2615,7 @@
 
   <script
     type="module"
-    src="js/dashboard.js?v=cf-1"
+    src="js/dashboard.js?v=cf-2"
   ></script>
   <script type="module" src="js/promotions.js"></script>
 

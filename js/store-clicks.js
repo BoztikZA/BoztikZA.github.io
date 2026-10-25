@@ -116,12 +116,12 @@
         event_version: EVENT_VERSION,
       });
       var url = API + "/api/public/store-click";
+      // text/plain is CORS-safelisted => no preflight (a JSON Blob beacon is blocked by the browser's credentialed-preflight rule).
+      var type = "text/plain;charset=UTF-8";
       var sent = false;
-      if (navigator.sendBeacon) {
-        sent = navigator.sendBeacon(url, new Blob([body], { type: "application/json" }));
-      }
+      try { if (navigator.sendBeacon) sent = navigator.sendBeacon(url, new Blob([body], { type: type })); } catch (e) { sent = false; }
       if (!sent) {
-        fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: body, keepalive: true, mode: "cors" }).catch(function () {});
+        fetch(url, { method: "POST", headers: { "Content-Type": type }, body: body, keepalive: true, mode: "cors", credentials: "omit" }).catch(function () {});
       }
       markSent(id);
     }
