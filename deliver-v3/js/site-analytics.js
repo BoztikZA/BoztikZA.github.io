@@ -48,18 +48,18 @@ function deltaHtml(current, previous, base = MIN_COMPARE_BASE) {
 }
 
 function rowChange(current, previous) {
-  if (previous === null || previous === undefined) return `<span class="cc-muted">â€”</span>`;
-  if (previous === 0 && current > 0) return `<span class="cc-delta is-up" title="No activity in the previous period">â–² from 0</span>`;
-  if (previous < MIN_ROW_BASE) return `<span class="cc-muted" title="Previous period had too few events for a reliable comparison">â€”</span>`;
+  if (previous === null || previous === undefined) return `<span class="cc-muted">—</span>`;
+  if (previous === 0 && current > 0) return `<span class="cc-delta is-up" title="No activity in the previous period">▲ from 0</span>`;
+  if (previous < MIN_ROW_BASE) return `<span class="cc-muted" title="Previous period had too few events for a reliable comparison">—</span>`;
   const pct = pctChange(current, previous);
-  if (pct === 0) return `<span class="cc-delta is-flat">â–¬ 0%</span>`;
-  return `<span class="cc-delta ${pct > 0 ? "is-up" : "is-down"}">${pct > 0 ? "â–²" : "â–¼"} ${Math.abs(pct)}%</span>`;
+  if (pct === 0) return `<span class="cc-delta is-flat">▬ 0%</span>`;
+  return `<span class="cc-delta ${pct > 0 ? "is-up" : "is-down"}">${pct > 0 ? "▲" : "▼"} ${Math.abs(pct)}%</span>`;
 }
 
 const rangeText = m => {
-  if (!m?.range) return m?.limited ? "Last 30 days Â· website page views only" : "";
-  const cur = m.range.since ? `${m.range.since} â†’ ${m.range.until}` : "no data yet";
-  return m.previous ? `${cur} Â· compared with ${m.previous.since} â†’ ${m.previous.until}` : `${cur} Â· no earlier period to compare`;
+  if (!m?.range) return m?.limited ? "Last 30 days · website page views only" : "";
+  const cur = m.range.since ? `${m.range.since} → ${m.range.until}` : "no data yet";
+  return m.previous ? `${cur} · compared with ${m.previous.since} → ${m.previous.until}` : `${cur} · no earlier period to compare`;
 };
 const flowDaysForPeriod = key => key === "7d" ? 7 : key === "90d" ? 90 : key === "all" ? 90 : 30;
 
@@ -103,7 +103,7 @@ function renderStatusBar() {
   const source = model?.limited ? "Fallback: website page views only" : model ? "Full summary endpoint" : "Loading";
   const period = model?.periodLabel || periodKey;
   const last = formatLocalDateTime(lastSuccessfulRefresh);
-  const tsState = websiteTimeseriesLoading ? " Â· trend loading" : websiteTimeseriesFailure ? " Â· trend unavailable" : "";
+  const tsState = websiteTimeseriesLoading ? " · trend loading" : websiteTimeseriesFailure ? " · trend unavailable" : "";
   host.innerHTML = `<span class="cc-status-pill is-${state}">${escapeHtml(label)}</span><span>Last successful refresh: ${escapeHtml(last)}</span><span>Reporting period: ${escapeHtml(period)}</span><span>Data source: ${escapeHtml(source)}${escapeHtml(tsState)}</span>`;
 }
 
@@ -119,11 +119,11 @@ function renderKpis() {
   const card = (label, ic, value, delta, sub, cls = "") => `<article class="cc-kpi"><header><span>${label}</span>${icon(ic)}</header>
       <strong class="cc-kpi-val ${cls}">${value}</strong><p class="cc-kpi-delta">${delta}</p><p class="cc-kpi-sub">${sub}</p></article>`;
   host.innerHTML =
-    card("Page views Â· website", "eye", w.available ? fmt(w.total) : "â€”", w.available ? deltaHtml(w.total, w.prevTotal) : "", `Counted page loads on the public site (first-party counter). Avg ${fmt(tsAvg)}/day over ${tsDays} day${tsDays === 1 ? "" : "s"} in range.`) +
-    card("Top page", "globe", top ? escapeHtml(top.label) : "â€”", "", top ? `<b>${fmt(top.views)}</b> views Â· <b>${pctOf(top.views, w.total)}%</b> of page views` : "No page views counted in this period.", "cc-kpi-val--text") +
-    card("Avg views / day", "clock", tsDays > 0 ? fmt(tsAvg) : "â€”", "", tsDays > 0 ? `Across ${tsDays} day${tsDays === 1 ? "" : "s"} in range Â· zero days with no recorded views show as 0` : "Trend unavailable") +
-    card("Deliver views", "box", d.available ? fmt(d.totals.views) : "â€”", d.available && d.prevTotals ? deltaHtml(d.totals.views, d.prevTotals.views) : "", d.available ? "Deliver only (incl. PhotoshopBattles) â€” not website traffic." : "Needs the Worker update (see notice).") +
-    card("Deliver downloads", "download", d.available ? fmt(d.totals.downloads) : "â€”", d.available && d.prevTotals ? deltaHtml(d.totals.downloads, d.prevTotals.downloads) : "", d.available ? `<b>${fmt(d.totals.shares)}</b> shares Â· <b>${per100(d.totals.downloads, d.totals.views)}</b> downloads per 100 views` : "â€”");
+    card("Page views · website", "eye", w.available ? fmt(w.total) : "—", w.available ? deltaHtml(w.total, w.prevTotal) : "", `Counted page loads on the public site (first-party counter). Avg ${fmt(tsAvg)}/day over ${tsDays} day${tsDays === 1 ? "" : "s"} in range.`) +
+    card("Top page", "globe", top ? escapeHtml(top.label) : "—", "", top ? `<b>${fmt(top.views)}</b> views · <b>${pctOf(top.views, w.total)}%</b> of page views` : "No page views counted in this period.", "cc-kpi-val--text") +
+    card("Avg views / day", "clock", tsDays > 0 ? fmt(tsAvg) : "—", "", tsDays > 0 ? `Across ${tsDays} day${tsDays === 1 ? "" : "s"} in range · zero days with no recorded views show as 0` : "Trend unavailable") +
+    card("Deliver views", "box", d.available ? fmt(d.totals.views) : "—", d.available && d.prevTotals ? deltaHtml(d.totals.views, d.prevTotals.views) : "", d.available ? "Deliver only (incl. PhotoshopBattles) — not website traffic." : "Needs the Worker update (see notice).") +
+    card("Deliver downloads", "download", d.available ? fmt(d.totals.downloads) : "—", d.available && d.prevTotals ? deltaHtml(d.totals.downloads, d.prevTotals.downloads) : "", d.available ? `<b>${fmt(d.totals.shares)}</b> shares · <b>${per100(d.totals.downloads, d.totals.views)}</b> downloads per 100 views` : "—");
 }
 
 function renderStandout() {
@@ -162,12 +162,12 @@ function renderPages() {
   } else {
     rowsHtml = rows.map(r => {
       const delta = rowChange(r.views, r.prev);
-      const pathFlow = flow.filter(f => f.path.startsWith(r.page + " â†’") || f.path.endsWith(" â†’ " + r.page));
-      const nextHint = pathFlow.length ? ` Â· most common onward: ` + escapeHtml(pathFlow.sort((a, b) => b.sessions - a.sessions)[0].path.split(" â†’ ").pop()) : "";
+      const pathFlow = flow.filter(f => f.path.startsWith(r.page + " →") || f.path.endsWith(" → " + r.page));
+      const nextHint = pathFlow.length ? ` · most common onward: ` + escapeHtml(pathFlow.sort((a, b) => b.sessions - a.sessions)[0].path.split(" → ").pop()) : "";
       return `<tr data-page="` + escapeHtml(r.page) + `" class="cc-page-row" role="button" tabindex="0" aria-label="` + escapeHtml(r.label) + `: ` + fmt(r.views) + ` views` + nextHint + `">
-        <th scope="row">` + escapeHtml(r.label) + `<span class="cc-muted cc-page-key"> Â· ` + escapeHtml(r.page) + `</span></th>
+        <th scope="row">` + escapeHtml(r.label) + `<span class="cc-muted cc-page-key"> · ` + escapeHtml(r.page) + `</span></th>
         <td>` + (r.views ? `<div class="cc-inline-bar"><span style="width:` + Math.round((r.views / max) * 100) + `%"></span><b>` + fmt(r.views) + `</b></div>` : `<span class="cc-muted">No views counted</span>`) + `</td>
-        <td class="num">` + (r.views ? `${pctOf(r.views, w.total)}%` : "â€”") + `</td>
+        <td class="num">` + (r.views ? `${pctOf(r.views, w.total)}%` : "—") + `</td>
         <td class="num">` + delta + `</td>
       </tr>`;
     }).join("");
@@ -175,14 +175,14 @@ function renderPages() {
 
   host.innerHTML = `
     <div class="cc-page-controls">
-      <label class="cc-field-label"><span class="cc-i" aria-hidden="true"><use href="#i-search"/></span><span class="cc-sr">Search pages</span><input type="search" id="cc-page-search" class="cc-input" placeholder="Search pagesâ€¦" value="` + escapeHtml(currentTerm) + `" aria-label="Filter pages by name or path"/></label>
+      <label class="cc-field-label"><span class="cc-i" aria-hidden="true"><use href="#i-search"/></span><span class="cc-sr">Search pages</span><input type="search" id="cc-page-search" class="cc-input" placeholder="Search pages…" value="` + escapeHtml(currentTerm) + `" aria-label="Filter pages by name or path"/></label>
       <span class="cc-muted cc-page-count">` + rows.length + ` page` + (rows.length === 1 ? "" : "s") + (currentTerm ? ` matching "` + escapeHtml(currentTerm) + `"` : "") + `</span>
     </div>
     <div class="cc-table-wrap"><table class="cc-table">
       <caption class="cc-sr">Public website pages ranked by counted page views for the selected period</caption>
       <thead><tr><th scope="col">Page</th><th scope="col" class="num">Page views</th><th scope="col" class="num">Share</th><th scope="col" class="num">vs previous</th></tr></thead>
       <tbody>` + rowsHtml + `</tbody></table></div>
-    <p class="cc-fineprint">Page loads counted by Boztik's own counter` + (w.dataSince ? ` since ` + escapeHtml(w.dataSince) : "") + ` â€” not unique people, and visitors who send Do Not Track / Global Privacy Control are not counted. Entrances, engagement and onward clicks per page exist only in GA4 and are not shown here. Creative Toolkit views are only recorded once the Worker update is deployed. Rows are clickable to inspect visitor paths.</p>
+    <p class="cc-fineprint">Page loads counted by Boztik's own counter` + (w.dataSince ? ` since ` + escapeHtml(w.dataSince) : "") + ` — not unique people, and visitors who send Do Not Track / Global Privacy Control are not counted. Entrances, engagement and onward clicks per page exist only in GA4 and are not shown here. Creative Toolkit views are only recorded once the Worker update is deployed. Rows are clickable to inspect visitor paths.</p>
   `;
   wirePageRows();
 }
@@ -197,8 +197,8 @@ function wirePageRows() {
 
 function openPageDetail(pageKey) {
   const flow = (model && model.pageFlow) || [];
-  const fromThis = flow.filter(f => f.path.startsWith(pageKey + " â†’")).sort((a, b) => b.sessions - a.sessions);
-  const toThis = flow.filter(f => f.path.endsWith(" â†’ " + pageKey)).sort((a, b) => b.sessions - a.sessions);
+  const fromThis = flow.filter(f => f.path.startsWith(pageKey + " →")).sort((a, b) => b.sessions - a.sessions);
+  const toThis = flow.filter(f => f.path.endsWith(" → " + pageKey)).sort((a, b) => b.sessions - a.sessions);
   const detail = $("cc-page-detail");
   if (!detail) return;
   const w = model.website;
@@ -206,9 +206,9 @@ function openPageDetail(pageKey) {
   const label = PAGE_LABELS[pageKey] || pageKey;
   detail.innerHTML = `
     <h3 class="cc-subhead">` + escapeHtml(label) + `</h3>
-    <p class="cc-muted">` + escapeHtml(pageKey) + ` â€” ` + fmt(row ? row.views : 0) + ` counted page view` + (row && row.views !== 1 ? "s" : "") + ` in this period.</p>
-    ` + (fromThis.length ? `<h4 class="cc-subhead--small">Visitors most often go <b>from</b> this page to:</h4><ul class="cc-flow-list">` + fromThis.slice(0, 5).map(f => `<li><span class="cc-flow-path">` + escapeHtml(f.path.split(" â†’ ").pop()) + `</span><span class="cc-flow-sessions">` + fmt(f.sessions) + ` sessions</span></li>`).join("") + `</ul>` : `<p class="cc-muted">No recorded onward transitions from this page.</p>`) + `
-    ` + (toThis.length ? `<h4 class="cc-subhead--small">Visitors most often arrive <b>at</b> this page from:</h4><ul class="cc-flow-list">` + toThis.slice(0, 5).map(f => `<li><span class="cc-flow-path">` + escapeHtml(f.path.split(" â†’ ").shift()) + `</span><span class="cc-flow-sessions">` + fmt(f.sessions) + ` sessions</span></li>`).join("") + `</ul>` : `<p class="cc-muted">No recorded incoming transitions to this page.</p>`) + `
+    <p class="cc-muted">` + escapeHtml(pageKey) + ` — ` + fmt(row ? row.views : 0) + ` counted page view` + (row && row.views !== 1 ? "s" : "") + ` in this period.</p>
+    ` + (fromThis.length ? `<h4 class="cc-subhead--small">Visitors most often go <b>from</b> this page to:</h4><ul class="cc-flow-list">` + fromThis.slice(0, 5).map(f => `<li><span class="cc-flow-path">` + escapeHtml(f.path.split(" → ").pop()) + `</span><span class="cc-flow-sessions">` + fmt(f.sessions) + ` sessions</span></li>`).join("") + `</ul>` : `<p class="cc-muted">No recorded onward transitions from this page.</p>`) + `
+    ` + (toThis.length ? `<h4 class="cc-subhead--small">Visitors most often arrive <b>at</b> this page from:</h4><ul class="cc-flow-list">` + toThis.slice(0, 5).map(f => `<li><span class="cc-flow-path">` + escapeHtml(f.path.split(" → ").shift()) + `</span><span class="cc-flow-sessions">` + fmt(f.sessions) + ` sessions</span></li>`).join("") + `</ul>` : `<p class="cc-muted">No recorded incoming transitions to this page.</p>`) + `
   </div>`;
   detail.hidden = false;
   detail.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -220,14 +220,14 @@ function renderDeliver() {
   if (!host) return;
   const d = model.deliver;
   if (!d.available) {
-    host.innerHTML = `<p class="cc-empty">Deliver figures for a chosen period need the updated Worker. The all-time table below (â€œWhere the attention goesâ€) still works.</p>`;
+    host.innerHTML = `<p class="cc-empty">Deliver figures for a chosen period need the updated Worker. The all-time table below (“Where the attention goes”) still works.</p>`;
     return;
   }
   const shown = d.types.filter(t => t.type !== "deleted" || t.views || t.downloads || t.shares);
   const t = d.totals;
   const row = x => `<tr><th scope="row">${escapeHtml(x.label)}${x.type === "photoshop_battles" ? ` <span class="cc-badge">Reddit</span>` : ""}</th>
       <td class="num">${fmt(x.views)}</td><td class="num">${x.type === "photoshop_battles" ? `<span class="cc-muted" title="PhotoshopBattles images are public direct links">n/a</span>` : fmt(x.downloads)}</td><td class="num">${fmt(x.shares)}</td>
-      <td class="num">${x.type === "photoshop_battles" ? "â€”" : per100(x.downloads, x.views)}</td><td class="num">${per100(x.shares, x.views)}</td>
+      <td class="num">${x.type === "photoshop_battles" ? "—" : per100(x.downloads, x.views)}</td><td class="num">${per100(x.shares, x.views)}</td>
       <td class="num">${perDelivery(x.views, x.active)}</td><td class="num">${rowChange(x.views, x.prevViews)}</td></tr>`;
   host.innerHTML = `<div class="cc-table-wrap"><table class="cc-table cc-table--wide">
       <caption class="cc-sr">Deliver views, downloads and shares by delivery type for the selected period</caption>
@@ -235,22 +235,22 @@ function renderDeliver() {
         <th scope="col" class="num">Downloads / 100 views</th><th scope="col" class="num">Shares / 100 views</th><th scope="col" class="num">Views / active delivery</th><th scope="col" class="num">Views vs previous</th></tr></thead>
       <tbody>${shown.map(row).join("")}
         <tr class="cc-total"><th scope="row">All Deliver types</th><td class="num">${fmt(t.views)}</td><td class="num">${fmt(t.downloads)}</td><td class="num">${fmt(t.shares)}</td>
-          <td class="num">${per100(t.downloads, t.views)}</td><td class="num">${per100(t.shares, t.views)}</td><td class="num">${perDelivery(t.views, t.active)}</td><td class="num">${d.prevTotals ? rowChange(t.views, d.prevTotals.views) : `<span class="cc-muted">â€”</span>`}</td></tr></tbody></table></div>
-    <p class="cc-fineprint">Deliver's own counters â€” never added to website page views and never sent to GA4. Views count every load including repeats. â€œActive deliveryâ€ = a delivery with at least one view or download in the period. PhotoshopBattles images are public direct links, so they register views but no downloads. Shares include completed copies and opened WhatsApp / Facebook / X / Reddit sheets. Deleted deliveries keep their history but no longer have a type.</p>`;
+          <td class="num">${per100(t.downloads, t.views)}</td><td class="num">${per100(t.shares, t.views)}</td><td class="num">${perDelivery(t.views, t.active)}</td><td class="num">${d.prevTotals ? rowChange(t.views, d.prevTotals.views) : `<span class="cc-muted">—</span>`}</td></tr></tbody></table></div>
+    <p class="cc-fineprint">Deliver's own counters — never added to website page views and never sent to GA4. Views count every load including repeats. “Active delivery” = a delivery with at least one view or download in the period. PhotoshopBattles images are public direct links, so they register views but no downloads. Shares include completed copies and opened WhatsApp / Facebook / X / Reddit sheets. Deleted deliveries keep their history but no longer have a type.</p>`;
 }
 
 function renderStoreClicks() {
   const host = $("cc-store-clicks");
   if (!host) return;
-  if (storeClickLoading && !storeClickSummary) { host.innerHTML = `<p class="cc-muted">Loading Store activityâ€¦</p>`; return; }
+  if (storeClickLoading && !storeClickSummary) { host.innerHTML = `<p class="cc-muted">Loading Store activity…</p>`; return; }
   if (storeClickFailure || !storeClickSummary) {
     host.innerHTML = `<p class="cc-empty">Store activity could not be loaded. <button type="button" class="cc-btn cc-btn-inline" data-retry>Try again</button></p>`;
     return;
   }
   const labels = { boztik_store: "Boztik Stores", redbubble: "Redbubble", teepublic: "TeePublic", kofi: "Ko-fi Wallpapers" };
   const data = storeClickSummary;
-  const rows = data.by_destination.map(row => `<tr><th scope="row">${labels[row.destination] || row.destination}</th><td class="num">${fmt(row.clicks)}</td><td class="num">${fmt(row.unique_sessions)}</td><td>${escapeHtml(row.top_source || "â€”")}</td></tr>`).join("");
-  const range = data.period.since ? `${data.period.since} â†’ ${data.period.until}` : `All recorded activity through ${data.period.until}`;
+  const rows = data.by_destination.map(row => `<tr><th scope="row">${labels[row.destination] || row.destination}</th><td class="num">${fmt(row.clicks)}</td><td class="num">${fmt(row.unique_sessions)}</td><td>${escapeHtml(row.top_source || "—")}</td></tr>`).join("");
+  const range = data.period.since ? `${data.period.since} → ${data.period.until}` : `All recorded activity through ${data.period.until}`;
   host.innerHTML = `<div class="cc-store-kpis"><span><b>${fmt(data.total)}</b> tracked clicks</span><span><b>${fmt(data.unique_sessions)}</b> anonymous sessions</span></div>
     <div class="cc-table-wrap"><table class="cc-table"><caption class="cc-sr">Store-link clicks by destination</caption><thead><tr><th scope="col">Destination</th><th scope="col" class="num">Clicks</th><th scope="col" class="num">Sessions</th><th scope="col">Top placement</th></tr></thead><tbody>${rows}</tbody></table></div>
     <p class="cc-fineprint">${escapeHtml(range)}. A click records an activation of a Store link, not a completed external purchase. Data begins ${escapeHtml(data.data_since || "when the first click is recorded")}.</p>`;
@@ -262,7 +262,7 @@ function renderTimeseriesChart() {
   if (!host) return;
   const ts = websiteTimeseries || [];
   if (websiteTimeseriesLoading && websiteTimeseries === null) {
-    host.innerHTML = `<p class="cc-muted">Loading trendâ€¦</p>`; return;
+    host.innerHTML = `<p class="cc-muted">Loading trend…</p>`; return;
   }
   if (websiteTimeseriesFailure || (websiteTimeseries === null && !model)) {
     host.innerHTML = `<p class="cc-empty">Trend data could not be loaded. <button type="button" class="cc-btn cc-btn-inline" data-retry>Try again</button></p>`; return;
@@ -285,14 +285,14 @@ function renderTimeseriesChart() {
   const bars = ts.map((p, i) => {
     const h = Math.max(p.views ? 2 : 0, (p.views / niceMax) * ih);
     const x = cx(i) - Math.max(2, slot * 0.3) / 2;
-    return `<rect class="cc-bar" x="${x.toFixed(1)}" y="${(T + ih - h).toFixed(1)}" width="${Math.max(2, slot * 0.3).toFixed(1)}" height="${h.toFixed(1)}" rx="2"><title>${escapeHtml(p.day)} â€” ${p.views} views</title></rect>`;
+    return `<rect class="cc-bar" x="${x.toFixed(1)}" y="${(T + ih - h).toFixed(1)}" width="${Math.max(2, slot * 0.3).toFixed(1)}" height="${h.toFixed(1)}" rx="2"><title>${escapeHtml(p.day)} — ${p.views} views</title></rect>`;
   }).join("");
   const ticks = [0, Math.floor((n - 1) / 2), n - 1].filter((v, i, a) => a.indexOf(v) === i && ts[v]);
   const xs = ticks.map(i => `<text class="cc-axis" x="${cx(i).toFixed(1)}" y="${H - 6}" text-anchor="${i === 0 ? "start" : i === n - 1 ? "end" : "middle"}">${escapeHtml(shortDayLabel(ts[i].day))}</text>`).join("");
   const total = ts.reduce((a, b) => a + b.views, 0);
   const active = ts.filter(p => p.views > 0).length;
   const peak = ts.reduce((b, p) => (p.views > (b?.views ?? -1) ? p : b), null);
-  const summary = `${fmt(total)} page views over ${n} days Â· ${active} day${active === 1 ? "" : "s"} with activity${peak ? ` Â· busiest: ${escapeHtml(peak.day)} (${fmt(peak.views)})` : ""}.`;
+  const summary = `${fmt(total)} page views over ${n} days · ${active} day${active === 1 ? "" : "s"} with activity${peak ? ` · busiest: ${escapeHtml(peak.day)} (${fmt(peak.views)})` : ""}.`;
   host.innerHTML = `<div class="cc-chart-wrap"><svg class="cc-trend" viewBox="0 0 ${W} ${H}" role="img" aria-label="${escapeHtml(summary)}">${grid}${bars}${xs}</svg></div><p class="cc-fineprint">${summary}</p>`;
 }
 
@@ -300,19 +300,6 @@ function shortDayLabel(day) {
   const m = day.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (!m) return day;
   return `${new Date(+m[1], +m[2] - 1, +m[3]).toLocaleDateString(undefined, { month: "short", day: "numeric" })}`;
-}
-  const range = $("cc-site-range");
-  if (range) range.textContent = rangeText(model);
-  renderStatusBar();
-  renderKpis();
-  renderStandout();
-  renderPages();
-  renderDeliver();
-
-  renderStoreClicks();
-  const btn = $("cc-report-btn");
-  if (btn) btn.disabled = false;
-  if (reportOpen) fillReport(false);
 }
 
 /* -------------------------------------------------------------------- report */
@@ -346,12 +333,12 @@ async function copyReport() {
     await navigator.clipboard.writeText(box.value);
     setCopyStatus("Report copied. Paste it into ChatGPT.");
   } catch {
-    // Clipboard blocked (permissions, insecure context, in-app browserâ€¦). Leave the text selected so Ctrl/Cmd+C works.
+    // Clipboard blocked (permissions, insecure context, in-app browser…). Leave the text selected so Ctrl/Cmd+C works.
     box.focus();
     box.select();
     let ok = false;
     try { ok = document.execCommand("copy"); } catch { ok = false; }
-    setCopyStatus(ok ? "Report copied. Paste it into ChatGPT." : "Couldn't copy automatically â€” the report is selected, press Ctrl+C (Cmd+C on Mac).", ok ? "ok" : "warn");
+    setCopyStatus(ok ? "Report copied. Paste it into ChatGPT." : "Couldn't copy automatically — the report is selected, press Ctrl+C (Cmd+C on Mac).", ok ? "ok" : "warn");
   }
 }
 
