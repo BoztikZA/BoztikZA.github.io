@@ -7289,23 +7289,6 @@ body.is-photoshop-battles .deliver-download-all {
   min-width: min(100%, 280px);
 }
 
-/* PhotoshopBattles — keep the existing Contact Boztik section quiet and
-   secondary to the delivered image (it already sits below the image/actions
-   and reuses the site's ../contact.html destination). */
-body.is-photoshop-battles .deliver-contact-section {
-  margin-top: 24px;
-  padding: 8px 16px 4px;
-}
-body.is-photoshop-battles .deliver-contact-section h2 {
-  margin: 6px 0 8px;
-  font-size: 1.05rem;
-}
-body.is-photoshop-battles .deliver-contact-intro {
-  max-width: 560px;
-  margin-bottom: 12px;
-  font-size: 0.85rem;
-}
-
 .dash-stat-card--attention .dash-stat-icon {
   color: #ffc267;
 }
@@ -8147,6 +8130,12 @@ body.has-storage-monitor #dash-main-view { margin-bottom: 96px; }
   display: none;
 }
 
+/* Photoshop Battles: discovery sits immediately after the download/share
+   controls, so use a tighter top margin than the 40px default. */
+body.is-photoshop-battles .boztik-discover {
+  margin: 16px auto 0;
+}
+
 /* Only one copy variant is shown at a time. Standard deliveries use the
    slightly stronger prompt; body.is-photoshop-battles swaps in the quiet
    "Made with Boztik" treatment. The line is intentionally small and sits
@@ -8213,6 +8202,9 @@ body.is-photoshop-battles .boztik-discover-copy--battles {
 @media (max-width: 600px) {
   .boztik-discover {
     margin: 28px auto 0;
+  }
+  body.is-photoshop-battles .boztik-discover {
+    margin: 12px auto 0;
   }
 }
 
