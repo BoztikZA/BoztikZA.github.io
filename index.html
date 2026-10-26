@@ -258,8 +258,8 @@
     <div class="featured-work-head">
       <div class="section-heading">
         <span class="section-label">Featured Work</span>
-        <h2>Selected edits, original and result.</h2>
-        <p>Three examples of restoration, object removal and compositing. In each image the original is on the left and the edited result is on the right; the portfolio has more.</p>
+        <h2>Selected creative projects</h2>
+        <p>Explore selected creative projects, image transformations, and visual experiments. Each project highlights the result and the creative decisions behind it, offering a closer look at how an idea develops into a finished visual.</p>
       </div>
       <a class="support-button cta-teal" href="portfolio.html">View Full Portfolio</a>
     </div>
@@ -529,5 +529,136 @@
   <script src="js/site.js?v=20260805a"></script>
   <script src="js/support.js"></script>
   <script type="module" src="js/releases.js"></script>
+  <style>
+    /* Featured work single-image slideshow */
+    @media (prefers-reduced-motion: no-preference) {
+      .featured-grid {
+        position: relative;
+        height: 450px;
+        overflow: hidden;
+      }
+      .featured-grid .featured-card {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        transition: opacity 0.7s ease-in-out;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+      .featured-grid .featured-card.animating {
+        opacity: 1;
+      }
+      .featured-grid .featured-media {
+        flex: 0 0 auto;
+        min-height: 0;
+        overflow: hidden;
+      }
+      .featured-grid .featured-media img {
+        width: 100%;
+        height: auto;
+        max-height: 100%;
+        object-fit: contain;
+        display: block;
+        margin: 0 auto;
+      }
+      .featured-grid .featured-card-body {
+        flex: 1 1 auto;
+        padding: 1rem 1.5rem;
+        overflow-y: auto;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .featured-grid {
+        position: relative;
+        height: 450px;
+        overflow: hidden;
+      }
+      .featured-grid .featured-card {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        transition: none !important;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+      .featured-grid .featured-card:first-child {
+        opacity: 1;
+      }
+      .featured-grid .featured-media {
+        flex: 0 0 auto;
+        min-height: 0;
+        overflow: hidden;
+      }
+      .featured-grid .featured-media img {
+        width: 100%;
+        height: auto;
+        max-height: 100%;
+        object-fit: contain;
+        display: block;
+        margin: 0 auto;
+      }
+      .featured-grid .featured-card-body {
+        flex: 1 1 auto;
+        padding: 1rem 1.5rem;
+        overflow-y: auto;
+      }
+    }
+  </style>
+  <script>
+  (function() {
+    'use strict';
+
+    var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var grid = document.querySelector('.featured-grid');
+    if (!grid) return;
+    var cards = grid.querySelectorAll('.featured-card');
+    if (cards.length === 0) return;
+
+    // Show first card on initial load
+    cards[0].classList.add('animating');
+
+    if (reduced) return;
+
+    // Cycle cards every 6 seconds
+    var currentIndex = 0;
+    var intervalId = setInterval(function() {
+      cards[currentIndex].classList.remove('animating');
+      currentIndex = (currentIndex + 1) % cards.length;
+      cards[currentIndex].classList.add('animating');
+    }, 6000);
+
+    // Pause on hover/focus, resume without duplicate intervals
+    cards.forEach(function(card) {
+      card.addEventListener('mouseover', function() {
+        clearInterval(intervalId);
+      });
+      card.addEventListener('mouseout', function() {
+        intervalId = setInterval(function() {
+          cards[currentIndex].classList.remove('animating');
+          currentIndex = (currentIndex + 1) % cards.length;
+          cards[currentIndex].classList.add('animating');
+        }, 6000);
+      });
+      card.addEventListener('focus', function() {
+        clearInterval(intervalId);
+      });
+      card.addEventListener('blur', function() {
+        intervalId = setInterval(function() {
+          cards[currentIndex].classList.remove('animating');
+          currentIndex = (currentIndex + 1) % cards.length;
+          cards[currentIndex].classList.add('animating');
+        }, 6000);
+      });
+    });
+  })();
+</script>
 </body>
 </html>
