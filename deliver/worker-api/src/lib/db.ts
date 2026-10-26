@@ -367,14 +367,15 @@ export async function recordTrafficSourceVisit(env: Env, visit: TrafficSourceVis
   return (result.meta.changes ?? 0) > 0;
 }
 
-export async function getTrafficSourceSummary(env: Env, key: SummaryPeriod) {
-  const now = nowSec();
-  const days = SUMMARY_PERIODS[key];
-  const until = localDay(env, now);
-  const since = days === null ? null : localDay(env, now - (days - 1) * 86400);
-  const start = since === null ? null : localDayStartTs(env, Date.parse(`${since}T00:00:00Z`) / 1000);
+export async function getTrafficSourceSummary(env: Env, input: WindowInput | PeriodWindow) {
+  const pw = asWindow(env, input);
+  const key = pw.key;
+  const days = pw.days;
+  const until = pw.until;
+  const since = pw.since;
+  const start = pw.startTs;
   const timeClause = start === null ? "seen_at <= ?1" : "seen_at >= ?1 AND seen_at <= ?2";
-  const timeBindings = start === null ? [now] : [start, now];
+  const timeBindings = start === null ? [pw.endTs] : [start, pw.endTs];
   const [sourceRows, campaignRows, firstVisit] = await Promise.all([
     env.DB.prepare(`SELECT source, COUNT(*) AS visits FROM traffic_source_visits WHERE ${timeClause} GROUP BY source`)
       .bind(...timeBindings).all<{ source: string; visits: number }>(),
@@ -391,7 +392,6 @@ export async function getTrafficSourceSummary(env: Env, key: SummaryPeriod) {
       : Promise.resolve(null),
   ]);
   // Additive fields for the dashboard: previous equivalent period, first/last recorded visit.
-  const pw = periodWindow(env, key);
   const [prevCount, firstLast] = await Promise.all([
     pw.previous
       ? env.DB.prepare("SELECT COUNT(*) AS n FROM traffic_source_visits WHERE seen_at >= ?1 AND seen_at <= ?2").bind(pw.previous.startTs, pw.previous.endTs).first<{ n: number }>()
@@ -617,7 +617,8 @@ export async function getPageAnalytics(env: Env, days = 30): Promise<Array<{ pag
 // activity are returned in SEPARATE blocks on purpose: Deliver views (including direct
 // PhotoshopBattles image requests) must never be mixed into public-website numbers.
 // -----------------------------------------------------------------------------
-export const SUMMARY_PERIODS = { "7d": 7, "30d": 30, "90d": 90, all: null } as const;
+// "today" = the current local calendar day so far, compared with yesterday (a full day). Added for the 24-hour view.
+export const SUMMARY_PERIODS = { today: 1, "7d": 7, "30d": 30, "90d": 90, all: null } as const;
 export type SummaryPeriod = keyof typeof SUMMARY_PERIODS;
 
 export interface SummaryDeliverType {
@@ -628,7 +629,8 @@ export interface SummaryDeliverType {
 }
 
 export interface AnalyticsSummary {
-  period: { key: SummaryPeriod; days: number | null; since: string | null; until: string; previous: { since: string; until: string } | null };
+  /** `includes_today`: the last day of the window is today, so it is still in progress (a partial day). */
+  period: { key: SummaryPeriod | "custom"; days: number | null; since: string | null; until: string; previous: { since: string; until: string } | null; includes_today: boolean };
   website: { pages: Array<{ page: string; views: number; prev_views: number | null }>; total_views: number; prev_total_views: number | null; data_since: string | null };
   deliver: { types: SummaryDeliverType[]; stored: Record<string, number> };
 }
@@ -670,13 +672,14 @@ async function websitePageViews(env: Env, since: string, until: string): Promise
   return new Map(rows.map((r) => [r.page, r.views]));
 }
 
-export async function getAnalyticsSummary(env: Env, key: SummaryPeriod): Promise<AnalyticsSummary> {
-  const now = nowSec();
-  const days = SUMMARY_PERIODS[key];
-  const until = localDay(env, now);
-  const since = days === null ? "" : localDay(env, now - (days - 1) * 86400);
+export async function getAnalyticsSummary(env: Env, input: WindowInput | PeriodWindow): Promise<AnalyticsSummary> {
+  const w = asWindow(env, input);
+  const key = w.key;
+  const days = w.days;
+  const until = w.until;
+  const since = w.since ?? "";
   // The comparison window is the same number of days immediately before; "all available" has nothing to compare to.
-  const prev = days === null ? null : { since: localDay(env, now - (2 * days - 1) * 86400), until: localDay(env, now - days * 86400) };
+  const prev = w.previous ? { since: w.previous.since, until: w.previous.until } : null;
 
   const [pages, prevPages, firstDay, types, prevTypes, stored] = await Promise.all([
     websitePageViews(env, since, until),
@@ -702,7 +705,7 @@ export async function getAnalyticsSummary(env: Env, key: SummaryPeriod): Promise
   }).sort((a, b) => b.views - a.views || a.type.localeCompare(b.type));
 
   return {
-    period: { key, days, since: days === null ? firstDay?.d ?? null : since, until, previous: prev },
+    period: { key, days, since: days === null ? firstDay?.d ?? null : since, until, previous: prev, includes_today: w.includesToday },
     website: { pages: pageRows, total_views: sum(pages) ?? 0, prev_total_views: sum(prevPages), data_since: firstDay?.d ?? null },
     deliver: { types: typeRows, stored: Object.fromEntries(stored.results.map((r) => [r.type, r.n])) },
   };
@@ -764,9 +767,9 @@ export async function getDeliveryDailySeries(env: Env, id: string, days = 30): P
 /** Aggregated store-link click statistics for the Command Centre Stores
  *  Analytics tab. Bucketing follows the site's existing analytics timezone
  *  convention (ANALYTICS_UTC_OFFSET_MINUTES, default SAST/UTC+2). */
-export async function getStoreClickSummary(env: Env, key: SummaryPeriod): Promise<StoreClickSummary> {
-  const now = nowSec();
-  const w = periodWindow(env, key);
+export async function getStoreClickSummary(env: Env, input: WindowInput | PeriodWindow): Promise<StoreClickSummary> {
+  const w = asWindow(env, input);
+  const key = w.key;
   const offset = utcOffsetSeconds(env);
   // ROOT-CAUSE FIX: the old series query bound (offset, start, now) against a clause that referenced ?1/?2, so
   // the offset was compared with created_at and D1 rejected the extra parameter => the Store card showed an error.
@@ -811,10 +814,11 @@ export async function getStoreClickSummary(env: Env, key: SummaryPeriod): Promis
     if (r.clicks > (best.get(r.destination) ?? 0)) { best.set(r.destination, r.clicks); topSourceByDestination.set(r.destination, r.source_placement); }
   }
 
+  // One label per local calendar day from the window start (or the first recorded click for "all") to its end.
   const dayLabels: string[] = [];
-  const startTsForLabels = w.startTs ?? firstEvent?.created_at ?? now;
-  const spanDays = Math.min(366, Math.max(1, Math.ceil((now - startTsForLabels) / 86400) + 1));
-  for (let d = spanDays - 1; d >= 0; d--) dayLabels.push(localDay(env, now - d * 86400));
+  const firstLabel = w.since ?? (firstEvent?.created_at != null ? localDay(env, firstEvent.created_at) : w.until);
+  const spanDays = Math.min(MAX_CUSTOM_RANGE_DAYS, Math.max(1, dayDiff(firstLabel, w.until) + 1));
+  for (let d = spanDays - 1; d >= 0; d--) dayLabels.push(addDays(w.until, -d));
 
   const clicksByDayDest = new Map<string, number>();
   for (const r of seriesRows.results) clicksByDayDest.set(`${r.day}|${r.destination}`, r.clicks);
@@ -902,7 +906,7 @@ export interface StoreClickSourceRow {
 export const STORE_OUTBOUND: string[] = ["redbubble", "teepublic", "kofi"];
 
 export interface StoreClickSummary {
-  period: { key: SummaryPeriod; since: string | null; until: string };
+  period: { key: SummaryPeriod | "custom"; since: string | null; until: string };
   total: number;
   /** Clicks to Redbubble + TeePublic + Ko-fi (leaves Boztik). A click is NOT a purchase. */
   outbound_total: number;
@@ -938,38 +942,92 @@ export async function recordStoreClick(env: Env, click: StoreClickInput): Promis
 // Reporting windows, visitor flow and data health (Command Centre → Analytics)
 // -----------------------------------------------------------------------------
 export interface PeriodWindow {
-  key: SummaryPeriod;
+  key: SummaryPeriod | "custom";
+  /** Number of local calendar days in the window, or null for "all available". */
+  days: number | null;
   /** First local calendar day of the window, or null for "all available". */
   since: string | null;
-  /** Today (local calendar day). The window ends "now": today is a partial day. */
+  /** Last local calendar day of the window. For every preset this is today (a partial day). */
   until: string;
   startTs: number | null;
   endTs: number;
+  /** True when the last day of the window is today, i.e. the final day is still in progress. */
+  includesToday: boolean;
   /** The same number of whole local days immediately before `since`. null for "all". */
   previous: { since: string; until: string; startTs: number; endTs: number } | null;
 }
 
+/** Earliest custom date accepted (the site did not exist before this) and the longest custom span. */
+export const MIN_CUSTOM_DAY = "2020-01-01";
+export const MAX_CUSTOM_RANGE_DAYS = 366;
+const DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
+/** A real calendar day. `new Date("2026-13-01")` is an Invalid Date and `toISOString()` THROWS on it, so test first. */
+const isRealDay = (s: string): boolean => {
+  if (!DAY_RE.test(s)) return false;
+  const t = Date.parse(`${s}T00:00:00Z`);
+  return Number.isFinite(t) && new Date(t).toISOString().slice(0, 10) === s;   // also rejects 2026-02-31
+};
+/** 'YYYY-MM-DD' ± n calendar days (pure calendar arithmetic, no timezone involved). */
+export const addDays = (day: string, n: number): string => new Date(Date.parse(`${day}T00:00:00Z`) + n * 86400000).toISOString().slice(0, 10);
+export const dayDiff = (a: string, b: string): number => Math.round((Date.parse(`${b}T00:00:00Z`) - Date.parse(`${a}T00:00:00Z`)) / 86400000);
+/** Unix time of local midnight at the START of the given local calendar day. Correct for any UTC offset. */
+export const dayStartTs = (env: Env, day: string): number => Date.parse(`${day}T00:00:00Z`) / 1000 - utcOffsetSeconds(env);
+
+/** What an analytics request may ask for: a preset key, or a custom local-day range. */
+export type WindowInput = string | null | undefined | { period?: string | null; from?: string | null; to?: string | null };
+
 /** ONE definition of "the reporting period" shared by every analytics query: whole local calendar days in the
- *  site's analytics timezone (ANALYTICS_UTC_OFFSET_MINUTES, default SAST = UTC+2), ending now. */
-export function periodWindow(env: Env, key: SummaryPeriod): PeriodWindow {
+ *  site's analytics timezone (ANALYTICS_UTC_OFFSET_MINUTES, default SAST = UTC+2).
+ *   - preset (today / 7d / 30d / 90d / all): ends now, so the last day is partial. Unknown presets fall back to 30d.
+ *   - custom (from + to, both 'YYYY-MM-DD'): STRICTLY validated; a bad range is a 422, never silently replaced.
+ *  The comparison window is always the same number of whole days immediately before `since`. */
+export function resolveWindow(env: Env, input: WindowInput): PeriodWindow {
   const now = nowSec();
+  const today = localDay(env, now);
+  const req = typeof input === "string" || input == null ? { period: input ?? null } : input;
+  const custom = req.from != null || req.to != null || req.period === "custom";
+
+  if (custom) {
+    const from = typeof req.from === "string" ? req.from : "";
+    const to = typeof req.to === "string" ? req.to : "";
+    if (!isRealDay(from) || !isRealDay(to)) throw new HttpError(422, "invalid_range", "A custom range needs both dates as YYYY-MM-DD.");
+    if (from > to) throw new HttpError(422, "invalid_range", "The start date must not be after the end date.");
+    if (to > today) throw new HttpError(422, "invalid_range", "The end date cannot be in the future.");
+    if (from < MIN_CUSTOM_DAY) throw new HttpError(422, "invalid_range", `The start date cannot be before ${MIN_CUSTOM_DAY}.`);
+    const days = dayDiff(from, to) + 1;
+    if (days > MAX_CUSTOM_RANGE_DAYS) throw new HttpError(422, "range_too_long", `A custom range can cover at most ${MAX_CUSTOM_RANGE_DAYS} days.`);
+    const startTs = dayStartTs(env, from);
+    const includesToday = to === today;
+    const prevSince = addDays(from, -days), prevUntil = addDays(from, -1);
+    return {
+      key: "custom", days, since: from, until: to, startTs, endTs: includesToday ? now : dayStartTs(env, addDays(to, 1)) - 1, includesToday,
+      previous: { since: prevSince, until: prevUntil, startTs: dayStartTs(env, prevSince), endTs: startTs - 1 },
+    };
+  }
+
+  const key = (typeof req.period === "string" && req.period in SUMMARY_PERIODS ? req.period : "30d") as SummaryPeriod;
   const days = SUMMARY_PERIODS[key];
-  const until = localDay(env, now);
-  if (days === null) return { key, since: null, until, startTs: null, endTs: now, previous: null };
-  const since = localDay(env, now - (days - 1) * 86400);
-  const startTs = localDayStartTs(env, Date.parse(`${since}T00:00:00Z`) / 1000);
-  const prevSince = localDay(env, now - (2 * days - 1) * 86400);
-  const prevUntil = localDay(env, now - days * 86400);
+  if (days === null) return { key, days: null, since: null, until: today, startTs: null, endTs: now, includesToday: true, previous: null };
+  const since = addDays(today, -(days - 1));
+  const startTs = dayStartTs(env, since);
+  const prevSince = addDays(today, -(2 * days - 1)), prevUntil = addDays(today, -days);
   return {
-    key, since, until, startTs, endTs: now,
-    previous: { since: prevSince, until: prevUntil, startTs: localDayStartTs(env, Date.parse(`${prevSince}T00:00:00Z`) / 1000), endTs: startTs - 1 },
+    key, days, since, until: today, startTs, endTs: now, includesToday: true,
+    previous: { since: prevSince, until: prevUntil, startTs: dayStartTs(env, prevSince), endTs: startTs - 1 },
   };
 }
+
+/** Back-compatible wrapper: every existing caller passes a preset key. */
+export function periodWindow(env: Env, key: SummaryPeriod): PeriodWindow {
+  return resolveWindow(env, key);
+}
+const asWindow = (env: Env, input: WindowInput | PeriodWindow): PeriodWindow =>
+  typeof input === "object" && input !== null && "endTs" in input ? (input as PeriodWindow) : resolveWindow(env, input as WindowInput);
 
 const FLOW_EVENT_CAP = 50000;
 
 export interface VisitorFlowResponse extends FlowResult {
-  period: { key: SummaryPeriod; since: string | null; until: string };
+  period: { key: SummaryPeriod | "custom"; since: string | null; until: string };
   /** no_events = nothing recorded; limited = fewer than MIN_VISITS_FOR_FLOW visits; ok = enough to read patterns. */
   status: "no_events" | "limited" | "ok";
   /** Why a section is empty: real quiet traffic vs. page views arriving WITHOUT session events (instrumentation gap). */
@@ -985,8 +1043,9 @@ export interface VisitorFlowResponse extends FlowResult {
   pages: Array<{ page: string; views: number; session_events: number; entrances: number; exits: number; coverage_pct: number | null }>;
 }
 
-export async function getVisitorFlow(env: Env, key: SummaryPeriod): Promise<VisitorFlowResponse> {
-  const w = periodWindow(env, key);
+export async function getVisitorFlow(env: Env, input: WindowInput | PeriodWindow): Promise<VisitorFlowResponse> {
+  const w = asWindow(env, input);
+  const key = w.key;
   const dayClause = w.since === null ? "1=1" : "day >= ?1 AND day <= ?2";
   const dayBind = w.since === null ? [] : [w.since, w.until];
   const evClause = w.startTs === null ? "seen_at <= ?1" : "seen_at >= ?1 AND seen_at <= ?2";
@@ -1105,5 +1164,197 @@ export async function getAnalyticsHealth(env: Env): Promise<AnalyticsHealth> {
       "Session paths and attribution rows are deleted after 90 days; daily page-view totals are kept.",
     ],
     known_gaps: gaps,
+  };
+}
+
+
+// -----------------------------------------------------------------------------
+// Trend: aligned time buckets for the Command Centre chart (READ-ONLY, no new table, no new writes).
+//
+//   * Daily buckets for 7d / 30d / 90d / all / custom; HOURLY buckets for the "today" view.
+//   * Every series is `null` for a bucket that lies BEFORE that collector started recording ("not measured")
+//     and a real number (possibly 0) afterwards. The dashboard draws nulls as gaps / an "unmeasured" band, never as 0.
+//   * The bucket that contains "now" is flagged `partial`; hours after now are `future`. Neither is a confirmed 0.
+//   * `previous_buckets` is the same number of buckets for the comparison window, index-aligned with `buckets`.
+//   * Website page views are DAILY totals only. In hourly mode the website series is built from the stored
+//     session events instead (`coverage.website_views.basis = "session_events"`) and the response says what share
+//     of the day's counted page views that covers, so a partial series is never presented as the full count.
+// -----------------------------------------------------------------------------
+export interface TrendBucket {
+  /** Local bucket start: 'YYYY-MM-DD' (daily) or 'YYYY-MM-DDTHH' (hourly), in the analytics timezone. */
+  start: string;
+  /** "Now" falls inside this bucket, so its value is still growing. */
+  partial: boolean;
+  /** The bucket starts after "now" (hourly view of today only). */
+  future: boolean;
+  website_views: number | null;
+  deliver_views: number | null;
+  deliver_downloads: number | null;
+  store_clicks: number | null;
+  /** Deliveries created that are still on record (a deleted delivery's row is removed, so this can undercount). */
+  new_deliveries: number | null;
+}
+export type TrendMetric = "website_views" | "deliver_views" | "deliver_downloads" | "store_clicks" | "new_deliveries";
+export const TREND_METRICS: TrendMetric[] = ["website_views", "deliver_views", "deliver_downloads", "store_clicks", "new_deliveries"];
+export type TrendTotals = Record<TrendMetric, number | null>;
+
+export interface AnalyticsTrend {
+  period: { key: SummaryPeriod | "custom"; days: number | null; since: string; until: string; previous: { since: string; until: string } | null; includes_today: boolean };
+  granularity: "day" | "hour";
+  timezone: { offset_minutes: number; label: string };
+  generated_at: string;
+  buckets: TrendBucket[];
+  previous_buckets: TrendBucket[] | null;
+  /** First day each collector has data for (null = never recorded). Buckets earlier than this are `null`, not 0. */
+  coverage: {
+    website_views: { since: string | null; basis: "page_analytics" | "session_events"; session_coverage_pct: number | null };
+    deliver: { since: string | null };
+    store_clicks: { since: string | null };
+    new_deliveries: { since: string | null };
+  };
+  /** Sum of the measured buckets, so the chart can be reconciled with the summary endpoint. */
+  totals: { current: TrendTotals; previous: TrendTotals | null };
+  /** Daily mode only: views per page key aligned with `buckets` (null = before the counter started). */
+  page_series: Record<string, Array<number | null>> | null;
+  /** The window was longer than the bucket cap and its oldest part was cut off. */
+  truncated: boolean;
+}
+
+const emptyBucket = (start: string): TrendBucket => ({ start, partial: false, future: false, website_views: null, deliver_views: null, deliver_downloads: null, store_clicks: null, new_deliveries: null });
+
+/** Counts rows per local bucket. `table`/`col` come from this fixed whitelist, never from user input. */
+async function countPerBucket(env: Env, table: "page_session_events" | "store_clicks" | "deliveries", col: "seen_at" | "created_at", fmt: "%Y-%m-%d" | "%Y-%m-%dT%H", startTs: number, endTs: number): Promise<Map<string, number>> {
+  const rows = (await env.DB.prepare(
+    `SELECT strftime('${fmt}', datetime(${col} + ?1, 'unixepoch')) AS b, COUNT(*) AS n FROM ${table} WHERE ${col} >= ?2 AND ${col} <= ?3 GROUP BY b`,
+  ).bind(utcOffsetSeconds(env), startTs, endTs).all<{ b: string; n: number }>()).results;
+  return new Map(rows.map(r => [r.b, r.n]));
+}
+
+export async function getAnalyticsTrend(env: Env, input: WindowInput | PeriodWindow): Promise<AnalyticsTrend> {
+  const now = nowSec();
+  const w = asWindow(env, input);
+  const today = localDay(env, now);
+  const hourly = w.key === "today";
+  const offset = utcOffsetSeconds(env);
+
+  // ---- when did each collector start? (a bucket before this is "not measured")
+  const [pvFirst, dmFirst, delFirst, scFirst, evFirst] = await Promise.all([
+    env.DB.prepare("SELECT MIN(day) AS d FROM page_analytics").first<{ d: string | null }>(),
+    env.DB.prepare("SELECT MIN(day) AS d FROM delivery_daily_metrics").first<{ d: string | null }>(),
+    env.DB.prepare("SELECT MIN(created_at) AS t FROM deliveries").first<{ t: number | null }>(),
+    env.DB.prepare("SELECT MIN(created_at) AS t FROM store_clicks").first<{ t: number | null }>(),
+    env.DB.prepare("SELECT MIN(seen_at) AS t FROM page_session_events").first<{ t: number | null }>(),
+  ]);
+  const firstDeliveryDay = delFirst?.t != null ? localDay(env, delFirst.t) : null;
+  const deliverSince = [dmFirst?.d ?? null, firstDeliveryDay].filter((d): d is string => !!d).sort()[0] ?? null;
+  const websiteSince = pvFirst?.d ?? null;
+  const storeSince = scFirst?.t != null ? localDay(env, scFirst.t) : null;
+  const sessionSince = evFirst?.t != null ? localDay(env, evFirst.t) : null;
+
+  // ---- the bucket labels for the current window (and the comparison window, index-aligned)
+  let truncated = false;
+  const labelsFor = (since: string, until: string): string[] => {
+    if (hourly) return Array.from({ length: 24 }, (_, h) => `${since}T${String(h).padStart(2, "0")}`);
+    const out: string[] = []; let n = dayDiff(since, until) + 1;
+    if (n > MAX_CUSTOM_RANGE_DAYS) { n = MAX_CUSTOM_RANGE_DAYS; truncated = true; }
+    for (let i = n - 1; i >= 0; i--) out.push(addDays(until, -i));
+    return out;
+  };
+  // "all" starts at the earliest day any collector has data for.
+  const earliest = [websiteSince, deliverSince, storeSince, sessionSince].filter((d): d is string => !!d).sort()[0] ?? w.until;
+  const since = w.since ?? earliest;
+  const labels = labelsFor(since, w.until);
+  const prevLabels = w.previous ? labelsFor(hourly ? w.previous.since : addDays(w.previous.until, -(labels.length - 1)), w.previous.until) : null;
+
+  const fmt = hourly ? "%Y-%m-%dT%H" : "%Y-%m-%d";
+  const spanStart = (ls: string[]) => (hourly ? dayStartTs(env, ls[0]!.slice(0, 10)) : dayStartTs(env, ls[0]!));
+  const spanEnd = (ls: string[]) => (hourly ? dayStartTs(env, addDays(ls[0]!.slice(0, 10), 1)) - 1 : dayStartTs(env, addDays(ls[ls.length - 1]!, 1)) - 1);
+
+  const fill = async (ls: string[]): Promise<{ buckets: TrendBucket[]; pageViewsByDay: Map<string, number> }> => {
+    const [a, b] = [ls[0]!.slice(0, 10), ls[ls.length - 1]!.slice(0, 10)];
+    const [store, created, events, pageDaily, deliverDaily, deliverHourly] = await Promise.all([
+      countPerBucket(env, "store_clicks", "created_at", fmt, spanStart(ls), spanEnd(ls)),
+      countPerBucket(env, "deliveries", "created_at", fmt, spanStart(ls), spanEnd(ls)),
+      hourly ? countPerBucket(env, "page_session_events", "seen_at", fmt, spanStart(ls), spanEnd(ls)) : Promise.resolve(new Map<string, number>()),
+      env.DB.prepare("SELECT day, COALESCE(SUM(views),0) AS v FROM page_analytics WHERE day >= ?1 AND day <= ?2 GROUP BY day").bind(a, b).all<{ day: string; v: number }>(),
+      hourly
+        ? Promise.resolve({ results: [] as Array<{ day: string; v: number; d: number }> })
+        : env.DB.prepare("SELECT day, COALESCE(SUM(views),0) AS v, COALESCE(SUM(downloads),0) AS d FROM delivery_daily_metrics WHERE day >= ?1 AND day <= ?2 GROUP BY day").bind(a, b).all<{ day: string; v: number; d: number }>(),
+      hourly
+        ? env.DB.prepare("SELECT hour, views AS v, downloads AS d FROM site_hourly_metrics WHERE hour >= ?1 AND hour <= ?2").bind(ls[0]!, ls[ls.length - 1]!).all<{ hour: string; v: number; d: number }>()
+        : Promise.resolve({ results: [] as Array<{ hour: string; v: number; d: number }> }),
+    ]);
+    const pv = new Map(pageDaily.results.map(r => [r.day, r.v]));
+    const dd = new Map((deliverDaily.results as Array<{ day: string; v: number; d: number }>).map(r => [r.day, r]));
+    const dh = new Map((deliverHourly.results as Array<{ hour: string; v: number; d: number }>).map(r => [r.hour, r]));
+    const nowBucket = hourly ? localHour(env, now) : today;
+    const buckets = ls.map((start): TrendBucket => {
+      const day = start.slice(0, 10);
+      const bk = emptyBucket(start);
+      bk.partial = start === nowBucket;
+      bk.future = start > nowBucket;
+      if (bk.future) return bk;                                   // after "now": nothing can have happened yet
+      const deliverOk = deliverSince !== null && day >= deliverSince;
+      if (hourly) {
+        // Hourly website numbers exist only for page views recorded WITH a session id.
+        if (sessionSince !== null && day >= sessionSince) bk.website_views = events.get(start) ?? 0;
+        if (deliverOk) { bk.deliver_views = dh.get(start)?.v ?? 0; bk.deliver_downloads = dh.get(start)?.d ?? 0; }
+      } else {
+        if (websiteSince !== null && day >= websiteSince) bk.website_views = pv.get(day) ?? 0;
+        if (deliverOk) { bk.deliver_views = dd.get(day)?.v ?? 0; bk.deliver_downloads = dd.get(day)?.d ?? 0; }
+      }
+      if (storeSince !== null && day >= storeSince) bk.store_clicks = store.get(start) ?? 0;
+      if (firstDeliveryDay !== null && day >= firstDeliveryDay) bk.new_deliveries = created.get(start) ?? 0;
+      return bk;
+    });
+    return { buckets, pageViewsByDay: pv };
+  };
+
+  const [cur, prev] = await Promise.all([fill(labels), prevLabels ? fill(prevLabels) : Promise.resolve(null)]);
+  const totalOf = (bs: TrendBucket[]): TrendTotals => Object.fromEntries(TREND_METRICS.map(m => {
+    const vals = bs.map(b => b[m]).filter((v): v is number => v !== null);
+    return [m, vals.length ? vals.reduce((t, n) => t + n, 0) : null];
+  })) as TrendTotals;
+
+  // Share of the day's counted page views that also have a stored session event (hourly mode caveat).
+  let sessionCoveragePct: number | null = null;
+  if (hourly) {
+    const counted = cur.pageViewsByDay.get(labels[0]!.slice(0, 10)) ?? 0;
+    const recorded = cur.buckets.reduce((t, b) => t + (b.website_views ?? 0), 0);
+    sessionCoveragePct = counted > 0 ? Math.min(100, Math.round((recorded / counted) * 1000) / 10) : null;
+  }
+
+  // Per-page daily series for the page table's sparklines and "rising/declining" signal.
+  let pageSeries: Record<string, Array<number | null>> | null = null;
+  if (!hourly) {
+    const rows = (await env.DB.prepare("SELECT day, page, COALESCE(SUM(views),0) AS v FROM page_analytics WHERE day >= ?1 AND day <= ?2 GROUP BY day, page")
+      .bind(labels[0]!, labels[labels.length - 1]!).all<{ day: string; page: string; v: number }>()).results;
+    const idx = new Map(labels.map((d, i) => [d, i]));
+    pageSeries = {};
+    for (const r of rows) {
+      const i = idx.get(r.day);
+      if (i === undefined) continue;
+      const arr = (pageSeries[r.page] ??= labels.map(d => (websiteSince !== null && d >= websiteSince && d <= today ? 0 : null)));
+      arr[i] = r.v;
+    }
+  }
+
+  const label = `UTC${offset >= 0 ? "+" : "-"}${Math.abs(offset / 3600)}`;
+  return {
+    period: { key: w.key, days: w.days, since, until: w.until, previous: w.previous ? { since: w.previous.since, until: w.previous.until } : null, includes_today: w.includesToday },
+    granularity: hourly ? "hour" : "day",
+    timezone: { offset_minutes: offset / 60, label },
+    generated_at: iso(now),
+    buckets: cur.buckets,
+    previous_buckets: prev ? prev.buckets : null,
+    coverage: {
+      website_views: hourly ? { since: sessionSince, basis: "session_events", session_coverage_pct: sessionCoveragePct } : { since: websiteSince, basis: "page_analytics", session_coverage_pct: null },
+      deliver: { since: deliverSince },
+      store_clicks: { since: storeSince },
+      new_deliveries: { since: firstDeliveryDay },
+    },
+    totals: { current: totalOf(cur.buckets), previous: prev ? totalOf(prev.buckets) : null },
+    page_series: pageSeries,
+    truncated,
   };
 }

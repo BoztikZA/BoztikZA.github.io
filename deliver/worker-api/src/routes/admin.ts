@@ -6,7 +6,7 @@ import {
 } from "../lib/cleanup";
 import {
   createDeliveryFromUploads, getAdminDelivery, getDelivery, getDeliveryDailySeries, getDeliveryFile, getDeliveryFiles,
-  getAnalyticsHealth, getAnalyticsSummary, getOverview, getPageAnalytics, getPageFlow, getShareAnalytics, getStoreClickSummary, getTimeseries, getTopDeliveries, getTrafficSourceSummary, getVisitorFlow, getWebsiteTimeseries, listDeliveriesForAdmin, nowSec, parseJson, updateDeliveryFields,
+  getAnalyticsHealth, getAnalyticsSummary, getAnalyticsTrend, getOverview, getPageAnalytics, getPageFlow, getShareAnalytics, getStoreClickSummary, getTimeseries, getTopDeliveries, getTrafficSourceSummary, getVisitorFlow, getWebsiteTimeseries, listDeliveriesForAdmin, nowSec, parseJson, resolveWindow, updateDeliveryFields,
 } from "../lib/db";
 import { newDeliveryId, newFileId, newUploadId, displayFileName, r2KeyFor, sanitizeFilename } from "../lib/ids";
 import { deleteObject, headObject, readHead } from "../lib/r2";
@@ -462,6 +462,14 @@ async function routeStorage(request: Request, seg: string[], env: Env): Promise<
   return error("Not found", 404);
 }
 
+/** Reads ?period=today|7d|30d|90d|all  OR  ?from=YYYY-MM-DD&to=YYYY-MM-DD from the URL and resolves it ONCE, so every
+ *  analytics endpoint answers for exactly the same window. A bad custom range is a 422 (never silently replaced). */
+function windowOf(request: Request, env: Env) {
+  const q = new URL(request.url).searchParams;
+  const from = q.get("from"), to = q.get("to");
+  return resolveWindow(env, from || to ? { period: "custom", from, to } : { period: q.get("period") });
+}
+
 async function routeAnalytics(request: Request, seg: string[], env: Env): Promise<Response> {
   if (request.method !== "GET") return error("Method not allowed", 405);
   const section = seg[1];
@@ -484,28 +492,13 @@ async function routeAnalytics(request: Request, seg: string[], env: Env): Promis
     const days = Math.max(7, Math.min(90, Number(new URL(request.url).searchParams.get("days") ?? 30) || 30));
     return json({ ok: true, paths: await getPageFlow(env, days, 8) });
   }
-  if (section === "visitor-flow") {
-    const p = new URL(request.url).searchParams.get("period");
-    const period = p === "7d" || p === "90d" || p === "all" ? p : "30d";
-    return json({ ok: true, ...(await getVisitorFlow(env, period)) });
-  }
+  if (section === "visitor-flow") return json({ ok: true, ...(await getVisitorFlow(env, windowOf(request, env))) });
+  if (section === "trend") return json({ ok: true, ...(await getAnalyticsTrend(env, windowOf(request, env))) });
   if (section === "health") return json({ ok: true, ...(await getAnalyticsHealth(env)) });
   if (section === "shares") return json({ ok: true, ...(await getShareAnalytics(env)) });
-  if (section === "summary") {
-    const p = new URL(request.url).searchParams.get("period");
-    const period = p === "7d" || p === "90d" || p === "all" ? p : "30d";
-    return json({ ok: true, ...(await getAnalyticsSummary(env, period)) });
-  }
-  if (section === "traffic-sources") {
-    const p = new URL(request.url).searchParams.get("period");
-    const period = p === "7d" || p === "90d" || p === "all" ? p : "30d";
-    return json({ ok: true, ...(await getTrafficSourceSummary(env, period)) });
-  }
-  if (section === "store-clicks") {
-    const p = new URL(request.url).searchParams.get("period");
-    const period = p === "7d" || p === "90d" || p === "all" ? p : "30d";
-    return json({ ok: true, ...(await getStoreClickSummary(env, period)) });
-  }
+  if (section === "summary") return json({ ok: true, ...(await getAnalyticsSummary(env, windowOf(request, env))) });
+  if (section === "traffic-sources") return json({ ok: true, ...(await getTrafficSourceSummary(env, windowOf(request, env))) });
+  if (section === "store-clicks") return json({ ok: true, ...(await getStoreClickSummary(env, windowOf(request, env))) });
   return error("Not found", 404);
 }
 
