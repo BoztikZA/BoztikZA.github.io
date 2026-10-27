@@ -307,6 +307,19 @@ console.log("custom ranges, the today window and trend buckets");
     const tr = await dbm.getAnalyticsTrend(env, "30d"), sm = await dbm.getAnalyticsSummary(env, "30d");
     for (const p of sm.website.pages) assert.equal(tr.page_series[p.page].reduce((a: number, n: number | null) => a + (n ?? 0), 0), p.views, p.page);
   });
+  await check("previous per-page series sum to the summary's previous per-page totals and align with previous_buckets", async () => {
+    const { env } = seed();
+    const tr = await dbm.getAnalyticsTrend(env, "30d"), sm = await dbm.getAnalyticsSummary(env, "30d");
+    assert.ok(tr.previous_page_series, "daily window has a previous page series");
+    for (const p of sm.website.pages) {
+      const series = tr.previous_page_series[p.page] ?? [];
+      assert.equal(series.reduce((a: number, n: number | null) => a + (n ?? 0), 0), p.prev_views ?? 0, p.page);
+      assert.ok(series.length === 0 || series.length === tr.previous_buckets.length, `${p.page} length`);
+    }
+    const hourly = await dbm.getAnalyticsTrend(env, "today");
+    assert.equal(hourly.previous_page_series, null);                    // hourly mode has no per-page series
+    assert.equal((await dbm.getAnalyticsTrend(env, "all")).previous_page_series, null); // no comparison window
+  });
   await check("a window entirely in the past has no partial bucket; an all-null series stays null (never 0)", async () => {
     const { env } = seed();
     const r = await dbm.getAnalyticsTrend(env, { from: "2026-10-12", to: "2026-10-18" });

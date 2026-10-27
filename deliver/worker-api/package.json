@@ -15,7 +15,8 @@
     "test:retention": "node scripts/page-view-retention-test.mts",
     "test:traffic-source": "node scripts/traffic-source-test.mts",
     "test:analytics": "node scripts/analytics-pipeline-test.mts",
-    "test": "npm run test:unit && npm run test:retention && npm run test:traffic-source && npm run test:analytics"
+    "test:client": "node scripts/analytics-client-test.mjs",
+    "test": "npm run test:unit && npm run test:retention && npm run test:traffic-source && npm run test:analytics && npm run test:client"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260901.0",

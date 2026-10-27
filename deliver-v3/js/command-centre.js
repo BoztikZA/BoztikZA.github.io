@@ -7,7 +7,7 @@
 import { escapeHtml, formatBytes, formatDate } from "./shared.js";
 import { fetchPageAnalytics, fetchShareAnalytics, pingHealth } from "./api.js";
 import { insightsSnapshot, percentChange, trendChart } from "./insights.js";
-import { initSiteAnalytics, refreshSiteAnalytics } from "./site-analytics.js";
+import { initSiteAnalytics, refreshSiteAnalytics } from "./site-analytics.js?v=an1";
 
 const HOUR = 3600 * 1000;
 const nf = n => Number(n || 0).toLocaleString();

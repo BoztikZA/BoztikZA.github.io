@@ -1216,6 +1216,8 @@ export interface AnalyticsTrend {
   totals: { current: TrendTotals; previous: TrendTotals | null };
   /** Daily mode only: views per page key aligned with `buckets` (null = before the counter started). */
   page_series: Record<string, Array<number | null>> | null;
+  /** The same for the comparison window, index-aligned with `page_series`. */
+  previous_page_series: Record<string, Array<number | null>> | null;
   /** The window was longer than the bucket cap and its oldest part was cut off. */
   truncated: boolean;
 }
@@ -1324,20 +1326,24 @@ export async function getAnalyticsTrend(env: Env, input: WindowInput | PeriodWin
     sessionCoveragePct = counted > 0 ? Math.min(100, Math.round((recorded / counted) * 1000) / 10) : null;
   }
 
-  // Per-page daily series for the page table's sparklines and "rising/declining" signal.
-  let pageSeries: Record<string, Array<number | null>> | null = null;
-  if (!hourly) {
+  // Per-page daily series for the page table's sparklines and "rising/declining" signal (current AND previous window,
+  // so page-level changes can be compared on completed days only).
+  const pageSeriesFor = async (ls: string[]): Promise<Record<string, Array<number | null>>> => {
     const rows = (await env.DB.prepare("SELECT day, page, COALESCE(SUM(views),0) AS v FROM page_analytics WHERE day >= ?1 AND day <= ?2 GROUP BY day, page")
-      .bind(labels[0]!, labels[labels.length - 1]!).all<{ day: string; page: string; v: number }>()).results;
-    const idx = new Map(labels.map((d, i) => [d, i]));
-    pageSeries = {};
+      .bind(ls[0]!, ls[ls.length - 1]!).all<{ day: string; page: string; v: number }>()).results;
+    const idx = new Map(ls.map((d, i) => [d, i]));
+    const out: Record<string, Array<number | null>> = {};
     for (const r of rows) {
       const i = idx.get(r.day);
       if (i === undefined) continue;
-      const arr = (pageSeries[r.page] ??= labels.map(d => (websiteSince !== null && d >= websiteSince && d <= today ? 0 : null)));
+      const arr = (out[r.page] ??= ls.map(d => (websiteSince !== null && d >= websiteSince && d <= today ? 0 : null)));
       arr[i] = r.v;
     }
-  }
+    return out;
+  };
+  const [pageSeries, previousPageSeries] = hourly
+    ? [null, null]
+    : await Promise.all([pageSeriesFor(labels), prevLabels ? pageSeriesFor(prevLabels) : Promise.resolve(null)]);
 
   const label = `UTC${offset >= 0 ? "+" : "-"}${Math.abs(offset / 3600)}`;
   return {
@@ -1355,6 +1361,7 @@ export async function getAnalyticsTrend(env: Env, input: WindowInput | PeriodWin
     },
     totals: { current: totalOf(cur.buckets), previous: prev ? totalOf(prev.buckets) : null },
     page_series: pageSeries,
+    previous_page_series: previousPageSeries,
     truncated,
   };
 }
