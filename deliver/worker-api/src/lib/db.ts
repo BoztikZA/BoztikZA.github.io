@@ -1107,7 +1107,9 @@ export interface AnalyticsHealth {
     attribution: { status: CollectorStatus; first_at: string | null; last_at: string | null };
     store_clicks: { status: CollectorStatus; first_at: string | null; last_at: string | null };
   };
-  ga4: { status: "not_connected"; detail: string };
+  /** `not_connected` = no credentials on the Worker; `configured` = credentials are set (NOT proof that Google accepts them —
+   *  that is what GET /analytics/ga4/status?verify=1 is for). Kept as strings the older dashboard already understands. */
+  ga4: { status: "not_connected" | "configured"; detail: string };
   page_views_before_session_tracking: number;
   retention_days: number;
   privacy_exclusions: string[];
@@ -1154,7 +1156,9 @@ export async function getAnalyticsHealth(env: Env): Promise<AnalyticsHealth> {
       attribution: { status: collectorStatus(ts?.last_at ?? null, now), first_at: iso0(ts?.first_at), last_at: iso0(ts?.last_at) },
       store_clicks: { status: collectorStatus(sc?.last_at ?? null, now), first_at: iso0(sc?.first_at), last_at: iso0(sc?.last_at) },
     },
-    ga4: { status: "not_connected", detail: "No GA4 Data API credentials are configured on the Worker. GA4 numbers are never estimated or shown as zero." },
+    ga4: env.GA4_PROPERTY_ID && env.GA4_SERVICE_ACCOUNT_JSON
+      ? { status: "configured", detail: "GA4 credentials are set on the Worker. Whether Google accepts them is checked in the Google Analytics 4 section." }
+      : { status: "not_connected", detail: "No GA4 Data API credentials are configured on the Worker. GA4 numbers are never estimated or shown as zero." },
     page_views_before_session_tracking: before,
     retention_days: 90,
     privacy_exclusions: [

@@ -11,13 +11,14 @@
 //   * the report, CSV and screen all read the same view-model (analytics/model.js)
 // The public exports (initSiteAnalytics, refreshSiteAnalytics) are unchanged: command-centre.js calls them as before.
 import { fetchPageAnalytics } from "./api.js";
-import { fetchSummary, fetchTrend, fetchSources, fetchStore, fetchFlow, fetchHealth, AnalyticsError } from "./analytics/client.js?v=an1";
-import { PRESETS, DEFAULT_RANGE, normalizeRange, rangeId, rangeLabel, validateCustom, windowMatches, addDays, MIN_CUSTOM_DAY } from "./analytics/range.js?v=an1";
-import { buildAnalyticsModel, metricPoints, METRICS } from "./analytics/model.js?v=an1";
-import { buildSignals } from "./analytics/signals.js?v=an1";
-import { createTrendChart } from "./analytics/chart.js?v=an1";
-import { buildFullReport, buildCsv, csvFileName } from "./analytics/export.js?v=an1";
-import * as V from "./analytics/views.js?v=an1";
+import { fetchSummary, fetchTrend, fetchSources, fetchStore, fetchFlow, fetchHealth, AnalyticsError } from "./analytics/client.js?v=an2";
+import { PRESETS, DEFAULT_RANGE, normalizeRange, rangeId, rangeLabel, validateCustom, windowMatches, addDays, MIN_CUSTOM_DAY } from "./analytics/range.js?v=an2";
+import { buildAnalyticsModel, metricPoints, METRICS } from "./analytics/model.js?v=an2";
+import { buildSignals } from "./analytics/signals.js?v=an2";
+import { createTrendChart } from "./analytics/chart.js?v=an2";
+import { buildFullReport, buildCsv, csvFileName } from "./analytics/export.js?v=an2";
+import * as V from "./analytics/views.js?v=an2";
+import { initGa4Panel, updateGa4 } from "./analytics/ga4-panel.js?v=ga1";
 
 const $ = id => document.getElementById(id);
 const REFRESH_MS = 5 * 60 * 1000;
@@ -60,6 +61,7 @@ async function load() {
   controller = new AbortController();
   const { signal } = controller;
   const range = S.range, rid = rangeId(range);
+  void updateGa4(range, S.compare); // GA4 is a separate source: it loads, fails and retries on its own
   const sameRange = rid === S.loadedRange;
   if (!sameRange) { S.data = {}; S.fallback = null; }
   S.refreshFailed = false;
@@ -292,7 +294,7 @@ function onClick(ev) {
 }
 
 function onChange(ev) {
-  if (ev.target.matches("[data-compare]")) { S.compare = ev.target.checked; persist(); renderTrend(); }
+  if (ev.target.matches("[data-compare]")) { S.compare = ev.target.checked; persist(); renderTrend(); void updateGa4(S.range, S.compare); }
 }
 
 function onInput(ev) {
@@ -324,6 +326,7 @@ export function initSiteAnalytics() {
   wired = true;
   restore();
   renderControls();
+  initGa4Panel(() => ({ range: S.range, compare: S.compare }));
   const root = $("cc-site-analytics");
   root?.addEventListener("click", onClick);
   root?.addEventListener("change", onChange);

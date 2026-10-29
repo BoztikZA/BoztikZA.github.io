@@ -20,6 +20,7 @@ import {
   MAX_EXPIRY_SECONDS, MAX_NAME_LENGTH, MAX_NOTES_LENGTH, clampString, cleanRedditSource, cleanSourceMeta,
   extensionOf, isAllowedExtension, isBattleExtension, isValidDeliveryId, magicMatches, mimeForExtension, parseExpiry,
 } from "../lib/validate";
+import { routeGa4 } from "./ga4";
 import { error, json, readJson, requireJson, segments, wrap } from "./util";
 
 export function handleAdmin(request: Request, path: string, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -494,6 +495,7 @@ async function routeAnalytics(request: Request, seg: string[], env: Env): Promis
   }
   if (section === "visitor-flow") return json({ ok: true, ...(await getVisitorFlow(env, windowOf(request, env))) });
   if (section === "trend") return json({ ok: true, ...(await getAnalyticsTrend(env, windowOf(request, env))) });
+  if (section === "ga4") return routeGa4(request, seg.slice(2), env); // GA4 Data API (read-only); kept apart from first-party data
   if (section === "health") return json({ ok: true, ...(await getAnalyticsHealth(env)) });
   if (section === "shares") return json({ ok: true, ...(await getShareAnalytics(env)) });
   if (section === "summary") return json({ ok: true, ...(await getAnalyticsSummary(env, windowOf(request, env))) });

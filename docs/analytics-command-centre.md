@@ -39,8 +39,11 @@ Computed on **completed** buckets only (the in-progress day/hour is excluded), a
 ## Insights (“What stands out”)
 Rule-based, each with its evidence and basis: like-for-like change ≥ 25 %, a day ≥ 2.5× the median (and ≥ 15 views), page/source concentration ≥ 60 %, three completed zero days after real traffic, store page views with no outbound clicks, Deliver views with no downloads, and coverage caveats. No signal states a cause.
 
+## GA4 (separate source, read-only)
+Users, sessions, new/returning, engagement, acquisition (source/medium, channel), landing pages, page paths, key events and `boztik_action` clicks come from GA4 via the Worker (see `docs/ga4-command-centre.md`), in their own card, never added to first-party or Deliver numbers. Until the Worker is configured they show *GA4: not connected*.
+
 ## Not implementable honestly (and therefore absent)
-Unique visitors / users, sessions-per-user, engagement time, bounce rate, new vs returning, countries/devices, conversion rate, revenue, ad revenue, and any “other action” click (Chrome Web Store, PayPal, email…). These need GA4 (not connected) or data the site deliberately does not collect. Shown as *Not available*, never zero.
+Countries/devices from first-party data, conversion rate, revenue, ad revenue, and any outcome (purchase, enquiry, delivery) from an outbound click. These are not collected; shown as *Not available*, never zero.
 
 ## Export
 `Export CSV` and `Generate Analysis Report` read the same view-model as the screen (`analytics/model.js`), so the numbers match by construction. CSV: unmeasured = empty cell; cells starting `= + - @` are prefixed with `'` to block spreadsheet formula injection.

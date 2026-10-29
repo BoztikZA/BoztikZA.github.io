@@ -22,7 +22,7 @@
   <link rel="stylesheet" href="../styles-premium.css">
   <link rel="stylesheet" href="css/deliver.css?v=13">
   <link rel="stylesheet" href="css/command-centre.css?v=4">
-  <link rel="stylesheet" href="css/analytics.css?v=an1">
+  <link rel="stylesheet" href="css/analytics.css?v=an2">
   <link rel="stylesheet" href="css/deliver-animations.css?v=1">
 
   <style>
@@ -1677,18 +1677,19 @@
 
           <article class="cc-card cc-ga4-card" aria-labelledby="cc-actions-title">
             <header class="cc-card-head"><div><span class="cc-eyebrow">7 · Important actions</span><h2 id="cc-actions-title">Product, contact &amp; store actions</h2>
-              <p class="cc-card-desc">Every row names its data source. First-party and GA4 numbers are kept apart and never added together.</p></div><span class="cc-badge">GA4: not connected</span></header>
+              <p class="cc-card-desc">Every row names its data source. First-party and GA4 numbers are kept apart and never added together. GA4 actions are in the Google Analytics 4 card below.</p></div><span class="cc-badge">First-party clicks</span></header>
             <div id="cc-actions" aria-live="polite"><p class="cc-muted">Loading…</p></div>
-            <details class="cc-ga4-how">
-              <summary>What would bring GA4 metrics (users, engagement, other actions) into Command Centre?</summary>
-              <ol>
-                <li>In Google Cloud, enable the <em>Google Analytics Data API</em> and create a service account.</li>
-                <li>In GA4 → Admin → Property access, add that service account's email as a <em>Viewer</em>.</li>
-                <li>Store its key (<code>GA4_SERVICE_ACCOUNT_JSON</code>) and the numeric property ID (<code>GA4_PROPERTY_ID</code>) as Worker secrets (never in the repo).</li>
-                <li>In GA4 → Admin → Custom definitions, register <code>action</code>, <code>destination</code>, <code>position</code> and <code>page_key</code> as event-scoped dimensions so reports can group by them.</li>
-                <li>Then one read-only admin route calling <code>runReport</code> can be added. Nothing is set up yet and this page deliberately invents no workaround.</li>
-              </ol>
-            </details>
+          </article>
+
+          <article class="cc-card cc-ga4-card" id="cc-ga4" aria-labelledby="cc-ga4-title">
+            <header class="cc-card-head"><div><span class="cc-eyebrow">Google Analytics 4</span><h2 id="cc-ga4-title">Users, acquisition &amp; engagement</h2>
+              <p class="cc-card-desc">Read-only reporting from Google Analytics. A separate source from Boztik's own counters and from Deliver: never added to them.</p></div>
+              <span class="cc-badge an-ga4-badge" id="cc-ga4-badge" data-kind="loading" role="status">GA4: checking…</span></header>
+            <div class="an-head-actions" id="cc-ga4-actions" hidden>
+              <button type="button" class="cc-btn" data-ga4-refresh>Refresh from Google</button>
+              <button type="button" class="cc-btn" data-ga4-verify>Check connection</button>
+            </div>
+            <div id="cc-ga4-body" aria-live="polite"><p class="cc-muted">Loading…</p></div>
           </article>
 
           <article class="cc-card" aria-labelledby="cc-health-title">
@@ -1774,7 +1775,7 @@
         <article class="cc-card cc-notrack" aria-labelledby="cc-nt-title">
           <header class="cc-card-head"><div><span class="cc-eyebrow">Good to know</span><h2 id="cc-nt-title">What is not tracked</h2></div></header>
           <p><strong>Boztik's own counters</strong> record how many times each delivery was opened, downloaded or shared, per day, and how many times each public page was loaded. They do <strong>not</strong> record visitor location, device, browser or referring site, and store no IP addresses or cookies. That is deliberate, so there is no location or device breakdown to show here.</p>
-          <p><strong>Google Analytics 4</strong> runs separately on the public website pages only. It is not on any Deliver page, and Deliver and PhotoshopBattles views are never sent to it. GA4 holds richer data (traffic sources, users, sessions, clicks), but Command Centre cannot read it yet, so none of it appears on this page.</p>
+          <p><strong>Google Analytics 4</strong> runs separately on the public website pages only. It is not on any Deliver page, and Deliver and PhotoshopBattles views are never sent to it. GA4 holds richer data (users, sessions, acquisition, engagement, clicks). When the Worker is connected to the GA4 Data API it appears only in the Google Analytics 4 card on the Analytics tab, never added to Boztik's own counters.</p>
         </article>
 
       </section>
@@ -2612,7 +2613,7 @@
 
   <script
     type="module"
-    src="js/dashboard.js?v=cf-3"
+    src="js/dashboard.js?v=cf-4"
   ></script>
   <script type="module" src="js/promotions.js"></script>
 

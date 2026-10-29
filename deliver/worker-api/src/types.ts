@@ -22,6 +22,14 @@ export interface Env {
   ADMIN_PASSWORD_HASH: string;
   AUTH_TOKEN_SALT: string;
 
+  // Google Analytics 4 reporting (read-only; both optional — without them Command Centre says "not connected").
+  // GA4_PROPERTY_ID           numeric GA4 *property* ID (NOT the G- measurement ID). Not secret, but stored with the key.
+  // GA4_SERVICE_ACCOUNT_JSON  service-account key JSON. SECRET: `wrangler secret put`, never committed, never logged.
+  // GA4_CACHE_SECONDS         var, optional, 60–3600 (default 600): how long a report may be served from cache.
+  GA4_PROPERTY_ID?: string;
+  GA4_SERVICE_ACCOUNT_JSON?: string;
+  GA4_CACHE_SECONDS?: string;
+
   // Milestone notification emails (backend-only; all optional).
   // MILESTONE_EMAILS_ENABLED  var,   default "1"; set "0" to disable the feature.
   // The rest are secrets, never committed. See README "Email notifications".

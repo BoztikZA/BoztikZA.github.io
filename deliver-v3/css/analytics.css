@@ -235,3 +235,21 @@ g.is-active .an-bar { opacity: 1; filter: brightness(1.15); }
 
 /* The shared card stylesheet gives every <header> a banner background; the KPI and detail headers are inline labels. */
 .an-kpi header, .an-detail header { background: none; border: 0; padding: 0; margin: 0; }
+
+/* ---------------------------------------------------------------- GA4 card (js/analytics/ga4-*.js)
+   GA4 numbers carry their own blue-violet "GA4 · Google" badge so they are never mistaken for first-party counters. */
+.an-basis-ga4 { border-color: rgba(167, 139, 250, 0.5); color: #c4b5fd; }
+.an-ga4-badge[data-kind="ok"] { border-color: rgba(52, 211, 153, 0.4); color: #7fe6bd; }
+.an-ga4-badge[data-kind="error"] { border-color: rgba(255, 92, 92, 0.45); color: var(--cc-text); background: var(--cc-danger-soft); }
+.an-ga4-badge[data-kind="none"], .an-ga4-badge[data-kind="loading"] { color: var(--cc-muted); }
+.an-ga4-meta { margin: 10px 0 0; }
+.an-ga4-section { margin-top: 18px; }
+.an-ga4-section .an-state { margin: 8px 0; }
+.an-state-empty { background: rgba(52, 211, 153, 0.07); border-color: rgba(52, 211, 153, 0.28); }
+.an-more { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 10px 0 0; }
+.cc-ga4-how { margin-top: 12px; }
+.cc-ga4-how summary { cursor: pointer; font-weight: 700; }
+.cc-ga4-how ol { margin: 10px 0 0; padding-left: 20px; display: grid; gap: 6px; font-size: 0.88rem; color: var(--cc-muted); }
+#cc-ga4-actions { margin: 12px 0 0; }
+@media (max-width: 720px) { #cc-ga4 .an-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 460px) { #cc-ga4 .an-kpis { grid-template-columns: 1fr; } }

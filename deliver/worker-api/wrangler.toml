@@ -71,4 +71,10 @@ PAGE_ANALYTICS_ALLOWED = "1"
 #   AUTH_TOKEN_SALT      from:  node scripts/hash-password.mjs --salt
 #                        (also keys the HMAC of signed file URLs)
 # Local dev: put the same three names in .dev.vars (git-ignored).
+#
+# OPTIONAL — Google Analytics 4 reporting (read-only; see docs/ga4-command-centre.md). Without them the
+# Command Centre shows "GA4: not connected" and everything else works unchanged.
+#   GA4_PROPERTY_ID            NUMERIC GA4 property ID (not the G-... measurement ID)
+#   GA4_SERVICE_ACCOUNT_JSON   service-account key JSON; account needs Viewer on the property
+#   GA4_CACHE_SECONDS          optional report cache lifetime (not secret; a var would also do)
 # ---------------------------------------------------------------------------
