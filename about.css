@@ -17,8 +17,7 @@
 .about-hero__visual{position:relative;display:grid;place-items:center;min-height:430px;overflow:hidden;border:1px solid rgba(142,255,61,.2);border-radius:26px;background:radial-gradient(ellipse at 50% 48%,rgba(142,255,61,.12),transparent 44%),linear-gradient(145deg,#111a13,#080d09 70%);box-shadow:0 28px 90px #0005}
 .about-orbit{position:absolute;width:290px;height:290px;border:1px solid rgba(142,255,61,.19);border-radius:50%}
 .about-orbit--two{width:390px;height:390px;border-color:rgba(255,255,255,.08)}
-.about-monogram{position:relative;z-index:1;color:#eaf4e8;font-family:var(--font-heading);font-size:clamp(9rem,18vw,15rem);font-weight:800;line-height:1;letter-spacing:-.12em;text-shadow:0 15px 70px #8eff3d26}
-.about-monogram span{color:var(--primary,#8eff3d)}
+.about-hero-logo{position:relative;z-index:1;display:block;width:clamp(190px,28vw,300px);height:auto;max-width:76%;object-fit:contain;filter:drop-shadow(0 18px 42px rgba(142,255,61,.16))}
 .about-visual-label{position:absolute;left:28px;right:28px;bottom:26px;display:flex;flex-direction:column;gap:8px;padding-top:17px;border-top:1px solid rgba(255,255,255,.14)}
 .about-visual-label span{color:#8eff3d;font-size:.58rem;letter-spacing:.18em;font-weight:800}
 .about-visual-label b{color:#e5eee4;font-size:1rem;font-weight:600}
