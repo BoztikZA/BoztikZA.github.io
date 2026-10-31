@@ -1,0 +1,14 @@
+{
+  "id": "./creative-studio.html",
+  "name": "Boztik Creative Studio",
+  "short_name": "Creative Studio",
+  "description": "Inspect images, build creative prompts and plan your canvas.",
+  "start_url": "./creative-studio.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#080d09",
+  "theme_color": "#8eff3d",
+  "icons": [
+    { "src": "images/creative-studio-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
