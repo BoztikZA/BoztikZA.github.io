@@ -3975,3 +3975,153 @@ footer h3 {
 .hero-services{display:flex;justify-content:center;flex-wrap:wrap;gap:8px 20px;margin:0 auto 28px;padding:0;list-style:none;color:var(--text-muted);font-size:.82rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase}.hero-services li{display:flex;align-items:center;gap:9px}.hero-services li:not(:last-child)::after{content:"";width:4px;height:4px;border-radius:50%;background:var(--primary);box-shadow:0 0 8px rgba(142,255,61,.5)}
 .homepage .brand-hero__cta{margin-bottom:26px}.homepage .brand-hero__cta .support-button{min-width:188px;min-height:50px}.homepage .ecosystem-section{padding-top:48px;padding-bottom:62px}.homepage .ecosystem-card{display:flex;min-height:254px;flex-direction:column;border-radius:18px}.homepage .ecosystem-card h3{color:var(--text)}.homepage .ecosystem-card p{line-height:1.65}.homepage .ecosystem-card .ecosystem-link{display:inline-flex;width:fit-content;margin-top:auto;padding-top:18px}.homepage .adsense-section{padding-top:18px;padding-bottom:20px}.homepage .adsense-card{max-width:980px;margin:0 auto;border-color:rgba(255,255,255,.1);background:rgba(255,255,255,.018)}.homepage .adsense-label{color:var(--text-muted);background:rgba(255,255,255,.035);border-color:rgba(255,255,255,.09)}.homepage .paths-section{padding-top:36px}.homepage .featured-work-section{padding-top:4.5rem}.homepage .featured-card{border-radius:18px}
 @media(max-width:560px){.homepage .brand-hero{padding-top:38px;padding-bottom:56px}.homepage .hero-logo{width:min(128px,38vw)}.homepage .hero-wordmark{font-size:clamp(2.9rem,15vw,4.4rem)}.homepage .hero-lede{font-size:.98rem}.hero-services{justify-content:flex-start;gap:8px 14px;font-size:.72rem}.hero-services li{gap:7px}.homepage .brand-hero__cta{gap:10px}.homepage .ecosystem-section{padding-top:36px;padding-bottom:46px}.homepage .ecosystem-card{min-height:0}.homepage .adsense-section{padding-top:8px}}
+
+
+/* Support page: clearer payment hierarchy and direct paths into Boztik services. */
+.support-hub .support-hero__copy h1 {
+  max-width: 620px;
+  font-size: clamp(2.65rem, 5vw, 4.4rem);
+  line-height: 1.02;
+  letter-spacing: -0.045em;
+}
+.support-hub .support-hero__copy p {
+  max-width: 540px;
+  font-size: 1.08rem;
+  line-height: 1.75;
+}
+.support-hub .support-payment-card {
+  border-color: rgba(142, 255, 61, 0.28);
+  background:
+    radial-gradient(ellipse at 90% 0%, rgba(142, 255, 61, 0.11), transparent 48%),
+    linear-gradient(145deg, rgba(255,255,255,.065), rgba(255,255,255,.018));
+}
+.support-hub .support-payment-option {
+  min-height: 88px;
+  padding: 18px 22px;
+  border-width: 1px;
+  border-radius: 17px;
+  background-color: rgba(8, 12, 10, .76);
+  transition: transform .2s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease;
+}
+.support-hub .support-payment-option:hover,
+.support-hub .support-payment-option:focus-visible {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 34px rgba(0,0,0,.24);
+}
+.support-hub .support-payment-option__logo {
+  flex-basis: 48px;
+  width: 48px;
+  height: 48px;
+  padding: 4px;
+  border-radius: 12px;
+  background: #fff;
+}
+.support-hub .support-payment-option strong {
+  font-size: 1.16rem;
+}
+.support-hub .support-payment-option small {
+  font-size: .84rem;
+}
+.support-discovery-section {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 54px 30px 0;
+}
+.support-discovery-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.support-discovery-card {
+  display: flex;
+  min-height: 220px;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 26px;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background: linear-gradient(145deg, rgba(255,255,255,.045), rgba(255,255,255,.012));
+  color: var(--text);
+  text-decoration: none;
+  transition: transform .22s ease, border-color .22s ease, background .22s ease;
+}
+.support-discovery-card:hover,
+.support-discovery-card:focus-visible {
+  transform: translateY(-4px);
+  border-color: var(--primary);
+  background: linear-gradient(145deg, rgba(142,255,61,.09), rgba(255,255,255,.018));
+}
+.support-discovery-card:focus-visible,
+.support-contact-strip a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+.support-discovery-card--featured {
+  border-color: rgba(142,255,61,.42);
+  background: radial-gradient(ellipse at 100% 0%, rgba(142,255,61,.13), transparent 58%), rgba(255,255,255,.025);
+}
+.support-discovery-card__eyebrow {
+  margin-bottom: 20px;
+  color: var(--primary);
+  font-size: .7rem;
+  font-weight: 800;
+  letter-spacing: .14em;
+}
+.support-discovery-card h3 {
+  margin: 0 0 9px;
+  font-family: var(--font-heading);
+  font-size: 1.28rem;
+}
+.support-discovery-card p {
+  max-width: 470px;
+  margin: 0 0 22px;
+  color: var(--text-muted);
+  line-height: 1.65;
+}
+.support-discovery-card__link {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: auto;
+  color: var(--primary);
+  font-weight: 800;
+}
+.support-contact-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: 18px;
+  padding: 22px 25px;
+  border: 1px solid rgba(142,255,61,.2);
+  border-radius: 18px;
+  background: rgba(142,255,61,.045);
+}
+.support-contact-strip strong {
+  display: block;
+  margin-bottom: 4px;
+}
+.support-contact-strip p {
+  margin: 0;
+  color: var(--text-muted);
+}
+.support-contact-strip a {
+  flex: 0 0 auto;
+  padding: 12px 17px;
+  border-radius: 999px;
+  background: var(--primary);
+  color: #071006;
+  font-weight: 800;
+  text-decoration: none;
+}
+@media (max-width: 760px) {
+  .support-discovery-section { padding: 44px 22px 0; }
+  .support-discovery-grid { grid-template-columns: 1fr; }
+  .support-discovery-card { min-height: 0; }
+  .support-contact-strip { align-items: flex-start; flex-direction: column; }
+  .support-contact-strip a { width: 100%; text-align: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .support-discovery-card,
+  .support-hub .support-payment-option { transition: none; }
+}
