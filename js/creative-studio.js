@@ -15,7 +15,7 @@ zone.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDe
 ['dragleave','drop'].forEach(t=>zone.addEventListener(t,e=>{e.preventDefault();zone.classList.remove('is-dragging')}));
 zone.addEventListener('drop',e=>{const f=e.dataTransfer.files[0];if(f)inspect(f)});
 function inspect(file){
- if(!file.type.startsWith('image/'))return say('Please choose an image file.');
+ if(!['image/jpeg','image/png','image/webp','image/gif','image/avif'].includes(file.type))return say('Choose a JPG, PNG, WebP, GIF or AVIF image.');
  if(file.size>25*1024*1024)return say('This file is larger than 25 MB. Try a smaller copy.');
  say('Reading image locally…');const url=URL.createObjectURL(file),img=new Image();
  img.onload=()=>{try{
@@ -48,8 +48,8 @@ const promptIds=['subject','style','light','composition','mood','details','avoid
 function build(){const v=id=>$('#prompt-'+id).value.trim(),p=[];if(v('subject'))p.push(v('subject'));if(v('style'))p.push('Visual direction: '+v('style')+'.');if(v('light'))p.push('Lighting: '+v('light')+'.');if(v('composition'))p.push('Composition: '+v('composition')+'.');if(v('mood'))p.push('Mood: '+v('mood')+'.');if(v('details'))p.push('Important details: '+v('details')+'.');if(v('avoid'))p.push('Avoid: '+v('avoid')+'.');$('#prompt-output').textContent=p.length?p.join(' '):'Add a subject above to start building your prompt.'}
 promptIds.forEach(id=>$('#prompt-'+id).addEventListener('input',build));
 $('#copy-prompt').addEventListener('click',()=>{const v=$('#prompt-output').textContent;if(v.startsWith('Add a subject'))return;copy(v).then(()=>{const b=$('#copy-prompt');b.textContent='Copied';setTimeout(()=>b.textContent='Copy prompt',1300)})});
-const w=$('#ratio-width'),h=$('#ratio-height');function ratio(){const a=Number(w.value),b=Number(h.value);if(!a||!b||a<1||b<1){$('#ratio-output').textContent='—';$('#ratio-decimal').textContent='Enter valid dimensions';return}$('#ratio-output').textContent=simplify(a,b);$('#ratio-decimal').textContent=(a/b).toFixed(3)+':1'}[w,h].forEach(x=>x.addEventListener('input',ratio));
+const w=$('#ratio-width'),h=$('#ratio-height');function ratio(){const a=Math.round(Number(w.value)),b=Math.round(Number(h.value));if(!Number.isFinite(a)||!Number.isFinite(b)||!a||!b||a<1||b<1||a>100000||b>100000){$('#ratio-output').textContent='—';$('#ratio-decimal').textContent='Enter valid dimensions';return}$('#ratio-output').textContent=simplify(a,b);$('#ratio-decimal').textContent=(a/b).toFixed(3)+':1'}[w,h].forEach(x=>x.addEventListener('input',ratio));
 document.querySelectorAll('[data-w][data-h]').forEach(b=>b.addEventListener('click',()=>{w.value=b.dataset.w;h.value=b.dataset.h;ratio()}));
 $('#guidance-search').addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase();$('#guidance-list').querySelectorAll('article').forEach(a=>a.hidden=!!q&&!(a.dataset.terms+' '+a.textContent).toLowerCase().includes(q))});
-window.addEventListener('beforeunload',()=>{if(objectUrl)URL.revokeObjectURL(objectUrl)});
+window.addEventListener('beforeunload',()=>{if(objectUrl)URL.revokeObjectURL(objectUrl)});\nlet installPrompt=null;const installButton=$('#install-app');window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();installPrompt=event;installButton.hidden=false});installButton.addEventListener('click',async()=>{if(!installPrompt)return;installPrompt.prompt();await installPrompt.userChoice;installPrompt=null;installButton.hidden=true});window.addEventListener('appinstalled',()=>{installButton.hidden=true;installPrompt=null});
 })();
