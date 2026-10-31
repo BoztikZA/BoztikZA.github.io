@@ -71,6 +71,7 @@
 .store-bottom-links{display:grid;min-width:190px;gap:9px}
 .store-bottom-links a{display:flex;align-items:center;justify-content:space-between;gap:25px;padding:12px 0;border-bottom:1px solid var(--store-line);color:#eaf1e8;font-size:.82rem;font-weight:700;text-decoration:none;transition:color .2s}
 .store-bottom-links a:hover{color:var(--store-acid)}.store-bottom-links a span{color:var(--store-acid)}
+.store-reveal{opacity:0;transform:translateY(18px);transition:opacity .65s ease,transform .65s cubic-bezier(.2,.8,.2,1)}.store-reveal.is-visible{opacity:1;transform:translateY(0)}
 @keyframes store-rise{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
 @keyframes store-card-in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:960px){.stores-page{padding-inline:22px}.storefront-hero{min-height:560px;padding:58px 4%}.storefront-hero__visual{transform:scale(.88);transform-origin:center}.store-platforms{grid-template-columns:1fr;gap:30px;padding:75px 0}.store-section-intro{max-width:650px}.store-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
