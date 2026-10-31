@@ -12,25 +12,80 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Boztik Deliver | Secure Client File Delivery</title>
-  <meta name="description" content="How Boztik sends finished editing work to clients — private, secure delivery links that expire automatically. No public gallery, no account needed.">
+  <meta name="description" content="A clear guide to receiving, opening and downloading finished work through a private Boztik Deliver link, including expiry and support.">
   <meta name="keywords" content="Boztik Deliver, secure file delivery, client delivery, photo editing delivery, creative delivery">
   <meta name="author" content="Boztik">
   <meta name="theme-color" content="#8eff3d">
   <meta property="og:title" content="Boztik Deliver | Secure Client File Delivery">
-  <meta property="og:description" content="How Boztik sends finished editing work to clients through private, secure delivery links that expire automatically.">
+  <meta property="og:description" content="Learn how Boztik Deliver links work, how to download your files and what to do if a delivery expires.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.boztik.com/deliver.html">
   <meta property="og:image" content="https://www.boztik.com/images/boztik-og.png">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Boztik Deliver">
-  <meta name="twitter:description" content="Private, secure delivery links for finished creative work — expiring automatically, with no public gallery.">
+  <meta name="twitter:description" content="A practical guide to opening and downloading finished creative work through Boztik Deliver.">
   <meta name="twitter:image" content="https://www.boztik.com/images/boztik-og.png">
   <link rel="canonical" href="https://www.boztik.com/deliver.html">
   <link rel="icon" type="image/png" href="images/boztik-favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles-premium.css?v=20261024a">
+  <link rel="stylesheet" href="styles-premium.css?v=20261024a">\n
+  <style>
+    .deliver-guide { max-width: 1250px; margin: 0 auto; padding: 72px 30px 96px; }
+    .deliver-guide-hero { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr); gap:36px; align-items:center; padding:48px; border:1px solid rgba(142,255,61,.24); border-radius:30px; background:linear-gradient(135deg,rgba(142,255,61,.10),rgba(95,227,194,.045) 48%,rgba(255,255,255,.025)); box-shadow:0 25px 70px rgba(0,0,0,.24); overflow:hidden; position:relative; }
+    .deliver-guide-kicker { display:inline-flex; align-items:center; gap:9px; color:var(--primary); font-size:.78rem; font-weight:800; letter-spacing:.18em; text-transform:uppercase; margin-bottom:18px; }
+    .deliver-guide-kicker:before { content:""; width:24px; height:2px; background:var(--primary); border-radius:2px; }
+    .deliver-guide-hero h1 { font-family:var(--font-heading); font-size:clamp(2.35rem,5vw,4.4rem); line-height:1.04; letter-spacing:-.045em; margin-bottom:22px; max-width:760px; }
+    .deliver-guide-hero h1 span { color:var(--primary); }
+    .deliver-guide-lead { color:var(--text-muted); font-size:1.08rem; max-width:660px; }
+    .deliver-guide-pills { display:flex; flex-wrap:wrap; gap:10px; margin-top:26px; }
+    .deliver-guide-pill { border:1px solid rgba(142,255,61,.2); background:rgba(5,8,6,.45); color:var(--text); border-radius:999px; padding:8px 13px; font-size:.86rem; font-weight:650; }
+    .deliver-guide-preview { padding:24px; border:1px solid rgba(255,255,255,.1); border-radius:24px; background:rgba(5,8,6,.72); box-shadow:0 18px 48px rgba(0,0,0,.25); }
+    .deliver-guide-preview-top { display:flex; align-items:center; justify-content:space-between; gap:12px; padding-bottom:18px; border-bottom:1px solid rgba(255,255,255,.09); }
+    .deliver-guide-preview-label { color:var(--text-muted); font-size:.78rem; text-transform:uppercase; letter-spacing:.13em; font-weight:800; }
+    .deliver-guide-lock { display:grid; place-items:center; width:42px; height:42px; border-radius:14px; color:var(--primary); background:rgba(142,255,61,.12); }
+    .deliver-guide-preview h2 { font:700 1.25rem var(--font-heading); margin:20px 0 5px; }
+    .deliver-guide-preview p { color:var(--text-muted); font-size:.92rem; }
+    .deliver-guide-preview-row { display:flex; align-items:center; gap:12px; padding:13px 0; border-bottom:1px solid rgba(255,255,255,.07); }
+    .deliver-guide-preview-row:last-child { border:0; padding-bottom:0; }
+    .deliver-guide-preview-row strong { display:block; font-size:.9rem; }
+    .deliver-guide-preview-row span { display:block; color:var(--text-muted); font-size:.8rem; }
+    .deliver-guide-icon { flex:0 0 38px; width:38px; height:38px; display:grid; place-items:center; border-radius:12px; color:var(--primary); background:rgba(142,255,61,.09); }
+    .deliver-guide-section { padding:76px 0 0; }
+    .deliver-guide-heading { max-width:740px; margin:0 auto 34px; text-align:center; }
+    .deliver-guide-heading .section-label { display:inline-block; color:var(--primary); font-size:.78rem; font-weight:800; letter-spacing:.2em; text-transform:uppercase; margin-bottom:12px; }
+    .deliver-guide-heading h2 { font:800 clamp(1.85rem,3.5vw,2.7rem)/1.12 var(--font-heading); letter-spacing:-.03em; margin-bottom:13px; }
+    .deliver-guide-heading p { color:var(--text-muted); }
+    .deliver-guide-steps { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; }
+    .deliver-guide-step { padding:27px; border:1px solid var(--border); border-radius:22px; background:linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.018)); min-height:230px; }
+    .deliver-guide-step-number { display:grid; place-items:center; width:42px; height:42px; border-radius:13px; margin-bottom:22px; color:#061006; background:var(--primary); font-weight:900; }
+    .deliver-guide-step h3 { font:700 1.12rem var(--font-heading); margin-bottom:9px; }
+    .deliver-guide-step p { color:var(--text-muted); font-size:.94rem; }
+    .deliver-guide-two-col { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+    .deliver-guide-panel { padding:28px; border:1px solid rgba(142,255,61,.18); border-radius:22px; background:rgba(255,255,255,.025); }
+    .deliver-guide-panel h3 { font:700 1.18rem var(--font-heading); margin-bottom:12px; }
+    .deliver-guide-panel p,.deliver-guide-panel li { color:var(--text-muted); font-size:.94rem; }
+    .deliver-guide-panel ul { padding-left:20px; display:grid; gap:9px; margin-top:12px; }
+    .deliver-guide-note { margin-top:18px; padding:16px 18px; border-left:3px solid var(--primary); border-radius:0 12px 12px 0; background:rgba(142,255,61,.07); color:var(--text); font-size:.92rem; }
+    .deliver-guide-faq { display:grid; gap:12px; max-width:900px; margin:0 auto; }
+    .deliver-guide-faq details { border:1px solid rgba(142,255,61,.18); border-radius:16px; background:rgba(255,255,255,.025); padding:18px 20px; }
+    .deliver-guide-faq summary { cursor:pointer; list-style:none; font-weight:700; padding-right:28px; position:relative; }
+    .deliver-guide-faq summary::-webkit-details-marker { display:none; }
+    .deliver-guide-faq summary:after { content:"+"; position:absolute; right:0; top:-2px; color:var(--primary); font-size:1.35rem; line-height:1; }
+    .deliver-guide-faq details[open] summary:after { content:"−"; }
+    .deliver-guide-faq details p { color:var(--text-muted); margin-top:12px; font-size:.94rem; }
+    .deliver-guide-cta { margin-top:76px; padding:38px; border:1px solid rgba(142,255,61,.24); border-radius:26px; background:linear-gradient(130deg,rgba(142,255,61,.09),rgba(255,255,255,.025)); text-align:center; }
+    .deliver-guide-cta h2 { font:800 clamp(1.8rem,3vw,2.45rem)/1.12 var(--font-heading); margin-bottom:12px; }
+    .deliver-guide-cta p { max-width:650px; margin:0 auto; color:var(--text-muted); }
+    .deliver-guide-actions { display:flex; justify-content:center; align-items:center; flex-wrap:wrap; gap:12px; margin-top:24px; }
+    .deliver-guide-actions a { display:inline-flex; align-items:center; justify-content:center; min-height:46px; padding:12px 20px; border-radius:999px; font-weight:800; }
+    .deliver-guide-primary { background:var(--primary); color:#071006; }
+    .deliver-guide-secondary { border:1px solid rgba(255,255,255,.18); color:var(--text); }
+    @media(max-width:850px) { .deliver-guide-hero { grid-template-columns:1fr; padding:34px; } .deliver-guide-steps { grid-template-columns:1fr; } .deliver-guide-step { min-height:0; } }
+    @media(max-width:620px) { .deliver-guide { padding:38px 18px 68px; } .deliver-guide-hero { padding:25px 21px; border-radius:23px; } .deliver-guide-preview { padding:19px; } .deliver-guide-section { padding-top:58px; } .deliver-guide-two-col { grid-template-columns:1fr; } .deliver-guide-panel,.deliver-guide-cta { padding:23px; } .deliver-guide-cta { margin-top:58px; } }
+    @media(prefers-reduced-motion:reduce) { .deliver-guide * { scroll-behavior:auto !important; transition:none !important; animation:none !important; } }
+  </style>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3739684241868984"
        crossorigin="anonymous"></script>
   <script type="application/ld+json">
@@ -40,7 +95,7 @@
     "name": "Boztik Deliver",
     "serviceType": "Secure client file delivery",
     "provider": { "@type": "Person", "name": "Boztik" },
-    "description": "Private, secure, time-limited delivery links Boztik uses to send finished editing and restoration work to clients. Files expire automatically and are never published in a public gallery.",
+    "description": "Boztik Deliver provides private, time-limited links for clients to access finished editing and restoration work.",
     "areaServed": "Worldwide",
     "url": "https://www.boztik.com/deliver.html"
   }
@@ -83,78 +138,139 @@
   </header>
 
   <main id="main-content">
-    <section class="page-hero reveal">
-      <div class="section-heading" style="margin-bottom:0;">
-        <span class="section-label">Boztik Deliver</span>
-        <h1>How finished work gets to you.</h1>
-        <p>When a project is complete, you receive a private, secure link to download your files. No public gallery, no account needed — the link works on its own and expires automatically once your delivery window is over.</p>
-      </div>
-    </section>
-<section class="reveal">
-      <div class="section-heading">
-        <span class="section-label">The delivery</span>
-        <h2>Built for clients, not for show.</h2>
-        <p>Deliver is the quiet part of working with Boztik — the part that gets your files back to you safely and then steps out of the way.</p>
-      </div>
-      <div class="service-grid">
-        <article class="service-detail-card">
-          <div class="service-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 3l1.8 5.4L19 11l-5.2 2.6L12 19l-1.8-5.4L5 11l5.2-2.6L12 3z"/>
-            </svg>
+    <div class="deliver-guide">
+      <section class="deliver-guide-hero" aria-labelledby="deliver-guide-title">
+        <div>
+          <span class="deliver-guide-kicker">Boztik Deliver · Client guide</span>
+          <h1 id="deliver-guide-title">Your finished work.<br><span>Ready when you are.</span></h1>
+          <p class="deliver-guide-lead">When your project is complete, Boztik sends you a private delivery link. Open it in your browser to view the files, check the delivery details and download your work — without creating an account or installing an app.</p>
+          <div class="deliver-guide-pills" aria-label="Delivery features">
+            <span class="deliver-guide-pill">Private delivery link</span>
+            <span class="deliver-guide-pill">Browser-based access</span>
+            <span class="deliver-guide-pill">Time-limited availability</span>
           </div>
-          <h3>A private link for your project</h3>
-          <p>Each completed job gets its own delivery link, unique to your files. The link is sent directly to you and is never listed or shared publicly.</p>
-        </article>
-
-        <article class="service-detail-card">
-          <div class="service-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 4h16v16H4z"/><path d="M8 15l3-3 2 2 3-4 3 5"/>
-            </svg>
-          </div>
-          <h3>View and download your files</h3>
-          <p>Open the link to preview and download your images or files at the size they were finished. No sign-up, no upload — just your work.</p>
-        </article>
-
-        <article class="service-detail-card">
-          <div class="service-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
-            </svg>
-          </div>
-          <h3>Expires automatically</h3>
-          <p>Deliveries are available for a set time after the project is shared, then the files are automatically removed. This keeps your work private and keeps storage clean.</p>
-        </article>
-      </div>
-    </section>
-
-    <section class="reveal">
-      <div class="service-grid">
-        <article class="service-detail-card" style="grid-column:1/-1;">
-          <h3 style="margin-top:0;">What to expect</h3>
-          <ul>
-            <li>You'll receive a delivery link only after your project is finished.</li>
-            <li>The link is private to you — Boztik never publishes a public list of deliveries.</li>
-            <li>Downloads count toward your delivery window, and expired links are removed automatically.</li>
-            <li>If a link has expired, just get in touch and Boztik can re-upload the files for you.</li>
-          </ul>
-        </article>
-      </div>
-    </section>
-
-    <section class="cta-shell reveal">
-      <div class="cta-card">
-        <span class="cta-badge">Working with Boztik</span>
-        <h2>Need editing or restoration work done?</h2>
-        <p>Deliver is how finished Boztik work reaches clients. If you're looking to have work done, get in touch — and if you're here after a link expired, ask for a re-upload.</p>
-        <div class="support-actions">
-          <a class="support-button cta-green" href="services.html">Explore Services</a>
-          <a class="support-button cta-teal" href="contact.html">Request an Edit</a>
-          <a class="secondary-link" href="index.html">Back to the Boztik homepage</a>
         </div>
-      </div>
-    </section>
+        <aside class="deliver-guide-preview" aria-label="What your delivery page contains">
+          <div class="deliver-guide-preview-top">
+            <span class="deliver-guide-preview-label">Your delivery, at a glance</span>
+            <span class="deliver-guide-lock" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+            </span>
+          </div>
+          <h2>One link. Your project files.</h2>
+          <p>The delivery page shows the information and download options for the project shared with you.</p>
+          <div class="deliver-guide-preview-row">
+            <span class="deliver-guide-icon" aria-hidden="true">01</span>
+            <div><strong>Project details</strong><span>Check the project name and delivery notes</span></div>
+          </div>
+          <div class="deliver-guide-preview-row">
+            <span class="deliver-guide-icon" aria-hidden="true">02</span>
+            <div><strong>File previews</strong><span>View supported files before downloading</span></div>
+          </div>
+          <div class="deliver-guide-preview-row">
+            <span class="deliver-guide-icon" aria-hidden="true">03</span>
+            <div><strong>Download options</strong><span>Save the files to your own device</span></div>
+          </div>
+        </aside>
+      </section>
+
+      <section class="deliver-guide-section" aria-labelledby="deliver-steps-title">
+        <div class="deliver-guide-heading">
+          <span class="section-label">The process</span>
+          <h2 id="deliver-steps-title">From completed project to your device</h2>
+          <p>There are just three simple steps between receiving your link and saving your finished files.</p>
+        </div>
+        <div class="deliver-guide-steps">
+          <article class="deliver-guide-step">
+            <span class="deliver-guide-step-number">01</span>
+            <h3>Receive your link</h3>
+            <p>Once the work is ready, Boztik shares your delivery URL with you directly. Keep the original message so you can return to the link while it remains active.</p>
+          </article>
+          <article class="deliver-guide-step">
+            <span class="deliver-guide-step-number">02</span>
+            <h3>Open and review</h3>
+            <p>Open the link in a modern web browser. Review the project information and available files. Supported images and documents may be previewed on the delivery page.</p>
+          </article>
+          <article class="deliver-guide-step">
+            <span class="deliver-guide-step-number">03</span>
+            <h3>Download and save</h3>
+            <p>Use the download controls on the page to save individual files or the available download bundle. Choose a folder you can find again and keep your own backup.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="deliver-guide-section" aria-labelledby="deliver-details-title">
+        <div class="deliver-guide-heading">
+          <span class="section-label">A few important details</span>
+          <h2 id="deliver-details-title">Know how your delivery link works</h2>
+          <p>Your link is designed for straightforward handover. These details help you use it safely and avoid losing access to your files.</p>
+        </div>
+        <div class="deliver-guide-two-col">
+          <article class="deliver-guide-panel">
+            <h3>Keep your link private</h3>
+            <p>Deliveries are not presented as a public gallery or searchable directory. Access is provided through the unique link sent for your project.</p>
+            <div class="deliver-guide-note">Important: anyone who has your delivery link may be able to open it. Share it only with people you trust, and avoid posting it publicly.</div>
+          </article>
+          <article class="deliver-guide-panel">
+            <h3>Check the expiry information</h3>
+            <p>Each delivery has an expiry date and time. The delivery page displays its availability information, and access is blocked once the delivery has expired.</p>
+            <ul>
+              <li>Open the link as soon as you receive it.</li>
+              <li>Download the files you need before the displayed expiry.</li>
+              <li>Do not rely on the link as your long-term storage or backup.</li>
+            </ul>
+          </article>
+          <article class="deliver-guide-panel">
+            <h3>Save a copy of your files</h3>
+            <p>After downloading, confirm the files are present and open correctly on your device. Keep a second copy somewhere safe, such as an external drive or your own trusted cloud storage.</p>
+          </article>
+          <article class="deliver-guide-panel">
+            <h3>How file access is handled</h3>
+            <p>The delivery page requests file access through the Boztik delivery service. The browser does not receive Boztik's underlying storage credentials or raw storage paths; file access is provided through short-lived signed links.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="deliver-guide-section" aria-labelledby="deliver-help-title">
+        <div class="deliver-guide-heading">
+          <span class="section-label">Help and answers</span>
+          <h2 id="deliver-help-title">Questions about your delivery?</h2>
+          <p>Here are the most common things to know when receiving finished work.</p>
+        </div>
+        <div class="deliver-guide-faq">
+          <details>
+            <summary>Do I need to create an account?</summary>
+            <p>No account or special application is required to open a delivery link. Use the link in a web browser on a device with an internet connection.</p>
+          </details>
+          <details>
+            <summary>Can I open the link on my phone?</summary>
+            <p>Yes. You can open the link in a mobile browser. For larger files or multiple downloads, a computer may be more convenient and may offer more control over where files are saved.</p>
+          </details>
+          <details>
+            <summary>Why can’t I open my delivery anymore?</summary>
+            <p>The delivery may have reached its expiry date, or there may be a temporary connection or browser issue. Check the link and your internet connection. If the page confirms that the delivery has expired, contact Boztik and ask whether the files can be uploaded again.</p>
+          </details>
+          <details>
+            <summary>What should I do if a file will not download?</summary>
+            <p>Try the download again, check that your device has enough free storage and test another browser if needed. If the problem continues, contact Boztik and include the project name and a short description of the issue. Do not share your private link in a public post.</p>
+          </details>
+          <details>
+            <summary>Does Boztik keep the link available forever?</summary>
+            <p>No. Delivery links are time-limited. The expiry date and time shown on the delivery page determine when access ends. Download your files and keep your own backup before then.</p>
+          </details>
+        </div>
+      </section>
+
+      <section class="deliver-guide-cta" aria-labelledby="deliver-contact-title">
+        <span class="deliver-guide-kicker">Need a hand?</span>
+        <h2 id="deliver-contact-title">We’re here if something goes wrong.</h2>
+        <p>If your delivery has expired, a download is not working or you have a question about your finished project, get in touch. Include the project name so the request can be identified more easily.</p>
+        <div class="deliver-guide-actions">
+          <a class="deliver-guide-primary" href="contact.html">Contact Boztik</a>
+          <a class="deliver-guide-secondary" href="services.html">Explore Services</a>
+        </div>
+      </section>
+    </div>
   </main>
 
   <footer>
