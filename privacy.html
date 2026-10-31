@@ -570,41 +570,16 @@ Stores extension settings and preferences locally on your own device.
 <h2>5. Artificial Intelligence Services</h2>
 
 <p>
-Some features on this website and in the assistant are able to connect to third-party AI providers if you choose to enable them.
+The current Boztik Creative Studio does not connect to OpenAI, Anthropic, Google Gemini or another generative AI provider. Its prompt builder and built-in creative guidance run in your browser. Questions entered into the built-in guidance helper are not sent to an AI provider or to Boztik's servers.
 </p>
 
 <p>
-The current site implementation supports direct connections from your browser to the following providers when you supply and enable a provider API key in the UI:
-</p>
-
-<ul>
-  <li>OpenAI (ChatGPT-compatible APIs)</li>
-  <li>Anthropic (Claude)</li>
-  <li>Google (Gemini / Generative Language API)</li>
-</ul>
-
-<p>
-How AI requests work on this site:
-</p>
-
-<ul>
-  <li>Requests are sent only after an explicit user action — for example when you click Connect, Test or Submit in the Creative Assistant UI, or when you send a prompt to the assistant.</li>
-  <li>When a request is made, your browser sends the prompt (and the built-in system prompt used to guide responses) directly to the selected provider's API endpoint. The request may include the API key you supplied in your browser.</li>
-  <li>API keys and prompts are sent directly from your browser to the provider. Boztik's site does not forward your key to any Boztik-operated server, and Boztik does not receive your API key when you connect a provider in the browser UI.</li>
-  <li>The site stores an optional key only in your browser (localStorage) so the connection persists between visits on the same device; it is not uploaded to Boztik-operated servers by the current site code. The site does not save the chat itself, and the conversation clears when you reload the page.</li>
-  <li>Responses returned by the provider are displayed in your browser. Unless you explicitly opt in to a future feature that may upload or log prompts/responses, Boztik does not permanently store prompts, requests, responses or uploaded images on Boztik-operated servers.</li>
-</ul>
-
-<p>
-Each AI provider processes requests according to its own Privacy Policy and Terms of Service. When you use a provider you accept that provider's handling of your data (prompts, responses and any content you include in requests).
+The retired standalone Creative Assistant previously offered optional direct connections to OpenAI, Anthropic and Google Gemini using API keys entered by the user. That feature has been removed and its former page now redirects to Creative Studio. If you used that older feature, an API key may remain in this browser's localStorage. Creative Studio does not read or use those entries. You can remove them by clearing Boztik's site data for this browser.
 </p>
 
 <p>
-If you do not want to use external AI services, the assistant continues to provide built-in guidance that runs entirely in your browser and does not require a provider connection.
+If you independently use another third-party AI service or browser extension, that service's own privacy policy and terms govern the information you choose to provide to it.
 </p>
-
-</section>
-<section class="privacy-card">
 
 <h2>6. Third-Party Services</h2>
 
