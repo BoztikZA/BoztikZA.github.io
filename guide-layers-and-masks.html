@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-H8W54EBM20"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-H8W54EBM20');
+  </script>
+  <script>document.documentElement.className += ' js';</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Understanding Layers and Masks in Photoshop | Boztik</title>
+  <meta name="description" content="A beginner&#x27;s guide to layers and layer masks in Photoshop: what they are, how to add and paint a mask, adjustment layers, common mistakes and fixes.">
+  <meta name="author" content="Boztik">
+  <meta name="theme-color" content="#8eff3d">
+  <meta property="og:title" content="Understanding Layers and Masks in Photoshop">
+  <meta property="og:description" content="A beginner&#x27;s guide to layers and layer masks in Photoshop: what they are, how to add and paint a mask, adjustment layers, common mistakes and fixes.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://www.boztik.com/guide-layers-and-masks.html">
+  <meta property="og:image" content="https://www.boztik.com/images/boztik-og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://www.boztik.com/images/boztik-og.png">
+  <link rel="canonical" href="https://www.boztik.com/guide-layers-and-masks.html">
+  <link rel="icon" type="image/png" href="images/boztik-favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles-premium.css?v=20261024a">
+  <link rel="stylesheet" href="guides.css?v=20261031a">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3739684241868984"
+       crossorigin="anonymous"></script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Understanding Layers and Masks in Photoshop",
+    "description": "A beginner's guide to layers and layer masks in Photoshop: what they are, how to add and paint a mask, adjustment layers, common mistakes and fixes.",
+    "image": "https://www.boztik.com/images/boztik-og.png",
+    "author": {
+      "@type": "Organization",
+      "name": "Boztik",
+      "url": "https://www.boztik.com/about.html"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Boztik",
+      "url": "https://www.boztik.com"
+    },
+    "datePublished": "2026-10-31",
+    "dateModified": "2026-10-31",
+    "mainEntityOfPage": "https://www.boztik.com/guide-layers-and-masks.html"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Guides",
+        "item": "https://www.boztik.com/guides.html"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Layers and Masks",
+        "item": "https://www.boztik.com/guide-layers-and-masks.html"
+      }
+    ]
+  }
+  </script>
+</head>
+<body class="gd" data-no-support-float>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <div class="background-glow">
+    <div class="glow1"></div>
+    <div class="glow2"></div>
+    <div class="glow3"></div>
+  </div>
+
+  <header>
+    <nav class="navbar" aria-label="Primary navigation">
+      <a href="index.html" class="logo-area">
+        <img src="images/boztik-mark.png" alt="Boztik logo" width="320" height="295">
+        <div>
+          <span class="logo-title">BOZTIK</span>
+          <span class="logo-subtitle">Photoshop · Restoration · Tools</span>
+        </div>
+      </a>
+      <button class="nav-toggle" type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="primary-navigation">
+        <span class="nav-toggle__label">Menu</span><span class="nav-toggle__icon" aria-hidden="true"></span>
+      </button>
+      <div class="nav-links" id="primary-navigation">
+        <a href="index.html">Home</a>
+        <a class="nav-store-link" href="stores.html"><span class="nav-store-mark" aria-hidden="true"><b>BOZTIK</b><i>STORES</i></span><span>Boztik Stores</span></a>
+        <a href="creative-toolkit.html">Creative Toolkit</a>
+        <a href="image-inspector.html">Image Inspector</a>
+        <a href="creative-assistant.html">Creative Assistant</a>
+        <a href="services.html">Services</a>
+        <a href="deliver.html">Deliver</a>
+        <a href="guides.html" aria-current="page">Guides</a>
+        <a href="portfolio.html">Portfolio</a>
+        <a href="support.html">Support</a>
+        <a href="contact.html">Contact</a>
+        <a href="about.html">About</a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main-content">
+    <header class="gd-head">
+      <div class="g-wrap">
+        <nav aria-label="Breadcrumb"><ol class="gd-crumbs"><li><a href="guides.html">Guides</a></li><li><a href="guides.html?category=photoshop-basics">Photoshop Basics</a></li><li aria-current="page">Layers and Masks</li></ol></nav>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="g-chip">Photoshop Basics</span><span class="g-badge">New</span></div>
+        <h1 style="margin-top:16px">Understanding Layers and Masks in Photoshop</h1>
+        <p class="gd-dek">Layers and masks let you change a photo without damaging it. This guide explains both from scratch, with the exact buttons, shortcuts and a worked example you can follow.</p>
+        <div class="gd-meta"><span>By <a href="about.html">Boztik</a></span><span>Published <time datetime="2026-10-31">31 October 2026</time></span><span>Updated <time datetime="2026-10-31">31 October 2026</time></span><span>7 min read</span><span>Beginner</span></div>
+      </div>
+    </header>
+
+    <div class="g-wrap gd-layout">
+      <details class="gd-toc" data-toc open>
+        <summary>In this guide</summary>
+        <ol><li><a href="#why">Why layers matter</a></li><li><a href="#layer-types">The layer types you will use most</a></li><li><a href="#first-layers">Step by step: your first layers</a></li><li><a href="#masks">Layer masks: controlling where a change shows</a></li><li><a href="#paint-mask">Step by step: paint a mask</a></li><li><a href="#more-tools">Two more ideas worth knowing</a></li><li><a href="#mistakes">Common mistakes and how to fix them</a></li><li><a href="#summary">Key takeaways</a></li></ol>
+      </details>
+
+      <article class="gd-body" data-guide-body>
+        <aside class="gd-glance" aria-labelledby="glance-title">
+          <h2 id="glance-title">At a glance</h2>
+          <dl>
+            <dt>Level</dt><dd>Beginner</dd>
+            <dt>Reading time</dt><dd>About 7 minutes</dd>
+            <dt>You will need</dt><dd>Photoshop (any recent version) and one photo to practise on</dd>
+            <dt>Best for</dt><dd>Complete beginners to Photoshop</dd>
+          </dl>
+        </aside>
+
+      <h2 id="why">Why layers matter</h2>
+<p>When you edit a photo directly, every change is permanent: brighten the pixels and the old values are gone. <dfn>Layers</dfn> avoid that. Think of a stack of clear sheets laid over the original photograph. Each sheet holds one change, and you can hide, adjust or delete any sheet without touching the photo underneath.</p>
+<p>A <dfn>layer mask</dfn> is the second half of the idea. It is a greyscale picture attached to a layer that decides which parts of that layer are visible. Together, layers and masks give you what editors call <dfn>non-destructive editing</dfn>: you can change your mind at any point because nothing was overwritten.</p>
+<p>This guide is for people who have Photoshop open but are not sure what the Layers panel is for. It explains the ideas first, then walks through the exact steps.</p>
+
+<h2 id="layer-types">The layer types you will use most</h2>
+<figure class="gd-fig">
+  <img src="images/guides/diagram-layer-stack.svg" width="760" height="360" loading="lazy" decoding="async" alt="Diagram of a layer stack: a Curves adjustment layer and a Spot Repair pixel layer sit above the Background layer, which holds the original photo.">
+  <figcaption>A typical stack, read from the bottom up. Original diagram by Boztik.</figcaption>
+</figure>
+<ul>
+  <li><strong>Background layer.</strong> Your original photo. It is locked by default. Leave it alone, and do your work on layers above it.</li>
+  <li><strong>Pixel layers.</strong> Ordinary layers that hold pixels. You use them for repairs, such as cloning or healing dust off a face, so that the repair sits above the original instead of replacing it.</li>
+  <li><strong>Adjustment layers.</strong> Layers that apply a correction (brightness, contrast, colour) to everything below them without changing any pixels. Each one has settings you can reopen later.</li>
+  <li><strong>Smart Objects.</strong> A container that keeps a layer's original data so filters can be edited or removed later. Useful, but not needed for this guide.</li>
+</ul>
+<p>Layers are applied from the bottom of the panel to the top, so what is higher in the stack is drawn over what is lower.</p>
+
+<h2 id="first-layers">Step by step: your first layers</h2>
+<div class="gd-ps">
+  <p class="gd-ps__label">In Photoshop</p>
+  <p>Menus and panel layouts vary slightly between versions. If you cannot find the Layers panel, open <strong>Window &gt; Layers</strong> (shortcut <kbd>F7</kbd>).</p>
+</div>
+<ol class="gd-steps">
+  <li><strong>Open a photo and look at the Layers panel.</strong>
+    <p>You should see one layer called Background, usually with a small padlock. That is your original.</p></li>
+  <li><strong>Add an adjustment layer.</strong>
+    <p>At the bottom of the Layers panel, click the half-filled circle icon (<em>Create new fill or adjustment layer</em>) and choose <strong>Curves</strong> or <strong>Levels</strong>. A new layer appears above the Background with a mask thumbnail already attached.</p>
+    <p>Drag the settings and watch the photo change. Switch the layer's eye icon off and on to compare. The original has not been touched.</p></li>
+  <li><strong>Add an empty pixel layer for repairs.</strong>
+    <p>Click the <em>Create a new layer</em> icon (a square with a folded corner) at the bottom of the panel, or press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>N</kbd> (<kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>N</kbd> on Mac). Double-click its name and call it something you will recognise, such as "dust repairs".</p></li>
+  <li><strong>Name your layers.</strong>
+    <p>It feels like a chore for one edit and saves you when you have twelve layers. A name like "face brightness" tells you what to fix a week later; "Layer 7" does not.</p></li>
+  <li><strong>Reorder and compare.</strong>
+    <p>Drag a layer up or down to change the order. Click the eye icon beside any layer to hide it. Before you finish, toggle each layer off and on, to see what it contributes.</p></li>
+</ol>
+
+<aside class="adsense-section" aria-label="Advertisements">
+        <div class="adsense-card">
+          <div class="adsense-meta"><span class="adsense-label">Advertisements</span></div>
+          <ins class="adsbygoogle"
+               style="display:block; width:100%; min-height:90px;"
+               data-ad-client="ca-pub-3739684241868984"
+               data-ad-slot="7204038822"
+               data-ad-format="auto"
+               data-full-width-responsive="true"></ins>
+          <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+        </div>
+      </aside>
+
+      <h2 id="masks">Layer masks: controlling where a change shows</h2>
+<p>A mask works with black, white and grey, and the rule is short: <strong>white reveals, black hides, grey is partly visible</strong>. On a mask, white means "show this layer here". Black means "do not show this layer here", and the layer below shows through instead.</p>
+<figure class="gd-fig">
+  <img src="images/guides/diagram-mask-black-white.svg" width="780" height="385" loading="lazy" decoding="async" alt="Diagram showing a layer mask: where the mask is white the layer's effect is visible, where it is black the effect is hidden, and soft grey gives a partial effect.">
+  <figcaption>White reveals, black hides, grey is in between. Original diagram by Boztik.</figcaption>
+</figure>
+<p>Masks are better than the eraser because they are reversible. If you erase part of a layer, those pixels are gone. If you paint black onto a mask, the pixels are only hidden; paint white again and they come back.</p>
+
+<h2 id="paint-mask">Step by step: paint a mask</h2>
+<p>This example brightens only a face in a photo where the rest is already fine.</p>
+<ol class="gd-steps">
+  <li><strong>Add a Curves adjustment layer</strong> as in the previous section, and pull the curve up in the middle so the whole photo gets brighter. Do not worry that everything is too bright; the mask will fix that.</li>
+  <li><strong>Make the mask black.</strong>
+    <p>Click the white mask thumbnail on the Curves layer to select it (a frame appears around it). Press <kbd>Ctrl</kbd>+<kbd>I</kbd> (<kbd>Cmd</kbd>+<kbd>I</kbd> on Mac) to invert it. The mask turns black and the brightening disappears everywhere.</p></li>
+  <li><strong>Set up the brush.</strong>
+    <p>Choose the Brush tool (<kbd>B</kbd>). Press <kbd>D</kbd> to reset the colours to black and white, then <kbd>X</kbd> to swap them so white is the foreground colour. Choose a soft round brush, set Opacity to around 20 to 30 per cent, and make the brush slightly smaller than the face.</p></li>
+  <li><strong>Paint with white.</strong>
+    <p>With the mask thumbnail still selected, paint over the face. The brightening builds up gradually where you paint. Several light strokes look more natural than one heavy one.</p></li>
+  <li><strong>Fix mistakes by swapping colours.</strong>
+    <p>Painted too far? Press <kbd>X</kbd> so black is the foreground colour and paint over the spill. Press <kbd>X</kbd> again to go back to white.</p></li>
+  <li><strong>Check the mask itself.</strong>
+    <p>Hold <kbd>Alt</kbd> (<kbd>Option</kbd> on Mac) and click the mask thumbnail to view the mask as a black-and-white picture. Click again to return. Hard edges or blobs are easier to see here.</p></li>
+</ol>
+<div class="gd-ps">
+  <p class="gd-ps__label">In Photoshop</p>
+  <p>To add a mask to an ordinary pixel layer, select the layer and click the <em>Add layer mask</em> button (a rectangle with a circle) at the bottom of the Layers panel. A white mask means everything is visible; hold <kbd>Alt</kbd> / <kbd>Option</kbd> while clicking the button to start with a black mask instead.</p>
+</div>
+<p>Adobe's own help page for this is listed under Sources below, and is worth bookmarking.</p>
+
+<h2 id="more-tools">Two more ideas worth knowing</h2>
+<h3>Clipping a layer to the one below</h3>
+<p>If an adjustment should only affect the single layer under it, not everything beneath, hold <kbd>Alt</kbd> / <kbd>Option</kbd> and click the line between the two layers in the panel. The adjustment becomes a <dfn>clipping mask</dfn> and an arrow shows it is attached.</p>
+<h3>Stamping a flattened copy</h3>
+<p>To make a new layer containing everything you can currently see, without flattening your work, press <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>E</kbd> (<kbd>Cmd</kbd>+<kbd>Option</kbd>+<kbd>Shift</kbd>+<kbd>E</kbd> on Mac). It is useful before a final sharpening pass.</p>
+
+<h2 id="mistakes">Common mistakes and how to fix them</h2>
+<ul>
+  <li><strong>Painting on the layer, not the mask.</strong> If nothing seems to change, or you are painting colour onto the photo, check which thumbnail has the frame around it. Undo with <kbd>Ctrl</kbd>+<kbd>Z</kbd> and click the mask thumbnail.</li>
+  <li><strong>Brush opacity at 100 per cent.</strong> Hard, obvious edges usually come from a hard brush or full opacity. Use a soft brush and build up gradually.</li>
+  <li><strong>Can't paint white or black.</strong> The foreground colour is not what you think. Press <kbd>D</kbd> to reset to black and white, then <kbd>X</kbd> to swap.</li>
+  <li><strong>Adjustment appears to do nothing.</strong> It might be clipped to a layer that is hidden, or the mask may be black. Alt-click the mask thumbnail to look.</li>
+  <li><strong>Flattening too early.</strong> Merging layers throws away the ability to change your mind. Save a layered file (see the <a href="guide-jpeg-png-tiff.html">file formats guide</a>) before you export a flat JPEG.</li>
+</ul>
+<div class="gd-note gd-note--limit">
+  <p class="gd-note__label">Limits to be aware of</p>
+  <p>Layers do not make a bad edit good. They only make it easier to undo. Many layers also make files large and slow, so you may want to merge or delete layers you no longer need once you are happy.</p>
+</div>
+
+<div class="gd-key">
+  <h2 id="summary">Key takeaways</h2>
+  <ul>
+    <li>Leave the Background layer alone, and work on layers above it.</li>
+    <li>Adjustment layers change tone and colour without changing pixels.</li>
+    <li>On a mask, white reveals, black hides, grey is partial.</li>
+    <li>Paint masks with a soft brush at low opacity, and press <kbd>X</kbd> to swap between white and black.</li>
+    <li>Name your layers and save a layered file before exporting.</li>
+  </ul>
+</div>
+<p>Next, see how these ideas fit together in a real workflow in <a href="guide-photo-restoration.html">restoring old family photographs</a>, or use them to make a clean removal in the <a href="guide-object-removal.html">object removal guide</a>.</p>
+<aside class="gd-sources">
+  <h2>Sources</h2>
+  <ul>
+    <li><a href="https://helpx.adobe.com/ee/photoshop/how-to/layer-mask.html" rel="noopener">Adobe: How to use layer masks in Photoshop</a></li>
+  </ul>
+</aside>
+
+      </article>
+    </div>
+
+    <div class="g-wrap gd-after">
+      <nav class="gd-pager" aria-label="Previous and next guide"><a href="guide-image-resolution-dpi.html" rel="next"><small>Next guide</small><strong>Resolution and DPI</strong></a></nav>
+      <h2>Keep learning</h2>
+      <ul class="gd-related"><li><a href="guide-photo-restoration.html"><span class="g-chip">Photo Restoration</span><strong>How to Restore Old Family Photographs: A Beginner&#x27;s Guide</strong><span>A step-by-step workflow for dust, scratches, creases, fading and faces, with Photoshop steps and honest advice on where AI helps and where it misleads.</span></a></li><li><a href="guide-object-removal.html"><span class="g-chip">Retouching</span><strong>How to Remove Objects From Photos in Photoshop</strong><span>Which tool to reach for, how to rebuild the background, and how to check that a removal looks real instead of patched.</span></a></li><li><a href="guide-jpeg-png-tiff.html"><span class="g-chip">File Formats &amp; Quality</span><strong>JPEG vs PNG vs TIFF: Which Format Should You Use?</strong><span>What each file format is good at, why you should keep a master copy, and a simple rule for choosing when you save.</span></a></li></ul>
+      <a class="gd-back" href="guides.html">Back to all guides</a>
+    </div>
+
+    <section class="cta-shell">
+      <div class="cta-card">
+        <span class="cta-badge">Have a photo that needs work?</span>
+        <h2>See the editing services these guides come from.</h2>
+        <div class="support-actions">
+          <a class="support-button" href="services.html">View Services</a>
+          <a class="secondary-link" href="portfolio.html">See the Portfolio</a>
+          <a class="secondary-link" href="guides.html">More Guides</a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <img src="images/boztik-mark.png" alt="Boztik logo" class="footer-logo" width="320" height="295">
+    <h3>BOZTIK</h3>
+    <p>Boztik is an independent creative brand — professional Photoshop editing, restoration, creative image work, practical tools, and guides by one person.</p>
+    <div class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="creative-toolkit.html">Creative Toolkit</a>
+      <a href="image-inspector.html">Image Inspector</a>
+      <a href="creative-assistant.html">Creative Assistant</a>
+      <a href="services.html">Services</a>
+      <a href="guides.html">Guides</a>
+      <a href="portfolio.html">Portfolio</a>
+      <a href="contact.html">Contact</a>
+      <a href="about.html">About</a>
+      <a href="index.html#downloads">Download Extension</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+    </div>
+    <div class="copyright">© 2026 Boztik. All Rights Reserved.</div>
+  </footer>
+
+  <script defer src="js/pageview.js?v=1"></script>
+  <script defer src="js/boztik-events.js?v=1"></script>
+  <script defer src="js/store-clicks.js?v=1"></script>
+  <script src="js/site.js?v=20260805a"></script>
+  <script src="js/support.js"></script>
+  <script defer src="js/guides.js?v=20261031a"></script>
+</body>
+</html>
