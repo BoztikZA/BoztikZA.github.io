@@ -33,7 +33,7 @@ jobs:
           mkdir -p _site
           cp -r js images deliver-v3 _site/
           cp -- \
-            index.html stores.html about.html contact.html creative-assistant.html creative-toolkit.html \
+            index.html stores.html about.html contact.html creative-assistant.html creative-studio.html creative-toolkit.html \
             deliver.html guide-ai-vs-professional-editing.html guide-object-removal.html \
             guide-overedited-look.html guide-photo-restoration.html guides.html \
             guide-layers-and-masks.html guide-image-resolution-dpi.html guide-jpeg-png-tiff.html guide-scanning-old-photos.html \
