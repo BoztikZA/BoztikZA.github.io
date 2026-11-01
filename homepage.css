@@ -646,3 +646,57 @@
 @media(max-width:900px){.hm-creative-studio__grid{grid-template-columns:1fr}.hm-creative-studio__visual{max-width:700px;width:100%;margin:auto;transform:none}}
 @media(max-width:520px){.hm-creative-studio__visual{padding:10px}.studio-preview-main{padding:10px}.studio-preview-image{grid-template-columns:1fr}.preview-image-art{min-height:125px}.preview-image-data{grid-template-columns:1fr 1fr}.studio-preview-footer{font-size:.45rem}.hm-creative-studio__actions{align-items:flex-start;flex-direction:column}}
 @media(prefers-reduced-motion:reduce){.hm-creative-studio__visual{transform:none}}
+
+
+/* Creative Toolkit release highlight on the homepage. */
+.hm-toolkit__eyebrow {
+  margin-bottom: 14px;
+  color: var(--hm-neon);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+}
+.hm-toolkit__highlights {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 22px;
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.hm-toolkit__highlights li {
+  position: relative;
+  padding-left: 18px;
+  color: var(--hm-muted);
+  font-size: 0.94rem;
+  line-height: 1.5;
+}
+.hm-toolkit__highlights li::before {
+  content: "";
+  position: absolute;
+  top: 0.62em;
+  left: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--hm-neon);
+}
+.hm-toolkit__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px 24px;
+  margin-top: 26px;
+}
+.hm-toolkit__actions .hm-btn { margin-top: 0; }
+.hm-toolkit__note {
+  margin-top: 16px;
+  color: var(--hm-muted);
+  font-size: 0.85rem;
+}
+@media (max-width: 640px) {
+  .hm-toolkit__grid { grid-template-columns: 1fr; }
+  .hm-toolkit__shot { width: min(100%, 280px); justify-self: center; }
+  .hm-toolkit__highlights { grid-template-columns: 1fr; }
+  .hm-toolkit__actions { align-items: flex-start; flex-direction: column; }
+}
