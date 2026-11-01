@@ -29,7 +29,7 @@ The Worker package exposes these checks:
 | Command | Purpose |
 | --- | --- |
 | `npm run typecheck` | TypeScript static check |
-| `npm test` | Unit, retention, traffic-source, analytics-pipeline, and client tests |
+| `npm test` | TypeScript check followed by unit, retention, traffic-source, analytics-pipeline, and client tests |
 | `npm run test:e2e` | End-to-end API checks; requires the documented local environment |
 
 See [the Worker README](../deliver/worker-api/README.md) for local setup, secrets, migrations, and end-to-end test configuration.
