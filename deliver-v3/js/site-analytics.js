@@ -17,11 +17,12 @@ import { buildAnalyticsModel, metricPoints, METRICS } from "./analytics/model.js
 import { buildSignals } from "./analytics/signals.js?v=an1";
 import { createTrendChart } from "./analytics/chart.js?v=an1";
 import { buildFullReport, buildCsv, csvFileName } from "./analytics/export.js?v=an1";
-import * as V from "./analytics/views.js?v=an1";
+import * as V from "./analytics/views.js?v=an2";
 
 const $ = id => document.getElementById(id);
 const REFRESH_MS = 5 * 60 * 1000;
 const STORE_KEY = "boztik.analytics.view.v1";
+const OPT_OUT_COOKIE = "boztik_analytics_optout";
 const KEYS = ["summary", "trend", "sources", "flow", "store", "health"];
 const FETCH = { summary: fetchSummary, trend: fetchTrend, sources: fetchSources, flow: fetchFlow, store: fetchStore };
 
@@ -45,6 +46,23 @@ function restore() {
 }
 function persist() {
   try { sessionStorage.setItem(STORE_KEY, JSON.stringify({ range: S.range, compare: S.compare, metric: S.metric })); } catch { /* ignore */ }
+}
+function analyticsOptedOut() {
+  return document.cookie.split(";").some(part => part.trim() === `${OPT_OUT_COOKIE}=1`);
+}
+function setAnalyticsOptOut(enabled) {
+  const secure = location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = enabled
+    ? `${OPT_OUT_COOKIE}=1; Max-Age=31536000; Path=/; SameSite=Lax${secure}`
+    : `${OPT_OUT_COOKIE}=; Max-Age=0; Path=/; SameSite=Lax${secure}`;
+}
+function renderOptOut() {
+  const input = $("an-exclude-me"), status = $("an-exclusion-status");
+  const enabled = analyticsOptedOut();
+  if (input) input.checked = enabled;
+  if (status) status.textContent = enabled
+    ? "This browser is excluded from Boztik page views, traffic sources and tracked clicks. Historical data is unchanged."
+    : "Your visits and tracked clicks are included. Enable the switch to exclude this browser.";
 }
 
 /* ------------------------------------------------------------------ loading */
@@ -293,6 +311,10 @@ function onClick(ev) {
 
 function onChange(ev) {
   if (ev.target.matches("[data-compare]")) { S.compare = ev.target.checked; persist(); renderTrend(); }
+  if (ev.target.matches("[data-exclude-me]")) {
+    setAnalyticsOptOut(ev.target.checked);
+    renderOptOut();
+  }
 }
 
 function onInput(ev) {
@@ -324,6 +346,7 @@ export function initSiteAnalytics() {
   wired = true;
   restore();
   renderControls();
+  renderOptOut();
   const root = $("cc-site-analytics");
   root?.addEventListener("click", onClick);
   root?.addEventListener("change", onChange);
