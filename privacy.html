@@ -701,7 +701,7 @@ below apply only as described.
 
 <li>Boztik's first-party page-view and traffic-source counters skip their requests when the browser reports Do Not Track as "1" or Global Privacy Control as true. Google Analytics and AdSense tags are separate.</li>
 
-<li>You can enable <strong>Exclude my activity</strong> in Command Centre to stop this browser from sending Boztik page views, traffic-source visits, store-link clicks and GA4 measurement on public pages. The preference is stored in a first-party <code>boztik_analytics_optout</code> cookie for up to one year and is not sent to Boztik's servers. Turn the switch off to resume measurement. This does not delete historical records or exclude activity on private Deliver pages.</li>
+<li>You can enable <strong>Exclude my activity</strong> in Command Centre to stop this browser from sending Boztik page views, traffic-source visits, store-link clicks and GA4 measurement on public pages. The preference is stored in a first-party <code>boztik_analytics_optout</code> cookie for up to one year. Tracking scripts check it locally before sending measurement; the preference is not included in analytics event payloads or stored in analytics records. Turn the switch off to resume measurement. This does not delete historical records or exclude activity on private Deliver pages.</li>
 
 <li>You can remove or block the <code>boztik_anon_session</code> cookie in your browser settings. If it is absent, the page-view script attempts to create a new identifier and still sends the page-view request, so removing or blocking the cookie alone does not disable the counter.</li>
 
