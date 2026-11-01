@@ -26,6 +26,8 @@ jobs:
       - name: Check JavaScript syntax
         run: |
           find js deliver-v3/js -type f -name '*.js' -print0 | xargs -0 -n1 node --check
+      - name: Check local HTML, JavaScript and CSS references
+        run: node .github/scripts/check-static-references.mjs
 
   worker:
     name: Deliver Worker typecheck and tests
