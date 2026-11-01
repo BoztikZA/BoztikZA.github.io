@@ -28,6 +28,7 @@
   "use strict";
 
   try {
+    if (document.cookie.split(";").some(function (part) { return part.trim() === "boztik_analytics_optout=1"; })) return;
     if (navigator.doNotTrack === "1" || window.doNotTrack === "1" || navigator.globalPrivacyControl === true) return;
 
     var API = (location.hostname === "localhost" || location.hostname === "127.0.0.1")

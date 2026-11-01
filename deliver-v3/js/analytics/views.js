@@ -133,9 +133,10 @@ export function sourcesView(model) {
     : pp && s.dataSince && s.dataSince > pp.since ? " Source recording began after the previous period started, so the two cannot be compared."
       : ` Previous period: ${fmtInt(s.previousTotal)} visits.`;
   return `<ul class="an-bars" aria-label="Visits by source">${rows}</ul>
+    <details class="an-data-details"><summary>Detailed source counts and tagged campaigns</summary>
     <div class="an-table-wrap"><table class="an-table an-table-twin"><caption class="cc-sr">Visits by source, ${periodNote(model)}</caption><thead><tr><th scope="col">Source</th><th scope="col" class="num">Visits</th><th scope="col" class="num">Share</th></tr></thead>
     <tbody>${s.rows.map(r => `<tr><th scope="row">${esc(r.label)}</th><td class="num">${fmtInt(r.visits)}</td><td class="num">${r.share === null ? "—" : `${r.share}%`}</td></tr>`).join("")}<tr class="an-total"><th scope="row">All sources</th><td class="num">${fmtInt(s.total)}</td><td class="num">100%</td></tr></tbody></table></div>
-    ${camp}<p class="an-fine">${basisBadge("estimated")} One count per anonymous browser session, taken from the referrer the browser reports. Referrers can be hidden or stripped, so “Direct / unknown” is not proof anyone typed the address. A referring site shows where a visit started, not the whole journey.${prev}${s.dataSince ? ` Recording began ${esc(s.dataSince)}.` : ""}</p>`;
+    ${camp}</details><p class="an-fine">${basisBadge("estimated")} One count per anonymous browser session, taken from the referrer the browser reports. Referrers can be hidden or stripped, so “Direct / unknown” is not proof anyone typed the address. A referring site shows where a visit started, not the whole journey.${prev}${s.dataSince ? ` Recording began ${esc(s.dataSince)}.` : ""}</p>`;
 }
 
 /* ------------------------------------------------------------------ pages */
@@ -183,6 +184,9 @@ export function pagesView(model, ui = {}) {
   const sorted = sortPages(all, sort.key, sort.dir);
   const pg = paginate(sorted, ui.page ?? 1, PAGE_SIZE);
   const max = Math.max(1, ...model.pages.map(r => r.views));
+  const ranked = sortPages(model.pages, "views", "desc").filter(r => r.views > 0).slice(0, 6);
+  const rankMax = Math.max(1, ...ranked.map(r => r.views));
+  const rankChart = ranked.length ? `<div class="an-page-rank" role="list" aria-label="Top pages by page views">${ranked.map(r => `<div class="an-rank-row" role="listitem"><span class="an-rank-label" title="${esc(r.label)}">${esc(r.label)}</span><span class="an-rank-track"><span style="width:${Math.max(2, Math.round((r.views / rankMax) * 100))}%"></span></span><b class="an-rank-value">${fmtInt(r.views)} <small>${r.share === null ? "" : `${r.share}%`}</small></b></div>`).join("")}</div>` : `<p class="an-empty">No page views recorded in this period.</p>`;
   const hasFlow = !!model.flow && model.flow.pages;
   const th = (key, label, cls = "") => `<th scope="col" class="${cls}" aria-sort="${sort.key === key ? (sort.dir === "asc" ? "ascending" : "descending") : "none"}"><button type="button" class="an-sort" data-sort="${key}">${esc(label)}<span aria-hidden="true">${sort.key === key ? (sort.dir === "asc" ? " ▲" : " ▼") : ""}</span></button></th>`;
   const body = pg.rows.length ? pg.rows.map(r => `<tr><th scope="row"><button type="button" class="an-link" data-page-detail="${esc(r.page)}" aria-expanded="${ui.detail === r.page}">${esc(r.label)}</button><span class="an-sub">${esc(r.page)}</span></th>
@@ -191,12 +195,14 @@ export function pagesView(model, ui = {}) {
       <td class="num">${hasFlow && r.entrances !== null ? fmtInt(r.entrances) : dash}</td><td class="num">${hasFlow && r.exits !== null ? fmtInt(r.exits) : dash}</td></tr>`).join("")
     : `<tr><td colspan="6" class="an-empty">${ui.q ? `No pages match “${esc(ui.q)}”.` : "No pages."}</td></tr>`;
   const from = pg.total ? (pg.page - 1) * PAGE_SIZE + 1 : 0, to = Math.min(pg.total, pg.page * PAGE_SIZE);
-  return `${limited}<div class="an-toolbar"><label class="an-search"><span class="cc-sr">Filter pages</span><input type="search" id="an-page-q" class="cc-input" placeholder="Filter pages…" value="${esc(ui.q || "")}" autocomplete="off" maxlength="60"></label>
+  return `${limited}${rankChart}
+    <details class="an-data-details" ${ui.tableOpen ? "open" : ""}><summary>Detailed page table, entrances and exits</summary>
+    <div class="an-toolbar"><label class="an-search"><span class="cc-sr">Filter pages</span><input type="search" id="an-page-q" class="cc-input" placeholder="Filter pages…" value="${esc(ui.q || "")}" autocomplete="off" maxlength="60"></label>
       <span class="an-count" role="status">${pg.total ? `${from}–${to} of ${pg.total} pages` : "0 pages"}</span></div>
     <div class="an-table-wrap"><table class="an-table an-pages"><caption class="cc-sr">Public website pages ranked by counted page views, ${periodNote(model)}</caption>
       <thead><tr>${th("label", "Page")}${th("views", "Page views", "num")}${th("share", "Share", "num")}${th("change", "vs previous", "num")}${th("entrances", "Entrances", "num")}${th("exits", "Exits", "num")}</tr></thead><tbody>${body}</tbody></table></div>
     <div class="an-pager" ${pg.pages > 1 ? "" : "hidden"}><button type="button" class="cc-btn" data-page-nav="prev" ${pg.page <= 1 ? "disabled" : ""}>Previous</button><span>Page ${pg.page} of ${pg.pages}</span><button type="button" class="cc-btn" data-page-nav="next" ${pg.page >= pg.pages ? "disabled" : ""}>Next</button></div>
-    <div id="an-page-detail">${ui.detail ? pageDetail(model, ui.detail) : ""}</div>
+    <div id="an-page-detail">${ui.detail ? pageDetail(model, ui.detail) : ""}</div></details>
     <p class="an-fine">${basisBadge("measured")} Page loads counted by Boztik's own counter${model.website?.dataSince ? ` since ${esc(model.website.dataSince)}` : ""}. Not unique people; visitors who send Do Not Track or Global Privacy Control are not counted. “vs previous” compares completed days only and needs at least ${MIN_BASE_PAGE} views in the earlier period. Entrances and exits come from anonymous session events, which cover only part of all page views${model.flow?.session_coverage_pct != null ? ` (${model.flow.session_coverage_pct}% in this period)` : ""}. Engagement time and onward clicks per page are GA4-only and not shown.</p>`;
 }
 
@@ -260,11 +266,14 @@ export function deliverView(model) {
   const t = d.totals;
   const battle = x => x.type === "photoshop_battles";
   const row = x => `<tr><th scope="row">${esc(x.label)}${battle(x) ? ` <span class="an-chip">Reddit</span>` : ""}</th><td class="num">${fmtInt(x.views)}</td><td class="num">${battle(x) ? `<span class="an-na" title="PhotoshopBattles images are public direct links, so downloads are not recorded">n/a</span>` : fmtInt(x.downloads)}</td><td class="num">${fmtInt(x.shares)}</td><td class="num">${battle(x) ? "—" : per100(x.downloads, x.views)}</td><td class="num">${per100(x.shares, x.views)}</td><td class="num">${perDelivery(x.views, x.active)}</td><td class="num">${typeChange(x.views, x.prevViews)}</td></tr>`;
+  const maxViews = Math.max(1, ...shown.map(x => x.views));
+  const bars = `<div class="an-type-rank" role="list" aria-label="Deliver views by type">${[...shown].sort((a,b) => b.views-a.views).map(x => `<div class="an-rank-row" role="listitem"><span class="an-rank-label">${esc(x.label)}</span><span class="an-rank-track"><span style="width:${Math.max(2, Math.round((x.views / maxViews) * 100))}%"></span></span><b class="an-rank-value">${fmtInt(x.views)} <small>${fmtInt(x.downloads)} downloads · ${fmtInt(x.shares)} shares</small></b></div>`).join("")}</div>`;
   const created = model.totals.new_deliveries;
   return `<div class="an-stats"><span><b>${fmtInt(t.views)}</b> views</span><span><b>${fmtInt(t.downloads)}</b> downloads</span><span><b>${fmtInt(t.shares)}</b> shares</span><span><b>${fmtInt(t.active)}</b> deliveries with activity</span>${created !== null && created !== undefined ? `<span><b>${fmtInt(created)}</b> deliveries created</span>` : ""}</div>
+    ${bars}<details class="an-data-details"><summary>Detailed Deliver metrics and comparisons</summary>
     <div class="an-table-wrap"><table class="an-table an-wide"><caption class="cc-sr">Deliver activity by delivery type, ${periodNote(model)}</caption><thead><tr><th scope="col">Delivery type</th><th scope="col" class="num">Views</th><th scope="col" class="num">Downloads</th><th scope="col" class="num">Shares</th><th scope="col" class="num">Downloads / 100 views</th><th scope="col" class="num">Shares / 100 views</th><th scope="col" class="num">Views / active delivery</th><th scope="col" class="num">Views vs previous</th></tr></thead>
     <tbody>${shown.map(row).join("")}<tr class="an-total"><th scope="row">All Deliver types</th><td class="num">${fmtInt(t.views)}</td><td class="num">${fmtInt(t.downloads)}</td><td class="num">${fmtInt(t.shares)}</td><td class="num">${per100(t.downloads, t.views)}</td><td class="num">${per100(t.shares, t.views)}</td><td class="num">${perDelivery(t.views, t.active)}</td><td class="num">${d.prevTotals ? typeChange(t.views, d.prevTotals.views) : dash}</td></tr></tbody></table></div>
-    <p class="an-fine">${basisBadge("measured")} Deliver's own counters; never added to website page views and never sent to GA4. A view is every load, repeats included. “Per 100 views” columns are calculated, and a download rate is <em>not</em> a conversion rate. “Active delivery” = at least one view or download in the period. PhotoshopBattles images are public direct links: views only. Deleted deliveries keep their history but no longer have a type.</p>`;
+    </details><p class="an-fine">${basisBadge("measured")} Deliver's own counters; never added to website page views and never sent to GA4. A view is every load, repeats included. “Per 100 views” columns are calculated, and a download rate is <em>not</em> a conversion rate. “Active delivery” = at least one view or download in the period. PhotoshopBattles images are public direct links: views only. Deleted deliveries keep their history but no longer have a type.</p>`;
 }
 
 /* ---------------------------------------------------------------- actions */
@@ -310,5 +319,6 @@ export function signalsView(signals, model) {
   if (!model.website?.available && !model.trend) return `<li class="an-empty">${stateOf(model, "summary") === "loading" ? "Loading…" : "Nothing to show until the data loads."}</li>`;
   if (!signals.length) return `<li class="an-empty">Not enough recorded activity in this period to point at anything. That is a finding too: no change here is large enough to be more than normal variation.</li>`;
   const TAG = { watch: "Check", notable: "Notable", info: "Note" };
-  return signals.map(s => `<li class="an-signal is-${esc(s.level)}"><span class="an-signal-tag">${esc(TAG[s.level] ?? s.level)}</span><div><strong>${esc(s.title)}</strong><p>${esc(s.detail)}</p><dl class="an-evidence">${s.evidence.map(e => `<div><dt>${esc(e.label)}</dt><dd>${esc(e.value)}</dd></div>`).join("")}</dl></div>${basisBadge(s.basis)}</li>`).join("");
+  const rendered = signals.map(s => `<li class="an-signal is-${esc(s.level)}"><span class="an-signal-tag">${esc(TAG[s.level] ?? s.level)}</span><div><strong>${esc(s.title)}</strong><p>${esc(s.detail)}</p><dl class="an-evidence">${s.evidence.map(e => `<div><dt>${esc(e.label)}</dt><dd>${esc(e.value)}</dd></div>`).join("")}</dl></div>${basisBadge(s.basis)}</li>`);
+  return rendered.length > 3 ? `${rendered.slice(0, 3).join("")}<li class="an-signal-more"><details class="an-data-details"><summary>More observations (${rendered.length - 3})</summary><ul class="cc-standout">${rendered.slice(3).join("")}</ul></details></li>` : rendered.join("");
 }

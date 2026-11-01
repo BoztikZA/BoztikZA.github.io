@@ -28,6 +28,7 @@
   "use strict";
 
   try {
+    if (document.cookie.split(";").some(function (part) { return part.trim() === "boztik_analytics_optout=1"; })) return;
     var PAGE_KEYS = {
       "/": "homepage",
       "/index.html": "homepage",

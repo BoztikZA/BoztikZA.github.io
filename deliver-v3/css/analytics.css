@@ -235,3 +235,51 @@ g.is-active .an-bar { opacity: 1; filter: brightness(1.15); }
 
 /* The shared card stylesheet gives every <header> a banner background; the KPI and detail headers are inline labels. */
 .an-kpi header, .an-detail header { background: none; border: 0; padding: 0; margin: 0; }
+
+
+/* Compact analytics dashboard */
+#cc-site-analytics .an-dashboard-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; align-items:start; }
+#cc-site-analytics .an-dashboard-grid > .an-grid-wide { grid-column:1 / -1; }
+#cc-site-analytics .an-kpis { grid-template-columns:repeat(6,minmax(0,1fr)); gap:10px; margin:12px 0 14px; }
+#cc-site-analytics .an-kpi { padding:12px 13px; gap:5px; }
+#cc-site-analytics .an-kpi-val { font-size:clamp(1.25rem,1.7vw,1.75rem); }
+#cc-site-analytics .an-kpi-val.is-text { font-size:1rem; }
+#cc-site-analytics .an-kpi-sub { font-size:.74rem; }
+#cc-site-analytics .an-trend .an-chart-host { min-height:220px; }
+#cc-site-analytics .an-trend .an-chart-svg { max-height:230px; }
+#cc-site-analytics .an-dashboard-grid > .cc-card { min-width:0; }
+.an-exclusion-toggle { display:inline-flex; align-items:center; gap:8px; min-height:36px; padding:7px 10px; border:1px solid var(--cc-line-2); border-radius:10px; color:var(--cc-muted); font-size:.8rem; cursor:pointer; }
+.an-exclusion-toggle input { width:16px; height:16px; accent-color:var(--cc-accent); }
+.an-exclusion-toggle:has(input:checked) { color:var(--cc-text); border-color:var(--cc-accent-line); background:var(--cc-accent-soft); }
+.an-exclusion-status { margin:7px 0 0; min-height:1em; color:var(--cc-dim); font-size:.76rem; }
+.an-expand-panel,.an-data-details,.an-legacy-details { border:1px solid var(--cc-line-2); border-radius:11px; background:rgba(255,255,255,.025); }
+.an-expand-panel { margin-top:4px; padding:10px 12px; }
+.an-expand-panel > summary,.an-data-details > summary,.an-legacy-details > summary { cursor:pointer; color:var(--cc-muted); font-size:.82rem; font-weight:650; list-style-position:inside; }
+.an-expand-panel[open] > summary,.an-data-details[open] > summary,.an-legacy-details[open] > summary { margin-bottom:10px; color:var(--cc-text); }
+.an-data-details { margin-top:12px; padding:9px 12px; }
+.an-legacy-details { margin-top:16px; padding:13px 15px; }
+.an-legacy-details > summary { font-size:.9rem; }
+.an-legacy-content { display:grid; gap:14px; margin-top:14px; }
+.an-page-rank,.an-type-rank { display:grid; gap:10px; margin:8px 0 4px; }
+.an-rank-row { display:grid; grid-template-columns:minmax(105px,180px) minmax(70px,1fr) auto; align-items:center; gap:10px; font-size:.82rem; }
+.an-rank-label { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--cc-text); }
+.an-rank-track { height:9px; border-radius:99px; overflow:hidden; background:rgba(255,255,255,.07); }
+.an-rank-track > span { display:block; height:100%; min-width:2px; border-radius:inherit; background:var(--an-series); }
+.an-rank-value { color:var(--cc-text); font-variant-numeric:tabular-nums; white-space:nowrap; font-weight:700; }
+.an-rank-value small { color:var(--cc-dim); font-weight:400; }
+.an-type-rank .an-rank-track > span { background:linear-gradient(90deg,var(--an-series),#5bc4a0); }
+.an-grid-half .an-table-wrap { max-width:100%; }
+#cc-site-analytics .cc-site-head .an-head-actions { align-items:center; }
+@media (max-width:1150px) { #cc-site-analytics .an-kpis { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+@media (max-width:760px) {
+  #cc-site-analytics .an-dashboard-grid { grid-template-columns:minmax(0,1fr); }
+  #cc-site-analytics .an-dashboard-grid > .an-grid-wide { grid-column:auto; }
+  #cc-site-analytics .an-kpis { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .an-rank-row { grid-template-columns:minmax(95px,125px) minmax(50px,1fr) auto; gap:7px; }
+  .an-exclusion-toggle { justify-content:center; flex:1 1 100%; }
+  #cc-site-analytics .cc-site-head .an-head-actions { width:100%; }
+}
+@media (max-width:390px) {
+  #cc-site-analytics .an-kpis { grid-template-columns:1fr 1fr; }
+  .an-rank-row { grid-template-columns:minmax(84px,1fr) minmax(42px,.8fr) auto; font-size:.75rem; }
+}
