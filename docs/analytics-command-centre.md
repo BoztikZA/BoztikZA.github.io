@@ -58,6 +58,6 @@ python3 -m http.server 8000                    # from the repo root, then open /
 ## Rollout and rollback
 1. **Deploy the Worker first** (`wrangler deploy` in `deliver/worker-api`). No migration is needed (0001–0011 are already applied); the change is additive (new route, new window parameters, one new response field). Old frontend keeps working.
 2. Verify read-only: `/api/admin/analytics/trend?period=30d` and `/health` return 200 with an admin session.
-3. **Then push the frontend** (GitHub Pages deploys on push to `main`). Cache chain: `dashboard.html → dashboard.js?v=cf-3 → command-centre.js?v=an2 → site-analytics.js?v=an2 → analytics/views.js?v=an2 + css/analytics.css?v=an2`. `api.js` is untouched.
+3. **Then push the frontend** (GitHub Pages deploys on push to `main`). Cache chain: `dashboard.html → dashboard.js?v=cf-4 → command-centre.js?v=an2 → site-analytics.js?v=an2 → analytics/views.js?v=an2 + css/analytics.css?v=an2`. `api.js` is untouched.
 4. Rollback: revert the frontend commit (instant for new loads; allow ~10 min cache). The Worker change is backwards compatible, so it can stay; if it must go, `wrangler rollback`.
 If the frontend ships before the Worker, the tab degrades per section (“needs the updated Worker”), shows fixed 30-day page views in a labelled limited mode, and never presents a different range as the one selected.
