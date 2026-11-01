@@ -14,15 +14,18 @@ function walk(directory) {
   }
 }
 
-function localPath(ownerFile, rawReference) {
+function localPath(ownerFile, rawReference, allowBare = true) {
   let reference = rawReference.trim();
   if (!reference || /^(?:[a-z][a-z0-9+.-]*:|\/\/|#)/i.test(reference)) return null;
+  if (!allowBare && !reference.startsWith(("./", "../", "/"))) return null;
+
   try {
     reference = decodeURIComponent(reference.split(/[?#]/, 1)[0]);
   } catch {
     return null;
   }
-  if (!/\.(?:js|css)$/i.test(reference)) return null;
+  if (!reference) return null;
+
   const resolved = reference.startsWith("/")
     ? path.resolve(root, "." + reference)
     : path.resolve(path.dirname(ownerFile), reference);
@@ -39,7 +42,7 @@ for (const file of sourceFiles) {
 
   if (file.endsWith(".html")) {
     for (const match of content.matchAll(/\b(?:src|href)\s*=\s*["']([^"']+)["']/gi)) {
-      references.push(match[1]);
+      references.push({ value: match[1], allowBare: true });
     }
   }
 
@@ -49,26 +52,31 @@ for (const file of sourceFiles) {
       /\bimport\s*\(\s*["']([^"']+)["']\s*\)/g
     ];
     for (const pattern of patterns) {
-      for (const match of content.matchAll(pattern)) references.push(match[1]);
+      for (const match of content.matchAll(pattern)) {
+        references.push({ value: match[1], allowBare: false });
+      }
     }
   }
 
   if (file.endsWith(".css")) {
     for (const match of content.matchAll(/@import\s+(?:url\()?\s*["']([^"']+)["']/gi)) {
-      references.push(match[1]);
+      references.push({ value: match[1], allowBare: true });
+    }
+    for (const match of content.matchAll(/url\(\s*(?:(["'])(.*?)\1|([^)]*?))\s*\)/gi)) {
+      references.push({ value: match[2] ?? match[3] ?? "", allowBare: true });
     }
   }
 
   for (const reference of references) {
-    const target = localPath(file, reference);
+    const target = localPath(file, reference.value, reference.allowBare);
     if (target && !fs.existsSync(target)) {
-      missing.push({ from: path.relative(root, file), reference });
+      missing.push({ from: path.relative(root, file), reference: reference.value });
     }
   }
 }
 
 if (missing.length) {
-  console.error("Missing local JavaScript/CSS references:");
+  console.error("Missing local file references:");
   for (const item of missing) console.error(`- ${item.from} -> ${item.reference}`);
   process.exitCode = 1;
 } else {
