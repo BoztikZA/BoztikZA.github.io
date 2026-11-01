@@ -196,7 +196,7 @@ export function pagesView(model, ui = {}) {
     : `<tr><td colspan="6" class="an-empty">${ui.q ? `No pages match “${esc(ui.q)}”.` : "No pages."}</td></tr>`;
   const from = pg.total ? (pg.page - 1) * PAGE_SIZE + 1 : 0, to = Math.min(pg.total, pg.page * PAGE_SIZE);
   return `${limited}${rankChart}
-    <details class="an-data-details"><summary>Detailed page table, entrances and exits</summary>
+    <details class="an-data-details" ${ui.tableOpen ? "open" : ""}><summary>Detailed page table, entrances and exits</summary>
     <div class="an-toolbar"><label class="an-search"><span class="cc-sr">Filter pages</span><input type="search" id="an-page-q" class="cc-input" placeholder="Filter pages…" value="${esc(ui.q || "")}" autocomplete="off" maxlength="60"></label>
       <span class="an-count" role="status">${pg.total ? `${from}–${to} of ${pg.total} pages` : "0 pages"}</span></div>
     <div class="an-table-wrap"><table class="an-table an-pages"><caption class="cc-sr">Public website pages ranked by counted page views, ${periodNote(model)}</caption>
