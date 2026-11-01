@@ -1,0 +1,86 @@
+name: Code quality checks
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "**/*.html"
+      - "**/*.css"
+      - "js/**"
+      - "deliver-v3/**"
+      - "deliver/worker-api/**"
+      - ".github/workflows/code-quality.yml"
+      - ".github/scripts/**"
+  push:
+    branches: [maintenance/repository-cleanup]
+
+permissions:
+  contents: read
+
+jobs:
+  public-javascript:
+    name: Public JavaScript syntax
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check JavaScript syntax
+        run: |
+          find js deliver-v3/js -type f -name '*.js' -print0 | xargs -0 -n1 node --check
+      - name: Check local HTML, JavaScript and CSS references
+        run: node .github/scripts/check-static-references.mjs
+
+  worker:
+    name: Deliver Worker typecheck and tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: deliver/worker-api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Check end-to-end test syntax
+        run: node --check scripts/e2e.mjs
+      - name: Run typecheck and automated tests
+        run: npm test
+      - name: Prepare isolated local test credentials
+        shell: bash
+        run: |
+          E2E_PASS='TestPassw0rd!x'
+          HASH_OUTPUT="$(node scripts/hash-password.mjs --password "$E2E_PASS")"
+          HASH="$(printf '%s\n' "$HASH_OUTPUT" | grep '^pbkdf2\$')"
+          SALT="$(node scripts/hash-password.mjs --salt)"
+          test -n "$HASH"
+          test -n "$SALT"
+          {
+            printf 'ADMIN_USERNAME=admin@boztik.test\n'
+            printf 'ADMIN_PASSWORD_HASH=%s\n' "$HASH"
+            printf 'AUTH_TOKEN_SALT=%s\n' "$SALT"
+          } > .dev.vars
+          echo "E2E_PASS=$E2E_PASS" >> "$GITHUB_ENV"
+      - name: Apply local D1 migrations
+        run: npm run db:migrate:local
+      - name: Run local Worker end-to-end suite
+        shell: bash
+        run: |
+          npx wrangler dev --local --port 8799 --var STORAGE_LIMIT_BYTES:5242880 --var ALLOWED_ORIGINS:http://localhost:8000 > /tmp/boztik-wrangler.log 2>&1 &
+          WORKER_PID=$!
+          trap 'kill "$WORKER_PID" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 45); do
+            if curl --fail --silent http://127.0.0.1:8799/api/health > /dev/null; then
+              break
+            fi
+            if ! kill -0 "$WORKER_PID" 2>/dev/null; then
+              cat /tmp/boztik-wrangler.log
+              exit 1
+            fi
+            sleep 2
+          done
+          curl --fail --silent http://127.0.0.1:8799/api/health
+          BASE=http://127.0.0.1:8799 E2E_USER=admin@boztik.test E2E_PASS="$E2E_PASS" npm run test:e2e

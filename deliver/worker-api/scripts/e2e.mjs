@@ -58,6 +58,42 @@ async function main() {
   const li = await api("POST", "/api/auth/login", { username: USER, password: PASS }, { anon: true });
   ok("login ok returns token", li.status === 200 && li.json.token?.length >= 40);
   TOKEN = li.json.token;
+
+  console.log("\n[1b] Store promotion ordering and reorder validation");
+  const beforePromotions = (await api("GET", "/api/admin/promotions?store=redbubble")).json.items || [];
+  const previousOrder = Math.max(0, ...beforePromotions.map((item) => Number(item.sort_order) || 0));
+  const createPromotion = (store, title) => api("POST", "/api/admin/promotions", {
+    store,
+    title,
+    description: "Automated ordering regression test",
+    destination_url: store === "teepublic"
+      ? "https://www.teepublic.com/user/boztik-designs"
+      : "https://www.redbubble.com/people/Boztik-Designs/shop",
+    cta_label: store === "teepublic" ? "Shop TeePublic" : "Shop Redbubble",
+    status: "draft",
+    homepage_featured: false,
+    image_ref: "/images/stores/redtee1.jpg"
+  });
+  const promoA = await createPromotion("redbubble", "E2E ordering A");
+  const promoB = await createPromotion("redbubble", "E2E ordering B");
+  const promoOther = await createPromotion("teepublic", "E2E ordering other store");
+  ok("promotion A created", promoA.status === 201 && !!promoA.json?.item?.id);
+  ok("promotion B created", promoB.status === 201 && !!promoB.json?.item?.id);
+  ok("new promotion gets next order slot", promoA.json?.item?.sort_order === previousOrder + 10);
+  ok("following promotion gets next order slot", promoB.json?.item?.sort_order === previousOrder + 20);
+  if (promoA.json?.item?.id && promoOther.json?.item?.id) {
+    const mixedOrder = await api("POST", "/api/admin/promotions/" + promoA.json.item.id + "/reorder", {
+      ids: [promoA.json.item.id, promoOther.json.item.id]
+    });
+    ok("cross-store reorder is rejected", mixedOrder.status === 422);
+  } else {
+    ok("cross-store reorder is rejected", false, "promotion setup failed");
+  }
+  for (const promotion of [promoA, promoB, promoOther]) {
+    if (promotion.json?.item?.id) {
+      await api("DELETE", "/api/admin/promotions/" + promotion.json.item.id);
+    }
+  }
   ok("session persists (/auth/me)", (await api("GET", "/api/auth/me")).json?.user?.email === USER);
   const evil = await fetch(BASE + "/api/admin/storage", { method: "OPTIONS", headers: { Origin: "https://evil.example", "Access-Control-Request-Method": "GET" } });
   ok("CORS: evil origin gets no ACAO on admin", !evil.headers.get("access-control-allow-origin"));
