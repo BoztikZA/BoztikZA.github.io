@@ -401,7 +401,7 @@
             <div id="cc-top-body"><p class="cc-muted">Loading…</p></div>
           </article>
 
-          <article class="cc-card" aria-labelledby="cc-health-title">
+          <article class="cc-card an-grid-half" aria-labelledby="cc-health-title">
             <header class="cc-card-head"><div><span class="cc-eyebrow">Operational health</span><h2 id="cc-health-title">System status</h2><p class="cc-card-desc">Live checks against the delivery API and storage ledger.</p></div></header>
             <div id="cc-health-body"><p class="cc-muted">Checking…</p></div>
           </article>
@@ -1607,12 +1607,17 @@
                 <button type="button" class="cc-btn cc-btn--primary" id="cc-report-btn" disabled>
                   <svg class="cc-i" aria-hidden="true" focusable="false"><use href="#i-list"/></svg> Generate Analysis Report
                 </button>
+                <label class="an-exclusion-toggle" title="Exclude this browser's visits and tracked clicks from Boztik analytics">
+                  <input type="checkbox" id="an-exclude-me" data-exclude-me>
+                  <span>Exclude my activity</span>
+                </label>
               </div>
             </header>
             <div class="cc-site-controls">
               <div class="cc-toolbar an-toolbar-main" id="cc-period-toolbar" role="group" aria-label="Reporting period"></div>
               <span class="cc-muted" id="cc-site-range" role="status"></span>
             </div>
+            <p id="an-exclusion-status" class="an-exclusion-status" role="status"></p>
             <div id="an-custom" class="an-custom" hidden></div>
             <div id="cc-site-status" class="cc-site-status" aria-live="polite"></div>
             <div id="cc-site-notice"></div>
@@ -1634,7 +1639,8 @@
 
           <div class="an-kpis" id="cc-site-kpis" role="group" aria-label="1 · Overview"></div>
 
-          <article class="cc-card an-trend" id="an-trend" aria-labelledby="an-trend-title">
+          <div class="an-dashboard-grid">
+          <article class="cc-card an-trend an-grid-wide" id="an-trend" aria-labelledby="an-trend-title">
             <header class="cc-card-head"><div><span class="cc-eyebrow">2 · Movement over time</span><h2 id="an-trend-title">Traffic and activity trend</h2>
               <p class="cc-card-desc">Pick a measure. Gaps mean “not measured”, never zero. The unfinished day or hour is drawn hollow.</p></div></header>
             <div class="an-segs" id="an-metrics" role="group" aria-label="Measure shown in the chart"></div>
@@ -1645,40 +1651,40 @@
             <details class="an-twin" id="an-trend-details"><summary>View the same numbers as a table</summary><div id="an-trend-table"></div></details>
           </article>
 
-          <article class="cc-card cc-standout-card" aria-labelledby="cc-standout-title">
+          <article class="cc-card cc-standout-card an-grid-half" aria-labelledby="cc-standout-title">
             <header class="cc-card-head"><div><span class="cc-eyebrow">What stands out</span><h2 id="cc-standout-title">Observations from the data</h2>
               <p class="cc-card-desc">Rule-based, and every line shows the numbers behind it. The counters can point at a pattern; they cannot explain it.</p></div></header>
             <ul class="cc-standout" id="cc-standout-list" aria-live="polite"><li class="cc-muted">Loading…</li></ul>
           </article>
 
-          <article class="cc-card" aria-labelledby="cc-traffic-sources-title">
+          <article class="cc-card an-grid-half" aria-labelledby="cc-traffic-sources-title">
             <header class="cc-card-head"><div><span class="cc-eyebrow">3 · First-party attribution</span><h2 id="cc-traffic-sources-title">Traffic sources</h2>
               <p class="cc-card-desc">Where recorded visits came from in the selected period. Attribution is an estimate: referrers can be hidden or changed.</p></div></header>
             <div id="cc-traffic-sources" aria-live="polite"><p class="cc-muted">Loading traffic sources…</p></div>
           </article>
 
-          <article class="cc-card" aria-labelledby="cc-site-pages-title">
+          <article class="cc-card an-grid-half" aria-labelledby="cc-site-pages-title">
             <header class="cc-card-head"><div><span class="cc-eyebrow">4 · Public website</span><h2 id="cc-site-pages-title">Page performance</h2>
               <p class="cc-card-desc">Which pages attract attention, where visits begin and end, and how complete the tracking is.</p></div></header>
             <div id="cc-site-pages"><p class="cc-muted">Loading…</p></div>
           </article>
 
-          <article class="cc-card cc-flow-card" aria-labelledby="cc-visitor-flow-title">
+          <article class="cc-card cc-flow-card an-grid-half" aria-labelledby="cc-visitor-flow-title">
             <header class="cc-card-head"><div><span class="cc-eyebrow">5 · Anonymous sessions</span><h2 id="cc-visitor-flow-title">Visitor flow</h2>
               <p class="cc-card-desc">How visits actually moved between pages, built only from stored events. Entry pages, common steps, journeys and last-seen pages.</p></div></header>
-            <div id="cc-visitor-flow" aria-live="polite"><p class="cc-muted">Loading visitor flow…</p></div>
+            <details class="an-expand-panel"><summary>Explore visitor flow details</summary><div id="cc-visitor-flow" aria-live="polite"><p class="cc-muted">Loading visitor flow…</p></div></details>
           </article>
 
-          <article class="cc-card" aria-labelledby="cc-store-clicks-title">
+          <article class="cc-card an-grid-half" aria-labelledby="cc-store-clicks-title">
             <header class="cc-card-head"><div><span class="cc-eyebrow">6 · Boztik Stores</span><h2 id="cc-store-clicks-title">Store performance</h2>
               <p class="cc-card-desc">Store page views and clicks to the configured storefronts. Clicks are not purchases.</p></div></header>
             <div id="cc-store-clicks" aria-live="polite"><p class="cc-muted">Loading Store activity…</p></div>
           </article>
 
-          <article class="cc-card cc-ga4-card" aria-labelledby="cc-actions-title">
+          <article class="cc-card cc-ga4-card an-grid-half" aria-labelledby="cc-actions-title">
             <header class="cc-card-head"><div><span class="cc-eyebrow">7 · Important actions</span><h2 id="cc-actions-title">Product, contact &amp; store actions</h2>
               <p class="cc-card-desc">Every row names its data source. First-party and GA4 numbers are kept apart and never added together.</p></div><span class="cc-badge">GA4: not connected</span></header>
-            <div id="cc-actions" aria-live="polite"><p class="cc-muted">Loading…</p></div>
+            <details class="an-expand-panel"><summary>View tracked actions and data availability</summary><div id="cc-actions" aria-live="polite"><p class="cc-muted">Loading…</p></div></details>
             <details class="cc-ga4-how">
               <summary>What would bring GA4 metrics (users, engagement, other actions) into Command Centre?</summary>
               <ol>
@@ -1694,19 +1700,23 @@
           <article class="cc-card" aria-labelledby="cc-health-title">
             <header class="cc-card-head"><div><span class="cc-eyebrow">8 · Diagnostics</span><h2 id="cc-health-title">Data health</h2>
               <p class="cc-card-desc">Is the analytics system itself collecting and reporting correctly? Distinguishes “nothing happened” from “nothing was collected”.</p></div></header>
-            <div id="cc-data-health" aria-live="polite"><p class="cc-muted">Loading data health…</p></div>
+            <details class="an-expand-panel"><summary>View collector diagnostics</summary><div id="cc-data-health" aria-live="polite"><p class="cc-muted">Loading data health…</p></div></details>
           </article>
 
-          <article class="cc-card cc-deliver-card" aria-labelledby="cc-site-deliver-title">
+          <article class="cc-card cc-deliver-card an-grid-wide" aria-labelledby="cc-site-deliver-title">
             <header class="cc-card-head"><div><span class="cc-eyebrow">9 · Deliver analytics · separate from website traffic</span><h2 id="cc-site-deliver-title">Deliver performance</h2>
               <p class="cc-card-desc">Views, downloads and shares by delivery type for the selected period.</p></div><span class="cc-badge">Deliver</span></header>
             <div id="cc-site-deliver" aria-live="polite"><p class="cc-muted">Loading…</p></div>
           </article>
+          </div>
 
           <div class="cc-divider" role="separator"><span>All-time Deliver detail</span></div>
 
         </div>
 
+        <details class="an-legacy-details">
+          <summary>Detailed Deliver analytics and all-time records</summary>
+          <div class="an-legacy-content">
         <article class="cc-card cc-headline" aria-labelledby="cc-an-title">
           <header class="cc-card-head">
             <div><span class="cc-eyebrow">Deliver · last 30 days</span><h2 id="cc-an-title">Deliver activity</h2></div>
@@ -1776,6 +1786,8 @@
           <p><strong>Boztik's own counters</strong> record how many times each delivery was opened, downloaded or shared, per day, and how many times each public page was loaded. They do <strong>not</strong> record visitor location, device, browser or referring site, and store no IP addresses or cookies. That is deliberate, so there is no location or device breakdown to show here.</p>
           <p><strong>Google Analytics 4</strong> runs separately on the public website pages only. It is not on any Deliver page, and Deliver and PhotoshopBattles views are never sent to it. GA4 holds richer data (traffic sources, users, sessions, clicks), but Command Centre cannot read it yet, so none of it appears on this page.</p>
         </article>
+          </div>
+        </details>
 
       </section>
 
