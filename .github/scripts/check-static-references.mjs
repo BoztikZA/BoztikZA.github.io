@@ -1,6 +1,5 @@
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 
 const root = process.cwd();
 const ignored = new Set([".git", "node_modules", "_site"]);
@@ -24,9 +23,9 @@ function localPath(ownerFile, rawReference) {
     return null;
   }
   if (!/\.(?:js|css)$/i.test(reference)) return null;
-  const resolved = path.resolve(root, reference.startsWith("/")
-    ? "." + reference
-    : path.relative(root, path.dirname(ownerFile)) + "/" + reference);
+  const resolved = reference.startsWith("/")
+    ? path.resolve(root, "." + reference)
+    : path.resolve(path.dirname(ownerFile), reference);
   if (resolved !== root && !resolved.startsWith(root + path.sep)) return null;
   return resolved;
 }
