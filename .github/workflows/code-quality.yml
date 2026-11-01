@@ -8,6 +8,7 @@ on:
       - "deliver-v3/**"
       - "deliver/worker-api/**"
       - ".github/workflows/code-quality.yml"
+      - ".github/scripts/**"
   push:
     branches: [maintenance/repository-cleanup]
 
