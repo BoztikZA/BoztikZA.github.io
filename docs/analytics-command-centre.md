@@ -14,7 +14,7 @@ Code: Worker `deliver/worker-api/src/lib/db.ts` (+ `routes/admin.ts`), frontend 
 
 ## Range model
 Presets `today`, `7d`, `30d`, `90d`, `all`, or a custom `from`/`to` (whole local calendar days, `2020-01-01` ≤ from ≤ to ≤ today, at most 366 days).
-The Worker validates every range again (422 `invalid_range`) and answers with the window it actually used (`period`). The page refuses to show an answer whose `period` differs from the one requested (an older Worker silently falls back to 30 days).
+The Worker validates every range again (422 `invalid_range`) and answers with the window it actually used (`period`). The page refuses to show an answer whose `period` differs from the one requested (an older Worker silently falls back to 30 days). The Analytics tab also offers a browser-local opt-out cookie (`boztik_analytics_optout=1`) that suppresses first-party page/source/store-click tracking and the GA4 tag for that browser; historical aggregates are unchanged.
 Day boundaries use `ANALYTICS_UTC_OFFSET_MINUTES` (default UTC+2 / SAST). The "previous" window is the equal-length window immediately before; `all` has none.
 
 ## Endpoints (all GET, admin Bearer session, read-only)
