@@ -38,7 +38,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Install dependencies
-        run: npm install --no-audit --no-fund
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Check end-to-end test syntax
+        run: node --check scripts/e2e.mjs
       - name: Run typecheck and automated tests
         run: npm test
