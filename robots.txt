@@ -1,13 +1,12 @@
 # Boztik — https://www.boztik.com
-# Public pages are crawlable. The private delivery area (deliver-v3/ — the client
-# delivery page and the Command Centre dashboard) carries a noindex,follow meta tag
-# on the page itself and is also disallowed here so the private area can never
-# become an indexable directory. Public pages (including /deliver.html) stay crawlable.
+# Public pages are crawlable. Private Deliver app pages carry a noindex,follow
+# meta tag and are intentionally omitted from the sitemap. They must remain
+# crawlable so Google can read the noindex directive. The legacy /deliver/ path
+# remains disallowed; the public explanation page /deliver.html stays crawlable.
 
 User-agent: *
 Allow: /
 Disallow: /deliver/
-Disallow: /deliver-v3/
 
 # Google's ad crawlers ignore the "*" group above, so they are named explicitly.
 User-agent: Mediapartners-Google
