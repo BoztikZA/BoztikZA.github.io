@@ -14,7 +14,7 @@ Code: Worker `deliver/worker-api/src/lib/db.ts` (+ `routes/admin.ts`), frontend 
 
 ## Range model
 Presets `today`, `7d`, `30d`, `90d`, `all`, or a custom `from`/`to` (whole local calendar days, `2020-01-01` ≤ from ≤ to ≤ today, at most 366 days).
-The Worker validates every range again (422 `invalid_range`) and answers with the window it actually used (`period`). The page refuses to show an answer whose `period` differs from the one requested (an older Worker silently falls back to 30 days). The Analytics tab also offers a browser-local opt-out cookie (`boztik_analytics_optout=1`) that suppresses first-party page/source/store-click tracking and the GA4 tag for that browser; historical aggregates are unchanged.
+The Worker validates every range again (422 `invalid_range`) and answers with the window it actually used (`period`). The page refuses to show an answer whose `period` differs from the one requested (an older Worker silently falls back to 30 days). The Analytics tab also offers a browser-local opt-out cookie (`boztik_analytics_optout=1`) that suppresses first-party page/source/store-click tracking, Boztik's custom GA4 click events, and GA4 measurement on public pages for that browser; historical aggregates are unchanged. Deliver page activity remains separate.
 Day boundaries use `ANALYTICS_UTC_OFFSET_MINUTES` (default UTC+2 / SAST). The "previous" window is the equal-length window immediately before; `all` has none.
 
 ## Endpoints (all GET, admin Bearer session, read-only)
@@ -58,6 +58,6 @@ python3 -m http.server 8000                    # from the repo root, then open /
 ## Rollout and rollback
 1. **Deploy the Worker first** (`wrangler deploy` in `deliver/worker-api`). No migration is needed (0001–0011 are already applied); the change is additive (new route, new window parameters, one new response field). Old frontend keeps working.
 2. Verify read-only: `/api/admin/analytics/trend?period=30d` and `/health` return 200 with an admin session.
-3. **Then push the frontend** (GitHub Pages deploys on push to `main`). Cache chain: `dashboard.html → dashboard.js?v=cf-3 → command-centre.js?v=an1 → site-analytics.js?v=an1 → analytics/*.js?v=an1 + css/analytics.css?v=an1`. `api.js` is untouched.
+3. **Then push the frontend** (GitHub Pages deploys on push to `main`). Cache chain: `dashboard.html → dashboard.js?v=cf-3 → command-centre.js?v=an2 → site-analytics.js?v=an2 → analytics/views.js?v=an2 + css/analytics.css?v=an2`. `api.js` is untouched.
 4. Rollback: revert the frontend commit (instant for new loads; allow ~10 min cache). The Worker change is backwards compatible, so it can stay; if it must go, `wrangler rollback`.
 If the frontend ships before the Worker, the tab degrades per section (“needs the updated Worker”), shows fixed 30-day page views in a labelled limited mode, and never presents a different range as the one selected.
