@@ -700,3 +700,23 @@
   .hm-toolkit__highlights { grid-template-columns: 1fr; }
   .hm-toolkit__actions { align-items: flex-start; flex-direction: column; }
 }
+
+/* Creative Toolkit 3.3.0 showcase: larger product visual so the promo text stays legible. */
+.hm-toolkit__shot {
+  width: clamp(280px, 36vw, 440px);
+  border-color: rgba(142, 255, 61, 0.28);
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.45);
+}
+.hm-toolkit__shot img { display: block; }
+.hm-toolkit__tagline {
+  margin: -4px 0 14px;
+  color: var(--hm-neon);
+  font-weight: 700;
+}
+.hm-toolkit__note strong { color: var(--hm-neon); font-weight: 700; }
+@media (max-width: 900px) {
+  .hm-toolkit__shot { width: min(100%, 440px); justify-self: center; }
+}
+@media (max-width: 640px) {
+  .hm-toolkit__shot { width: 100%; }
+}
