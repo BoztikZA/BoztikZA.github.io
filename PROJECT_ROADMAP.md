@@ -1,328 +1,53 @@
-# Boztik Website v2.0 Roadmap
+# Boztik — Project Roadmap
 
-> Internal development roadmap for the Boztik website.
-> This document tracks architecture, milestones, completed work, future ideas and release history.
+> Internal planning document. Update this file when project priorities or shipped architecture change.
 
----
+## Current architecture
 
-# Project Vision
+Boztik is a GitHub Pages website with a separate Cloudflare-backed delivery service.
 
-Boztik is more than a portfolio.
+- **Public website:** root HTML pages, shared and page-specific CSS, and scripts under `js/`.
+- **Creator tools:** Creative Studio and Creative Toolkit pages and their associated assets/scripts.
+- **Boztik Deliver frontend:** `deliver-v3/`, served as part of the GitHub Pages site.
+- **Boztik Deliver backend:** `deliver/worker-api/`, a Cloudflare Worker using D1 and private R2 storage.
+- **Deployment:** GitHub Actions publishes the public website from `main`; Worker deployment is a separate Wrangler operation.
 
-The long-term goal is to build an ecosystem for creative professionals that includes:
+See [README.md](README.md) and [docs/REPOSITORY_GUIDE.md](docs/REPOSITORY_GUIDE.md) for the maintained repository map and safety boundaries.
 
-- Professional Portfolio
-- Freelance Services
-- Chrome Extension
-- Client Delivery Platform (Boztik Deliver)
-- Future Community Platform
-- Future Freelancer Marketplace
+## Development principles
 
-Every component should strengthen the others.
+1. Preserve existing public functionality, URLs, SEO and accessibility.
+2. Keep the website and Worker deployment boundaries separate.
+3. Prefer small, scoped changes over broad rewrites.
+4. Keep API contracts and database migration history stable.
+5. Do not remove assets whose references may be stored in D1/R2 or assembled dynamically.
+6. Verify changes with relevant tests and review the full diff before merging.
 
----
+## Priorities
 
-# Current Version
+### Maintenance
+- Continue removing verified dead code and obsolete repository artifacts.
+- Improve documentation and make test commands easy to discover.
+- Review deployment workflow checks and add safe validation where it does not alter production behaviour.
 
-v2.0.0 (Development)
+### Public website
+- Maintain a clear, useful experience across desktop and mobile.
+- Keep page-specific styles and scripts scoped to the pages that need them.
+- Improve accessibility, performance, and content quality without introducing unnecessary dependencies.
 
----
+### Boztik Deliver
+- Protect authentication, upload admission controls, signed downloads, expiry/retention, and D1/R2 consistency.
+- Keep analytics accurate and privacy-conscious.
+- Expand automated coverage before refactoring core Worker or storage logic.
 
-# Current Phase
+### Growth
+- Improve discoverability and useful content.
+- Promote the Creative Toolkit and creator resources where they provide clear visitor value.
+- Prioritise sustainable, maintainable revenue opportunities over feature volume.
 
-✅ Phase 1 — Website Architecture Audit
+## Release discipline
 
-Status:
-In Progress
-
----
-
-# Development Principles
-
-- Keep existing Boztik branding.
-- Preserve current color palette.
-- Mobile-first.
-- Responsive.
-- Modular JavaScript.
-- Reusable CSS.
-- No duplicated components.
-- GitHub Pages compatible.
-- Cloudflare Worker / D1 / R2 backend.
-- Performance focused.
-- Accessibility improvements where possible.
-
----
-
-# Project Structure
-
-(Current)
-
-(To be documented during the architecture audit.)
-
----
-
-# Planned Structure
-
-/
-│
-├── index.html
-├── about.html
-├── portfolio.html
-├── contact.html
-│
-├── deliver-v3/
-│   ├── index.html        (client delivery page)
-│   ├── dashboard.html    (admin Command Centre)
-│   ├── css/deliver.css
-│   └── js/               (auth, api, dashboard, client, insights, …)
-│
-├── deliver/worker-api/   (Cloudflare Worker → D1 + R2)
-│
-├── assets/
-├── css/
-├── js/
-└── images/
-
----
-
-# Development Roadmap
-
-## Phase 1
-
-Website Architecture Audit
-
-Objectives
-
-- Audit all HTML pages
-- Audit CSS
-- Audit JavaScript
-- Audit navigation
-- Audit branding
-- Audit performance
-- Audit SEO
-- Audit responsiveness
-
-Deliverables
-
-- Architecture report
-- Folder recommendations
-- Reusable components list
-- Improvement plan
-
-Status
-
-In Progress
-
----
-
-## Phase 2
-
-Website Cleanup
-
-Objectives
-
-- Remove duplicated code
-- Improve structure
-- Improve SEO
-- Improve accessibility
-- Improve responsiveness
-- Improve performance
-
----
-
-## Phase 3
-
-Boztik Deliver
-
-Version 1
-
-Features
-
-- Secure Upload Dashboard
-- Worker-Owned Authentication
-- ZIP Uploads
-- Client Download Page
-- Download Tracking
-- Expiration Timer
-- Delivery IDs
-- Auto Delete
-- Dashboard
-
----
-
-## Phase 4
-
-Marketing Integration
-
-Client pages should promote
-
-- Boztik Creative Toolkit
-- Chrome Store
-- Edge Store
-- Portfolio
-- Contact
-- Hire Me
-- PayPal
-- Ko-fi
-- Google Adsense
-
-Without reducing usability.
-
----
-
-## Phase 5
-
-Performance & Polish
-
-Objectives
-
-- Speed improvements
-- Image optimization
-- Lighthouse improvements
-- Accessibility improvements
-- Animation polish
-
----
-
-# Boztik Deliver
-
-Mission
-
-Replace Google Drive and WeTransfer with a professional branded delivery experience.
-
----
-
-## Workflow
-
-Client hires Boztik
-
-↓
-
-Project completed
-
-↓
-
-ZIP generated
-
-↓
-
-Upload via Cloudflare Worker
-
-↓
-
-Generate Delivery ID
-
-↓
-
-Generate Client Link
-
-↓
-
-Client downloads
-
-↓
-
-Files automatically deleted after 24 hours
-
----
-
-## Upload Dashboard
-
-Private
-
-Visible only to Clint.
-
-Features
-
-- Login
-- Upload ZIP
-- Client Name
-- Project Name
-- Notes
-- Generate Delivery
-- Copy Link
-- Delete Delivery
-- Download Stats
-- Storage Usage
-
----
-
-## Client Page
-
-Displays
-
-- Project Name
-- Delivery ID
-- File Size
-- Expiration Countdown
-- Download Button
-
-Marketing
-
-- Hire Me
-- Portfolio
-- Extension
-- PayPal
-- Ko-fi
-- Adsense
-
----
-
-## Security
-
-Visitors
-
-Cannot
-
-- Upload
-- Delete
-- Edit
-- Access Dashboard
-
-Only authenticated admin may upload.
-
----
-
-# Future Features
-
-- Multiple Downloads
-- Password Protection (Optional)
-- Email Notifications
-- Download Analytics
-- Reviews
-- Revision Requests
-- Client Accounts
-- Creator Accounts
-- Marketplace Integration
-
----
-
-# Release History
-
-## v2.0.0
-
-Project planning
-
-Architecture audit
-
-Roadmap created
-
----
-
-# Ideas
-
-This section is intentionally kept for future brainstorming.
-
-Nothing is too small to add here.
-
----
-
-# Notes
-
-Always keep the website in a deployable state after every completed phase.
-
-Never introduce duplicate code.
-
-Prefer reusable components over new ones.
-
-Every major feature should have its own commit.
+- Work on a feature or maintenance branch.
+- Run the relevant tests and inspect the diff.
+- Merge only after review and explicit approval.
+- Treat GitHub Pages deployment and Cloudflare Worker deployment as separate release actions.
