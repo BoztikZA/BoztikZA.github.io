@@ -4,6 +4,8 @@ on:
   pull_request:
     branches: [main]
     paths:
+      - "**/*.html"
+      - "**/*.css"
       - "js/**"
       - "deliver-v3/**"
       - "deliver/worker-api/**"
