@@ -28,7 +28,7 @@ import {
 } from "./shared.js";
 import { getImageDimensions } from "./fileinfo.js";
 import { loadInsights, openDeliveryAnalytics } from "./insights.js";
-import { initCommandCentre, refreshCommandCentre, refreshAnalyticsExtras, formatRate } from "./command-centre.js?v=an1";
+import { initCommandCentre, refreshCommandCentre, refreshAnalyticsExtras, formatRate } from "./command-centre.js?v=an2";
 import { StorageLimitError, readStorageUsage, monitorLevel, storageLimitBytes, storageLimitLabel, usagePercent } from "./storage-guard.js";
 import { ANIMATION_CATALOG, getAnimation } from "./animations/registry.js";
 
