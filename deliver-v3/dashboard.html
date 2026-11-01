@@ -401,7 +401,7 @@
             <div id="cc-top-body"><p class="cc-muted">Loading…</p></div>
           </article>
 
-          <article class="cc-card an-grid-half" aria-labelledby="cc-health-title">
+          <article class="cc-card" aria-labelledby="cc-health-title">
             <header class="cc-card-head"><div><span class="cc-eyebrow">Operational health</span><h2 id="cc-health-title">System status</h2><p class="cc-card-desc">Live checks against the delivery API and storage ledger.</p></div></header>
             <div id="cc-health-body"><p class="cc-muted">Checking…</p></div>
           </article>
@@ -1697,7 +1697,7 @@
             </details>
           </article>
 
-          <article class="cc-card" aria-labelledby="cc-health-title">
+          <article class="cc-card an-grid-half" aria-labelledby="cc-health-title">
             <header class="cc-card-head"><div><span class="cc-eyebrow">8 · Diagnostics</span><h2 id="cc-health-title">Data health</h2>
               <p class="cc-card-desc">Is the analytics system itself collecting and reporting correctly? Distinguishes “nothing happened” from “nothing was collected”.</p></div></header>
             <details class="an-expand-panel"><summary>View collector diagnostics</summary><div id="cc-data-health" aria-live="polite"><p class="cc-muted">Loading data health…</p></div></details>
@@ -1709,8 +1709,6 @@
             <div id="cc-site-deliver" aria-live="polite"><p class="cc-muted">Loading…</p></div>
           </article>
           </div>
-
-          <div class="cc-divider" role="separator"><span>All-time Deliver detail</span></div>
 
         </div>
 
@@ -1783,7 +1781,7 @@
 
         <article class="cc-card cc-notrack" aria-labelledby="cc-nt-title">
           <header class="cc-card-head"><div><span class="cc-eyebrow">Good to know</span><h2 id="cc-nt-title">What is not tracked</h2></div></header>
-          <p><strong>Boztik's own counters</strong> record how many times each delivery was opened, downloaded or shared, per day, and how many times each public page was loaded. They do <strong>not</strong> record visitor location, device, browser or referring site, and store no IP addresses or cookies. That is deliberate, so there is no location or device breakdown to show here.</p>
+          <p><strong>Boztik's own counters</strong> record how many times each delivery was opened, downloaded or shared, per day, and how many times each public page was loaded. They do <strong>not</strong> record visitor location, device, browser or referring site, and do not store IP addresses or visitor-identifying cookies. The analytics opt-out preference, when enabled, is kept only in this browser. That is deliberate, so there is no location or device breakdown to show here.</p>
           <p><strong>Google Analytics 4</strong> runs separately on the public website pages only. It is not on any Deliver page, and Deliver and PhotoshopBattles views are never sent to it. GA4 holds richer data (traffic sources, users, sessions, clicks), but Command Centre cannot read it yet, so none of it appears on this page.</p>
         </article>
           </div>
