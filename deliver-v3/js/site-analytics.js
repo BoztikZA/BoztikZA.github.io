@@ -29,7 +29,7 @@ const FETCH = { summary: fetchSummary, trend: fetchTrend, sources: fetchSources,
 const S = {
   range: { ...DEFAULT_RANGE }, compare: true, metric: "website_views",
   data: {}, states: {}, fallback: null, loadedRange: null,
-  ui: { sort: { key: "views", dir: "desc" }, q: "", page: 1, detail: null },
+  ui: { sort: { key: "views", dir: "desc" }, q: "", page: 1, detail: null, tableOpen: false },
   model: null, signals: [], busy: false, refreshFailed: false, lastOk: null, customOpen: false,
 };
 let seq = 0, controller = null, chart = null, wired = false, timer = null, inFlight = false;
@@ -196,6 +196,8 @@ function renderPages(refocus) {
   if (!host) return;
   const q = host.querySelector("#an-page-q");
   const caret = q && document.activeElement === q ? [q.selectionStart, q.selectionEnd] : null;
+  const details = host.querySelector(".an-data-details");
+  if (details) S.ui.tableOpen = details.open;
   host.innerHTML = V.pagesView(S.model, S.ui);
   if (caret) { const n = host.querySelector("#an-page-q"); n?.focus(); try { n?.setSelectionRange(...caret); } catch { /* ignore */ } }
   else if (refocus) host.querySelector(refocus)?.focus();
