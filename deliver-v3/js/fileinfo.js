@@ -218,6 +218,33 @@ export function buildImageInfoHTML({ fileName, sizeLabel, format, mimeType, widt
     </details>`;
 }
 
+export function buildVideoInfoHTML({ fileName, sizeLabel, format, mimeType, width, height, duration }) {
+  const durationLabel = Number.isFinite(duration) && duration >= 0
+    ? new Date(duration * 1000).toISOString().slice(11, 19).replace(/^00:/, "")
+    : "";
+  const resolution = width && height ? `${width} × ${height}px` : "";
+  const orientation = width && height ? (width === height ? "Square" : width > height ? "Landscape" : "Portrait") : "";
+  const chips = [chip(format), chip(resolution), chip(durationLabel)].join("");
+  const rows = [
+    row("Filename", fileName),
+    row("Format", format),
+    row("File size", sizeLabel),
+    row("Duration", durationLabel),
+    row("Resolution", resolution),
+    row("Orientation", orientation),
+    row("MIME type", mimeType)
+  ];
+  return `
+    <div class="fileinfo-chips">${chips}</div>
+    <details class="fileinfo-details">
+      <summary>Video details</summary>
+      <div class="fileinfo-body">
+        <div class="fileinfo-grid">${rows.join("")}</div>
+        <p class="fileinfo-print-note">Playback support depends on the video's codec and the viewer's browser. MP4 with H.264 video is generally the safest choice.</p>
+      </div>
+    </details>`;
+}
+
 export function buildGenericInfoHTML({ fileName, sizeLabel, format, mimeType, pageCount }) {
   const ext = extOf(fileName);
 
