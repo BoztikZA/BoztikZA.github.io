@@ -4,8 +4,8 @@
  *  1. Hairline reveal: draws each section rule once. Content is never hidden by this;
  *     the CSS only hides rules when JS is running and motion is welcome, and a timer
  *     reveals anything an observer has not reached.
- *  2. BzDeck: a small, accessible "one item at a time" component (manual controls,
- *     arrow keys, swipe, screen-reader announcements). No auto-rotation, by design.
+ *  2. BzDeck: an accessible one-item-at-a-time component with manual controls,
+ *     keyboard, swipe and optional, explicitly controllable auto-rotation.
  *  3. Portfolio gallery: progressive enhancement of the static project list.
  *
  * Without JavaScript the portfolio stays a readable list of projects.
@@ -51,10 +51,48 @@
     var prevBtn = root.querySelector('[data-prev]');
     var nextBtn = root.querySelector('[data-next]');
     var count = root.querySelector('[data-count]');
+    var rotationToggle = root.querySelector('[data-rotation-toggle]');
     var slides = [];
     var index = 0;
     var startX = null;
     var swiped = false;
+    var autoRotate = !!opts.autoRotate && !reduceMotion;
+    var intervalMs = Math.max(3000, Number(opts.intervalMs) || 5000);
+    var rotationTimer = null;
+    var hovered = false;
+    var focused = false;
+    var manuallyPaused = false;
+
+    function rotationBlocked() {
+      return !autoRotate || manuallyPaused || hovered || focused || document.hidden || slides.length < 2;
+    }
+
+    function updateRotationControl() {
+      if (!rotationToggle) return;
+      var paused = rotationBlocked();
+      rotationToggle.setAttribute('aria-pressed', paused ? 'true' : 'false');
+      rotationToggle.setAttribute('aria-label', paused ? 'Play automatic rotation' : 'Pause automatic rotation');
+      rotationToggle.textContent = paused ? 'Play' : 'Pause';
+    }
+
+    function stopRotationTimer() {
+      if (rotationTimer !== null) {
+        window.clearTimeout(rotationTimer);
+        rotationTimer = null;
+      }
+    }
+
+    function scheduleRotation() {
+      stopRotationTimer();
+      updateRotationControl();
+      if (rotationBlocked()) return;
+      rotationTimer = window.setTimeout(function () {
+        rotationTimer = null;
+        if (rotationBlocked()) return;
+        go(index + 1, false);
+        scheduleRotation();
+      }, intervalMs);
+    }
 
     function collect() {
       slides = [].slice.call(stage.children);
@@ -77,6 +115,7 @@
       if (count) count.textContent = (index + 1) + ' of ' + slides.length;
       if (opts.onChange) opts.onChange(index, slides[index], !!byUser);
       if (byUser && opts.status && opts.describe) opts.status.textContent = opts.describe(index, slides[index]);
+      if (!rotationBlocked()) scheduleRotation();
     }
 
     function next() { go(index + 1, true); }
@@ -84,6 +123,40 @@
 
     if (prevBtn) prevBtn.addEventListener('click', prev);
     if (nextBtn) nextBtn.addEventListener('click', next);
+
+    if (autoRotate) {
+      root.addEventListener('mouseenter', function () {
+        hovered = true;
+        stopRotationTimer();
+        updateRotationControl();
+      });
+      root.addEventListener('mouseleave', function () {
+        hovered = false;
+        scheduleRotation();
+      });
+      root.addEventListener('focusin', function (event) {
+        if (rotationToggle && rotationToggle.contains(event.target)) return;
+        focused = true;
+        stopRotationTimer();
+        updateRotationControl();
+      });
+      root.addEventListener('focusout', function () {
+        window.setTimeout(function () {
+          focused = !!(root.contains(document.activeElement) &&
+            !(rotationToggle && rotationToggle.contains(document.activeElement)));
+          scheduleRotation();
+        }, 0);
+      });
+      document.addEventListener('visibilitychange', scheduleRotation);
+      if (rotationToggle) {
+        rotationToggle.addEventListener('click', function () {
+          manuallyPaused = !manuallyPaused;
+          scheduleRotation();
+        });
+      }
+    } else if (rotationToggle) {
+      rotationToggle.hidden = true;
+    }
 
     root.addEventListener('keydown', function (event) {
       if (event.altKey || event.ctrlKey || event.metaKey) return;
@@ -116,8 +189,9 @@
       go: go,
       next: next,
       prev: prev,
-      refresh: function () { collect(); go(0, false); },
-      get index() { return index; }
+      refresh: function () { collect(); go(0, false); scheduleRotation(); },
+      get index() { return index; },
+      destroy: stopRotationTimer
     };
   }
   window.BzDeck = BzDeck;
