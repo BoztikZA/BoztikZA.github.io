@@ -973,7 +973,7 @@ function renderFileList() {
   if (els.fileSummary) {
     els.fileSummary.hidden = !hasFiles;
     els.fileSummary.textContent = hasFiles
-      ? `${selectedFiles.length} image${selectedFiles.length === 1 ? "" : "s"} selected`
+      ? `${selectedFiles.length} file${selectedFiles.length === 1 ? "" : "s"} selected`
       : "";
   }
 
