@@ -1158,7 +1158,7 @@ async function handleCreateSubmit(event) {
   showLoading(
     "Uploading…",
     selectedFiles.length > 1
-      ? `Uploading ${selectedFiles.length} images — this may take a moment.`
+      ? `Uploading ${selectedFiles.length} files — this may take a moment.`
       : "Uploading your file — this may take a moment."
   );
 
