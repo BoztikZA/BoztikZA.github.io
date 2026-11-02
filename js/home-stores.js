@@ -168,6 +168,8 @@
     if (!deck) {
       deck = window.BzDeck(carousel, {
         status: statusEl,
+        autoRotate: true,
+        intervalMs: 4800,
         onChange: onChange,
         describe: function (i) {
           var item = currentList[i];
