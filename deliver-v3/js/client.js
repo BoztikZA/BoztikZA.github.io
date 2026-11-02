@@ -1683,12 +1683,30 @@ async function loadVideoPreview(file, previewContainer) {
       previewContainer.classList.remove("preview-loading");
       previewContainer.classList.add("preview-error");
       previewContainer.innerHTML = buildPreviewFallbackHTML(file);
+      const slot = previewContainer.closest(".deliver-file-card")?.querySelector("[data-info]");
+      if (slot) {
+        slot.innerHTML = buildGenericInfoHTML({
+          fileName: file.file_name,
+          sizeLabel: formatBytes(file.file_size),
+          format: getFileExtension(file.file_name),
+          mimeType: guessMimeType(file.file_name)
+        });
+      }
     }, { once: true });
   } catch (error) {
     console.warn("[Boztik Deliver] Video preview unavailable:", file.file_name, error);
     previewContainer.classList.remove("preview-loading");
     previewContainer.classList.add("preview-error");
     previewContainer.innerHTML = buildPreviewFallbackHTML(file);
+    const slot = previewContainer.closest(".deliver-file-card")?.querySelector("[data-info]");
+    if (slot) {
+      slot.innerHTML = buildGenericInfoHTML({
+        fileName: file.file_name,
+        sizeLabel: formatBytes(file.file_size),
+        format: getFileExtension(file.file_name),
+        mimeType: guessMimeType(file.file_name)
+      });
+    }
   }
 }
 
@@ -2156,10 +2174,6 @@ function buildFileCardHTML(
   const previewable =
     isPreviewable(file.file_name) || isVideoPreviewable(file.file_name);
 
-  const videoPreviewable =
-    isVideoPreviewable(file.file_name);
-
-
   const extension =
     getFileExtension(
       file.file_name
@@ -2199,7 +2213,7 @@ function buildFileCardHTML(
           ? `
 
             <div
-              class="deliver-file-preview"
+              class="deliver-file-preview${isVideoPreviewable(file.file_name) ? " deliver-file-preview-video" : ""}"
               data-preview="${index}"
             >
 
