@@ -50,7 +50,7 @@ ALLOWED_ORIGINS = "https://www.boztik.com,https://boztik.com"
 # Hard application storage cap. The code ALSO enforces a compiled-in 3 GiB
 # ceiling, so this value can only ever LOWER the cap, never raise it.
 STORAGE_LIMIT_BYTES = "3221225472"          # 3 GiB
-MAX_UPLOAD_BYTES = "94371840"               # 90 MiB / file (Workers request bodies are capped at 100 MB)
+MAX_UPLOAD_BYTES = "157286400"              # 150 MiB video ceiling; uploads use 8 MiB R2 multipart chunks
 MAX_FILES_PER_DELIVERY = "20"
 SESSION_HOURS = "12"
 DEFAULT_EXPIRY_HOURS = "24"
