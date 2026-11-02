@@ -720,3 +720,61 @@
 @media (max-width: 640px) {
   .hm-toolkit__shot { width: 100%; }
 }
+
+
+/* ---------- Boztik Stores auto-rotation polish ---------- */
+.hm-carousel__bar { align-items: center; }
+.hm-carousel__bar > .hm-deck-controls { flex: none; }
+.hm-rotation-toggle {
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid rgba(142, 255, 61, 0.28);
+  border-radius: 999px;
+  background: rgba(142, 255, 61, 0.07);
+  color: var(--hm-muted);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+.hm-rotation-toggle:hover,
+.hm-rotation-toggle:focus-visible {
+  border-color: var(--hm-neon);
+  background: rgba(142, 255, 61, 0.14);
+  color: var(--hm-text);
+}
+.hm-rotation-toggle:focus-visible { outline: 2px solid var(--hm-neon); outline-offset: 3px; }
+.hm-pslide__info { transition: transform 0.65s var(--hm-ease), border-color 0.4s ease, box-shadow 0.4s ease; }
+.hm-pslide[data-active="true"] .hm-pslide__info {
+  transform: translateY(0);
+  border-color: rgba(142, 255, 61, 0.5);
+  box-shadow: 0 28px 55px -18px #000, 0 0 28px rgba(142, 255, 61, 0.07);
+}
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hm-store-arrive {
+    from { opacity: 0.72; transform: translateX(22px) scale(0.975); }
+    to { opacity: 1; transform: translateX(0) scale(1); }
+  }
+  .hm-pslide[data-active="true"] .hm-pslide__media { animation: hm-store-arrive 0.72s var(--hm-ease) both; }
+  .hm-pslide[data-active="true"] .hm-pslide__media img { animation: hm-store-image-settle 1.15s var(--hm-ease) both; }
+  @keyframes hm-store-image-settle {
+    from { transform: scale(1.075); filter: saturate(1.12); }
+    to { transform: scale(1); filter: saturate(1); }
+  }
+  .hm-pslide[data-active="true"] .hm-pslide__info { animation: hm-store-info-arrive 0.62s var(--hm-ease) 0.08s both; }
+  @keyframes hm-store-info-arrive {
+    from { opacity: 0.65; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+@media (max-width: 720px) {
+  .hm-carousel__bar { gap: 12px; }
+  .hm-carousel__bar > .hm-deck-controls { flex-wrap: wrap; }
+  .hm-rotation-toggle { min-height: 42px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .homepage .hm-pslide[data-active="true"] .hm-pslide__media,
+  .homepage .hm-pslide[data-active="true"] .hm-pslide__media img,
+  .homepage .hm-pslide[data-active="true"] .hm-pslide__info { animation: none !important; }
+}
