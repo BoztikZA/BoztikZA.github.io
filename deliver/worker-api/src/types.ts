@@ -76,6 +76,7 @@ export interface PendingUploadRow {
   confirmed_at: number | null;
   state: UploadState;
   stored_at: number | null;
+  multipart_upload_id?: string | null;
 }
 
 export interface StorageStateRow {
