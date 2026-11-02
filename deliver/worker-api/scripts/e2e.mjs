@@ -25,6 +25,23 @@ const api = async (method, path, body, opts = {}) => {
 const png = (n) => { const b = new Uint8Array(n); b.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]); for (let i = 8; i < n; i++) b[i] = i % 251; return b; };
 const jpg = (n) => { const b = new Uint8Array(n); b.set([0xff, 0xd8, 0xff, 0xe0]); for (let i = 4; i < n; i++) b[i] = i % 241; return b; };
 const zip = (n) => { const b = new Uint8Array(n); b.set([0x50, 0x4b, 3, 4]); return b; };
+const videoContainer = (brand) => {
+  const b = new Uint8Array(64);
+  b.set([0, 0, 0, 24, 0x66, 0x74, 0x79, 0x70]);
+  b.set(new TextEncoder().encode(brand), 8);
+  b.set([0, 0, 0, 0], 12);
+  if (brand === "isom") b.set(new TextEncoder().encode("mp42isom"), 16);
+  return b;
+};
+const mp4 = () => videoContainer("isom");
+const mov = () => videoContainer("qt  ");
+const webm = () => {
+  const b = new Uint8Array(64);
+  b.set([0x1a, 0x45, 0xdf, 0xa3], 0);
+  b.set(new TextEncoder().encode("webm"), 12);
+  return b;
+};
+
 // wrangler dev reports the route hostname as request.url; point signed URLs back at the local server.
 const local = (u) => BASE + new URL(u).pathname + new URL(u).search;
 const newId = () => "BZ-" + Array.from({ length: 8 }, () => "23456789ABCDEFGHJKLMNPQRSTUVWXYZ"[Math.floor(Math.random() * 32)]).join("");
@@ -70,6 +87,7 @@ async function main() {
   ok("no extension rejected", (await api("POST", "/api/admin/uploads", { delivery_id: d0, file_name: "noext", file_size: 100 })).status === 415);
   ok("PhotoshopBattles rejects zip", (await api("POST", "/api/admin/uploads", { delivery_id: d0, file_name: "a.zip", file_size: 100, is_photoshop_battles: true })).status === 415);
   ok("PhotoshopBattles rejects webp/gif", (await api("POST", "/api/admin/uploads", { delivery_id: d0, file_name: "a.gif", file_size: 100, is_photoshop_battles: true })).status === 415);
+  ok("PhotoshopBattles rejects video", (await api("POST", "/api/admin/uploads", { delivery_id: d0, file_name: "a.mp4", file_size: 100, is_photoshop_battles: true })).status === 415);
   ok("over per-file limit -> 413", (await api("POST", "/api/admin/uploads", { delivery_id: d0, file_name: "a.zip", file_size: 200 * MB })).status === 413);
   ok("zero/negative size rejected", (await api("POST", "/api/admin/uploads", { delivery_id: d0, file_name: "a.png", file_size: 0 })).status === 422);
   ok("bad delivery id rejected", (await api("POST", "/api/admin/uploads", { delivery_id: "../evil", file_name: "a.png", file_size: 10 })).status === 422);
@@ -86,6 +104,29 @@ async function main() {
   const s1 = await storage();
   ok("failed upload released reservation, nothing stored", s1.reserved_bytes === 0 && s1.used_bytes === 0, JSON.stringify(s1));
   ok("abort of gone upload is idempotent", (await api("DELETE", `/api/admin/uploads/${r1.json.upload_id}`)).json?.ok === true);
+
+  console.log("\n[2b] video upload validation and byte-range preview");
+  for (const [ext, bytes] of [["mp4", mp4()], ["mov", mov()], ["webm", webm()]]) {
+    const V = await makeDelivery(`sample.${ext}`, bytes);
+    ok(`${ext.toUpperCase()} upload + finalise accepted`, V.c?.status === 201, JSON.stringify(V.c?.json));
+    if (V.c?.status === 201) {
+      const access = await api("POST", `/api/public/delivery/${V.id}/files/${V.file_id}/access`, { intent: "preview" }, { anon: true });
+      ok(`${ext.toUpperCase()} signed preview URL issued`, access.status === 200 && access.json.url.includes("/blob/"));
+      const response = await fetch(local(access.json.url), { headers: { Range: "bytes=8-15" } });
+      const chunk = new Uint8Array(await response.arrayBuffer());
+      ok(`${ext.toUpperCase()} preview is inline with byte ranges`,
+        response.status === 206 &&
+        response.headers.get("content-type") === (ext === "mov" ? "video/quicktime" : `video/${ext}`) &&
+        /inline/.test(response.headers.get("content-disposition")) &&
+        response.headers.get("accept-ranges") === "bytes" &&
+        chunk.length === 8,
+        `status=${response.status} type=${response.headers.get("content-type")}`);
+      await api("DELETE", `/api/admin/deliveries/${V.id}`);
+    } else if (V.u?.upload_id) {
+      await api("DELETE", `/api/admin/uploads/${V.u.upload_id}`);
+    }
+  }
+  ok("video tests leave storage clean", (await storage()).used_bytes === 0 && (await storage()).reserved_bytes === 0);
 
   console.log("\n[3] create delivery, storage accounting, public access, tracking");
   const bytes = png(300_000);
