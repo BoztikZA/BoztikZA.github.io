@@ -4,7 +4,8 @@ import {
   formatDate,
   toast,
   guessMimeType,
-  isPreviewable
+  isPreviewable,
+  isVideoPreviewable
 } from "./shared.js";
 
 import {
@@ -22,6 +23,7 @@ import {
   estimatePdfPageCount,
   buildImageInfoHTML,
   buildGenericInfoHTML,
+  buildVideoInfoHTML,
   formatLabelFor
 } from "./fileinfo.js";
 
@@ -1641,6 +1643,56 @@ function buildPreviewFallbackHTML(
 
 
 /* =========================================================
+   LOAD VIDEO PREVIEW
+========================================================= */
+async function loadVideoPreview(file, previewContainer) {
+  if (!file || !previewContainer) return;
+
+  try {
+    const url = await getPreviewUrl(file);
+    const video = document.createElement("video");
+    video.className = "deliver-preview-video";
+    video.controls = true;
+    video.playsInline = true;
+    video.preload = "metadata";
+    video.setAttribute("aria-label", `Video preview: ${file.file_name || "delivered video"}`);
+    video.src = url;
+
+    previewContainer.replaceChildren(video);
+    previewContainer.classList.add("preview-loading");
+    previewContainer.classList.remove("preview-error", "preview-loaded");
+
+    video.addEventListener("loadedmetadata", () => {
+      previewContainer.classList.remove("preview-loading", "preview-error");
+      previewContainer.classList.add("preview-loaded");
+      const slot = previewContainer.closest(".deliver-file-card")?.querySelector("[data-info]");
+      if (slot) {
+        slot.innerHTML = buildVideoInfoHTML({
+          fileName: file.file_name,
+          sizeLabel: formatBytes(file.file_size),
+          format: getFileExtension(file.file_name),
+          mimeType: guessMimeType(file.file_name),
+          width: video.videoWidth,
+          height: video.videoHeight,
+          duration: video.duration
+        });
+      }
+    }, { once: true });
+
+    video.addEventListener("error", () => {
+      previewContainer.classList.remove("preview-loading");
+      previewContainer.classList.add("preview-error");
+      previewContainer.innerHTML = buildPreviewFallbackHTML(file);
+    }, { once: true });
+  } catch (error) {
+    console.warn("[Boztik Deliver] Video preview unavailable:", file.file_name, error);
+    previewContainer.classList.remove("preview-loading");
+    previewContainer.classList.add("preview-error");
+    previewContainer.innerHTML = buildPreviewFallbackHTML(file);
+  }
+}
+
+/* =========================================================
    LOAD IMAGE PREVIEW
 ========================================================= */
 
@@ -2102,9 +2154,10 @@ function buildFileCardHTML(
 ) {
 
   const previewable =
-    isPreviewable(
-      file.file_name
-    );
+    isPreviewable(file.file_name) || isVideoPreviewable(file.file_name);
+
+  const videoPreviewable =
+    isVideoPreviewable(file.file_name);
 
 
   const extension =
@@ -2260,7 +2313,7 @@ function buildFileCardHTML(
         >
 
           ${
-            previewable
+            isPreviewable(file.file_name)
 
               ? `
 
@@ -2586,9 +2639,7 @@ function renderFiles(
 
         if (
           !file ||
-          !isPreviewable(
-            file.file_name
-          )
+          (!isPreviewable(file.file_name) && !isVideoPreviewable(file.file_name))
         ) {
 
           return;
@@ -2603,10 +2654,11 @@ function renderFiles(
           so a preview problem cannot break the delivery.
         */
 
-        loadImagePreview(
-          file,
-          previewContainer
-        );
+        if (isVideoPreviewable(file.file_name)) {
+          loadVideoPreview(file, previewContainer);
+        } else {
+          loadImagePreview(file, previewContainer);
+        }
 
       }
     );
@@ -2655,9 +2707,8 @@ function renderFiles(
         */
 
         if (
-          isPreviewable(
-            file.file_name
-          )
+          isPreviewable(file.file_name) ||
+          isVideoPreviewable(file.file_name)
         ) {
 
           return;
