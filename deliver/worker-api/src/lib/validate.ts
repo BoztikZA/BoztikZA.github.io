@@ -5,11 +5,11 @@
 import { HttpError } from "../types";
 import { newDirectToken } from "./ids";
 
-export const ALLOWED_EXTENSIONS = ["zip", "jpg", "jpeg", "png", "webp", "gif", "tif", "tiff", "pdf", "psd", "ai", "eps", "mp4", "mov", "m4v", "webm"] as const;
+export const ALLOWED_EXTENSIONS = ["zip", "jpg", "jpeg", "png", "webp", "gif", "tif", "tiff", "pdf", "psd", "ai", "eps"] as const;
 /** PhotoshopBattles deliveries are IMAGE ONLY (same set the old function served). */
 export const BATTLE_EXTENSIONS = ["jpg", "jpeg", "png"] as const;
 /** Types a browser may render inline for preview; everything else is forced to download. */
-export const PREVIEW_EXTENSIONS = ["jpg", "jpeg", "png", "webp", "gif", "mp4", "mov", "m4v", "webm"] as const;
+export const PREVIEW_EXTENSIONS = ["jpg", "jpeg", "png", "webp", "gif"] as const;
 /** Share methods the delivery page can record. Native + copy are "completed", the rest are opened share sheets. */
 export const SHARE_METHODS = ["native", "copy", "whatsapp", "facebook", "x", "reddit"] as const;
 
@@ -17,7 +17,6 @@ const MIME_BY_EXT: Record<string, string> = {
   jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp", gif: "image/gif",
   tif: "image/tiff", tiff: "image/tiff", pdf: "application/pdf", zip: "application/zip",
   psd: "image/vnd.adobe.photoshop", ai: "application/postscript", eps: "application/postscript",
-  mp4: "video/mp4", m4v: "video/mp4", mov: "video/quicktime", webm: "video/webm",
 };
 
 export function extensionOf(fileName: string): string | null {
@@ -55,8 +54,6 @@ export function magicMatches(ext: string, b: Uint8Array): boolean {
     case "psd": return ascii(b, 0, "8BPS");
     case "ai": return new TextDecoder("latin1").decode(b.slice(0, 1024)).includes("%PDF-") || ascii(b, 0, "%!PS");
     case "eps": return ascii(b, 0, "%!PS") || (b[0] === 0xc5 && b[1] === 0xd0 && b[2] === 0xd3 && b[3] === 0xc6);
-    case "mp4": case "m4v": case "mov": return ascii(b, 4, "ftyp");
-    case "webm": return b[0] === 0x1a && b[1] === 0x45 && b[2] === 0xdf && b[3] === 0xa3;
     default: return false;
   }
 }
