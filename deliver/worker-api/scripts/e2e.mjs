@@ -112,15 +112,18 @@ async function main() {
     if (V.c?.status === 201) {
       const access = await api("POST", `/api/public/delivery/${V.id}/files/${V.file_id}/access`, { intent: "preview" }, { anon: true });
       ok(`${ext.toUpperCase()} signed preview URL issued`, access.status === 200 && access.json.url.includes("/blob/"));
-      const response = await fetch(local(access.json.url), { headers: { Range: "bytes=8-15" } });
-      const chunk = new Uint8Array(await response.arrayBuffer());
-      ok(`${ext.toUpperCase()} preview is inline with byte ranges`,
-        response.status === 206 &&
-        response.headers.get("content-type") === (ext === "mov" ? "video/quicktime" : `video/${ext}`) &&
-        /inline/.test(response.headers.get("content-disposition")) &&
-        response.headers.get("accept-ranges") === "bytes" &&
-        chunk.length === 8,
-        `status=${response.status} type=${response.headers.get("content-type")}`);
+      if (access.status === 200 && access.json?.url) {
+        const response = await fetch(local(access.json.url), { headers: { Range: "bytes=8-15" } });
+        const chunk = new Uint8Array(await response.arrayBuffer());
+        ok(`${ext.toUpperCase()} preview is inline with byte ranges`,
+          response.status === 206 &&
+          response.headers.get("content-type") === (ext === "mov" ? "video/quicktime" : `video/${ext}`) &&
+          /inline/.test(response.headers.get("content-disposition")) &&
+          response.headers.get("accept-ranges") === "bytes" &&
+          chunk.length === 8 &&
+          chunk[0] === bytes[8],
+          `status=${response.status} type=${response.headers.get("content-type")}`);
+      }
       await api("DELETE", `/api/admin/deliveries/${V.id}`);
     } else if (V.u?.upload_id) {
       await api("DELETE", `/api/admin/uploads/${V.u.upload_id}`);
