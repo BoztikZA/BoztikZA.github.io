@@ -60,7 +60,7 @@ export function magicMatches(ext: string, b: Uint8Array): boolean {
       // major or compatible brand must identify a supported MP4 family.
       if (!ascii(b, 4, "ftyp") || b.length < 12) return false;
       const brands = new TextDecoder("latin1").decode(b.slice(8, Math.min(b.length, 64)));
-      return /(?:isom|iso2|mp41|mp42|avc1|M4V |dash)/.test(brands);
+      return /(?:isom|iso[2-9]|mp41|mp42|avc1|M4V |MSNV|dash|3gp[4-9])/.test(brands);
     }
     case "mov": {
       // QuickTime files use the same ftyp container with the qt brand.
