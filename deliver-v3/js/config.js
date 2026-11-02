@@ -16,7 +16,8 @@ export const config = Object.freeze({
   defaultExpiryHours: 24,
   // Must match the Worker's MAX_UPLOAD_BYTES (the Worker is authoritative).
   maxUploadBytes: 90 * 1024 * 1024,
-  allowedExtensions: ["zip", "jpg", "jpeg", "png", "psd", "tif", "tiff", "webp", "pdf", "ai", "eps"],
+  maxVideoUploadBytes: 150 * 1024 * 1024,
+  allowedExtensions: ["zip", "jpg", "jpeg", "png", "psd", "tif", "tiff", "webp", "pdf", "ai", "eps", "mp4", "mov", "m4v", "webm"],
   paypalUrl: "https://paypal.me/angry5p1c3",
 
   // Storage panel + floating monitor. The 3 GB cap is enforced by the Worker; this
