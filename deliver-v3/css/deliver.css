@@ -733,7 +733,7 @@ a:focus-visible {
   background: #000;
 }
 
-.deliver-file-preview:has(.deliver-preview-video) {
+.deliver-file-preview-video {
   aspect-ratio: 16 / 9;
   min-height: 220px;
 }
