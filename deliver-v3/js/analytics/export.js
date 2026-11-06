@@ -2,7 +2,7 @@
 // numbers are the on-screen numbers by construction (the tests assert it).
 import { stamp } from "../analytics-report.js";
 import { buildSignals } from "./signals.js";
-import { METRICS } from "./model.js";
+import { METRICS, comparisonNote } from "./model.js";
 import { fmtInt } from "./chart-math.js";
 
 /** CSV cell. Strings that a spreadsheet could execute as a formula (= + - @ tab CR) are prefixed with an apostrophe. */
@@ -174,7 +174,16 @@ export function buildFullReport(model, { generatedAt = new Date() } = {}) {
   if (!t?.buckets?.length) line("- Trend data is unavailable.");
   else {
     line(`- Bucket granularity: ${model.granularity === "hour" ? "hourly" : "daily"}.`);
-    t.buckets.filter(b => !b.future).forEach(b => line(`- ${b.start}: page views ${n(b.website_views)}; Deliver views ${n(b.deliver_views)}; downloads ${n(b.deliver_downloads)}; store clicks ${n(b.store_clicks)}.`));
+    line("Period totals and like-for-like comparisons:");
+    for (const [key, meta] of Object.entries(METRICS)) {
+      const c = model.cmp?.[key];
+      const total = model.totals?.[key];
+      const comparison = c?.status === "ok"
+        ? `${c.change > 0 ? "+" : ""}${c.change}% vs ${fmtInt(c.previous)} in the previous matching period`
+        : comparisonNote(c, { noun: meta.unit, today: model.granularity === "hour" }) || "comparison unavailable";
+      line(`- ${meta.label}: ${n(total)}; ${comparison}.`);
+    }
+    t.buckets.filter(b => !b.future).forEach(b => line(`- ${b.start}${b.partial ? " (in progress)" : ""}: page views ${n(b.website_views)}; Deliver views ${n(b.deliver_views)}; downloads ${n(b.deliver_downloads)}; store clicks ${n(b.store_clicks)}.`));
     line("- Null / not measured values are deliberately not treated as zero. The final in-progress bucket is included as partial data.");
   }
 
