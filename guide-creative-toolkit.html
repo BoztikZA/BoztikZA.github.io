@@ -82,6 +82,16 @@
           <p>Image Inspector is the main hub. It helps you understand an image before you download, edit, print or share it. Select an image on a webpage and open it in the Inspector using the extension's available image action.</p>
           <h3>What the details mean</h3>
           <ul><li><strong>Dimensions:</strong> the image's width and height in pixels. A 2400 × 1600 image is 2400 pixels wide and 1600 pixels tall.</li><li><strong>Aspect ratio:</strong> the shape of the image, such as 3:2 or 1:1. This helps you decide whether it will fit a frame or layout without cropping.</li><li><strong>Megapixels:</strong> an approximate total pixel count. It is useful as a quick size indicator, but it does not tell you whether the image is sharp or well-focused.</li><li><strong>Format:</strong> the file type, such as JPEG, PNG or WebP. Different formats suit different jobs.</li><li><strong>File size:</strong> how much storage the file uses. Large files can take longer to upload or load on a webpage.</li><li><strong>Source and metadata:</strong> information the browser can access about where the image came from and any embedded details. Some websites remove or restrict this information.</li></ul>
+          <h3>Useful controls in the Inspector</h3>
+          <ul>
+            <li><strong>Paste image URL:</strong> load an image when you have its direct image address. Use the image file address rather than the webpage address where possible.</li>
+            <li><strong>Use page image:</strong> work with an image already available on the current webpage, where the site permissions allow it.</li>
+            <li><strong>Copy URL:</strong> copy the image address so you can reference or share the source location. A copied address may stop working if the original website moves or removes the file.</li>
+            <li><strong>Copy Info:</strong> copy the image details shown by the Inspector for notes, hand-offs or checking a file before use.</li>
+            <li><strong>Open:</strong> open the image itself in a browser tab, which can make it easier to inspect at its natural size.</li>
+            <li><strong>Download:</strong> save a local copy when the source permits it. Downloading an image does not grant permission to reuse it.</li>
+            <li><strong>Settings:</strong> review the available Inspector preferences and site-related controls. The exact options can change between releases.</li>
+          </ul>
           <div class="gd-note"><p class="gd-note__label">A useful example</p><p>If a client sends a photograph for an 8 × 10 inch print, check its pixel dimensions and aspect ratio first. The Inspector helps you understand what you have; it does not guarantee print quality on its own. Use the <a href="guide-image-resolution-dpi.html">resolution and DPI guide</a> for the next step.</p></div>
           <h2 id="floating-button">2. Floating Boztik Button: quick image details</h2>
           <p>The Floating Boztik Button appears over supported images on webpages when the extension has permission to run there. Hovering over it can show a quick summary such as pixel dimensions, megapixels, aspect ratio, displayed size and an estimated print size at 300 PPI. Click the button to open the image in Image Inspector.</p>
@@ -111,6 +121,16 @@
           <h2 id="assistant">9. Creative Assistant: get guidance, not guarantees</h2>
           <p>The Creative Assistant includes built-in reference guidance for common creative questions. Optional provider-powered AI features can connect to an AI service using your own API key. Those external services have their own terms, privacy policies and possible charges.</p>
           <p>Use suggestions as a starting point, then verify important technical details in your own workflow. Do not send confidential client images or personal information to an external AI provider unless you understand and accept that provider's data handling terms.</p>
+          <h3>Creative Assistant prompt shortcuts</h3>
+          <p>The 3.3.x hub presents several task-focused prompt shortcuts. Their purpose is to help you start a common image or content task; always review the output before publishing or sending it to a client.</p>
+          <ul>
+            <li><strong>Describe Image:</strong> draft a plain-language description of the visible content.</li>
+            <li><strong>Alt Text:</strong> suggest concise alternative text for accessibility. Edit it so it describes the image's purpose in its page context, not just every visible detail.</li>
+            <li><strong>Tags:</strong> suggest keywords that may help organise or describe an image. Remove irrelevant or repetitive suggestions.</li>
+            <li><strong>SEO Description:</strong> draft descriptive copy for an image or page. Avoid keyword stuffing and check that the wording accurately reflects the content.</li>
+            <li><strong>Object Recognition:</strong> identify visible objects as suggestions, not as guaranteed facts. Check uncertain or sensitive details yourself.</li>
+            <li><strong>Enhance:</strong> use the available enhancement prompt as a starting point for an editing task; it is not a promise that the original image will be automatically repaired.</li>
+          </ul>
           <h2 id="privacy">Images, privacy and permissions</h2>
           <p>Core image inspection and capture features are designed to work locally in your browser and do not upload images to Boztik's servers. Some actions involve external services by design: reverse image search sends the image or its search representation to the selected search provider, and provider-powered AI features send prompts or relevant content to the AI provider you connect.</p>
           <p>Website access is opt-in. The extension works on sites where you grant permission, and you can change site access in your browser's extension settings. Review the current <a href="privacy.html">Boztik Privacy Policy</a> and the relevant third-party provider terms for full details.</p>
