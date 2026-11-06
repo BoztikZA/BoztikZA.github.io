@@ -12,3 +12,20 @@
 @media(max-width:760px){.tk-guide-tool-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tk-guide-tool-grid a{min-height:132px}.tk-guide-hero-visual__actions .g-btn{width:100%;text-align:center}.tk-guide-zoom__controls{gap:9px}}
 @media(max-width:460px){.tk-guide-tool-grid{grid-template-columns:1fr}.tk-guide-tool-grid a{min-height:0}.tk-guide-zoom__header{padding:14px}.tk-guide-zoom__viewport{padding:8px}.tk-guide-zoom__hint{padding:0 14px 14px}}
 @media(prefers-reduced-motion:reduce){.tk-guide-module>h2:after{animation:none}.tk-guide-screenshot img{transition:none}}
+
+/* Zoom dialog: keep the page behind it still, while the image viewport owns scrolling. */
+.tk-guide-zoom[open]{display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;overflow:hidden;height:min(900px,calc(100dvh - 28px));}
+.tk-guide-zoom__viewport{min-height:0;max-height:none;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y;scrollbar-gutter:stable;}
+.tk-guide-zoom__viewport img{max-width:none;user-select:none;-webkit-user-drag:none;}
+.tk-guide-zoom__controls{min-height:58px;background:#080c09;border-top:1px solid var(--g-line);}
+.tk-guide-zoom__controls button{flex:0 0 auto;}
+.tk-guide-zoom__hint{background:#080c09;}
+.tk-guide-module{scroll-margin-top:92px;}
+.tk-guide-module:focus-within{outline:1px solid rgba(142,255,61,.22);outline-offset:3px;}
+@media(max-width:600px){
+ .tk-guide-zoom[open]{width:calc(100vw - 16px);max-height:calc(100dvh - 16px);height:calc(100dvh - 16px);border-radius:14px;}
+ .tk-guide-zoom__viewport{overscroll-behavior-y:contain;touch-action:pan-y;}
+ .tk-guide-zoom__controls{display:grid;grid-template-columns:auto 1fr auto;gap:8px;padding:12px;}
+ .tk-guide-zoom__controls button{grid-column:1/-1;justify-self:end;}
+}
+@media(prefers-reduced-motion:reduce){.js [data-guide-reveal],.js .tk-guide-module{opacity:1;transform:none;transition:none;}}
