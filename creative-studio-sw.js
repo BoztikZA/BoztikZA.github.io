@@ -1,8 +1,8 @@
-const CACHE_NAME = 'boztik-creative-studio-v3';
+const CACHE_NAME = 'boztik-creative-studio-v4';
 const SHELL = [
   './creative-studio.html',
   './creative-studio.css?v=20261106a',
-  './creative-studio-editor.css?v=20261106a',
+  './creative-studio-editor.css?v=20261106b',
   './js/creative-studio.js?v=20261106a',
   './js/creative-studio-editor.js?v=20261106b',
   './styles-premium.css?v=20261024a',
