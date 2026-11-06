@@ -1,21 +1,23 @@
 # Boztik — https://www.boztik.com
-# Public pages are crawlable. Private Deliver app pages carry a noindex,follow
-# meta tag and are intentionally omitted from the sitemap. They must remain
-# crawlable so Google can read the noindex directive. The legacy /deliver/ path
-# remains disallowed; the public explanation page /deliver.html stays crawlable.
+# Public pages are crawlable.
+# The private Command Centre is intentionally not listed in the sitemap.
+# Keep it crawlable for Googlebot so the page-level noindex,nofollow directive
+# can be read; exclude only that exact URL from Google's advertising crawlers.
+# The legacy /deliver/ path remains disallowed; /deliver.html stays crawlable.
 
 User-agent: *
 Allow: /
 Disallow: /deliver/
 
-# Google's ad crawlers ignore the "*" group above, so they are named explicitly.
+# Keep the private Command Centre out of AdSense / Google advertising crawls.
+# These specific groups do not inherit the wildcard group's rules.
 User-agent: Mediapartners-Google
-Disallow:
+Disallow: /deliver-v3/dashboard.html
 
 User-agent: Google-Display-Ads-Bot
-Disallow:
+Disallow: /deliver-v3/dashboard.html
 
 User-agent: AdsBot-Google
-Disallow:
+Disallow: /deliver-v3/dashboard.html
 
 Sitemap: https://www.boztik.com/sitemap.xml
