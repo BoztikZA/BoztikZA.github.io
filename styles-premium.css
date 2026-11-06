@@ -4232,7 +4232,7 @@ footer h3 {
 
 /* Performance guardrails for smaller devices. Keep the visual identity while
    reducing large blurred layers and backdrop-filter compositing on phones. */
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   header {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
