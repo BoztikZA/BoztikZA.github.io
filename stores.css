@@ -77,3 +77,12 @@
 @media(max-width:960px){.stores-page{padding-inline:22px}.storefront-hero{min-height:560px;padding:58px 4%}.storefront-hero__visual{transform:scale(.88);transform-origin:center}.store-platforms{grid-template-columns:1fr;gap:30px;padding:75px 0}.store-section-intro{max-width:650px}.store-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:680px){.stores-page{padding-inline:16px;padding-bottom:48px}.storefront-hero{grid-template-columns:1fr;gap:8px;min-height:auto;padding:48px 25px 30px;border-radius:19px}.storefront-hero h1{font-size:clamp(3.2rem,14vw,5rem)}.storefront-hero__copy>p{font-size:.95rem}.storefront-hero__note{margin-top:34px;font-size:.48rem;gap:8px}.storefront-hero__visual{min-height:370px;transform:scale(.9);transform-origin:top center;margin-bottom:-30px}.hero-art--back{right:8%}.hero-art--front{right:30%}.hero-stamp{right:1%;bottom:10px}.store-platforms{padding:65px 0}.platform-card{padding:20px}.platform-card__top{align-items:flex-start;flex-direction:column;gap:12px}.store-collection{padding:65px 0}.collection-heading{align-items:flex-start;flex-direction:column}.collection-count{white-space:normal}.store-filter-wrap{align-items:flex-start;flex-direction:column}.filter-hint{display:none}.store-filters{gap:7px}.store-filters button{padding:9px 12px;font-size:.67rem}.store-grid{grid-template-columns:1fr;gap:14px}.store-card__media{aspect-ratio:1.12/1}.store-card__body p{min-height:0}.store-bottom-cta{align-items:flex-start;flex-direction:column;gap:25px;padding:27px 22px}.store-bottom-links{width:100%}}
 @media(prefers-reduced-motion:reduce){.stores-page *,.stores-page *:before,.stores-page *:after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+
+/* The SVG turbulence texture is decorative and can be expensive to rasterise.
+   Keep the depth with CSS gradients instead of a filter-based noise image. */
+.storefront-hero__grain {
+  background-image:
+    radial-gradient(ellipse at 22% 18%, rgba(255,255,255,.035), transparent 42%),
+    radial-gradient(ellipse at 78% 82%, rgba(142,255,61,.035), transparent 48%);
+}
