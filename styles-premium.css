@@ -4228,3 +4228,43 @@ footer h3 {
 @media (prefers-reduced-motion: reduce) {
   .toolkitf-card { transition: none; }
 }
+
+
+/* Performance guardrails for smaller devices. Keep the visual identity while
+   reducing large blurred layers and backdrop-filter compositing on phones. */
+@media (max-width: 760px) {
+  header {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: rgba(5, 8, 6, 0.96);
+  }
+
+  .background-glow .glow1,
+  .background-glow .glow2,
+  .background-glow .glow3 {
+    filter: blur(64px);
+    opacity: 0.55;
+  }
+
+  .background-glow .glow1 {
+    width: 280px;
+    height: 280px;
+  }
+
+  .background-glow .glow2 {
+    width: 230px;
+    height: 230px;
+  }
+
+  .background-glow .glow3 {
+    display: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .background-glow .glow1,
+  .background-glow .glow2 {
+    filter: blur(48px);
+    opacity: 0.42;
+  }
+}
