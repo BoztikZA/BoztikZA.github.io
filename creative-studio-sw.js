@@ -3,7 +3,7 @@ const SHELL = [
   './creative-studio.html',
   './creative-studio.css?v=20261106a',
   './creative-studio-editor.css?v=20261106a',
-  './js/creative-studio.js?v=20261131b',
+  './js/creative-studio.js?v=20261031b',
   './js/creative-studio-editor.js?v=20261106a',
   './styles-premium.css?v=20261024a',
   './images/boztik-mark.png',
