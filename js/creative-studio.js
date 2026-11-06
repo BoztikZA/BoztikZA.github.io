@@ -3,6 +3,7 @@
 const $ = (s,r=document) => r.querySelector(s);
 const nav=[...document.querySelectorAll('.studio-nav')], panels=[...document.querySelectorAll('.studio-panel')];
 nav.forEach(b=>b.addEventListener('click',()=>{nav.forEach(x=>{x.classList.toggle('is-active',x===b);x.removeAttribute('aria-current')});b.setAttribute('aria-current','page');panels.forEach(p=>p.hidden=p.id!=='panel-'+b.dataset.panel)}));
+if(location.hash==='#panel-edit'){const editorTab=nav.find(b=>b.dataset.panel==='edit');if(editorTab)editorTab.click()}
 const input=$('#studio-file'),zone=$('#drop-zone'),results=$('#inspection-results'),status=$('#inspect-status');
 let objectUrl=null,palette=[];
 function say(t){status.textContent=t}
