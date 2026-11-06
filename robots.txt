@@ -1,22 +1,21 @@
 # Boztik — https://www.boztik.com
 # Public pages are crawlable.
-# The private Command Centre is intentionally not listed in the sitemap.
-# Keep it crawlable for Googlebot so the page-level noindex,nofollow directive
-# can be read; exclude only that exact URL from Google's advertising crawlers.
-# The legacy /deliver/ path remains disallowed; /deliver.html stays crawlable.
+# The private delivery system and Command Centre are intentionally not listed in the sitemap.
+# Keep /deliver-v3/ crawlable for Googlebot so page-level noindex directives can be read.
+# Exclude the delivery system from AdSense crawlers; the legacy /deliver/ path remains disallowed.
 
 User-agent: *
 Allow: /
 Disallow: /deliver/
 
-# Keep the private Command Centre out of AdSense / Google advertising crawls.
-# These specific groups do not inherit the wildcard group's rules.
+# Keep all delivery-v3 pages out of AdSense crawling.
 User-agent: Mediapartners-Google
-Disallow: /deliver-v3/dashboard.html
+Disallow: /deliver-v3/
 
 User-agent: Google-Display-Ads-Bot
-Disallow: /deliver-v3/dashboard.html
+Disallow: /deliver-v3/
 
+# Keep the private Command Centre out of Google Ads quality crawling.
 User-agent: AdsBot-Google
 Disallow: /deliver-v3/dashboard.html
 
