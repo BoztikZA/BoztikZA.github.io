@@ -144,6 +144,7 @@
           <div class="gh-hero__cta" style="--i:4">
             <a class="g-btn g-btn--primary" href="#library">Explore the guides</a>
             <a class="g-btn g-btn--ghost" href="#start">Start with the beginner path</a>
+            <button class="g-btn g-btn--ghost gh-share-button" type="button" data-share-page aria-label="Share the Boztik guides page">Share guides ↗</button>
           </div>
         </div>
         <figure class="gh-print">
@@ -167,6 +168,25 @@
         <li data-reveal><a href="guide-scanning-old-photos.html"><span class="gh-path__n" aria-hidden="true">2</span><strong>Scanning Old Photographs</strong><span class="gh-path__why">A clean scan is the best head start a restoration can have, and it is easy to get wrong.</span></a></li>
         <li data-reveal><a href="guide-photo-restoration.html"><span class="gh-path__n" aria-hidden="true">3</span><strong>Restoring Old Photographs</strong><span class="gh-path__why">Put it together: assess, repair, fix tone and colour, and export without harming the original.</span></a></li>
         </ol>
+      </div>
+    </section>
+
+    <section class="gh-section gh-tool-learning" aria-labelledby="tool-learning-title">
+      <div class="g-wrap">
+        <div class="gh-tool-learning__card">
+          <div class="gh-tool-learning__copy">
+            <span class="g-chip">Boztik Tool Guides</span>
+            <h2 id="tool-learning-title">Know what each tool does — and how to use it.</h2>
+            <p>New to the Creative Toolkit? Follow our practical walkthrough of Image Inspector, Image Lab, colour tools, fonts and more. Each feature is explained in plain language, with examples, useful tips and honest limitations.</p>
+            <div class="gh-hero__cta">
+              <a class="g-btn g-btn--primary" href="guide-creative-toolkit.html">Explore the interactive guide</a>
+              <a class="g-btn g-btn--ghost" href="creative-toolkit.html">View Creative Toolkit</a>
+            </div>
+          </div>
+          <div class="gh-tool-learning__index" aria-label="Tools covered in the guide">
+            <span>Image Inspector</span><span>Find Original</span><span>Print &amp; Screen Check</span><span>Palette Extractor</span><span>Image Lab</span><span>Colour Tools</span><span>Fonts</span><span>Creative Assistant</span>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -343,5 +363,8 @@
   <script src="js/site.js?v=20260805a"></script>
   <script src="js/support.js"></script>
   <script defer src="js/guides.js?v=20261031a"></script>
+  <script>
+  (function(){var button=document.querySelector('[data-share-page]');if(!button)return;var status=document.createElement('span');status.className='gh-share-status';status.setAttribute('role','status');status.setAttribute('aria-live','polite');button.insertAdjacentElement('afterend',status);button.addEventListener('click',async function(){var data={title:document.title,text:'Explore practical photo editing guides and Boztik Creative Toolkit tutorials.',url:window.location.href};try{if(navigator.share){await navigator.share(data);status.textContent='Thanks for sharing.';}else if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(data.url);status.textContent='Link copied. Share it anywhere.';}else{var field=document.createElement('textarea');field.value=data.url;field.setAttribute('readonly','');field.style.position='absolute';field.style.left='-9999px';document.body.appendChild(field);field.select();var copied=document.execCommand('copy');field.remove();status.textContent=copied?'Link copied. Share it anywhere.':'Copy the page address from your browser to share it.';}}catch(error){if(error&&error.name==='AbortError')return;status.textContent='You can share this page using its browser address.';}});})();
+  </script>
 </body>
 </html>
