@@ -778,3 +778,52 @@
   .homepage .hm-pslide[data-active="true"] .hm-pslide__media img,
   .homepage .hm-pslide[data-active="true"] .hm-pslide__info { animation: none !important; }
 }
+
+
+/* Stores showcase: keep product artwork unobstructed. The information panel now
+   sits below the image instead of overlapping the image area. */
+.hm-pslide {
+  grid-template-columns: minmax(0, 1fr);
+  row-gap: 18px;
+}
+.hm-pslide__media {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  aspect-ratio: 16 / 9;
+  border: 1px solid rgba(142, 255, 61, 0.14);
+  border-radius: 18px;
+}
+.hm-pslide__media img {
+  padding: clamp(12px, 3vw, 30px);
+}
+.hm-pslide__info {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  align-self: stretch;
+  padding: clamp(18px, 2.5vw, 26px);
+  border-color: rgba(142, 255, 61, 0.2);
+  background: linear-gradient(135deg, rgba(15, 24, 17, 0.98), rgba(8, 13, 9, 0.98));
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.22);
+  transform: none;
+}
+.hm-pslide__info h3 {
+  margin-top: 10px;
+  font-size: clamp(1.15rem, 2vw, 1.45rem);
+}
+.hm-pslide__info p {
+  max-width: 68ch;
+  margin-top: 8px;
+  margin-bottom: 14px;
+  -webkit-line-clamp: 2;
+}
+.hm-pslide__info .hm-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+}
+@media (max-width: 720px) {
+  .hm-pslide { row-gap: 12px; }
+  .hm-pslide__media { aspect-ratio: 4 / 3; border-radius: 14px; }
+  .hm-pslide__info { padding: 17px; border-radius: 14px; }
+  .hm-pslide__info p { -webkit-line-clamp: 3; }
+}
