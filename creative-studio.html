@@ -4,9 +4,10 @@
 <title>Creative Studio | Boztik</title><meta name="description" content="A practical creative workspace from Boztik. Inspect images locally, build stronger prompts, calculate dimensions and get clear editing guidance.">
 <meta name="theme-color" content="#080d09"><meta property="og:title" content="Boztik Creative Studio"><meta property="og:description" content="Inspect, plan and create in one focused browser workspace."><meta property="og:type" content="website"><meta property="og:url" content="https://www.boztik.com/creative-studio.html"><meta property="og:image" content="https://www.boztik.com/images/boztik-og.png"><link rel="canonical" href="https://www.boztik.com/creative-studio.html"><link rel="manifest" href="creative-studio.webmanifest"><link rel="icon" href="images/boztik-favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles-premium.css?v=20261024a"><link rel="stylesheet" href="creative-studio.css?v=20261031a">
+<link rel="stylesheet" href="styles-premium.css?v=20261024a"><link rel="stylesheet" href="creative-studio.css?v=20261106a">
 <script>window["gtag_enable_tcf_support"] = true;</script>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-H8W54EBM20"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}window['ga-disable-G-H8W54EBM20']=document.cookie.split(';').some(function(part){return part.trim()==='boztik_analytics_optout=1';});gtag('js',new Date());gtag('config','G-H8W54EBM20');</script>
+<link rel="stylesheet" href="creative-studio-editor.css?v=20261106a">
 </head><body class="studio-page">
 <a class="skip-link" href="#studio-main">Skip to workspace</a>
 <header class="studio-header"><a class="studio-brand" href="index.html"><img src="images/boztik-mark.png" alt="" width="48" height="44"><span>BOZTIK <small>CREATIVE STUDIO</small></span></a><nav aria-label="Workspace navigation"><a href="index.html">Boztik home</a><a href="guides.html">Guides</a><a href="creative-toolkit.html">Browser extension</a></nav></header>
@@ -15,9 +16,10 @@
 <div class="studio-layout">
 <aside class="studio-sidebar" aria-label="Workspace tools"><p class="sidebar-label">WORKSPACE</p>
 <button class="studio-nav is-active" data-panel="inspect" aria-current="page"><b>01</b><span>Inspect image<small>Understand the file</small></span></button>
-<button class="studio-nav" data-panel="prompt"><b>02</b><span>Prompt builder<small>Shape a better brief</small></span></button>
-<button class="studio-nav" data-panel="dimensions"><b>03</b><span>Canvas planner<small>Sizes and ratios</small></span></button>
-<button class="studio-nav" data-panel="guidance"><b>04</b><span>Creative guidance<small>Practical editing help</small></span></button>
+<button class="studio-nav" data-panel="edit"><b>02</b><span>Edit &amp; repair<small>Retouch and prepare photos</small></span></button>
+<button class="studio-nav" data-panel="prompt"><b>03</b><span>Prompt builder<small>Shape a better brief</small></span></button>
+<button class="studio-nav" data-panel="dimensions"><b>04</b><span>Canvas planner<small>Sizes and ratios</small></span></button>
+<button class="studio-nav" data-panel="guidance"><b>05</b><span>Creative guidance<small>Practical editing help</small></span></button>
 <div class="sidebar-note"><strong>Designed to stay lightweight.</strong><p>Image inspection runs on your device. Nothing is uploaded by this workspace.</p></div></aside>
 <div class="studio-content">
 <section class="studio-panel is-active" id="panel-inspect"><div class="panel-heading"><div><p class="panel-kicker">01 / IMAGE ANALYSIS</p><h2>Inspect an image</h2><p>Check dimensions, file details and a sampled colour palette. Your image stays in this browser.</p></div><span class="privacy-chip">LOCAL PROCESSING</span></div>
@@ -38,7 +40,7 @@
 <article data-terms="colour color grading white balance exposure"><h3>Make colour adjustments feel natural</h3><p>Correct white balance and exposure before adding a look. Protect skin tones, watch saturated highlights, and compare against the original. A strong grade should support the subject rather than become the subject.</p></article>
 <article data-terms="sharpen noise reduction detail"><h3>Sharpen with restraint</h3><p>Reduce distracting noise before final output sharpening. Apply sharpening selectively and check for halos around high-contrast edges. Avoid judging sharpness from a zoomed-out preview alone.</p></article></div><p class="analysis-footnote">These are general starting points. The right settings depend on the source image, intended output and software version.</p></section>
 </div></div>
-<section class="studio-bottom"><div><small>KEEP CREATING</small><h2>Need a deeper walkthrough?</h2><p>Explore the Boztik guides for step-by-step explanations, or install the browser extension for tools that work while you browse.</p></div><div><a class="studio-button secondary" href="guides.html">Explore creative guides</a><a class="studio-button primary" href="creative-toolkit.html">Get the browser toolkit</a></div></section>
+<section class="studio-bottom"><div class="studio-guide-callout"><small>NEW WORKSPACE · LEARN AS YOU EDIT</small><h2>Not sure where to start?</h2><p>Use the built-in mini guides beside each tool. They explain the workflow, controls and limitations before you export.</p></div><div><small>KEEP CREATING</small><h2>Need a deeper walkthrough?</h2><p>Explore the Boztik guides for step-by-step explanations, or install the browser extension for tools that work while you browse.</p></div><div><a class="studio-button secondary" href="guides.html">Explore creative guides</a><a class="studio-button primary" href="creative-toolkit.html">Get the browser toolkit</a></div></section>
 </main><footer class="studio-footer"><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="contact.html">Contact</a><span>© 2026 Boztik</span></footer>
-<script defer src="js/pageview.js?v=2"></script><script defer src="js/boztik-events.js?v=2"></script><script defer src="js/creative-studio.js?v=20261031a"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./creative-studio-sw.js").catch(()=>{}))}</script>
+<script defer src="js/pageview.js?v=2"></script><script defer src="js/boztik-events.js?v=2"></script><script defer src="js/creative-studio.js?v=20261031b"></script><script defer src="js/creative-studio-editor.js?v=20261106a"></script><script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./creative-studio-sw.js").catch(()=>{}))}</script>
 </body></html>
