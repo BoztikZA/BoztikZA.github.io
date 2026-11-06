@@ -120,14 +120,14 @@
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="g-chip">File Formats &amp; Quality</span><span class="g-badge">New</span></div>
         <h1 style="margin-top:16px">Image Resolution and DPI Explained for Beginners</h1>
         <p class="gd-dek">Resolution is the most misunderstood number in photo editing. Here is what it actually means, the one calculation you need, and how to check a photo before you print or upload it.</p>
-        <div class="gd-meta"><span>By <a href="about.html">Boztik</a></span><span>Published <time datetime="2026-10-31">31 October 2026</time></span><span>Updated <time datetime="2026-10-31">31 October 2026</time></span><span>4 min read</span><span>Beginner</span></div>
+        <div class="gd-meta"><span>By <a href="about.html">Boztik</a></span><span>Published <time datetime="2026-10-31">31 October 2026</time></span><span>Updated <time datetime="2026-10-31">31 October 2026</time></span><span>5 min read</span><span>Beginner</span></div>
       </div>
     </header>
 
     <div class="g-wrap gd-layout">
       <details class="gd-toc" data-toc open>
         <summary>In this guide</summary>
-        <ol><li><a href="#what">What resolution actually means</a></li><li><a href="#formula">The one calculation you need</a></li><li><a href="#sizes">How many pixels for common print sizes</a></li><li><a href="#check">Step by step: check and set size in Photoshop</a></li><li><a href="#upscaling">Enlarging a photo: what is and is not possible</a></li><li><a href="#web">What about "72 DPI for the web"?</a></li><li><a href="#mistakes">Common mistakes</a></li><li><a href="#summary">Key takeaways</a></li></ol>
+        <ol><li><a href="#what">What resolution actually means</a></li><li><a href="#formula">The one calculation you need</a></li><li><a href="#sizes">How many pixels for common print sizes</a></li><li><a href="#check">Step by step: check and set size in Photoshop</a></li><li><a href="#upscaling">Enlarging a photo: what is and is not possible</a></li><li><a href="#web">What about "72 DPI for the web"?</a></li><li><a href="#worked-example">Worked example: prepare a photo for an 8 × 10 print</a></li><li><a href="#mistakes">Common mistakes</a></li><li><a href="#summary">Key takeaways</a></li></ol>
       </details>
 
       <article class="gd-body" data-guide-body>
@@ -200,6 +200,18 @@
 
 <h2 id="web">What about "72 DPI for the web"?</h2>
 <p>You will often read that web images must be 72 DPI. This is a myth. Browsers display an image according to its pixel dimensions; the PPI value stored in the file is ignored. A 1200 × 800 pixel image looks identical on a web page whether it is labelled 72 or 300 PPI. What matters for the web is pixel size and file size: use dimensions near what the page actually displays, and a sensible JPEG quality (see the <a href="guide-jpeg-png-tiff.html">format guide</a>).</p>
+
+<h2 id="worked-example">Worked example: prepare a photo for an 8 × 10 print</h2>
+<p>Imagine the original is 3000 × 2000 pixels and the print lab asks for an 8 × 10 inch portrait. Do not change the resolution field first. Work through the crop and pixel requirement in this order:</p>
+<ol>
+<li><strong>Check the original dimensions.</strong> The file is 3000 pixels wide by 2000 high, so it has enough pixels for many medium prints, but its landscape shape does not match an 8 × 10 portrait.</li>
+<li><strong>Choose the crop before resizing.</strong> An 8 × 10 print has a 4:5 aspect ratio. Crop to that shape, keeping the important subject away from the edges. A portrait crop from the original will discard substantial width; inspect the crop preview rather than assuming all 3000 pixels remain available.</li>
+<li><strong>Check the cropped pixel dimensions.</strong> A 4:5 crop from a 3000 × 2000 image can be no larger than 1600 × 2000 pixels without adding pixels. At 300 PPI, an 8 × 10 print needs 2400 × 3000 pixels, so this crop does not contain enough native pixels for that target.</li>
+<li><strong>Decide whether the print is still suitable.</strong> At 200 PPI, 1600 × 2000 pixels produces an 8 × 10 inch print. That may be perfectly acceptable at normal viewing distance. Ask the lab whether it accepts 200 PPI before enlarging.</li>
+<li><strong>Only upscale if the output requirement justifies it.</strong> If the lab insists on 300 PPI, resampling can create a 2400 × 3000 file, but it cannot restore genuine detail that was not captured. Inspect eyes, hair, fine patterns and edges at 100% after enlargement.</li>
+<li><strong>Save a separate print copy.</strong> Keep the original untouched, retain your layered working file, and export a copy using the lab's requested colour profile and format.</li>
+</ol>
+<p>This example shows why a single DPI number cannot answer whether a photo is printable. The crop, actual pixel dimensions, viewing distance and printer requirements all matter. If the subject is too close to the edge, choose a smaller print rather than sacrificing an important part of the photograph just to hit a number.</p>
 
 <h2 id="mistakes">Common mistakes</h2>
 <ul>
