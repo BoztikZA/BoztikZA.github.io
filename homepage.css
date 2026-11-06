@@ -831,7 +831,7 @@
 
 /* The blurred artwork behind the carousel image is decorative only. A smaller
    blur radius and scale keep the effect without a large mobile paint surface. */
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   .hm-pslide__media::before {
     filter: blur(12px) saturate(1.05);
     transform: scale(1.08);
