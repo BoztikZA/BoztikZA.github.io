@@ -22,7 +22,7 @@
   <link rel="stylesheet" href="../styles-premium.css?v=20261106a">
   <link rel="stylesheet" href="css/deliver.css?v=13">
   <link rel="stylesheet" href="css/command-centre.css?v=4">
-  <link rel="stylesheet" href="css/analytics.css?v=an3">
+  <link rel="stylesheet" href="css/analytics.css?v=an4">
   <link rel="stylesheet" href="css/deliver-animations.css?v=1">
 
   <style>
@@ -319,7 +319,7 @@
 
         <button type="button" class="dash-tab" id="tab-analytics" role="tab" aria-selected="false" aria-controls="panel-analytics" tabindex="-1" data-tab="analytics">
           <span class="dash-tab-icon"><svg class="cc-i" aria-hidden="true" focusable="false"><use href="#i-chart"/></svg></span>
-          <span><strong>Analytics</strong><small>Views, downloads, pages</small></span>
+          <span><strong>Analytics</strong><small>Traffic & visitor movement</small></span>
         </button>
 
       </div>
@@ -1597,15 +1597,15 @@
             <header class="cc-card-head">
               <div>
                 <span class="cc-eyebrow">Boztik decision dashboard</span>
-                <h2 id="cc-site-title">Website &amp; business analytics</h2>
-                <p class="cc-card-desc">Where visitors go on the public site, and how Deliver is performing. Website traffic and Deliver are kept separate.</p>
+                <h2 id="cc-site-title">Website traffic &amp; visitor movement</h2>
+                <p class="cc-card-desc">See which pages attract visits, where visitors move next, which store links they click, and how Deliver performs separately.</p>
               </div>
               <div class="an-head-actions">
                 <button type="button" class="cc-btn" id="cc-report-csv" disabled>
                   <svg class="cc-i" aria-hidden="true" focusable="false"><use href="#i-download"/></svg> Export CSV
                 </button>
                 <button type="button" class="cc-btn cc-btn--primary" id="cc-report-btn" disabled>
-                  <svg class="cc-i" aria-hidden="true" focusable="false"><use href="#i-list"/></svg> Generate Analysis Report
+                  <svg class="cc-i" aria-hidden="true" focusable="false"><use href="#i-list"/></svg> Generate Traffic Report
                 </button>
                 <label class="an-exclusion-toggle" title="Exclude this browser's visits and tracked clicks from Boztik analytics">
                   <input type="checkbox" id="an-exclude-me" data-exclude-me>
@@ -1625,8 +1625,8 @@
 
           <article class="cc-card cc-report" id="cc-report-panel" aria-labelledby="cc-report-title" hidden>
             <header class="cc-card-head">
-              <div><span class="cc-eyebrow">Plain text · ready for ChatGPT</span><h2 id="cc-report-title">Analysis report</h2>
-                <p class="cc-card-desc">Copy this and paste it into ChatGPT for strategic analysis. If the copy button is blocked, the text is already selected — press Ctrl+C (Cmd+C on Mac).</p></div>
+              <div><span class="cc-eyebrow">Plain text · ready for ChatGPT</span><h2 id="cc-report-title">Traffic analysis report</h2>
+                <p class="cc-card-desc">Includes page performance, visitor journeys, traffic sources, external store clicks, Deliver activity and data limitations. Copy it into ChatGPT for a traffic analysis.</p></div>
               <div class="cc-report-actions">
                 <button type="button" class="cc-btn cc-btn--primary" id="cc-report-copy">Copy Report</button>
                 <button type="button" class="cc-btn" id="cc-report-close">Close</button>
@@ -1641,7 +1641,7 @@
 
           <div class="an-dashboard-grid">
           <article class="cc-card an-trend an-grid-wide" id="an-trend" aria-labelledby="an-trend-title">
-            <header class="cc-card-head"><div><span class="cc-eyebrow">2 · Movement over time</span><h2 id="an-trend-title">Traffic and activity trend</h2>
+            <header class="cc-card-head"><div><span class="cc-eyebrow">2 · Movement over time</span><h2 id="an-trend-title">Website and Deliver activity trend</h2>
               <p class="cc-card-desc">Pick a measure. Gaps mean “not measured”, never zero. The unfinished day or hour is drawn hollow.</p></div></header>
             <div class="an-segs" id="an-metrics" role="group" aria-label="Measure shown in the chart"></div>
             <div id="an-trend-state" aria-live="polite"></div>
@@ -1671,30 +1671,14 @@
 
           <article class="cc-card cc-flow-card an-grid-half" aria-labelledby="cc-visitor-flow-title">
             <header class="cc-card-head"><div><span class="cc-eyebrow">5 · Anonymous sessions</span><h2 id="cc-visitor-flow-title">Visitor flow</h2>
-              <p class="cc-card-desc">How visits actually moved between pages, built only from stored events. Entry pages, common steps, journeys and last-seen pages.</p></div></header>
-            <details class="an-expand-panel"><summary>Explore visitor flow details</summary><div id="cc-visitor-flow" aria-live="polite"><p class="cc-muted">Loading visitor flow…</p></div></details>
+              <p class="cc-card-desc">See where recorded visits start and finish, the most common page-to-page steps, and complete journeys where session data is available.</p></div></header>
+            <div id="cc-visitor-flow" aria-live="polite"><p class="cc-muted">Loading visitor flow…</p></div>
           </article>
 
           <article class="cc-card an-grid-half" aria-labelledby="cc-store-clicks-title">
             <header class="cc-card-head"><div><span class="cc-eyebrow">6 · Boztik Stores</span><h2 id="cc-store-clicks-title">Store performance</h2>
               <p class="cc-card-desc">Store page views and clicks to the configured storefronts. Clicks are not purchases.</p></div></header>
             <div id="cc-store-clicks" aria-live="polite"><p class="cc-muted">Loading Store activity…</p></div>
-          </article>
-
-          <article class="cc-card cc-ga4-card an-grid-half" aria-labelledby="cc-actions-title">
-            <header class="cc-card-head"><div><span class="cc-eyebrow">7 · Important actions</span><h2 id="cc-actions-title">Product, contact &amp; store actions</h2>
-              <p class="cc-card-desc">Every row names its data source. First-party and GA4 numbers are kept apart and never added together.</p></div><span class="cc-badge">GA4: not connected</span></header>
-            <details class="an-expand-panel"><summary>View tracked actions and data availability</summary><div id="cc-actions" aria-live="polite"><p class="cc-muted">Loading…</p></div></details>
-            <details class="cc-ga4-how">
-              <summary>What would bring GA4 metrics (users, engagement, other actions) into Command Centre?</summary>
-              <ol>
-                <li>In Google Cloud, enable the <em>Google Analytics Data API</em> and create a service account.</li>
-                <li>In GA4 → Admin → Property access, add that service account's email as a <em>Viewer</em>.</li>
-                <li>Store its key (<code>GA4_SERVICE_ACCOUNT_JSON</code>) and the numeric property ID (<code>GA4_PROPERTY_ID</code>) as Worker secrets (never in the repo).</li>
-                <li>In GA4 → Admin → Custom definitions, register <code>action</code>, <code>destination</code>, <code>position</code> and <code>page_key</code> as event-scoped dimensions so reports can group by them.</li>
-                <li>Then one read-only admin route calling <code>runReport</code> can be added. Nothing is set up yet and this page deliberately invents no workaround.</li>
-              </ol>
-            </details>
           </article>
 
           <article class="cc-card an-grid-half" aria-labelledby="cc-health-title">
@@ -2622,7 +2606,7 @@
 
   <script
     type="module"
-    src="js/dashboard.js?v=cf-4"
+    src="js/dashboard.js?v=cf-5"
   ></script>
   <script type="module" src="js/promotions.js"></script>
 

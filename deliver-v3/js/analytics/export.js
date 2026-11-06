@@ -1,8 +1,8 @@
 // CSV export and the extended text report. PURE: both read the SAME model object the screen renders, so the exported
 // numbers are the on-screen numbers by construction (the tests assert it).
-import { buildReport, stamp } from "../analytics-report.js";
+import { stamp } from "../analytics-report.js";
 import { buildSignals } from "./signals.js";
-import { METRICS, SOURCE_LABELS, comparisonNote } from "./model.js";
+import { METRICS } from "./model.js";
 import { fmtInt } from "./chart-math.js";
 
 /** CSV cell. Strings that a spreadsheet could execute as a formula (= + - @ tab CR) are prefixed with an apostrophe. */
@@ -82,50 +82,138 @@ export function buildCsv(model, { generatedAt = new Date() } = {}) {
 }
 
 /** The existing report plus the new sections. The original sections are untouched so older prompts still work. */
+/** Decision-ready report for analysing how visitors move through Boztik. */
 export function buildFullReport(model, { generatedAt = new Date() } = {}) {
-  const base = buildReport(model, { generatedAt });
-  const L = [base, "", "TREND (like-for-like)"];
-  const t = model.trend;
-  if (!t) L.push("- Trend data is unavailable (the Worker has not been updated with the trend route, or the request failed).");
+  const L = [], line = (s = "") => L.push(s);
+  const n = v => (v === null || v === undefined || !Number.isFinite(Number(v)) ? "not measured" : fmtInt(Number(v)));
+  const w = model.website ?? {}, f = model.flow, s = model.store, d = model.deliver, t = model.trend, sources = model.sources;
+  const pageName = p => model.pages?.find(x => x.page === p)?.label || PAGE_LABELS_FOR_REPORT[p] || p;
+  const list = (items, render, empty) => {
+    if (!items?.length) { line(`- ${empty}`); return; }
+    items.forEach((item, i) => line(`${i + 1}. ${render(item)}`));
+  };
+
+  line("BOZTIK WEBSITE TRAFFIC & VISITOR MOVEMENT REPORT");
+  line(`Period: ${model.periodLabel || "Selected period"}${model.period?.since ? ` (${model.period.since} to ${model.period.until})` : ""}`);
+  if (model.period?.previous) line(`Comparison: ${model.period.previous.since} to ${model.period.previous.until}`);
+  line(`Generated: ${stamp(generatedAt)} (local time)`);
+  if (model.timezone?.label) line(`Reporting timezone: ${model.timezone.label}`);
+  line("Purpose: understand which public pages attract attention, how recorded visits move between pages, and whether visitors click through to Boztik's external stores. Deliver usage is reported separately.");
+
+  line(); line("1. EXECUTIVE SUMMARY");
+  line(`- Page views (counted page loads): ${n(w.total)} (not unique people).`);
+  line(`- Most-viewed page: ${model.top ? `${model.top.label} — ${fmtInt(model.top.views)} views (${model.top.share ?? "—"}% of counted page views)` : "No page recorded"}.`);
+  line(`- Recorded visitor-flow sessions: ${f ? fmtInt(f.visits) : "not available"}.`);
+  line(`- Multi-page sessions: ${f ? fmtInt(f.multi_page_visits) : "not available"}; single-page sessions: ${f ? fmtInt(f.single_page_visits) : "not available"}.`);
+  line(`- External store-link clicks: ${s ? fmtInt(s.outbound_total) : "not available"}.`);
+  line(`- Private Deliver views: ${d?.available ? fmtInt(d.totals.views) : "not available"} (separate counter; not website page views).`);
+
+  line(); line("2. WEBSITE PAGE PERFORMANCE");
+  line(`Total counted page views: ${n(w.total)}.`);
+  line("Page views count page loads, including repeat loads; they do not identify unique visitors.");
+  if (model.pages?.length) {
+    line("Page ranking (views, share, entrances and exits):");
+    model.pages.forEach((p, i) => line(`${i + 1}. ${p.label} [${p.page}]: ${fmtInt(p.views)} views; ${p.share === null ? "share not measured" : `${p.share}% of page views`}; entrances ${n(p.entrances)}; exits ${n(p.exits)}.`));
+  } else line("- Page-level data is unavailable.");
+
+  line(); line("3. VISITOR MOVEMENT");
+  if (!f) line("- Visitor-flow data is unavailable for this period.");
   else {
-    L.push(`- Granularity: ${model.granularity === "hour" ? "hourly (today so far)" : "daily"}${model.timezone?.label ? `; timezone ${model.timezone.label}` : ""}.`);
-    for (const [key, meta] of Object.entries(METRICS)) {
-      const c = model.cmp[key];
-      const total = model.totals[key];
-      const tail = c.status === "ok" ? `; ${c.change > 0 ? "+" : c.change < 0 ? "−" : ""}${Math.abs(c.change)}% vs ${fmtInt(c.previous)} in the matching completed days before`
-        : comparisonNote(c, { noun: meta.unit, today: model.granularity === "hour" }) ? `; ${comparisonNote(c, { noun: meta.unit, today: model.granularity === "hour" })}` : "";
-      L.push(`- ${meta.label}: ${total === null || total === undefined ? "not measured" : fmtInt(total)}${tail}`);
+    line(`- Sessions represented in the flow data: ${fmtInt(f.visits)}.`);
+    line(`- Multi-page sessions: ${fmtInt(f.multi_page_visits)}; single-page sessions: ${fmtInt(f.single_page_visits)}.`);
+    line(`- Session-event coverage: ${f.session_coverage_pct === null ? "not measured" : `${f.session_coverage_pct}% of counted page views`}.`);
+    if (f.status === "limited") line("- Flow sample is below the minimum session threshold; treat patterns as indicative only.");
+    if (f.events_capped) line("- The event cap was reached; the recorded journey sample is truncated.");
+    line("Most common entry pages:");
+    list(f.entries, x => `${pageName(x.page)} — ${fmtInt(x.visits)} visits`, "No entry-page records.");
+    line("Most common exit pages:");
+    list(f.exits, x => `${pageName(x.page)} — ${fmtInt(x.visits)} visits`, "No exit-page records.");
+    line("Most common page-to-page transitions:");
+    list(f.transitions, x => `${pageName(x.from)} → ${pageName(x.to)} — ${fmtInt(x.visits)} visits`, "No transitions recorded.");
+    line("Most common recorded journeys:");
+    list(f.journeys, x => `${x.path.map(pageName).join(" → ")}${x.truncated ? " → …" : ""} — ${fmtInt(x.visits)} visits`, "No multi-page journeys recorded.");
+    line(`- A new visit starts after ${fmtInt(f.visit_gap_minutes)} minutes of inactivity. Single-page sessions do not produce page-to-page transitions.`);
+  }
+
+  line(); line("4. TRAFFIC SOURCES");
+  if (!sources) line("- Traffic-source attribution is unavailable.");
+  else {
+    line(`- ${fmtInt(sources.total)} visits had an attributable source.`);
+    [...sources.rows].sort((a, b) => b.visits - a.visits).forEach(x => line(`- ${x.label}: ${fmtInt(x.visits)} visits (${x.share === null ? "share not measured" : `${x.share}%`}).`));
+    line("- Attribution uses the referrer hostname. Hidden referrers and visits without a referrer are grouped as Direct / unknown; this is not proof someone typed the address.");
+  }
+
+  line(); line("5. EXTERNAL STORE CLICKS");
+  if (!s) line("- Store-link click data is unavailable.");
+  else {
+    line(`- Stores page views: ${fmtInt(s.store_page_views)}.`);
+    line(`- All tracked store-link clicks: ${fmtInt(s.total)}; clicks to external stores: ${fmtInt(s.outbound_total)}.`);
+    line(`- Anonymous sessions with a store click: ${fmtInt(s.unique_sessions)}.`);
+    line(`- Product-card clicks: ${fmtInt(s.product_card_clicks)}.`);
+    const names = { boztik_store: "Boztik Stores", redbubble: "Redbubble", teepublic: "TeePublic", kofi: "Ko-fi" };
+    line("Clicks by destination:");
+    list(s.by_destination, x => `${names[x.destination] || x.destination}: ${fmtInt(x.clicks)} clicks from ${fmtInt(x.unique_sessions)} sessions${x.top_source ? `; leading placement: ${x.top_source}` : ""}`, "No destination clicks recorded.");
+    line("Clicks by page placement:");
+    list(s.sources, x => `${x.source_placement}: ${fmtInt(x.clicks)} clicks`, "No placement breakdown recorded.");
+    line(`- Outbound clicks per 100 Stores-page views: ${s.store_page_views > 0 ? (Math.round((s.outbound_total / s.store_page_views) * 1000) / 10).toFixed(1) : "not calculable"}.`);
+    line("- This is a click-to-page-view ratio, not a purchase or conversion rate. A click records link activation, not a completed purchase.");
+  }
+
+  line(); line("6. DELIVER ACTIVITY (SEPARATE SYSTEM)");
+  if (!d?.available) line("- Deliver activity is unavailable for this period.");
+  else {
+    line(`- Views: ${fmtInt(d.totals.views)}; downloads: ${fmtInt(d.totals.downloads)}; shares: ${fmtInt(d.totals.shares)}; active deliveries: ${fmtInt(d.totals.active)}.`);
+    d.types.forEach(x => {
+      if (x.type === "deleted" && !x.views && !x.downloads && !x.shares) return;
+      line(`- ${x.label}: ${fmtInt(x.views)} views; ${fmtInt(x.downloads)} downloads; ${fmtInt(x.shares)} shares; ${fmtInt(x.active)} active deliveries.`);
+    });
+    line("- Deliver views are private delivery-page or direct-image loads. They are not added to public website page views.");
+  }
+
+  line(); line("7. TREND (like-for-like) — DAILY TRAFFIC & ACTIVITY");
+  if (!t?.buckets?.length) line("- Trend data is unavailable.");
+  else {
+    line(`- Bucket granularity: ${model.granularity === "hour" ? "hourly" : "daily"}.`);
+    t.buckets.filter(b => !b.future).forEach(b => line(`- ${b.start}: page views ${n(b.website_views)}; Deliver views ${n(b.deliver_views)}; downloads ${n(b.deliver_downloads)}; store clicks ${n(b.store_clicks)}.`));
+    line("- Null / not measured values are deliberately not treated as zero. The final in-progress bucket is included as partial data.");
+  }
+
+  line(); line("8. WHAT STANDS OUT");
+  const signals = buildSignals(model);
+  if (!signals.length) line("- No pattern crossed the dashboard's reporting thresholds.");
+  else signals.forEach(x => line(`- [${x.level.toUpperCase()}] ${x.title}: ${x.detail}`));
+
+  line(); line("9. DATA HEALTH & LIMITATIONS");
+  if (model.limited) line("- Limited mode: the deployed Worker does not provide the selected reporting range; some sections may only show the fixed 30-day page counter.");
+  if (f) line(`- Visitor-flow coverage: ${f.session_coverage_pct === null ? "not measured" : `${f.session_coverage_pct}%`}; this is a subset of page views, not every page load.`);
+  if (model.website?.dataSince) line(`- Website page-view collection began: ${model.website.dataSince}.`);
+  if (s?.data_since) line(`- Store-click collection began: ${s.data_since}.`);
+  if (model.health) {
+    const c = model.health.collectors || {};
+    for (const [key, label] of [["page_views", "Page views"], ["sessions", "Session events"], ["attribution", "Traffic sources"], ["store_clicks", "Store clicks"]]) {
+      if (c[key]?.status) line(`- ${label} collector: ${c[key].status}.`);
     }
-    const open = t.buckets.filter(b => b.partial).length;
-    if (open) L.push(`- The in-progress ${model.granularity === "hour" ? "hour" : "day"} is included in totals but left out of percentage comparisons.`);
-    const gaps = t.buckets.filter(b => !b.future && b.website_views === null).length;
-    if (gaps) L.push(`- ${gaps} bucket${gaps === 1 ? "" : "s"} at the start of the range have no page-view data (counting had not started). They are not zero.`);
+    (model.health.known_gaps || []).forEach(x => line(`- Tracking note: ${x}`));
   }
+  line("- Page views count page loads, not unique people. Session journeys use anonymous first-party events and cover only the measured share shown above.");
+  line("- Store clicks measure outbound link activation, not purchases. The report does not infer sales, revenue, bounce rate, unique visitors or engagement time.");
+  line("- Website, store-click and Deliver counters are separate measures and must not be added together.");
 
-  L.push("", "TRAFFIC SOURCES (first-party attribution)");
-  if (!model.sources) L.push("- Unavailable.");
-  else if (model.sources.total === 0) L.push("- No visit with a recorded source in this period.");
-  else {
-    L.push(`- ${fmtInt(model.sources.total)} visits with a recorded source${model.sources.dataSince ? ` (recording began ${model.sources.dataSince})` : ""}.`);
-    for (const r of [...model.sources.rows].sort((a, b) => b.visits - a.visits)) L.push(`- ${r.label}: ${fmtInt(r.visits)}${r.share !== null ? ` (${r.share}%)` : ""}`);
-    L.push("- Attribution is a hostname-level estimate. “Direct / unknown” includes hidden referrers and is not proof of typed-in visits.");
-  }
+  line(); line("10. ANALYSIS GUIDE");
+  line("- Identify the strongest entry pages and whether recorded visitors continue to another page or leave.");
+  line("- Look for high-view pages with few onward transitions, and pages that repeatedly appear as exits.");
+  line("- Compare Reddit/search/social/referral traffic with the pages and journeys that follow.");
+  line("- Assess which storefront destinations and page placements attract the most outbound clicks.");
+  line("- Distinguish measured patterns from missing session coverage; do not infer purchases or visitor identity.");
+  line("- Recommend only changes supported by the observed traffic, with a clear reason and expected benefit.");
 
-  L.push("", "WHAT STANDS OUT (rule-based, each traceable to the numbers above)");
-  const sig = buildSignals(model);
-  if (!sig.length) L.push("- Nothing in this range crosses a reporting threshold."); else for (const s of sig) L.push(`- [${s.level}] ${s.title}. ${s.detail}`);
-
-  L.push("", "DATA HEALTH");
-  const h = model.health;
-  if (!h) L.push("- Health check unavailable.");
-  else {
-    const c = h.collectors;
-    L.push(`- Page views: ${c.page_views.status}${c.page_views.first_day ? ` (${c.page_views.first_day} to ${c.page_views.last_day})` : ""}; sessions: ${c.sessions.status}; sources: ${c.attribution.status}; store clicks: ${c.store_clicks.status}.`);
-    for (const g of h.known_gaps ?? []) L.push(`- ${g}`);
-  }
-  L.push("- This report was generated from the same figures shown on screen; CSV export uses the same model.");
   return L.join("\n");
 }
+
+const PAGE_LABELS_FOR_REPORT = {
+  homepage: "Home", stores: "Boztik Stores", deliver: "Deliver", services: "Services", portfolio: "Portfolio",
+  toolkit: "Creative Toolkit", tools: "Tools", guides: "Guides", about: "About", support: "Support", contact: "Contact",
+};
 
 export const csvFileName = (model, d = new Date()) => {
   const p = model.period;

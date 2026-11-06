@@ -277,16 +277,6 @@ export function deliverView(model) {
 }
 
 /* ---------------------------------------------------------------- actions */
-export function actionsView(model) {
-  const s = model.store;
-  const row = (label, value, source, basis) => `<tr><th scope="row">${esc(label)}</th><td class="num">${value}</td><td>${esc(source)}</td><td>${basisBadge(basis)}</td></tr>`;
-  const na = `<span class="an-na">Not available</span>`;
-  return `<div class="an-table-wrap"><table class="an-table"><caption class="cc-sr">Important actions and where each number comes from</caption><thead><tr><th scope="col">Action</th><th scope="col" class="num">Count</th><th scope="col">Source</th><th scope="col">Status</th></tr></thead><tbody>
-    ${row("Store-link clicks (all destinations)", s ? fmtInt(s.total) : na, "First-party click log", s ? "measured" : "unavailable")}
-    ${row("Product-card clicks on the Stores page", s ? fmtInt(s.product_card_clicks) : na, "First-party click log", s ? "measured" : "unavailable")}
-    ${row("Chrome / Edge store, PayPal, email, portfolio links", na, "GA4 event “boztik_action”", "unavailable")}</tbody></table></div>
-    <p class="an-fine">First-party and GA4 numbers are kept apart and never added together. GA4 is not connected to Command Centre.</p>`;
-}
 
 /* ----------------------------------------------------------------- health */
 const STATUS_TEXT = { receiving: ["Receiving", "ok"], quiet: ["Quiet for 7+ days", "warn"], no_data_yet: ["No data yet", "none"] };
@@ -306,7 +296,7 @@ export function healthView(model) {
     ${row("Session events (journeys)", c.sessions, when(c.sessions.first_at), when(c.sessions.last_at))}
     ${row("Traffic sources", c.attribution, when(c.attribution.first_at), when(c.attribution.last_at))}
     ${row("Store-link clicks", c.store_clicks, when(c.store_clicks.first_at), when(c.store_clicks.last_at))}
-    <tr><th scope="row">GA4</th><td><span class="an-pill is-none">Not connected</span></td><td colspan="2">${esc(h.ga4?.detail || "")}</td></tr></tbody></table></div>
+  </tbody></table></div>
     <ul class="an-notes"><li>“Quiet” means nothing arrived for 7 days. From the database alone, a quiet site and a broken collector look identical, so this is never reported as healthy or failed.</li>
     <li>Day boundaries use ${esc(h.timezone?.label || "the configured timezone")} (${esc(h.timezone?.boundary || "midnight")}). Session and source rows are kept ${fmtInt(h.retention_days)} days.</li>
     ${cov.map(x => `<li>${esc(x)}</li>`).join("")}

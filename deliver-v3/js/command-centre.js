@@ -7,7 +7,7 @@
 import { escapeHtml, formatBytes, formatDate } from "./shared.js";
 import { fetchPageAnalytics, fetchShareAnalytics, pingHealth } from "./api.js";
 import { insightsSnapshot, percentChange, trendChart } from "./insights.js";
-import { initSiteAnalytics, refreshSiteAnalytics } from "./site-analytics.js?v=an2";
+import { initSiteAnalytics, refreshSiteAnalytics } from "./site-analytics.js?v=an3";
 
 const HOUR = 3600 * 1000;
 const nf = n => Number(n || 0).toLocaleString();
@@ -284,7 +284,7 @@ export function initCommandCentre(options) {
     const b = event.target.closest("[data-att]");
     if (b) cfg.onAction(b.dataset.att, b.dataset.id || null);
   });
-  initSiteAnalytics(); // Analytics tab: period selector + "Generate Analysis Report" (js/site-analytics.js)
+  initSiteAnalytics(); // Analytics tab: period selector + "Generate Traffic Report" (js/site-analytics.js)
 }
 
 /** Refreshes everything on the Overview tab that isn't owned by dashboard.js / insights.js. */

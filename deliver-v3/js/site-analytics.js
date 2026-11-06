@@ -16,8 +16,8 @@ import { PRESETS, DEFAULT_RANGE, normalizeRange, rangeId, rangeLabel, validateCu
 import { buildAnalyticsModel, metricPoints, METRICS } from "./analytics/model.js?v=an1";
 import { buildSignals } from "./analytics/signals.js?v=an1";
 import { createTrendChart } from "./analytics/chart.js?v=an1";
-import { buildFullReport, buildCsv, csvFileName } from "./analytics/export.js?v=an1";
-import * as V from "./analytics/views.js?v=an2";
+import { buildFullReport, buildCsv, csvFileName } from "./analytics/export.js?v=an2";
+import * as V from "./analytics/views.js?v=an3";
 
 const $ = id => document.getElementById(id);
 const REFRESH_MS = 5 * 60 * 1000;
@@ -132,7 +132,6 @@ function render() {
   renderPages();
   set("cc-visitor-flow", V.flowView(m));
   set("cc-store-clicks", V.storeView(m));
-  set("cc-actions", V.actionsView(m));
   set("cc-data-health", V.healthView(m));
   set("cc-site-deliver", V.deliverView(m));
   const btn = $("cc-report-btn"), csv = $("cc-report-csv");
