@@ -1,191 +1,173 @@
-/* ============================================================
-   PORTFOLIO PAGE — additive styles only.
-   Append to the end of styles-premium.css.
-   Uses existing design tokens already defined at :root
-   (--bg, --surface, --primary, --primary-dark, --accent, --text).
-   No existing rule is modified or removed.
-   ============================================================ */
-
+/* Boztik Portfolio — modular project gallery, scoped to portfolio.html. */
+.portfolio-page {
+  --pf-ink: #070b08;
+  --pf-panel: #0d140f;
+  --pf-panel-soft: #111a13;
+  --pf-line: rgba(236, 255, 232, .11);
+  --pf-muted: #b5c2b4;
+  --pf-neon: #8eff3d;
+  color: #f5faf2;
+}
 .portfolio-hero {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  min-height: 470px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  padding: clamp(76px, 10vw, 132px) 24px 38px;
   text-align: center;
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 4rem 1.5rem 2rem;
+  border-bottom: 1px solid var(--pf-line);
+  background: radial-gradient(ellipse at 50% 12%, rgba(142,255,61,.11), transparent 54%), linear-gradient(180deg, #090f0a, #070b08);
 }
-
-.portfolio-hero .eyebrow {
-  display: inline-block;
-  color: var(--accent);
-  font-weight: 600;
-  letter-spacing: 0.04em;
+.portfolio-hero__glow {
+  position: absolute;
+  z-index: -1;
+  top: -260px;
+  left: 50%;
+  width: min(850px, 100vw);
+  aspect-ratio: 1;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(142,255,61,.13), transparent 68%);
+  filter: blur(10px);
+}
+.portfolio-hero__inner { max-width: 900px; }
+.portfolio-eyebrow, .portfolio-section-kicker {
+  color: var(--pf-neon);
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .19em;
   text-transform: uppercase;
-  font-size: 0.85rem;
-  margin-bottom: 0.75rem;
 }
-
 .portfolio-hero h1 {
+  margin: 22px 0 20px;
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: clamp(2.25rem, 5vw, 3rem);
-  color: var(--text);
-  margin: 0 0 1rem;
+  font-size: clamp(3rem, 7.8vw, 6.4rem);
+  font-weight: 800;
+  line-height: .98;
+  letter-spacing: -.075em;
 }
-
+.portfolio-hero h1 em { color: var(--pf-neon); font-style: normal; }
 .portfolio-hero-sub {
-  color: var(--text);
-  opacity: 0.8;
-  font-size: 1.05rem;
-  line-height: 1.6;
-}
-
-.portfolio-grid-section {
-  padding: 1.5rem 1.5rem 3rem;
-  max-width: 1200px;
+  max-width: 670px;
   margin: 0 auto;
+  color: var(--pf-muted);
+  font-size: clamp(1rem, 1.6vw, 1.12rem);
+  line-height: 1.8;
 }
-
-.portfolio-grid {
+.portfolio-hero__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 30px;
+  color: #f5faf2;
+  font-size: .9rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+.portfolio-hero__link span { color: var(--pf-neon); font-size: 1.2rem; transition: transform .2s ease; }
+.portfolio-hero__link:hover span { transform: translateY(4px); }
+.portfolio-hero__index {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(28px, 7vw, 90px);
+  width: min(850px, 100%);
+  margin-top: 62px;
+  padding-top: 24px;
+  border-top: 1px solid var(--pf-line);
+}
+.portfolio-hero__index div { display: grid; gap: 4px; text-align: left; }
+.portfolio-hero__index strong { color: var(--pf-neon); font: 800 1.55rem/1 'Plus Jakarta Sans', sans-serif; }
+.portfolio-hero__index span { color: var(--pf-muted); font-size: .78rem; }
+.portfolio-intro {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 1.75rem;
+  grid-template-columns: minmax(190px, .55fr) minmax(0, 1.45fr);
+  gap: clamp(24px, 6vw, 80px);
+  align-items: start;
+  width: min(1160px, 100%);
+  margin: 0 auto;
+  padding: clamp(54px, 7vw, 88px) 32px 30px;
 }
-
+.portfolio-intro__label { display: flex; align-items: center; gap: 12px; color: var(--pf-neon); font-size: .68rem; font-weight: 800; letter-spacing: .15em; }
+.portfolio-intro__label span { width: 30px; height: 1px; background: var(--pf-neon); }
+.portfolio-intro p { max-width: 760px; margin: 0; color: var(--pf-muted); font-size: 1.08rem; line-height: 1.85; }
+.portfolio-grid-section { width: min(1240px, 100%); margin: 0 auto; padding: 45px 32px 76px; scroll-margin-top: 90px; }
+.portfolio-section-head { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 28px; }
+.portfolio-section-head h2 { margin: 10px 0 8px; font: 800 clamp(2rem, 4vw, 3rem)/1.05 'Plus Jakarta Sans', sans-serif; letter-spacing: -.05em; }
+.portfolio-section-head p { margin: 0; color: var(--pf-muted); line-height: 1.6; }
+.portfolio-project-count { display: flex; align-items: baseline; gap: 9px; flex: none; padding: 12px 16px; border: 1px solid var(--pf-line); border-radius: 10px; background: rgba(255,255,255,.025); }
+.portfolio-project-count strong { color: var(--pf-neon); font-size: 1.2rem; font-variant-numeric: tabular-nums; }
+.portfolio-project-count span { color: var(--pf-muted); font-size: .78rem; }
+.portfolio-filters { display: flex; flex-wrap: wrap; gap: 9px; margin-bottom: 25px; }
+.portfolio-filters button {
+  display: inline-flex; align-items: center; gap: 10px; min-height: 42px; padding: 0 15px;
+  border: 1px solid var(--pf-line); border-radius: 999px; background: #0a100c; color: #dbe5d8;
+  font: 700 .82rem Inter, sans-serif; cursor: pointer; transition: border-color .2s ease, background .2s ease, color .2s ease;
+}
+.portfolio-filters button span { color: var(--pf-neon); font-size: .7rem; }
+.portfolio-filters button:hover, .portfolio-filters button[aria-pressed="true"] { border-color: rgba(142,255,61,.55); background: rgba(142,255,61,.09); color: #fff; }
+.portfolio-filters button:focus-visible, .portfolio-hero__link:focus-visible { outline: 2px solid var(--pf-neon); outline-offset: 4px; }
+.portfolio-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; align-items: start; }
 .portfolio-card {
-  background: var(--surface);
-  border-radius: 16px;
-  overflow: hidden;
-  border: 1px solid rgba(142, 255, 61, 0.12);
-  transition: transform 0.2s ease, border-color 0.2s ease;
+  min-width: 0; overflow: hidden; border: 1px solid var(--pf-line); border-radius: 18px;
+  background: linear-gradient(145deg, rgba(17,26,19,.98), rgba(9,14,10,.98));
+  box-shadow: 0 18px 50px rgba(0,0,0,.18); transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
 }
-
-.portfolio-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(142, 255, 61, 0.35);
+.portfolio-card:hover { transform: translateY(-4px); border-color: rgba(142,255,61,.3); box-shadow: 0 25px 60px rgba(0,0,0,.28); }
+.portfolio-card[hidden] { display: none !important; }
+.portfolio-card--featured { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(300px, .85fr); align-items: stretch; }
+.portfolio-card__media { position: relative; display: flex; align-items: center; justify-content: center; min-width: 0; overflow: hidden; background: #080c09; }
+.portfolio-card__media img { display: block; width: 100%; height: auto; max-height: 620px; object-fit: contain; }
+.portfolio-card--featured .portfolio-card__media img { height: 100%; max-height: 500px; object-fit: contain; }
+.portfolio-card__number { position: absolute; top: 14px; left: 14px; padding: 7px 10px; border: 1px solid rgba(255,255,255,.15); border-radius: 6px; background: rgba(5,9,6,.82); color: #eaf4e7; font-size: .67rem; font-weight: 800; letter-spacing: .1em; backdrop-filter: blur(8px); }
+.portfolio-card__body { padding: clamp(20px, 2.7vw, 30px); }
+.portfolio-card--featured .portfolio-card__body { display: flex; flex-direction: column; justify-content: center; padding: clamp(26px, 4vw, 50px); }
+.portfolio-card__meta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 17px; }
+.portfolio-tag { color: var(--pf-neon); font-size: .69rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.portfolio-card__legend { color: #a8b7a7; font-size: .72rem; font-weight: 650; }
+.portfolio-card__legend i { padding: 0 4px; color: var(--pf-neon); font-style: normal; }
+.portfolio-card h3 { margin: 0 0 12px; color: #f5faf2; font: 750 clamp(1.18rem, 2vw, 1.5rem)/1.22 'Plus Jakarta Sans', sans-serif; letter-spacing: -.025em; }
+.portfolio-card--featured h3 { max-width: 560px; font-size: clamp(1.6rem, 3vw, 2.25rem); }
+.portfolio-card__body > p { margin: 0; color: var(--pf-muted); font-size: .92rem; line-height: 1.75; }
+.portfolio-changes { display: grid; gap: 8px; margin: 20px 0 0; padding: 17px 0 0; border-top: 1px solid var(--pf-line); list-style: none; }
+.portfolio-changes li { position: relative; padding-left: 20px; color: #d4dfd2; font-size: .82rem; line-height: 1.5; }
+.portfolio-changes li::before { content: ""; position: absolute; top: .55em; left: 0; width: 7px; height: 7px; border-radius: 50%; background: var(--pf-neon); box-shadow: 0 0 10px rgba(142,255,61,.35); }
+.portfolio-filter-status { min-height: 1.4em; margin: 18px 0 0; color: #879688; font-size: .78rem; }
+.portfolio-cta { padding: 24px 32px 100px; }
+.portfolio-cta__inner {
+  position: relative; overflow: hidden; width: min(1100px, 100%); margin: 0 auto; padding: clamp(34px, 6vw, 68px);
+  border: 1px solid rgba(142,255,61,.22); border-radius: 22px; text-align: center;
+  background: radial-gradient(ellipse at 50% 0, rgba(142,255,61,.11), transparent 58%), linear-gradient(145deg,#101911,#090e0a);
 }
-
-.portfolio-compare {
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  overflow: hidden;
-  background: var(--bg);
+.portfolio-cta__inner h2 { max-width: 760px; margin: 14px auto; font: 800 clamp(1.8rem, 4vw, 2.8rem)/1.08 'Plus Jakarta Sans', sans-serif; letter-spacing: -.045em; }
+.portfolio-cta__inner p { max-width: 650px; margin: 0 auto 26px; color: var(--pf-muted); line-height: 1.75; }
+.portfolio-cta .support-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; }
+.portfolio-cta .support-button, .portfolio-cta .secondary-link { display: inline-flex; min-height: 48px; align-items: center; justify-content: center; padding: 0 22px; border-radius: 999px; font-weight: 800; text-decoration: none; }
+.portfolio-cta .support-button { background: var(--pf-neon); color: #071006; }
+.portfolio-cta .secondary-link { border: 1px solid rgba(142,255,61,.4); color: #f5faf2; }
+@media (max-width: 900px) {
+  .portfolio-card--featured { grid-template-columns: minmax(0, 1fr); }
+  .portfolio-card--featured .portfolio-card__media img { max-height: none; }
 }
-
-.portfolio-compare img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+@media (max-width: 680px) {
+  .portfolio-hero { min-height: 0; padding: 72px 22px 34px; }
+  .portfolio-hero h1 { font-size: clamp(2.8rem, 13vw, 4.6rem); }
+  .portfolio-hero__index { gap: 20px 30px; justify-content: space-between; margin-top: 42px; }
+  .portfolio-hero__index div { flex: 1 1 26%; }
+  .portfolio-hero__index span { font-size: .7rem; }
+  .portfolio-intro { grid-template-columns: 1fr; gap: 18px; padding: 48px 22px 22px; }
+  .portfolio-grid-section { padding: 40px 20px 58px; }
+  .portfolio-section-head { align-items: flex-start; flex-direction: column; }
+  .portfolio-grid { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .portfolio-card--featured { grid-column: auto; }
+  .portfolio-cta { padding: 12px 20px 70px; }
+  .portfolio-cta .support-button, .portfolio-cta .secondary-link { width: 100%; }
 }
-
-.portfolio-tag {
-  display: inline-block;
-  margin: 1.25rem 1.25rem 0;
-  padding: 0.3rem 0.75rem;
-  border-radius: 999px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-
-.tag-restoration { background: rgba(142, 255, 61, 0.15); color: var(--primary); }
-.tag-removal      { background: rgba(95, 227, 194, 0.15); color: var(--accent); }
-.tag-portrait     { background: rgba(142, 255, 61, 0.15); color: var(--primary); }
-.tag-composite    { background: rgba(95, 227, 194, 0.15); color: var(--accent); }
-.tag-concept      { background: rgba(142, 255, 61, 0.15); color: var(--primary); }
-.tag-watercolor   { background: rgba(142, 255, 61, 0.15); color: var(--primary); }
-
-.portfolio-card h3 {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 1.15rem;
-  color: var(--text);
-  margin: 0.75rem 1.25rem 0.5rem;
-}
-
-.portfolio-card p {
-  color: var(--text);
-  opacity: 0.75;
-  font-size: 0.95rem;
-  line-height: 1.55;
-  margin: 0 1.25rem 1.5rem;
-}
-
-.portfolio-cta {
-  text-align: center;
-  max-width: 640px;
-  margin: 2rem auto 4rem;
-  padding: 0 1.5rem;
-}
-
-.portfolio-cta h2 {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  color: var(--text);
-  font-size: 1.75rem;
-  margin-bottom: 0.75rem;
-}
-
-.portfolio-cta p {
-  color: var(--text);
-  opacity: 0.8;
-  margin-bottom: 1.5rem;
-  line-height: 1.6;
-}
-
-.portfolio-cta .btn {
-  margin: 0 0.4rem;
-}
-
-/* ---- Show each before/after image in full (no 4:3 crop) and explain what changed ---- */
-.portfolio-grid { align-items: start; }
-
-.portfolio-compare {
-  aspect-ratio: auto;
-}
-
-.portfolio-compare img {
-  height: auto;
-  object-fit: contain;
-}
-
-.portfolio-card .portfolio-legend {
-  margin: 0.25rem 1.25rem 0.6rem;
-  color: var(--accent);
-  opacity: 1;
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-}
-
-.portfolio-changes {
-  margin: 0 1.25rem 1.5rem;
-  padding-left: 1.1rem;
-  color: var(--text);
-  opacity: 0.75;
-  font-size: 0.9rem;
-  line-height: 1.55;
-}
-
-.portfolio-changes li + li {
-  margin-top: 0.2rem;
-}
-
-/* The advertisement unit sits inside the grid and spans the full row, between two groups of examples. */
-.portfolio-grid > .adsense-section {
-  grid-column: 1 / -1;
-  max-width: none;
-  margin: 0;
-  padding: 0;
-}
-
-@media (max-width: 600px) {
-  .portfolio-hero { padding: 3rem 1.25rem 1.5rem; }
-  .portfolio-grid { grid-template-columns: 1fr; }
-}
-
-/* The cards use an h2 for the example title, but the spacing rule above targeted h3 only, so the title sat flush
-   against the card edge while the text below it was indented. Same look as the h3 rule. */
-.portfolio-card h2 {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 1.15rem;
-  line-height: 1.35;
-  color: var(--text);
-  margin: 0.75rem 1.25rem 0.5rem;
+@media (prefers-reduced-motion: reduce) {
+  .portfolio-card, .portfolio-hero__link span, .portfolio-filters button { transition: none; }
+  .portfolio-card:hover { transform: none; }
 }
