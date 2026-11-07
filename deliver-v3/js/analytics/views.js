@@ -71,9 +71,9 @@ export function kpiCards(model) {
   cards.push(d
     ? card({ label: "Deliver downloads", ic: "download", value: fmtInt(d.downloads), delta: deltaHtml(c.deliver_downloads, { noun: "downloads", today }), sub: `<b>${per100(d.downloads, d.views)}</b> downloads per 100 views (calculated)`, spk: spark("deliver_downloads") })
     : card({ label: "Deliver downloads", ic: "download", ...missing("summary", "Deliver downloads") }));
-  cards.push(model.store
-    ? card({ label: "Store-link clicks", ic: "chart", value: fmtInt(model.store.total), delta: deltaHtml(c.store_clicks, { noun: "clicks", today }), sub: `Clicks on store links, not purchases. <b>${fmtInt(model.store.unique_sessions)}</b> anonymous sessions.`, spk: spark("store_clicks") })
-    : card({ label: "Store-link clicks", ic: "chart", ...missing("store", "Store clicks") }));
+  cards.push(t.store_clicks !== null && t.store_clicks !== undefined
+    ? card({ label: "Store-link clicks", ic: "chart", value: fmtInt(t.store_clicks), delta: deltaHtml(c.store_clicks, { noun: "clicks", today }), sub: "Tracked outbound store-link activations, not purchases.", spk: spark("store_clicks") })
+    : card({ label: "Store-link clicks", ic: "chart", value: dash, sub: "Store-link clicks have not been measured for this period.", basis: "unavailable" }));
   return cards.join("");
 }
 
