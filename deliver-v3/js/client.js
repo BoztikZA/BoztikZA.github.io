@@ -336,24 +336,7 @@ function wireSupportPopup() {
 
 wireSupportPopup();
 
-els.supportNudgeClose?.addEventListener("click", () => {
-  if (els.supportNudge) els.supportNudge.hidden = true;
-});
-
-function showFirstDownloadSupportNudge() {
-  if (isPhotoshopBattlesDelivery || !delivery?.id || !els.supportNudge || supportNudgeShownThisPage) return;
-  const key = "boztik-deliver-support-nudge:" + delivery.id;
-  try {
-    if (localStorage.getItem(key) === "1") return;
-    localStorage.setItem(key, "1");
-  } catch {
-    // The in-memory guard still prevents repeat prompts during this page view.
-  }
-  supportNudgeShownThisPage = true;
-  els.supportNudge.hidden = false;
-  els.supportNudge.classList.remove("is-visible");
-  requestAnimationFrame(() => els.supportNudge?.classList.add("is-visible"));
-}
+// Tip links are now available in the persistent support card; no duplicate post-download prompt.
 
 
 /* =========================================================
@@ -364,7 +347,6 @@ let delivery =
   null;
 
 let deliveryReactionController = null;
-let supportNudgeShownThisPage = false;
 
 let timer =
   null;
@@ -723,12 +705,13 @@ function state(
   }
 
   if (els.supportDetails) {
-    // Replace the oversized persistent support panel with a compact note
-    // that appears only after a successful download interaction.
-    els.supportDetails.hidden = true;
+    // Keep Ko-fi and PayPal tip links visible on every active delivery,
+    // including Free Edit links. PhotoshopBattles is intentionally excluded.
+    els.supportDetails.hidden = name !== "active" || isPhotoshopBattlesDelivery;
   }
 
-  if (els.supportNudge && (name !== "active" || isPhotoshopBattlesDelivery)) {
+  // The persistent support card replaces the duplicate post-download nudge.
+  if (els.supportNudge) {
     els.supportNudge.hidden = true;
   }
 
@@ -3347,9 +3330,6 @@ async function download(
       url,
       file.file_name
     );
-
-    // Optional support appears only after the signed download is ready.
-    showFirstDownloadSupportNudge();
 
     return true;
 
