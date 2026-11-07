@@ -235,7 +235,7 @@ async function notifySpotlightSubmission(env: Env, item: {displayName:string;tag
   return true;
 }
 
-async function uploadSpotlightImage(request:Request,env:Env,profileId:string):Promise<Response>{
+// Spotlight images share the existing atomic storage ledger and the same 3 GiB ceiling as Deliver.\nasync function uploadSpotlightImage(request:Request,env:Env,profileId:string):Promise<Response>{
   if(!/^[a-f0-9]{20}$/i.test(profileId))return error("Profile not found",404);
   const profile=await env.DB.prepare("SELECT id,image_key,image_size FROM spotlight_profiles WHERE id=?").bind(profileId).first<any>();
   if(!profile)return error("Profile not found",404);
