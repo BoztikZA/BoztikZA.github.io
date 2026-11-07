@@ -348,11 +348,12 @@
           <article class="cc-kpi"><header>Featured today</header><strong class="cc-kpi-val" id="sp-admin-featured">—</strong></article>
           <article class="cc-kpi"><header>Profile views · all time</header><strong class="cc-kpi-val" id="sp-admin-views">—</strong></article>
         </div>
-        <article class="cc-card"><header class="cc-card-head"><div><span class="cc-eyebrow">Moderation queue</span><h3>Submissions &amp; profiles</h3><p class="cc-card-desc">Publishing makes a profile visible in the public directory. Featuring it gives it the 24-hour homepage and directory highlight.</p></div><button class="cc-btn" id="sp-admin-refresh" type="button">Refresh</button></header><div id="sp-admin-feedback" role="status" aria-live="polite" class="cc-muted">Loading Spotlight profiles…</div><form id="sp-admin-edit" class="sp-admin-edit" hidden>
+        <article class="cc-card"><header class="cc-card-head"><div><span class="cc-eyebrow">Moderation queue</span><h3>Submissions &amp; profiles</h3><p class="cc-card-desc">Add profiles from email submissions, upload their logo or photograph, then publish approved listings. Featuring gives a profile the 24-hour homepage and directory highlight.</p></div><div class="sp-admin-toolbar"><button class="cc-btn" id="sp-admin-new" type="button">Add profile</button><button class="cc-btn" id="sp-admin-refresh" type="button">Refresh</button></div></header><div id="sp-admin-feedback" role="status" aria-live="polite" class="cc-muted">Loading Spotlight profiles…</div><form id="sp-admin-edit" class="sp-admin-edit" hidden>
           <input type="hidden" name="id">
           <div class="sp-admin-edit-grid">
             <label>Display name<input name="display_name" maxlength="80" required minlength="2"></label>
             <label>Tagline<input name="tagline" maxlength="120" required minlength="8"></label>
+            <label>Contact email<input name="contact_email" type="email" maxlength="254" required placeholder="creator@example.com"></label>
             <label>Category<select name="category" required><option value="small-business">Small business</option><option value="youtube">YouTube</option><option value="twitch">Twitch</option><option value="gaming">Gaming</option><option value="photography">Photography</option><option value="design">Design</option><option value="music">Music</option><option value="creator">Creator</option><option value="freelance">Freelance</option><option value="other">Other</option></select></label>
             <label>Website URL<input name="website_url" type="url" placeholder="https://"></label>
             <div class="sp-admin-edit-wide sp-image-editor"><label>Profile logo / photograph<input name="profile_image" id="sp-profile-image" type="file" accept="image/jpeg,image/png,image/webp"><small>JPG, PNG or WebP · maximum 2 MB. Uploaded images stay private until the profile is published.</small></label><div id="sp-profile-image-preview" class="sp-profile-image-preview">No image uploaded</div><button class="cc-btn" id="sp-profile-image-upload" type="button">Upload image</button><span id="sp-profile-image-status" role="status"></span></div>
@@ -2645,7 +2646,7 @@
     src="js/dashboard.js?v=cf-5"
   ></script>
   <script type="module" src="js/promotions.js"></script>
-  <script type="module" src="js/spotlight-manager.js?v=6"></script>
+  <script type="module" src="js/spotlight-manager.js?v=7"></script>
 
 </body>
 </html>
