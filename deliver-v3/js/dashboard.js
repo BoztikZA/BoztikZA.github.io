@@ -31,6 +31,7 @@ import { loadInsights, openDeliveryAnalytics } from "./insights.js";
 import { initCommandCentre, refreshCommandCentre, refreshAnalyticsExtras, formatRate } from "./command-centre.js?v=an5";
 import { StorageLimitError, readStorageUsage, monitorLevel, storageLimitBytes, storageLimitLabel, usagePercent } from "./storage-guard.js";
 import { ANIMATION_CATALOG, getAnimation } from "./animations/registry.js";
+import { createDeliveryReactionController } from "./animations/reactions.js";
 
 const $ = id => document.getElementById(id);
 
@@ -723,13 +724,28 @@ function buildAnimationOptions(select) {
   if (!select || select.dataset.animationOptionsBuilt) return;
   const none = document.createElement("option");
   none.value = "none";
-  none.textContent = "None";
+  none.textContent = "No reaction";
   select.appendChild(none);
+  const groups = new Map();
+  const categoryOf = id => {
+    if (id === "big-laugh") return "Funny";
+    if (id === "halloween") return "Spooky";
+    if (["wedding", "anniversary", "with-love"].includes(id)) return "Romantic";
+    if (["congratulations", "birthday", "graduation", "achievement", "new-year", "christmas"].includes(id)) return "Celebrations";
+    return "Personal moments";
+  };
   for (const entry of ANIMATION_CATALOG) {
+    const category = categoryOf(entry.id);
+    if (!groups.has(category)) {
+      const group = document.createElement("optgroup");
+      group.label = category;
+      groups.set(category, group);
+      select.appendChild(group);
+    }
     const opt = document.createElement("option");
     opt.value = entry.id;
-    opt.textContent = entry.name;
-    select.appendChild(opt);
+    opt.textContent = entry.id === "big-laugh" ? "Runaway download" : entry.id === "halloween" ? "Haunted glitch" : entry.name;
+    groups.get(category).appendChild(opt);
   }
   select.dataset.animationOptionsBuilt = "1";
 }
@@ -744,7 +760,7 @@ function stopAnimationPreview() {
 /** Runs the exact production animation implementation inside the Command
  *  Centre's preview stage — never a separate demo version. Purely local:
  *  no network call, no analytics, no effect on any stored delivery. */
-function runAnimationPreview(animationId) {
+function runAnimationPreview(animationId, soundEnabled = false) {
   const animation = getAnimation(animationId);
   if (!els.animationPreviewModal || !els.animationPreviewStage || !animation) return;
 
@@ -755,9 +771,20 @@ function runAnimationPreview(animationId) {
 
   const play = () => {
     stopAnimationPreview();
+    els.animationPreviewStage.innerHTML = "";
+    const demoButton = document.createElement("button");
+    demoButton.type = "button";
+    demoButton.className = "deliver-download-all";
+    demoButton.textContent = "Download";
+    demoButton.setAttribute("aria-label", "Preview download reaction");
+    els.animationPreviewStage.appendChild(demoButton);
     try {
-      activeAnimationPreview = animation.create(els.animationPreviewStage);
-      activeAnimationPreview.play();
+      activeAnimationPreview = createDeliveryReactionController(
+        els.animationPreviewStage,
+        animationId,
+        { soundEnabled: soundEnabled === true }
+      );
+      activeAnimationPreview.play(demoButton);
     } catch (error) {
       console.error("[Boztik Deliver] Preview failed to play:", error);
     }
@@ -770,6 +797,7 @@ function runAnimationPreview(animationId) {
 function closeAnimationPreview() {
   closeModal(els.animationPreviewModal);
   stopAnimationPreview();
+  if (els.animationPreviewStage) els.animationPreviewStage.innerHTML = "";
 }
 
 function setupAnimationPreview() {
@@ -787,8 +815,8 @@ function setupAnimationPreview() {
   els.animation?.addEventListener("change", refreshPreviewEnabled);
   els.editAnimation?.addEventListener("change", refreshEditPreviewEnabled);
 
-  els.animationPreviewBtn?.addEventListener("click", () => runAnimationPreview(els.animation?.value));
-  els.editAnimationPreviewBtn?.addEventListener("click", () => runAnimationPreview(els.editAnimation?.value));
+  els.animationPreviewBtn?.addEventListener("click", () => runAnimationPreview(els.animation?.value, els.animationSound?.checked));
+  els.editAnimationPreviewBtn?.addEventListener("click", () => runAnimationPreview(els.editAnimation?.value, els.editAnimationSound?.checked));
   wireModalDismiss(els.animationPreviewModal, els.animationPreviewClose, closeAnimationPreview);
 }
 
@@ -813,7 +841,7 @@ function applySource(value) {
   if (els.battleExpiryNote) els.battleExpiryNote.hidden = !isBattleMode;
   // PhotoshopBattles is a Reddit utility image, not a personal delivery —
   // it never carries a decorative animation.
-  if (els.animationSection) els.animationSection.hidden = isBattleMode;
+  if (els.animationSection) els.animationSection.hidden = false;
   if (isBattleMode && els.animation) els.animation.value = "none";
 
   if (els.clientFieldsNote) {
@@ -1570,10 +1598,10 @@ function renderDeliveryCard(delivery) {
   card.querySelector(".btn-edit")?.addEventListener("click", () => openEditModal(delivery));
   card.querySelector(".btn-extend")?.addEventListener("click", () => openEditModal(delivery, true));
 
-  card.querySelector(".btn-copy")?.addEventListener("click", () => copyToClipboard(deliveryLink(delivery.id, getLocalAnimation(delivery.id)), "Delivery link"));
+  card.querySelector(".btn-copy")?.addEventListener("click", () => copyToClipboard(deliveryLink(delivery.id, getLocalAnimation(delivery.id), getLocalSound(delivery.id)), "Delivery link"));
 
   card.querySelector(".btn-open")?.addEventListener("click", () => {
-    const url = new URL(deliveryLink(delivery.id, getLocalAnimation(delivery.id)));
+    const url = new URL(deliveryLink(delivery.id, getLocalAnimation(delivery.id), getLocalSound(delivery.id)));
     // client.js recognises this admin-only marker and intentionally skips recordView().
     url.searchParams.set("preview", "1");
     window.open(url.href, "_blank", "noopener,noreferrer");
