@@ -73,6 +73,15 @@ async function load() {
   }
 }
 
+function openNewProfile() {
+  editForm.reset();
+  editForm.elements.id.value = "";
+  $("sp-profile-image-preview").textContent = "Save the profile first, then upload its logo or photograph.";
+  $("sp-profile-image-status").textContent = "";
+  editForm.hidden = false;
+  editForm.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
 function openEditor(profile) {
   editForm.elements.id.value = profile.id;
   editForm.elements.display_name.value = profile.display_name || "";
@@ -96,6 +105,8 @@ function openEditor(profile) {
   $("sp-profile-image-status").textContent = "";
   editForm.scrollIntoView({ behavior: "smooth", block: "center" });
 }
+
+$("sp-admin-new").addEventListener("click", openNewProfile);
 
 list.addEventListener("click", async event => {
   const button = event.target.closest("button[data-action]");
@@ -146,6 +157,7 @@ editForm.addEventListener("submit", async event => {
     tagline: form.get("tagline"),
     description: form.get("description"),
     category: form.get("category"),
+    contact_email: form.get("contact_email"),
     website_url: form.get("website_url"),
     social_links: social
   };
@@ -153,13 +165,24 @@ editForm.addEventListener("submit", async event => {
   save.disabled = true;
   feedback.textContent = "Saving profile changes…";
   try {
-    await api("/api/admin/spotlight/profile/" + encodeURIComponent(id), {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body)
-    });
-    editForm.hidden = true;
-    await load();
+    if (id) {
+      await api("/api/admin/spotlight/profile/" + encodeURIComponent(id), {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      editForm.hidden = true;
+      await load();
+    } else {
+      const created = await api("/api/admin/spotlight/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      editForm.elements.id.value = created.profile.id;
+      feedback.textContent = "Profile saved as pending. You can now upload its logo or photograph below.";
+      await load();
+    }
   } catch (error) {
     feedback.textContent = error.message;
   } finally {
@@ -191,7 +214,8 @@ $("sp-profile-image-upload").addEventListener("click", async () => {
   } catch (error) { status.textContent = error.message; }
   finally { button.disabled = false; }
 });
-\n$("sp-admin-edit-cancel").addEventListener("click", () => { editForm.reset(); editForm.hidden = true; });
+
+$("sp-admin-edit-cancel").addEventListener("click", () => { editForm.reset(); editForm.hidden = true; });
 $("sp-admin-refresh").addEventListener("click", load);
 
 onAuthChange(session => {
