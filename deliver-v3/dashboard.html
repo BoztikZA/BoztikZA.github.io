@@ -22,7 +22,7 @@
   <link rel="stylesheet" href="../styles-premium.css?v=20261106a">
   <link rel="stylesheet" href="css/deliver.css?v=13">
   <link rel="stylesheet" href="css/command-centre.css?v=4">
-  <link rel="stylesheet" href="css/analytics.css?v=an4">
+  <link rel="stylesheet" href="css/analytics.css?v=an5">
   <link rel="stylesheet" href="css/deliver-animations.css?v=1">
 
   <style>
@@ -1696,6 +1696,17 @@
 
         </div>
 
+                <article class="cc-card" aria-labelledby="cc-table-title">
+          <header class="cc-card-head"><div><span class="cc-eyebrow">Every delivery</span><h2 id="cc-table-title">Delivery performance</h2><p class="cc-card-desc">Sorted by all-time views.</p></div></header>
+          <div class="cc-table-wrap">
+            <table class="cc-table dash-table">
+              <caption class="cc-sr">All deliveries with views, downloads and last activity</caption>
+              <thead><tr><th scope="col">Delivery</th><th scope="col">Type</th><th scope="col" class="num">Views</th><th scope="col" class="num">Downloads</th><th scope="col">Last viewed</th><th scope="col">Last downloaded</th></tr></thead>
+              <tbody id="dash-analytics-table-body"><tr><td colspan="6" class="dash-table-empty">Loading…</td></tr></tbody>
+            </table>
+          </div>
+        </article>
+
         <details class="an-legacy-details">
           <summary>Detailed Deliver analytics and all-time records</summary>
           <div class="an-legacy-content">
@@ -1752,21 +1763,10 @@
           </div>
         </article>
 
-        <article class="cc-card" aria-labelledby="cc-table-title">
-          <header class="cc-card-head"><div><span class="cc-eyebrow">Every delivery</span><h2 id="cc-table-title">Delivery performance</h2><p class="cc-card-desc">Sorted by all-time views.</p></div></header>
-          <div class="cc-table-wrap">
-            <table class="cc-table dash-table">
-              <caption class="cc-sr">All deliveries with views, downloads and last activity</caption>
-              <thead><tr><th scope="col">Delivery</th><th scope="col">Type</th><th scope="col" class="num">Views</th><th scope="col" class="num">Downloads</th><th scope="col">Last viewed</th><th scope="col">Last downloaded</th></tr></thead>
-              <tbody id="dash-analytics-table-body"><tr><td colspan="6" class="dash-table-empty">Loading…</td></tr></tbody>
-            </table>
-          </div>
-        </article>
-
         <article class="cc-card cc-notrack" aria-labelledby="cc-nt-title">
           <header class="cc-card-head"><div><span class="cc-eyebrow">Good to know</span><h2 id="cc-nt-title">What is not tracked</h2></div></header>
-          <p><strong>Boztik's own counters</strong> record how many times each delivery was opened, downloaded or shared, per day, and how many times each public page was loaded. They do <strong>not</strong> record visitor location, device, browser or referring site, and do not store IP addresses or visitor-identifying cookies. The analytics opt-out preference, when enabled, is kept only in this browser. That is deliberate, so there is no location or device breakdown to show here.</p>
-          <p><strong>Google Analytics 4</strong> runs separately on the public website pages only. It is not on any Deliver page, and Deliver and PhotoshopBattles views are never sent to it. GA4 holds richer data (traffic sources, users, sessions, clicks), but Command Centre cannot read it yet, so none of it appears on this page.</p>
+          <p><strong>Website traffic</strong> uses Boztik's first-party page-view counter. It counts page loads, not unique people. Traffic-source attribution uses the referrer hostname when the browser supplies one; hidden referrers appear as Direct / unknown.</p>
+          <p><strong>Visitor movement</strong> is based on a subset of anonymous session events, so entrances, exits and journeys are indicative rather than a complete funnel. <strong>Deliver views, downloads and shares</strong> come from separate delivery counters and are never added to public website page views. Store clicks record link activations, not purchases.</p>
         </article>
           </div>
         </details>
