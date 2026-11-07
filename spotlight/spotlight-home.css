@@ -8,3 +8,12 @@
 .hm-spotlight-head>div{max-width:760px}
 .hm-spotlight-head p{max-width:650px;line-height:1.8}
 @media(prefers-reduced-motion:reduce){.hm-spotlight-brand:after{animation:none}}
+
+.hm-spotlight-card-link{display:flex;flex:1;flex-direction:column;text-decoration:none;color:inherit}
+.hm-spotlight-card-link strong{margin:14px 0 8px}
+.hm-spotlight-card-link p{margin:0 0 18px}
+.hm-spotlight-card-link b{margin-top:auto;color:#8eff3d;font-size:.76rem}
+.hm-spotlight-share{align-self:flex-start;margin-top:17px;padding:9px 12px;border:1px solid rgba(142,255,61,.34);border-radius:6px;background:rgba(142,255,61,.06);color:#8eff3d;font:700 .72rem Inter,sans-serif;cursor:pointer}
+.hm-spotlight-share:hover{background:rgba(142,255,61,.13)}
+.hm-spotlight-share:focus-visible{outline:3px solid rgba(142,255,61,.45);outline-offset:3px}
+.hm-spotlight-share-status{min-height:1em;margin-top:7px;color:#a5b1aa;font-size:.68rem;overflow-wrap:anywhere}
