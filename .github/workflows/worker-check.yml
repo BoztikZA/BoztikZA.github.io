@@ -13,6 +13,9 @@ on:
     branches: [main]
     paths:
       - "deliver/worker-api/**"
+      - "deliver-v3/js/analytics/**"
+      - "deliver-v3/js/analytics-report.js"
+      - "deliver-v3/js/site-analytics.js"
       - ".github/workflows/worker-check.yml"
 
 permissions:
