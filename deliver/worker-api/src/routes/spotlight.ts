@@ -270,11 +270,25 @@ async function notifySpotlightSubmission(env: Env, item: {displayName:string;tag
   const profile=await env.DB.prepare("SELECT id,image_key,image_size FROM spotlight_profiles WHERE id=?").bind(profileId).first<any>();
   if(!profile)return error("Profile not found",404);
   const type=(request.headers.get("Content-Type")||"").split(";")[0].trim().toLowerCase();
-  const declared=Number(request.headers.get("Content-Length")||0);
+  const declaredHeader=request.headers.get("Content-Length");
+  const declared=declaredHeader===null?null:Number(declaredHeader);
+  const maxBytes=2*1024*1024;
   if(!["image/jpeg","image/png","image/webp"].includes(type))throw new HttpError(415,"invalid_image_type","Choose a JPG, PNG or WebP image.");
-  if(!Number.isInteger(declared)||declared<1||declared>2*1024*1024)throw new HttpError(413,"image_too_large","Spotlight images must be no larger than 2 MB.");
-  const bytes=new Uint8Array(await request.arrayBuffer());
-  if(bytes.length!==declared||bytes.length>2*1024*1024)throw new HttpError(422,"image_size_mismatch","The uploaded image size could not be verified.");
+  if(declared!==null&&(!Number.isInteger(declared)||declared<1||declared>maxBytes))throw new HttpError(413,"image_too_large","Spotlight images must be no larger than 2 MB.");
+  const reader=request.body?.getReader();
+  if(!reader)throw new HttpError(422,"empty_image","Choose an image to upload.");
+  const chunks:Uint8Array[]=[];let total=0;
+  for(;;){
+    const part=await reader.read();
+    if(part.done)break;
+    total+=part.value.byteLength;
+    if(total>maxBytes){await reader.cancel();throw new HttpError(413,"image_too_large","Spotlight images must be no larger than 2 MB.");}
+    chunks.push(part.value);
+  }
+  if(total<1)throw new HttpError(422,"empty_image","Choose an image to upload.");
+  if(declared!==null&&total!==declared)throw new HttpError(422,"image_size_mismatch","The uploaded image size could not be verified.");
+  const bytes=new Uint8Array(total);let offset=0;
+  for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.byteLength;}
   const valid=type==="image/jpeg"?bytes[0]===255&&bytes[1]===216&&bytes[2]===255:type==="image/png"?bytes[0]===137&&bytes[1]===80&&bytes[2]===78&&bytes[3]===71:bytes.length>=12&&new TextDecoder().decode(bytes.slice(0,4))==="RIFF"&&new TextDecoder().decode(bytes.slice(8,12))==="WEBP";
   if(!valid)throw new HttpError(422,"invalid_image","The file contents do not match the selected image type.");
   const uploadId=crypto.randomUUID().replace(/-/g,"").slice(0,16),fileId=crypto.randomUUID().replace(/-/g,"").slice(0,16),key="spotlight/"+profileId+"/"+uploadId;
