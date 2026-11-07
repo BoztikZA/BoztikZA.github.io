@@ -22,7 +22,7 @@ function spotifyTrack(value: unknown): { id: string; url: string } | null {
   try {
     const u = new URL(value.trim());
     if (u.protocol !== "https:" || !["open.spotify.com", "www.open.spotify.com"].includes(u.hostname)) return null;
-    const match = u.pathname.match(/^\\/track\\/([A-Za-z0-9]{22})\\/?$/);
+    const match = u.pathname.match(/^\/track\/([A-Za-z0-9]{22})\/?$/);
     return match ? { id: match[1], url: "https://open.spotify.com/track/" + match[1] } : null;
   } catch { return null; }
 }
@@ -51,7 +51,7 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
     if (request.method === "GET" && seg.length === 0) {
       checkPublicRate(request, env, "spotlight-list", 2);
       const rows = await env.DB.prepare(
-        "SELECT id,slug,display_name,tagline,description,category,website_url,social_links,featured_until,created_at FROM spotlight_profiles WHERE status='published' ORDER BY CASE WHEN featured_until > ? THEN 0 ELSE 1 END, published_at DESC LIMIT 100"
+        "SELECT id,slug,display_name,tagline,description,category,website_url,social_links,song_metadata,featured_until,created_at FROM spotlight_profiles WHERE status='published' ORDER BY CASE WHEN featured_until > ? THEN 0 ELSE 1 END, published_at DESC LIMIT 100"
       ).bind(now()).all<any>();
       return json({ ok: true, profiles: (rows.results || []).map(publicDto) }, 200, { "Cache-Control": "public, max-age=60, stale-while-revalidate=120" });
     }
@@ -161,6 +161,9 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       const description = b.description === undefined ? old.description : clean(b.description, 900);
       const category = b.category === undefined ? old.category : clean(b.category, 40);
       const website = b.website_url === undefined ? old.website_url : (b.website_url ? safeUrl(b.website_url) : null);
+      const songTrack = b.song_url === undefined ? (old.song_metadata ? spotifyTrack(JSON.parse(old.song_metadata).url) : null) : (b.song_url ? spotifyTrack(b.song_url) : null);
+      if (b.song_url && !songTrack) throw new HttpError(422, "invalid_spotify_track", "Use a public Spotify track link.");
+      const song = b.song_url === undefined ? (old.song_metadata ? JSON.parse(old.song_metadata) : null) : (songTrack ? await spotifyMetadata(songTrack) : null);
       const social = b.social_links === undefined ? JSON.parse(old.social_links || "{}") : b.social_links;
       if (displayName.length < 2 || tagline.length < 8 || description.length < 30 || !CATEGORIES.has(category)) throw new HttpError(422, "invalid_profile", "Check the name, tagline, description and category.");
       if (b.website_url && !website) throw new HttpError(422, "invalid_url", "Website links must use HTTPS.");
@@ -172,7 +175,7 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       // Only one profile can hold the daily featured placement at a time.
       await env.DB.batch([
         env.DB.prepare("UPDATE spotlight_profiles SET featured_until=NULL WHERE featured_until > ? AND id<>?").bind(updated,seg[1]),
-        env.DB.prepare("UPDATE spotlight_profiles SET display_name=?,tagline=?,description=?,category=?,website_url=?,social_links=?,status=?,featured_until=?,updated_at=?,published_at=CASE WHEN ?='published' THEN COALESCE(published_at,?) ELSE published_at END WHERE id=?").bind(displayName,tagline,description,category,website,JSON.stringify(social),status,featured,updated,status,updated,seg[1])
+        env.DB.prepare("UPDATE spotlight_profiles SET display_name=?,tagline=?,description=?,category=?,website_url=?,social_links=?,song_metadata=?,status=?,featured_until=?,updated_at=?,published_at=CASE WHEN ?='published' THEN COALESCE(published_at,?) ELSE published_at END WHERE id=?").bind(displayName,tagline,description,category,website,JSON.stringify(social),song ? JSON.stringify(song) : null,status,featured,updated,status,updated,seg[1])
       ]);
       const row = await env.DB.prepare("SELECT * FROM spotlight_profiles WHERE id=?").bind(seg[1]).first<any>();
       return json({ ok:true, profile:{...publicDto(row),contact_email:row.contact_email,status:row.status} });
