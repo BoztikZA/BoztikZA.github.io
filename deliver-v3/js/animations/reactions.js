@@ -102,14 +102,16 @@ function createCinematicCanvas(layer, button, id) {
   let width = 0;
   let height = 0;
   let dpr = 1;
-  let origin = { x: window.innerWidth / 2, y: window.innerHeight * 0.72 };
+  let bounds = layer.getBoundingClientRect();
+  let origin = { x: (bounds.width || window.innerWidth) / 2, y: (bounds.height || window.innerHeight) * 0.72 };
   const rect = button?.getBoundingClientRect?.();
-  if (rect && rect.width && rect.height) origin = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+  if (rect && rect.width && rect.height) origin = { x: rect.left - bounds.left + rect.width / 2, y: rect.top - bounds.top + rect.height / 2 };
 
   function resize() {
+    bounds = layer.getBoundingClientRect();
     dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-    width = window.innerWidth;
-    height = window.innerHeight;
+    width = bounds.width || window.innerWidth;
+    height = bounds.height || window.innerHeight;
     canvas.width = Math.round(width * dpr);
     canvas.height = Math.round(height * dpr);
     canvas.style.width = width + "px";
