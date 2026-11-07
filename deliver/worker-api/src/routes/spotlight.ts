@@ -79,15 +79,35 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
       assertSameSiteOrigin(request, env); requireJson(request);
       const b = await readJson(request, 1024);
       const eventId = clean(b.event_id, 64), profileId = clean(b.profile_id, 32), type = b.type;
-      if (!/^[a-zA-Z0-9_-]{12,64}$/.test(eventId) || !/^[a-f0-9]{20}$/i.test(profileId) || !["view","click"].includes(String(type))) throw new HttpError(422, "invalid_event", "Invalid analytics event.");
+      const visitorId = clean(b.visitor_id, 64);
+      if (!/^[a-zA-Z0-9_-]{12,64}$/.test(eventId) || !/^[a-f0-9]{20}$/i.test(profileId) || !["view","click"].includes(String(type)) || (type === "view" && !/^[a-f0-9-]{36}$/i.test(visitorId))) throw new HttpError(422, "invalid_event", "Invalid analytics event.");
       const profile = await env.DB.prepare("SELECT id FROM spotlight_profiles WHERE id=? AND status='published'").bind(profileId).first();
       if (!profile) return json({ ok: true, counted: false });
       const d = day(env), t = now();
       const insert = await env.DB.prepare("INSERT OR IGNORE INTO spotlight_events(event_id,profile_id,event_type,day,created_at) VALUES(?,?,?,?,?)").bind(eventId,profileId,type,d,t).run();
       if ((insert.meta.changes || 0) > 0) {
         await env.DB.prepare(`INSERT INTO spotlight_daily_metrics(profile_id,day,${type === "view" ? "views" : "outbound_clicks"}) VALUES(?,?,1) ON CONFLICT(profile_id,day) DO UPDATE SET ${type === "view" ? "views" : "outbound_clicks"}=${type === "view" ? "views" : "outbound_clicks"}+1`).bind(profileId,d).run();
+        if (type === "view") {
+          const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(visitorId + ":" + d + ":" + env.AUTH_TOKEN_SALT));
+          const visitorKey = Array.from(new Uint8Array(digest), x => x.toString(16).padStart(2, "0")).join("");
+          const unique = await env.DB.prepare("INSERT OR IGNORE INTO spotlight_visitors(profile_id,day,visitor_key,created_at) VALUES(?,?,?,?)").bind(profileId,d,visitorKey,t).run();
+          if ((unique.meta.changes || 0) > 0) await env.DB.prepare("UPDATE spotlight_daily_metrics SET unique_views=unique_views+1 WHERE profile_id=? AND day=?").bind(profileId,d).run();
+        }
       }
       return json({ ok: true, counted: (insert.meta.changes || 0) > 0 });
+    }
+    if (request.method === "POST" && seg[0] === "impression" && seg.length === 1) {
+      checkPublicRate(request, env, "spotlight-impression", 2);
+      assertSameSiteOrigin(request, env); requireJson(request);
+      const b = await readJson(request, 1024);
+      const eventId = clean(b.event_id, 64), profileId = clean(b.profile_id, 32);
+      if (!/^[a-zA-Z0-9_-]{12,64}$/.test(eventId) || !/^[a-f0-9]{20}$/i.test(profileId)) throw new HttpError(422, "invalid_event", "Invalid impression event.");
+      const d = day(env), t = now();
+      const featured = await env.DB.prepare("SELECT id FROM spotlight_profiles WHERE id=? AND status='published' AND featured_until>?").bind(profileId,t).first();
+      if (!featured) return json({ok:true,counted:false});
+      const insert = await env.DB.prepare("INSERT OR IGNORE INTO spotlight_impressions(event_id,profile_id,day,created_at) VALUES(?,?,?,?)").bind(eventId,profileId,d,t).run();
+      if ((insert.meta.changes || 0) > 0) await env.DB.prepare("INSERT INTO spotlight_daily_metrics(profile_id,day,featured_impressions) VALUES(?,?,1) ON CONFLICT(profile_id,day) DO UPDATE SET featured_impressions=featured_impressions+1").bind(profileId,d).run();
+      return json({ok:true,counted:(insert.meta.changes || 0)>0});
     }
     return error("Not found", 404);
   });
@@ -136,7 +156,7 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
     }
     if (seg.length === 1 && seg[0] === "analytics" && request.method === "GET") {
       const rows = await env.DB.prepare(
-        "SELECT p.id,p.display_name,COALESCE(SUM(m.views),0) views,COALESCE(SUM(m.outbound_clicks),0) outbound_clicks FROM spotlight_profiles p LEFT JOIN spotlight_daily_metrics m ON m.profile_id=p.id GROUP BY p.id ORDER BY views DESC LIMIT 100"
+        "SELECT p.id,p.display_name,COALESCE(SUM(m.views),0) views,COALESCE(SUM(m.unique_views),0) unique_views,COALESCE(SUM(m.outbound_clicks),0) outbound_clicks,COALESCE(SUM(m.featured_impressions),0) featured_impressions FROM spotlight_profiles p LEFT JOIN spotlight_daily_metrics m ON m.profile_id=p.id GROUP BY p.id ORDER BY views DESC LIMIT 100"
       ).all<any>();
       return json({ ok:true, profiles:rows.results || [] });
     }
