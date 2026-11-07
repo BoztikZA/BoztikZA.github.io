@@ -181,8 +181,8 @@ editForm.addEventListener("submit", async event => {
         body: JSON.stringify(body)
       });
       editForm.elements.id.value = created.profile.id;
-      feedback.textContent = "Profile saved as pending. You can now upload its logo or photograph below.";
       await load();
+      feedback.textContent = "Profile saved as pending. You can now upload its logo or photograph below.";
     }
   } catch (error) {
     feedback.textContent = error.message;
