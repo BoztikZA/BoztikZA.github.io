@@ -247,3 +247,35 @@ body.is-photoshop-battles .deliver-download-all {
   .deliver-reaction-button--reveal { animation: none !important; }
   .deliver-reaction-caption { transition: none; transform: translate(-50%,0); }
 }
+
+
+.deliver-visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0,0,0,0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+.dash-animation-preview-stage .deliver-reaction-caption {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  width: min(90%, 440px);
+}
+.dash-animation-preview-stage .deliver-reaction-canvas {
+  position: absolute;
+  inset: 0;
+}
+.deliver-reaction-preview-wrap {
+  position: absolute;
+  z-index: 4;
+  top: 72%;
+  left: 50%;
+  width: min(280px, 82%);
+  transform: translate(-50%, -50%);
+}
+.deliver-reaction-preview-wrap .deliver-download-all { width: 100%; }
