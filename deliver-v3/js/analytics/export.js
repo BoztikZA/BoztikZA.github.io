@@ -85,7 +85,7 @@ export function buildCsv(model, { generatedAt = new Date() } = {}) {
 export function buildFullReport(model, { generatedAt = new Date() } = {}) {
   const L = [], line = (s = "") => L.push(s);
   const n = v => (v === null || v === undefined || !Number.isFinite(Number(v)) ? "not measured" : fmtInt(Number(v)));
-  const w = model.website ?? {}, d = model.deliver, t = model.trend, sources = model.sources, f = model.flow;
+  const w = model.website ?? {}, d = model.deliver, t = model.trend, sources = model.sources, s = model.store, f = model.flow;
 
   line("BOZTIK WEBSITE TRAFFIC & PERFORMANCE REPORT");
   line(`Period: ${model.periodLabel || "Selected period"}${model.period?.since ? ` (${model.period.since} to ${model.period.until})` : ""}`);
