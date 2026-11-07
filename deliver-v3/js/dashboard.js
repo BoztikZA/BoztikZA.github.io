@@ -805,10 +805,14 @@ function setupAnimationPreview() {
   buildAnimationOptions(els.editAnimation);
 
   const refreshPreviewEnabled = () => {
-    if (els.animationPreviewBtn) els.animationPreviewBtn.disabled = !els.animation?.value || els.animation.value === "none";
+    const enabled = Boolean(els.animation?.value && els.animation.value !== "none");
+    if (els.animationPreviewBtn) els.animationPreviewBtn.disabled = !enabled;
+    if (els.animationSound) els.animationSound.disabled = !enabled;
   };
   const refreshEditPreviewEnabled = () => {
-    if (els.editAnimationPreviewBtn) els.editAnimationPreviewBtn.disabled = !els.editAnimation?.value || els.editAnimation.value === "none";
+    const enabled = Boolean(els.editAnimation?.value && els.editAnimation.value !== "none");
+    if (els.editAnimationPreviewBtn) els.editAnimationPreviewBtn.disabled = !enabled;
+    if (els.editAnimationSound) els.editAnimationSound.disabled = !enabled;
   };
   refreshPreviewEnabled();
   refreshEditPreviewEnabled();
@@ -839,10 +843,9 @@ function applySource(value) {
   if (els.photoshopNotice) els.photoshopNotice.hidden = !isBattleMode;
   if (els.redditFields) els.redditFields.hidden = !isBattleMode;
   if (els.battleExpiryNote) els.battleExpiryNote.hidden = !isBattleMode;
-  // PhotoshopBattles is a Reddit utility image, not a personal delivery —
-  // it never carries a decorative animation.
+  // Photoshop Battles keeps its direct Reddit image URL, while the
+  // Boztik-hosted preview supports the same optional reaction experience.
   if (els.animationSection) els.animationSection.hidden = false;
-  if (isBattleMode && els.animation) els.animation.value = "none";
 
   if (els.clientFieldsNote) {
     els.clientFieldsNote.textContent = isBattleMode
