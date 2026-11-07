@@ -2,6 +2,7 @@ import type { Env } from "../types";
 import { HttpError } from "../types";
 import { requireSession } from "../lib/auth";
 import { localDay } from "../lib/db";
+import { reserveUpload, claimUpload, commitUpload, releaseReservation } from "../lib/storage";
 import { assertSameSiteOrigin, checkPublicRate, error, json, readJson, requireJson, segments, wrap } from "./util";
 
 const CATEGORIES = new Set(["small-business","youtube","twitch","gaming","photography","design","music","creator","freelance","other"]);
@@ -39,7 +40,7 @@ function publicDto(row: any) {
   return {
     id: row.id, slug: row.slug, display_name: row.display_name, tagline: row.tagline,
     description: row.description, category: row.category, website_url: row.website_url,
-    social_links: JSON.parse(row.social_links || "{}"), song: row.song_metadata ? JSON.parse(row.song_metadata) : null, image_url: null,
+    social_links: JSON.parse(row.social_links || "{}"), song: row.song_metadata ? JSON.parse(row.song_metadata) : null, image_url: row.image_key && row.status === "published" ? "https://deliver-api.boztik.com/api/public/spotlight/image/" + row.id : null,
     featured: Number(row.featured_until || 0) > now(), featured_until: Number(row.featured_until || 0) > now() ? row.featured_until : null,
     created_at: row.created_at,
   };
@@ -54,6 +55,13 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
         "SELECT id,slug,display_name,tagline,description,category,website_url,social_links,song_metadata,featured_until,created_at FROM spotlight_profiles WHERE status='published' ORDER BY CASE WHEN featured_until > ? THEN 0 ELSE 1 END, published_at DESC LIMIT 100"
       ).bind(now()).all<any>();
       return json({ ok: true, profiles: (rows.results || []).map(publicDto) }, 200, { "Cache-Control": "public, max-age=60, stale-while-revalidate=120" });
+    }
+    if (request.method === "GET" && seg[0] === "image" && seg.length === 2) {
+      const row = await env.DB.prepare("SELECT image_key,image_content_type FROM spotlight_profiles WHERE id=? AND status='published'").bind(seg[1]).first<any>();
+      if (!row?.image_key) return error("Image not found",404);
+      const object = await env.BUCKET.get(row.image_key);
+      if (!object) return error("Image not found",404);
+      return new Response(object.body,{headers:{"Content-Type":row.image_content_type || "image/jpeg","Cache-Control":"public, max-age=3600","X-Content-Type-Options":"nosniff"}});
     }
     if (request.method === "GET" && seg[0] === "profile" && seg.length === 2) {
       checkPublicRate(request, env, "spotlight-profile", 2);
@@ -151,6 +159,14 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       const rows = await env.DB.prepare("SELECT * FROM spotlight_profiles ORDER BY CASE status WHEN 'pending' THEN 0 WHEN 'published' THEN 1 ELSE 2 END, created_at DESC LIMIT 300").all<any>();
       return json({ ok: true, profiles: (rows.results || []).map((r:any) => ({ ...publicDto(r), contact_email:r.contact_email, status:r.status })) });
     }
+    if (seg.length === 3 && seg[0] === "profile" && seg[2] === "image" && request.method === "PUT") return uploadSpotlightImage(request,env,seg[1]);
+    if (seg.length === 3 && seg[0] === "profile" && seg[2] === "image" && request.method === "GET") {
+      const row=await env.DB.prepare("SELECT image_key,image_content_type FROM spotlight_profiles WHERE id=?").bind(seg[1]).first<any>();
+      if(!row?.image_key)return error("Image not found",404);
+      const object=await env.BUCKET.get(row.image_key);
+      if(!object)return error("Image not found",404);
+      return new Response(object.body,{headers:{"Content-Type":row.image_content_type || "image/jpeg","Cache-Control":"private, no-store","X-Content-Type-Options":"nosniff"}});
+    }
     if (seg.length === 2 && seg[0] === "profile" && request.method === "PATCH") {
       requireJson(request); const b = await readJson(request, 8 * 1024);
       const old = await env.DB.prepare("SELECT * FROM spotlight_profiles WHERE id=?").bind(seg[1]).first<any>();
@@ -181,6 +197,8 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       return json({ ok:true, profile:{...publicDto(row),contact_email:row.contact_email,status:row.status} });
     }
     if (seg.length === 2 && seg[0] === "profile" && request.method === "DELETE") {
+      const old=await env.DB.prepare("SELECT image_key,image_size FROM spotlight_profiles WHERE id=?").bind(seg[1]).first<any>();
+      if(old?.image_key){await env.BUCKET.delete(old.image_key);await env.DB.prepare("UPDATE storage_state SET total_bytes=MAX(0,total_bytes-?),mutation_seq=mutation_seq+1,last_mutation_at=? WHERE id=1").bind(old.image_size||0,now()).run();}
       await env.DB.prepare("DELETE FROM spotlight_profiles WHERE id=?").bind(seg[1]).run();
       return json({ ok:true });
     }
@@ -215,4 +233,37 @@ async function notifySpotlightSubmission(env: Env, item: {displayName:string;tag
   const response=await fetch(url,{method:"POST",headers,body:JSON.stringify({from,to,subject,text:textBody})});
   if(!response.ok)throw new Error("Email provider returned "+response.status);
   return true;
+}
+
+async function uploadSpotlightImage(request:Request,env:Env,profileId:string):Promise<Response>{
+  if(!/^[a-f0-9]{20}$/i.test(profileId))return error("Profile not found",404);
+  const profile=await env.DB.prepare("SELECT id,image_key,image_size FROM spotlight_profiles WHERE id=?").bind(profileId).first<any>();
+  if(!profile)return error("Profile not found",404);
+  const type=(request.headers.get("Content-Type")||"").split(";")[0].trim().toLowerCase();
+  const declared=Number(request.headers.get("Content-Length")||0);
+  if(!["image/jpeg","image/png","image/webp"].includes(type))throw new HttpError(415,"invalid_image_type","Choose a JPG, PNG or WebP image.");
+  if(!Number.isInteger(declared)||declared<1||declared>2*1024*1024)throw new HttpError(413,"image_too_large","Spotlight images must be no larger than 2 MB.");
+  const bytes=new Uint8Array(await request.arrayBuffer());
+  if(bytes.length!==declared||bytes.length>2*1024*1024)throw new HttpError(422,"image_size_mismatch","The uploaded image size could not be verified.");
+  const valid=type==="image/jpeg"?bytes[0]===255&&bytes[1]===216&&bytes[2]===255:type==="image/png"?bytes[0]===137&&bytes[1]===80&&bytes[2]===78&&bytes[3]===71:bytes.length>=12&&new TextDecoder().decode(bytes.slice(0,4))==="RIFF"&&new TextDecoder().decode(bytes.slice(8,12))==="WEBP";
+  if(!valid)throw new HttpError(422,"invalid_image","The file contents do not match the selected image type.");
+  const uploadId=crypto.randomUUID().replace(/-/g,"").slice(0,16),fileId=crypto.randomUUID().replace(/-/g,"").slice(0,16),key="spotlight/"+profileId+"/"+uploadId;
+  await reserveUpload(env,{uploadId,deliveryId:profileId,fileId,r2Key:key,fileName:"spotlight-profile-image",fileSize:bytes.length,contentType:type});
+  let committed=false;
+  try{
+    if(!(await claimUpload(env,uploadId)))throw new HttpError(409,"upload_conflict","The image upload could not be started.");
+    await env.BUCKET.put(key,bytes,{httpMetadata:{contentType:type}});
+    if(!(await commitUpload(env,uploadId,bytes.length)))throw new HttpError(409,"upload_conflict","The image upload could not be completed.");
+    committed=true;
+    const previousKey=profile.image_key,previousSize=Number(profile.image_size||0);
+    await env.DB.batch([
+      env.DB.prepare("UPDATE spotlight_profiles SET image_key=?,image_size=?,image_content_type=?,updated_at=? WHERE id=?").bind(key,bytes.length,type,now(),profileId),
+      env.DB.prepare("DELETE FROM pending_uploads WHERE upload_id=? AND state='stored'").bind(uploadId)
+    ]);
+    if(previousKey){await env.BUCKET.delete(previousKey);await env.DB.prepare("UPDATE storage_state SET total_bytes=MAX(0,total_bytes-?),mutation_seq=mutation_seq+1,last_mutation_at=? WHERE id=1").bind(previousSize,now()).run();}
+    return json({ok:true,image_size:bytes.length});
+  }catch(e){
+    if(!committed){try{await env.BUCKET.delete(key)}catch{};await releaseReservation(env,uploadId,bytes.length);}
+    throw e;
+  }
 }
