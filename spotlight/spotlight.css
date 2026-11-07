@@ -24,3 +24,5 @@
 .sp-directory-glow strong{color:#c8ffa8;text-shadow:0 0 5px rgba(142,255,61,.8),0 0 13px rgba(142,255,61,.55),0 0 25px rgba(142,255,61,.28);animation:sp-directory-pulse 4.5s ease-in-out infinite}
 @keyframes sp-directory-pulse{0%,100%{text-shadow:0 0 5px rgba(142,255,61,.65),0 0 13px rgba(142,255,61,.4)}50%{text-shadow:0 0 7px rgba(142,255,61,1),0 0 19px rgba(142,255,61,.75),0 0 32px rgba(142,255,61,.35)}}
 @media(prefers-reduced-motion:reduce){.sp-directory-glow strong{animation:none}}
+
+.sp-countdown,.hm-spotlight-countdown{display:inline-flex;align-items:center;gap:6px;margin-top:9px;color:#b9d9a7;font:700 .68rem/1.4 Inter,system-ui,sans-serif;letter-spacing:.04em}.sp-countdown time,.hm-spotlight-countdown time{font-variant-numeric:tabular-nums;letter-spacing:.1em;color:#8eff3d}.sp-profile-hero .sp-countdown{display:inline-flex;margin-left:8px}

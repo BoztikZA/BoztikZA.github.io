@@ -70,6 +70,8 @@
         });
       });
 
+      const updateCountdowns=()=>{const now=Math.floor(Date.now()/1000);host.querySelectorAll("[data-countdown]").forEach(el=>{const left=Math.max(0,Number(el.dataset.countdown||0)-now),t=el.querySelector("time");if(t){const h=Math.floor(left/3600),m=Math.floor(left%3600/60),s=left%60;t.textContent=[h,m,s].map(v=>String(v).padStart(2,"0")).join(":");}if(!left){el.remove();const card=el.closest(".hm-spotlight-card");if(card){card.dataset.featured="0";card.querySelector("small").textContent="Spotlight creator";}}});};updateCountdowns();setInterval(updateCountdowns,1000);
+
       const featuredCard = host.querySelector('[data-featured="1"]');
       if (!featuredCard) return;
       if ("IntersectionObserver" in window) {

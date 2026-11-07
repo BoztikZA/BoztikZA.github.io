@@ -17,3 +17,5 @@
 .hm-spotlight-share:hover{background:rgba(142,255,61,.13)}
 .hm-spotlight-share:focus-visible{outline:3px solid rgba(142,255,61,.45);outline-offset:3px}
 .hm-spotlight-share-status{min-height:1em;margin-top:7px;color:#a5b1aa;font-size:.68rem;overflow-wrap:anywhere}
+
+.hm-spotlight-countdown{margin:4px 0 10px;font-size:.68rem}
