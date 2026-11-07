@@ -575,3 +575,17 @@ g.is-active .an-bar { opacity: 1; filter: brightness(1.15); }
   #cc-site-analytics .an-kpi,
   #cc-site-analytics .cc-site-controls .cc-btn { transition: none; }
 }
+
+/* Analytics layout refinement: prioritize readable charts and page-level decisions. */
+#cc-site-analytics .an-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+#cc-site-analytics .an-kpi { min-height: 132px; padding: 16px 18px; }
+#cc-site-analytics .an-dashboard-grid { gap: 18px; }
+#cc-site-analytics .an-trend .an-chart-host { min-height: 410px; padding: 18px 14px 10px; }
+#cc-site-analytics .an-trend .an-chart-svg { max-height: 420px; }
+#cc-site-analytics .an-dashboard-grid > .cc-deliver-card { grid-column: 1 / -1; }
+#cc-site-analytics .an-page-performance .an-page-rank { gap: 16px; }
+#cc-site-analytics .an-page-performance .an-rank-row { grid-template-columns: minmax(150px, 1.1fr) minmax(120px, 2fr) minmax(130px, auto); font-size: .86rem; }
+#cc-site-analytics .an-page-performance .an-rank-track { height: 11px; }
+#cc-site-analytics .an-dashboard-grid > .cc-card { padding: clamp(18px, 2vw, 26px); }
+@media (max-width: 900px) { #cc-site-analytics .an-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } #cc-site-analytics .an-trend .an-chart-host { min-height: 330px; } #cc-site-analytics .an-trend .an-chart-svg { max-height: 350px; } }
+@media (max-width: 640px) { #cc-site-analytics .an-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; } #cc-site-analytics .an-kpi { min-height: 116px; padding: 12px; } #cc-site-analytics .an-trend .an-chart-host { min-height: 250px; padding: 8px 4px; } #cc-site-analytics .an-trend .an-chart-svg { max-height: 270px; } #cc-site-analytics .an-page-performance .an-rank-row { grid-template-columns: minmax(90px, 1fr) minmax(45px, .8fr) auto; } #cc-site-analytics .an-dashboard-grid > .cc-deliver-card { grid-column: auto; } }
