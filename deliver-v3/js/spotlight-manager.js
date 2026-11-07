@@ -80,8 +80,7 @@ function openEditor(profile) {
   editForm.elements.description.value = profile.description || "";
   editForm.elements.category.value = profile.category || "other";
   editForm.elements.website_url.value = profile.website_url || "";
-  editForm.elements.youtube.value = profile.social_links?.youtube || "";
-  editForm.elements.instagram.value = profile.social_links?.instagram || "";
+  for (const key of ["youtube", "twitch", "instagram", "tiktok", "facebook", "linkedin", "x"]) editForm.elements[key].value = profile.social_links?.[key] || "";
   editForm.hidden = false;
   editForm.scrollIntoView({ behavior: "smooth", block: "center" });
 }
@@ -124,7 +123,7 @@ editForm.addEventListener("submit", async event => {
   if (!profile) return;
   const form = new FormData(editForm);
   const social = { ...(profile.social_links || {}) };
-  for (const key of ["youtube", "instagram"]) {
+  for (const key of ["youtube", "twitch", "instagram", "tiktok", "facebook", "linkedin", "x"]) {
     const value = String(form.get(key) || "").trim();
     if (value) social[key] = value;
     else delete social[key];
