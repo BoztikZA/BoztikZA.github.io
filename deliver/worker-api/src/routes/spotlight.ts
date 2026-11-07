@@ -145,7 +145,7 @@ async function notifySpotlightSubmission(env: Env, item: {displayName:string;tag
     "",
     "Review it in the Boztik Command Centre > Spotlight.",
     "Submission reference: "+item.id
-  ].join("\\n");
+  ].join("\n");
   const headers:Record<string,string>={"Content-Type":"application/json"};
   if(env.EMAIL_PROVIDER_KEY)headers.Authorization="Bearer "+env.EMAIL_PROVIDER_KEY;
   const response=await fetch(url,{method:"POST",headers,body:JSON.stringify({from,to,subject,text:textBody})});
