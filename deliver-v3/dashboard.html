@@ -348,7 +348,20 @@
           <article class="cc-kpi"><header>Featured today</header><strong class="cc-kpi-val" id="sp-admin-featured">—</strong></article>
           <article class="cc-kpi"><header>Profile views · all time</header><strong class="cc-kpi-val" id="sp-admin-views">—</strong></article>
         </div>
-        <article class="cc-card"><header class="cc-card-head"><div><span class="cc-eyebrow">Moderation queue</span><h3>Submissions &amp; profiles</h3><p class="cc-card-desc">Publishing makes a profile visible in the public directory. Featuring it gives it the 24-hour homepage and directory highlight.</p></div><button class="cc-btn" id="sp-admin-refresh" type="button">Refresh</button></header><div id="sp-admin-feedback" role="status" aria-live="polite" class="cc-muted">Loading Spotlight profiles…</div><div id="sp-admin-list" class="sp-admin-list"></div></article>
+        <article class="cc-card"><header class="cc-card-head"><div><span class="cc-eyebrow">Moderation queue</span><h3>Submissions &amp; profiles</h3><p class="cc-card-desc">Publishing makes a profile visible in the public directory. Featuring it gives it the 24-hour homepage and directory highlight.</p></div><button class="cc-btn" id="sp-admin-refresh" type="button">Refresh</button></header><div id="sp-admin-feedback" role="status" aria-live="polite" class="cc-muted">Loading Spotlight profiles…</div><form id="sp-admin-edit" class="sp-admin-edit" hidden>
+          <input type="hidden" name="id">
+          <div class="sp-admin-edit-grid">
+            <label>Display name<input name="display_name" maxlength="80" required minlength="2"></label>
+            <label>Tagline<input name="tagline" maxlength="120" required minlength="8"></label>
+            <label>Category<select name="category" required><option value="small-business">Small business</option><option value="youtube">YouTube</option><option value="twitch">Twitch</option><option value="gaming">Gaming</option><option value="photography">Photography</option><option value="design">Design</option><option value="music">Music</option><option value="creator">Creator</option><option value="freelance">Freelance</option><option value="other">Other</option></select></label>
+            <label>Website URL<input name="website_url" type="url" placeholder="https://"></label>
+            <label class="sp-admin-edit-wide">About the profile<textarea name="description" rows="4" maxlength="900" required minlength="30"></textarea></label>
+            <label>YouTube URL<input name="youtube" type="url" placeholder="https://"></label>
+            <label>Instagram URL<input name="instagram" type="url" placeholder="https://"></label>
+          </div>
+          <div class="sp-admin-edit-actions"><button class="cc-btn" type="submit">Save profile changes</button><button class="cc-btn" id="sp-admin-edit-cancel" type="button">Cancel</button></div>
+        </form>
+        <div id="sp-admin-list" class="sp-admin-list"></div></article>
         <article class="cc-card"><header class="cc-card-head"><div><span class="cc-eyebrow">Performance</span><h3>Profile engagement</h3><p class="cc-card-desc">Aggregated profile views and outbound clicks. These are separate from website page views and Deliver analytics.</p></div></header><div id="sp-admin-analytics" class="sp-admin-analytics">Loading engagement…</div></article>
       </section>
 
