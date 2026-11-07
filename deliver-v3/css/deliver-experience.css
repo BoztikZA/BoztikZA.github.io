@@ -28,6 +28,40 @@ body {
   box-shadow: 0 28px 90px rgba(0,0,0,.42), inset 0 1px rgba(255,255,255,.045);
 }
 .deliver-gallery-header { margin-bottom: 20px; }
+.deliver-file-card {
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.085);
+  border-radius: 21px;
+  background: linear-gradient(155deg, rgba(24,29,35,.98), rgba(12,15,19,.98));
+  box-shadow: 0 18px 48px rgba(0,0,0,.24), inset 0 1px rgba(255,255,255,.035);
+  transition: border-color .25s ease, transform .25s ease, box-shadow .25s ease;
+}
+.deliver-file-card:hover {
+  border-color: rgba(165,255,87,.2);
+  transform: translateY(-2px);
+  box-shadow: 0 24px 56px rgba(0,0,0,.3), 0 0 28px rgba(142,255,61,.035);
+}
+.deliver-file-preview {
+  overflow: hidden;
+  border-radius: 16px;
+  background: radial-gradient(ellipse at 50% 40%, rgba(255,255,255,.075), transparent 70%), #080b0e;
+}
+.deliver-file-preview img { display: block; transition: transform .5s cubic-bezier(.2,.8,.2,1), filter .5s ease; }
+.deliver-file-card:hover .deliver-file-preview img { transform: scale(1.012); filter: saturate(1.035); }
+.deliver-file-eyebrow { color: #a5ff57; letter-spacing: .14em; font-weight: 800; }
+.deliver-file-name { color: #f4f7f2; letter-spacing: -.018em; }
+.deliver-file-basic-meta { color: #96a294; }
+.deliver-file-download {
+  min-height: 47px;
+  border: 1px solid rgba(165,255,87,.28);
+  border-radius: 12px;
+  background: linear-gradient(110deg, rgba(165,255,87,.14), rgba(165,255,87,.07));
+  color: #d9ffd0;
+  font-weight: 800;
+  transition: transform .2s ease, background .2s ease, border-color .2s ease;
+}
+.deliver-file-download:hover { transform: translateY(-1px); border-color: rgba(165,255,87,.55); background: rgba(165,255,87,.17); }
+.deliver-file-view { min-height: 47px; border-radius: 12px; }
 .deliver-gallery-header h2 {
   letter-spacing: -.035em;
   font-size: clamp(1.55rem, 3vw, 2.1rem);
@@ -108,6 +142,7 @@ body {
 
 /* Click reaction overlays. The engine itself and all styling are served by Boztik. */
 #deliver-animation-layer { z-index: 350; }
+.deliver-reaction-canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; pointer-events: none; }
 .deliver-reaction-caption {
   position: fixed; z-index: 370; top: clamp(90px, 19vh, 180px); left: 50%;
   display: grid; gap: 6px; width: min(88vw, 480px); padding: 17px 22px;
@@ -146,11 +181,12 @@ body {
 .deliver-reaction-button--gratitude,
 .deliver-reaction-button--reveal { animation: deliverReveal .9s ease both; }
 @keyframes deliverRunaway {
-  0%,100% { transform: translate3d(0,0,0) rotate(0); filter: none; }
-  18% { transform: translate3d(10px,-5px,0) rotate(1deg); }
-  36% { transform: translate3d(-16px,-2px,0) rotate(-1.5deg); }
-  56% { transform: translate3d(9px,2px,0) rotate(1deg); }
-  74% { transform: translate3d(-3px,-1px,0) scale(1.025); }
+  0%,100% { transform: translate3d(0,0,0) rotate(0) scale(1); filter: none; }
+  16% { transform: translate3d(34px,-18px,0) rotate(4deg) scale(.96); }
+  34% { transform: translate3d(-42px,-8px,0) rotate(-5deg) scale(.94); }
+  52% { transform: translate3d(28px,14px,0) rotate(3deg) scale(.97); }
+  70% { transform: translate3d(-12px,-5px,0) rotate(-1deg) scale(1.025); }
+  86% { transform: translate3d(4px,0,0) scale(1.01); }
 }
 @keyframes deliverHaunted {
   0%,100% { filter: none; transform: translateX(0); }
