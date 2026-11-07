@@ -2,7 +2,7 @@ import type { Env } from "../types";
 import { HttpError } from "../types";
 import { requireSession } from "../lib/auth";
 import { localDay } from "../lib/db";
-import { reserveUpload, claimUpload, commitUpload, releaseReservation } from "../lib/storage";
+import { reserveUpload, claimUpload, commitUpload, releaseReservation, releaseStoredPending, markUncertain } from "../lib/storage";
 import { assertSameSiteOrigin, checkPublicRate, error, json, readJson, requireJson, segments, wrap } from "./util";
 
 const CATEGORIES = new Set(["small-business","youtube","twitch","gaming","photography","design","music","creator","freelance","other"]);
@@ -265,7 +265,8 @@ async function notifySpotlightSubmission(env: Env, item: {displayName:string;tag
   return true;
 }
 
-// Spotlight images share the existing atomic storage ledger and the same 3 GiB ceiling as Deliver.\nasync function uploadSpotlightImage(request:Request,env:Env,profileId:string):Promise<Response>{
+// Spotlight images share the existing atomic storage ledger and the same 3 GiB ceiling as Deliver.
+async function uploadSpotlightImage(request:Request,env:Env,profileId:string):Promise<Response>{
   if(!/^[a-f0-9]{20}$/i.test(profileId))return error("Profile not found",404);
   const profile=await env.DB.prepare("SELECT id,image_key,image_size FROM spotlight_profiles WHERE id=?").bind(profileId).first<any>();
   if(!profile)return error("Profile not found",404);
@@ -293,7 +294,7 @@ async function notifySpotlightSubmission(env: Env, item: {displayName:string;tag
   if(!valid)throw new HttpError(422,"invalid_image","The file contents do not match the selected image type.");
   const uploadId=crypto.randomUUID().replace(/-/g,"").slice(0,16),fileId=crypto.randomUUID().replace(/-/g,"").slice(0,16),key="spotlight/"+profileId+"/"+uploadId;
   await reserveUpload(env,{uploadId,deliveryId:profileId,fileId,r2Key:key,fileName:"spotlight-profile-image",fileSize:bytes.length,contentType:type});
-  let committed=false;
+  let committed=false,attached=false;
   try{
     if(!(await claimUpload(env,uploadId)))throw new HttpError(409,"upload_conflict","The image upload could not be started.");
     await env.BUCKET.put(key,bytes,{httpMetadata:{contentType:type}});
@@ -304,10 +305,22 @@ async function notifySpotlightSubmission(env: Env, item: {displayName:string;tag
       env.DB.prepare("UPDATE spotlight_profiles SET image_key=?,image_size=?,image_content_type=?,updated_at=? WHERE id=?").bind(key,bytes.length,type,now(),profileId),
       env.DB.prepare("DELETE FROM pending_uploads WHERE upload_id=? AND state='stored'").bind(uploadId)
     ]);
+    attached=true;
     if(previousKey){await env.BUCKET.delete(previousKey);await env.DB.prepare("UPDATE storage_state SET total_bytes=MAX(0,total_bytes-?),mutation_seq=mutation_seq+1,last_mutation_at=? WHERE id=1").bind(previousSize,now()).run();}
     return json({ok:true,image_size:bytes.length});
   }catch(e){
-    if(!committed){try{await env.BUCKET.delete(key)}catch{};await releaseReservation(env,uploadId,bytes.length);}
+    if(!committed){
+      try{await env.BUCKET.delete(key)}catch{}
+      await releaseReservation(env,uploadId,bytes.length);
+    }else if(!attached){
+      try{
+        await env.BUCKET.delete(key);
+        await releaseStoredPending(env,uploadId,bytes.length);
+      }catch(cleanupError){
+        console.error("[spotlight] image rollback failed",cleanupError);
+        await markUncertain(env,"spotlight_image_rollback_failed");
+      }
+    }
     throw e;
   }
 }
