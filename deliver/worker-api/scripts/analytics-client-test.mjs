@@ -144,13 +144,15 @@ test("signals: no causal claims", () => {
 
 /* ---------------------------------------------------------------- views */
 const EVIL = `<img src=x onerror=alert(1)>"'&`;
-test("views: API strings are escaped everywhere", () => {
+test("views: current Analytics renderers escape API strings", () => {
+  const summary = summaryFor([[EVIL, 1]], 1);
   const m = model({
+    summary,
     sources: { total: 5, sources: [{ source: "reddit", visits: 5 }], campaigns: [{ utm_campaign: EVIL, utm_source: EVIL, utm_medium: EVIL, visits: 5 }], previous: null, data_since: "2026-10-06" },
-    store: { total: 1, outbound_total: 1, unique_sessions: 1, store_page_views: 1, product_card_clicks: 0, by_destination: [{ destination: EVIL, clicks: 1, unique_sessions: 1, top_source: EVIL }], sources: [{ source_placement: EVIL, clicks: 1 }], previous: null, data_since: "2026-10-01" },
     health: { generated_at: "2026-10-26T10:00:00Z", timezone: { label: EVIL, boundary: EVIL }, collectors: { page_views: { status: "receiving", first_day: EVIL, last_day: EVIL }, sessions: { status: "quiet" }, attribution: { status: "no_data_yet" }, store_clicks: { status: "receiving" } }, ga4: { detail: EVIL }, retention_days: 90, privacy_exclusions: [EVIL], known_gaps: [EVIL], page_views_before_session_tracking: 0 },
+    flow: { pages: [{ page: EVIL, entrances: 1, exits: 1, session_events: 1, coverage_pct: 100 }], session_coverage_pct: 100 }
   });
-  const html = [V.sourcesView(m), V.storeView(m), V.healthView(m), V.pagesView(m, { q: EVIL }), V.signalsView(buildSignals(m), m)].join("");
+  const html = [V.kpiCards(m), V.sourcesView(m), V.deliverView(m), V.healthView(m), V.pagesView(m, { q: EVIL }), V.pageDetail(m, EVIL), V.signalsView(buildSignals(m), m)].join("");
   assert.ok(!html.includes("<img"), "raw <img> reached the markup");
   assert.ok(!/onerror=alert/.test(html.replace(/&lt;img src=x onerror=alert\(1\)&gt;/g, "")), "event handler attribute reached the markup");
 });
@@ -165,7 +167,8 @@ test("views: sort puts null last in both directions; paginate clamps; filter is 
 test("views: unavailable sections say so and offer retry", () => {
   const m = model({ states: { sources: { status: "error", error: "boom" }, flow: { status: "missing" }, health: { status: "loading" } } });
   assert.ok(V.sourcesView(m).includes("data-retry"));
-  assert.ok(V.flowView(m).includes("updated Worker"));
+  assert.ok(V.sectionStatus(m, "flow", "Page journeys").includes("updated Worker"));
+  assert.ok(V.pagesView(m).includes("Entrances"));
   assert.ok(V.healthView(m).includes("Loading"));
 });
 
