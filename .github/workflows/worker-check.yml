@@ -1,0 +1,58 @@
+name: Worker API checks
+
+on:
+  push:
+    branches: [feature/boztik-spotlight]
+    paths:
+      - "deliver/worker-api/**"
+      - "deliver-v3/js/analytics/**"
+      - "deliver-v3/js/analytics-report.js"
+      - "deliver-v3/js/site-analytics.js"
+      - "deliver-v3/js/spotlight-manager.js"
+      - "spotlight/**/*.js"
+      - ".github/workflows/worker-check.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "deliver/worker-api/**"
+      - "deliver-v3/js/analytics/**"
+      - "deliver-v3/js/analytics-report.js"
+      - "deliver-v3/js/site-analytics.js"
+      - "deliver-v3/js/spotlight-manager.js"
+      - "spotlight/**/*.js"
+      - ".github/workflows/worker-check.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  worker:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: deliver/worker-api
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: deliver/worker-api/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Check Spotlight browser JavaScript syntax
+        working-directory: .
+        run: |
+          node --input-type=module --check < deliver-v3/js/spotlight-manager.js
+          node --input-type=module --check < spotlight/spotlight.js
+          node --input-type=module --check < spotlight/profile.js
+          node --input-type=module --check < spotlight/spotlight-home.js
+          node --input-type=module --check < spotlight/submit/submit.js
+      - name: Validate all D1 migrations locally
+        run: npx wrangler d1 migrations apply boztik-deliver --local
+      - name: Type-check Worker
+        run: npm run typecheck
+      - name: Run existing unit and analytics tests
+        run: npm test
