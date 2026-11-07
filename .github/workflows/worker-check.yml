@@ -18,6 +18,8 @@ on:
       - "deliver-v3/js/analytics/**"
       - "deliver-v3/js/analytics-report.js"
       - "deliver-v3/js/site-analytics.js"
+      - "deliver-v3/js/spotlight-manager.js"
+      - "spotlight/**/*.js"
       - ".github/workflows/worker-check.yml"
 
 permissions:
