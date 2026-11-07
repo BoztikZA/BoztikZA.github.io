@@ -106,6 +106,16 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       const old = await env.DB.prepare("SELECT * FROM spotlight_profiles WHERE id=?").bind(seg[1]).first<any>();
       if (!old) return error("Profile not found",404);
       const status = ["pending","published","archived"].includes(String(b.status)) ? String(b.status) : old.status;
+      const displayName = b.display_name === undefined ? old.display_name : clean(b.display_name, 80);
+      const tagline = b.tagline === undefined ? old.tagline : clean(b.tagline, 120);
+      const description = b.description === undefined ? old.description : clean(b.description, 900);
+      const category = b.category === undefined ? old.category : clean(b.category, 40);
+      const website = b.website_url === undefined ? old.website_url : (b.website_url ? safeUrl(b.website_url) : null);
+      const social = b.social_links === undefined ? JSON.parse(old.social_links || "{}") : b.social_links;
+      if (displayName.length < 2 || tagline.length < 8 || description.length < 30 || !CATEGORIES.has(category)) throw new HttpError(422, "invalid_profile", "Check the name, tagline, description and category.");
+      if (b.website_url && !website) throw new HttpError(422, "invalid_url", "Website links must use HTTPS.");
+      if (!social || typeof social !== "object" || Array.isArray(social)) throw new HttpError(422, "invalid_social_links", "Social links must be an object.");
+      for (const [key,value] of Object.entries(social)) { if (!["youtube","twitch","instagram","tiktok","facebook","linkedin","x"].includes(key) || !safeUrl(value)) throw new HttpError(422, "invalid_social_url", "Social links must use HTTPS."); }
       if (b.featured === true && status !== "published") throw new HttpError(422, "feature_requires_published", "Publish the profile before featuring it.");
       const featured = status !== "published" ? null : b.featured === true ? now()+86400 : b.featured === false ? null : old.featured_until;
       const updated = now();
@@ -113,8 +123,10 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       if (b.featured === true) {
         await env.DB.prepare("UPDATE spotlight_profiles SET featured_until=NULL WHERE featured_until > ?").bind(updated).run();
       }
-      await env.DB.prepare("UPDATE spotlight_profiles SET status=?,featured_until=?,updated_at=?,published_at=CASE WHEN ?='published' THEN COALESCE(published_at,?) ELSE published_at END WHERE id=?")
-        .bind(status,featured,updated,status,updated,seg[1]).run();
+      await env.DB.batch([
+        env.DB.prepare("UPDATE spotlight_profiles SET featured_until=NULL WHERE featured_until > ? AND id<>?").bind(updated,seg[1]),
+        env.DB.prepare("UPDATE spotlight_profiles SET display_name=?,tagline=?,description=?,category=?,website_url=?,social_links=?,status=?,featured_until=?,updated_at=?,published_at=CASE WHEN ?='published' THEN COALESCE(published_at,?) ELSE published_at END WHERE id=?").bind(displayName,tagline,description,category,website,JSON.stringify(social),status,featured,updated,status,updated,seg[1])
+      ]);
       const row = await env.DB.prepare("SELECT * FROM spotlight_profiles WHERE id=?").bind(seg[1]).first<any>();
       return json({ ok:true, profile:{...publicDto(row),contact_email:row.contact_email,status:row.status} });
     }
