@@ -1378,35 +1378,9 @@
   </div>
 
 
-  <!-- =====================================================
-       PREMIUM DELIVERY ANIMATIONS
-       Entirely optional and backend-free — driven only by an
-       "anim" query parameter on this page's own URL (see
-       js/animations/). Layer is aria-hidden/pointer-events:none
-       so it never blocks scrolling, downloads, or focus; the
-       replay control is a separate, real, focusable button so
-       aria-hidden on the layer never hides it from assistive
-       tech.
-  ====================================================== -->
-
-  <div
-    id="deliver-animation-layer"
-    aria-hidden="true"
-  ></div>
-
+  <!-- Local reaction layer: visual effects never intercept input or block downloads. -->
+  <div id="deliver-animation-layer" aria-hidden="true"></div>
   <div id="deliver-reaction-status" class="deliver-visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
-
-  <button
-    type="button"
-    id="deliver-animation-replay"
-    hidden
-  >
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M3 12a9 9 0 1 0 3-6.7"></path>
-      <path d="M3 4v5h5"></path>
-    </svg>
-    Replay
-  </button>
 
 
   <!-- =====================================================
