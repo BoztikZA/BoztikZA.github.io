@@ -62,10 +62,6 @@ const els = {
   animationLayer:
     $("deliver-animation-layer"),
 
-  animationReplay:
-    $("deliver-animation-replay"),
-
-
   title:
     $("deliver-project-name"),
 
