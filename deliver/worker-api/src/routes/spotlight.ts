@@ -1,12 +1,13 @@
 import type { Env } from "../types";
 import { HttpError } from "../types";
 import { requireSession } from "../lib/auth";
+import { localDay } from "../lib/db";
 import { assertSameSiteOrigin, checkPublicRate, error, json, readJson, requireJson, segments, wrap } from "./util";
 
 const CATEGORIES = new Set(["small-business","youtube","twitch","gaming","photography","design","music","creator","freelance","other"]);
 const ID = () => crypto.randomUUID().replace(/-/g, "").slice(0, 20);
 const now = () => Math.floor(Date.now() / 1000);
-const day = () => new Date().toISOString().slice(0, 10);
+const day = (env: Env) => localDay(env);
 const clean = (v: unknown, max: number) => typeof v === "string" ? v.trim().replace(/\s+/g, " ").slice(0, max) : "";
 function safeUrl(value: unknown): string | null {
   if (typeof value !== "string" || !value.trim()) return null;
@@ -81,7 +82,7 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
       if (!/^[a-zA-Z0-9_-]{12,64}$/.test(eventId) || !/^[a-f0-9]{20}$/i.test(profileId) || !["view","click"].includes(String(type))) throw new HttpError(422, "invalid_event", "Invalid analytics event.");
       const profile = await env.DB.prepare("SELECT id FROM spotlight_profiles WHERE id=? AND status='published'").bind(profileId).first();
       if (!profile) return json({ ok: true, counted: false });
-      const d = day(), t = now();
+      const d = day(env), t = now();
       const insert = await env.DB.prepare("INSERT OR IGNORE INTO spotlight_events(event_id,profile_id,event_type,day,created_at) VALUES(?,?,?,?,?)").bind(eventId,profileId,type,d,t).run();
       if ((insert.meta.changes || 0) > 0) {
         await env.DB.prepare(`INSERT INTO spotlight_daily_metrics(profile_id,day,${type === "view" ? "views" : "outbound_clicks"}) VALUES(?,?,1) ON CONFLICT(profile_id,day) DO UPDATE SET ${type === "view" ? "views" : "outbound_clicks"}=${type === "view" ? "views" : "outbound_clicks"}+1`).bind(profileId,d).run();
