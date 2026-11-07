@@ -196,13 +196,13 @@ export function pagesView(model, ui = {}) {
     : `<tr><td colspan="6" class="an-empty">${ui.q ? `No pages match “${esc(ui.q)}”.` : "No pages."}</td></tr>`;
   const from = pg.total ? (pg.page - 1) * PAGE_SIZE + 1 : 0, to = Math.min(pg.total, pg.page * PAGE_SIZE);
   return `${limited}${rankChart}
-    <details class="an-data-details" ${ui.tableOpen ? "open" : ""}><summary>Detailed page table, entrances and exits</summary>
+    <div class="an-data-details an-page-table">
     <div class="an-toolbar"><label class="an-search"><span class="cc-sr">Filter pages</span><input type="search" id="an-page-q" class="cc-input" placeholder="Filter pages…" value="${esc(ui.q || "")}" autocomplete="off" maxlength="60"></label>
       <span class="an-count" role="status">${pg.total ? `${from}–${to} of ${pg.total} pages` : "0 pages"}</span></div>
     <div class="an-table-wrap"><table class="an-table an-pages"><caption class="cc-sr">Public website pages ranked by counted page views, ${periodNote(model)}</caption>
       <thead><tr>${th("label", "Page")}${th("views", "Page views", "num")}${th("share", "Share", "num")}${th("change", "vs previous", "num")}${th("entrances", "Entrances", "num")}${th("exits", "Exits", "num")}</tr></thead><tbody>${body}</tbody></table></div>
     <div class="an-pager" ${pg.pages > 1 ? "" : "hidden"}><button type="button" class="cc-btn" data-page-nav="prev" ${pg.page <= 1 ? "disabled" : ""}>Previous</button><span>Page ${pg.page} of ${pg.pages}</span><button type="button" class="cc-btn" data-page-nav="next" ${pg.page >= pg.pages ? "disabled" : ""}>Next</button></div>
-    <div id="an-page-detail">${ui.detail ? pageDetail(model, ui.detail) : ""}</div></details>
+    <div id="an-page-detail">${ui.detail ? pageDetail(model, ui.detail) : ""}</div>
     <p class="an-fine">${basisBadge("measured")} Page loads counted by Boztik's own counter${model.website?.dataSince ? ` since ${esc(model.website.dataSince)}` : ""}. Not unique people; visitors who send Do Not Track or Global Privacy Control are not counted. “vs previous” compares completed days only and needs at least ${MIN_BASE_PAGE} views in the earlier period. Entrances and exits come from anonymous session events, which cover only part of all page views${model.flow?.session_coverage_pct != null ? ` (${model.flow.session_coverage_pct}% in this period)` : ""}. Engagement time and onward clicks per page are GA4-only and not shown.</p>`;
 }
 
