@@ -11,13 +11,13 @@
 //   * the report, CSV and screen all read the same view-model (analytics/model.js)
 // The public exports (initSiteAnalytics, refreshSiteAnalytics) are unchanged: command-centre.js calls them as before.
 import { fetchPageAnalytics } from "./api.js";
-import { fetchSummary, fetchTrend, fetchSources, fetchStore, fetchFlow, fetchHealth, AnalyticsError } from "./analytics/client.js?v=an1";
-import { PRESETS, DEFAULT_RANGE, normalizeRange, rangeId, rangeLabel, validateCustom, windowMatches, addDays, MIN_CUSTOM_DAY } from "./analytics/range.js?v=an1";
-import { buildAnalyticsModel, metricPoints, METRICS } from "./analytics/model.js?v=an1";
-import { buildSignals } from "./analytics/signals.js?v=an1";
-import { createTrendChart } from "./analytics/chart.js?v=an1";
-import { buildFullReport, buildCsv, csvFileName } from "./analytics/export.js?v=an3";
-import * as V from "./analytics/views.js?v=an3";
+import { fetchSummary, fetchTrend, fetchSources, fetchStore, fetchFlow, fetchHealth, AnalyticsError } from "./analytics/client.js?v=an2";
+import { PRESETS, DEFAULT_RANGE, normalizeRange, rangeId, rangeLabel, validateCustom, windowMatches, addDays, MIN_CUSTOM_DAY } from "./analytics/range.js?v=an2";
+import { buildAnalyticsModel, metricPoints, METRICS } from "./analytics/model.js?v=an2";
+import { buildSignals } from "./analytics/signals.js?v=an2";
+import { createTrendChart } from "./analytics/chart.js?v=an2";
+import { buildFullReport, buildCsv, csvFileName } from "./analytics/export.js?v=an4";
+import * as V from "./analytics/views.js?v=an4";
 
 const $ = id => document.getElementById(id);
 const REFRESH_MS = 5 * 60 * 1000;
