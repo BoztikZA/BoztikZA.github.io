@@ -17,11 +17,29 @@ function safeUrl(value: unknown): string | null {
 function slugify(value: string): string {
   return value.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 48) || "profile";
 }
+function spotifyTrack(value: unknown): { id: string; url: string } | null {
+  if (typeof value !== "string" || !value.trim()) return null;
+  try {
+    const u = new URL(value.trim());
+    if (u.protocol !== "https:" || !["open.spotify.com", "www.open.spotify.com"].includes(u.hostname)) return null;
+    const match = u.pathname.match(/^\\/track\\/([A-Za-z0-9]{22})\\/?$/);
+    return match ? { id: match[1], url: "https://open.spotify.com/track/" + match[1] } : null;
+  } catch { return null; }
+}
+async function spotifyMetadata(track: { id: string; url: string }): Promise<{ id: string; url: string; title: string; artwork: string | null }> {
+  const response = await fetch("https://open.spotify.com/oembed?url=" + encodeURIComponent(track.url), { headers: { Accept: "application/json" } });
+  if (!response.ok) throw new HttpError(422, "spotify_unavailable", "Spotify could not retrieve that track. Check the song link and try again.");
+  const data = await response.json() as { title?: unknown; thumbnail_url?: unknown; provider_name?: unknown };
+  if (data.provider_name !== "Spotify" || typeof data.title !== "string") throw new HttpError(422, "spotify_invalid_track", "Please provide a public Spotify track link, not an artist or playlist link.");
+  const artwork = typeof data.thumbnail_url === "string" && data.thumbnail_url.startsWith("https://") ? data.thumbnail_url : null;
+  return { ...track, title: data.title.slice(0, 200), artwork };
+}
+
 function publicDto(row: any) {
   return {
     id: row.id, slug: row.slug, display_name: row.display_name, tagline: row.tagline,
     description: row.description, category: row.category, website_url: row.website_url,
-    social_links: JSON.parse(row.social_links || "{}"), image_url: null,
+    social_links: JSON.parse(row.social_links || "{}"), song: row.song_metadata ? JSON.parse(row.song_metadata) : null, image_url: null,
     featured: Number(row.featured_until || 0) > now(), featured_until: Number(row.featured_until || 0) > now() ? row.featured_until : null,
     created_at: row.created_at,
   };
@@ -52,6 +70,9 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
       const displayName = clean(b.display_name, 80), tagline = clean(b.tagline, 120);
       const description = clean(b.description, 900), category = clean(b.category, 40);
       const email = clean(b.contact_email, 254).toLowerCase();
+      const songTrack = b.song_url ? spotifyTrack(b.song_url) : null;
+      if (b.song_url && !songTrack) throw new HttpError(422, "invalid_spotify_track", "Use a public Spotify track link.");
+      const song = songTrack ? await spotifyMetadata(songTrack) : null;
       const website = safeUrl(b.website_url);
       if (displayName.length < 2 || tagline.length < 8 || description.length < 30) throw new HttpError(422, "invalid_profile", "Please provide a name, a clear tagline and a description of at least 30 characters.");
       if (!CATEGORIES.has(category)) throw new HttpError(422, "invalid_category", "Choose a valid category.");
@@ -68,8 +89,8 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
       const id = ID(), timestamp = now();
       const slug = slugify(displayName) + "-" + id.slice(0, 5);
       await env.DB.prepare(
-        "INSERT INTO spotlight_profiles (id,slug,display_name,tagline,description,category,contact_email,website_url,social_links,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,'pending',?,?)"
-      ).bind(id,slug,displayName,tagline,description,category,email,website,JSON.stringify(social),timestamp,timestamp).run();
+        "INSERT INTO spotlight_profiles (id,slug,display_name,tagline,description,category,contact_email,website_url,social_links,song_metadata,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,'pending',?,?)"
+      ).bind(id,slug,displayName,tagline,description,category,email,website,JSON.stringify(social),song ? JSON.stringify(song) : null,timestamp,timestamp).run();
       // Attempt the owner notification before responding so the submitter sees
       // whether the email alert was sent. The D1 submission is already safely
       // stored, so provider failure never loses the profile.
