@@ -52,7 +52,7 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
     if (request.method === "GET" && seg.length === 0) {
       checkPublicRate(request, env, "spotlight-list", 2);
       const rows = await env.DB.prepare(
-        "SELECT id,slug,display_name,tagline,description,category,website_url,social_links,song_metadata,image_key,image_content_type,featured_until,created_at FROM spotlight_profiles WHERE status='published' ORDER BY CASE WHEN featured_until > ? THEN 0 ELSE 1 END, published_at DESC LIMIT 100"
+        "SELECT id,slug,display_name,tagline,description,category,website_url,social_links,song_metadata,image_key,image_size,image_content_type,status,featured_until,created_at FROM spotlight_profiles WHERE status='published' ORDER BY CASE WHEN featured_until > ? THEN 0 ELSE 1 END, published_at DESC LIMIT 100"
       ).bind(now()).all<any>();
       return json({ ok: true, profiles: (rows.results || []).map(publicDto) }, 200, { "Cache-Control": "public, max-age=60, stale-while-revalidate=120" });
     }
