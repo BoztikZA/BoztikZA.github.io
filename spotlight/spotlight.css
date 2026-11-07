@@ -12,3 +12,15 @@
 @keyframes sp-wordmark-sweep{0%,55%{transform:translateX(-130%) skewX(-18deg)}76%,100%{transform:translateX(135%) skewX(-18deg)}}
 .sp-hero{background-image:radial-gradient(ellipse at 77% 46%,rgba(142,255,61,.16),transparent 38%),linear-gradient(120deg,#0b1012,#080b0d 65%)}
 @media(prefers-reduced-motion:reduce){.sp-brand-wordmark:after{animation:none}}
+
+
+/* Dedicated Spotlight identity: distinct from the Boztik Stores lockup. */
+.sp-brand-emblem{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none;width:38px;height:38px;border:1px solid rgba(142,255,61,.62);border-radius:11px;background:linear-gradient(145deg,rgba(142,255,61,.16),rgba(142,255,61,.025));box-shadow:0 0 22px rgba(142,255,61,.16),inset 0 0 12px rgba(142,255,61,.08);transform:rotate(-8deg)}
+.sp-brand-emblem:before{content:"";position:absolute;width:17px;height:17px;border:2px solid var(--sp-green);border-radius:50%;box-shadow:0 0 10px rgba(142,255,61,.6)}
+.sp-brand-emblem i{position:absolute;display:block;width:4px;height:4px;border-radius:50%;background:#d7ffbf;box-shadow:0 0 8px var(--sp-green)}
+.sp-brand-emblem i:nth-child(1){top:5px;right:7px}.sp-brand-emblem i:nth-child(2){bottom:6px;left:6px}.sp-brand-emblem i:nth-child(3){top:8px;left:7px}
+.sp-orbit-core{background:radial-gradient(circle at 50% 50%,rgba(142,255,61,.18),#101a12 68%);font-size:5rem}
+.sp-orbit-emblem{display:block;color:var(--sp-green);font-size:5.2rem;line-height:1;text-shadow:0 0 10px rgba(142,255,61,.8),0 0 35px rgba(142,255,61,.55);transform:rotate(10deg)}
+.sp-directory-glow strong{color:#c8ffa8;text-shadow:0 0 5px rgba(142,255,61,.8),0 0 13px rgba(142,255,61,.55),0 0 25px rgba(142,255,61,.28);animation:sp-directory-pulse 4.5s ease-in-out infinite}
+@keyframes sp-directory-pulse{0%,100%{text-shadow:0 0 5px rgba(142,255,61,.65),0 0 13px rgba(142,255,61,.4)}50%{text-shadow:0 0 7px rgba(142,255,61,1),0 0 19px rgba(142,255,61,.75),0 0 32px rgba(142,255,61,.35)}}
+@media(prefers-reduced-motion:reduce){.sp-directory-glow strong{animation:none}}
