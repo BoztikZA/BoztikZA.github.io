@@ -291,8 +291,13 @@ profile information and links in the public Spotlight directory. The contact
 email is used for administration and is not displayed on the public profile.
 </p>
 <p>
-Spotlight profile views and outbound link clicks are counted as aggregated
-engagement metrics. Submission records are stored in Boztik's existing
+Spotlight profile views, estimated daily unique visitors, featured-placement
+impressions and outbound link clicks are counted as aggregated engagement
+metrics. For daily unique-visitor estimates, the browser stores a random
+first-party identifier and the server converts it to a daily keyed hash; the
+raw identifier is not stored in the database, and these event-level records
+are deleted after 90 days. We do not store raw IP addresses for Spotlight
+analytics. Submission records are stored in Boztik's existing
 Cloudflare-hosted database. You can contact Boztik to request correction or
 removal of a submitted profile. A submission does not guarantee publication,
 traffic or commercial results.
