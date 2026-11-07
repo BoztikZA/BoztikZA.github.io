@@ -26,7 +26,7 @@ function publicDto(row: any) {
   };
 }
 
-export function handleSpotlightPublic(request: Request, path: string, env: Env): Promise<Response> {
+export function handleSpotlightPublic(request: Request, path: string, env: Env, ctx: ExecutionContext): Promise<Response> {
   return wrap(async () => {
     const seg = segments(path);
     if (request.method === "GET" && seg.length === 0) {
@@ -69,6 +69,8 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env):
       await env.DB.prepare(
         "INSERT INTO spotlight_profiles (id,slug,display_name,tagline,description,category,contact_email,website_url,social_links,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,'pending',?,?)"
       ).bind(id,slug,displayName,tagline,description,category,email,website,JSON.stringify(social),timestamp,timestamp).run();
+      // Notify the owner asynchronously; email failure must never lose a submission.
+      ctx.waitUntil(notifySpotlightSubmission(env, { displayName, tagline, category, email, website, id }).catch(e => console.error("[spotlight] notification failed", e)));
       return json({ ok: true, message: "Your profile has been submitted for review." }, 201);
     }
     if (request.method === "POST" && seg[0] === "event" && seg.length === 1) {
@@ -126,4 +128,26 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
     }
     return error("Not found",404);
   });
+}
+
+async function notifySpotlightSubmission(env: Env, item: {displayName:string;tagline:string;category:string;email:string;website:string|null;id:string}): Promise<void> {
+  const to=env.NOTIFY_EMAIL_TO?.trim(), from=env.NOTIFY_EMAIL_FROM?.trim(), url=env.EMAIL_PROVIDER_URL?.trim();
+  if(!to||!from||!url){console.warn("[spotlight] owner email notification is not configured; submission remains safely queued in D1.");return;}
+  const subject="New Boztik Spotlight submission: "+item.displayName;
+  const textBody=[
+    "A new Spotlight profile is waiting for review.",
+    "",
+    "Name: "+item.displayName,
+    "Category: "+item.category,
+    "Tagline: "+item.tagline,
+    "Contact: "+item.email,
+    "Website: "+(item.website||"Not supplied"),
+    "",
+    "Review it in the Boztik Command Centre > Spotlight.",
+    "Submission reference: "+item.id
+  ].join("\\n");
+  const headers:Record<string,string>={"Content-Type":"application/json"};
+  if(env.EMAIL_PROVIDER_KEY)headers.Authorization="Bearer "+env.EMAIL_PROVIDER_KEY;
+  const response=await fetch(url,{method:"POST",headers,body:JSON.stringify({from,to,subject,text:textBody})});
+  if(!response.ok)throw new Error("Email provider returned "+response.status);
 }
