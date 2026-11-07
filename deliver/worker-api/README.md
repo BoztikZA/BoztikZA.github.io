@@ -74,6 +74,16 @@ Metrics & spacing: **views** every 1,000 · **downloads** every 10 · **shares**
 - Master switch: var `MILESTONE_EMAILS_ENABLED` (default `"1"`; set `"0"` to disable without touching code).
 - Secrets (see `src/types.ts`): `NOTIFY_EMAIL_TO`, `NOTIFY_EMAIL_FROM`, `EMAIL_PROVIDER_URL`,
   `EMAIL_PROVIDER_KEY` (optional bearer key) — set with `npx wrangler secret put …`.
+
+Spotlight owner notifications use a JSON POST with `from`, `to`, `subject`,
+and `text`. For Resend, set `EMAIL_PROVIDER_URL` to
+`https://api.resend.com/emails`, `EMAIL_PROVIDER_KEY` to the Resend API key,
+`NOTIFY_EMAIL_FROM` to a sender verified with Resend, and
+`NOTIFY_EMAIL_TO` to the inbox that should receive submissions. Configure
+these as Worker secrets (never in frontend code or committed files). The
+profile is inserted into D1 before notification is attempted; the submit page
+reports if the email could not be delivered, and the pending profile remains
+available in Command Centre for manual review.
 - Rules live in `src/lib/milestones.ts` (pure, unit-tested by `scripts/milestone-test.mts`); the engine is
   `src/lib/notify.ts`. Requires migration `0004_milestone_notifications.sql`.
 
