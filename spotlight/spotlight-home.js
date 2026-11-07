@@ -37,7 +37,6 @@
            data-profile-id="${escapeHtml(profile.id)}"
            data-featured="${profile.featured ? "1" : "0"}">
           <small>${profile.featured ? "Featured today" : escapeHtml(profile.category.replace(/-/g, " "))}</small>
-          ${profile.featured ? '<span class="hm-spotlight-countdown" data-countdown="${Number(profile.featured_until||0)}">Ends in <time>--:--:--</time></span>' : ""}
           <a class="hm-spotlight-card-link" href="spotlight/profile.html?slug=${encodeURIComponent(profile.slug)}">
             <strong>${escapeHtml(profile.display_name)}</strong>
             <p>${escapeHtml(profile.tagline)}</p>
