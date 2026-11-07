@@ -114,7 +114,7 @@ export function buildFullReport(model, { generatedAt = new Date() } = {}) {
     model.pages.forEach((p, i) => line(`${i + 1}. ${p.label} [${p.page}]: ${fmtInt(p.views)} views; ${p.share === null ? "share not measured" : `${p.share}% of page views`}; entrances ${n(p.entrances)}; exits ${n(p.exits)}.`));
   } else line("- Page-level data is unavailable.");
 
-  line(); line("4. TRAFFIC SOURCES");
+  line(); line("3. TRAFFIC SOURCES");
   if (!sources) line("- Traffic-source attribution is unavailable.");
   else {
     line(`- ${fmtInt(sources.total)} visits had an attributable source.`);
@@ -153,12 +153,12 @@ export function buildFullReport(model, { generatedAt = new Date() } = {}) {
     line("- Null / not measured values are deliberately not treated as zero. The final in-progress bucket is included as partial data.");
   }
 
-  line(); line("8. WHAT STANDS OUT");
+  line(); line("7. WHAT STANDS OUT");
   const signals = buildSignals(model);
   if (!signals.length) line("- No pattern crossed the dashboard's reporting thresholds.");
   else signals.forEach(x => line(`- [${x.level.toUpperCase()}] ${x.title}: ${x.detail}`));
 
-  line(); line("9. DATA HEALTH & LIMITATIONS");
+  line(); line("8. DATA HEALTH & LIMITATIONS");
   if (model.limited) line("- Limited mode: the deployed Worker does not provide the selected reporting range; some sections may only show the fixed 30-day page counter.");
   if (f) line(`- Visitor-flow coverage: ${f.session_coverage_pct === null ? "not measured" : `${f.session_coverage_pct}%`}; this is a subset of page views, not every page load.`);
   if (model.website?.dataSince) line(`- Website page-view collection began: ${model.website.dataSince}.`);
@@ -174,7 +174,7 @@ export function buildFullReport(model, { generatedAt = new Date() } = {}) {
   line("- Store clicks measure outbound link activation, not purchases. The report does not infer sales, revenue, bounce rate, unique visitors or engagement time.");
   line("- Website, store-click and Deliver counters are separate measures and must not be added together.");
 
-  line(); line("10. ANALYSIS GUIDE");
+  line(); line("9. ANALYSIS GUIDE");
   line("- Identify the strongest entry pages and whether recorded visitors continue to another page or leave.");
   line("- Look for high-view pages with few onward transitions, and pages that repeatedly appear as exits.");
   line("- Compare Reddit/search/social/referral traffic with the pages and journeys that follow.");
