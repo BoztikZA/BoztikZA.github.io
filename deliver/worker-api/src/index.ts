@@ -30,7 +30,7 @@ export default {
         response = publicPath.startsWith("promotions") || publicPath.startsWith("promotion-image")
           ? await handlePromotionPublic(request, publicPath.split("/").filter(Boolean), env)
           : publicPath.startsWith("spotlight")
-            ? await handleSpotlightPublic(request, publicPath.slice("spotlight".length).replace("/", ""), env)
+            ? await handleSpotlightPublic(request, publicPath.slice("spotlight".length).replace("/", ""), env, ctx)
             : await handlePublic(request, publicPath, env, ctx);
       } else if (path.startsWith(`${API}/auth/`)) {
         response = await handleAuth(request, path.slice(`${API}/auth/`.length), env);
