@@ -209,46 +209,8 @@ export function pagesView(model, ui = {}) {
 export function pageDetail(model, page) {
   const row = model.pages.find(p => p.page === page);
   if (!row) return "";
-  const tr = model.flow?.transitions ?? [];
-  const next = tr.filter(t => t.from === page).sort((a, b) => b.visits - a.visits).slice(0, 5);
-  const prev = tr.filter(t => t.to === page).sort((a, b) => b.visits - a.visits).slice(0, 5);
-  const list = (items, key) => (items.length ? `<ul class="an-flow-list">${items.map(t => `<li><span>${esc(PAGE_LABELS[t[key]] || t[key])}</span><b>${fmtInt(t.visits)} visits</b></li>`).join("")}</ul>` : `<p class="an-empty">None recorded.</p>`);
   return `<section class="an-detail" aria-label="${esc(row.label)} detail"><header><h3 class="an-h3">${esc(row.label)}</h3><button type="button" class="cc-btn" data-detail-close>Close</button></header>
-    <p class="an-muted">${fmtInt(row.views)} counted page view${row.views === 1 ? "" : "s"} in this period${row.entrances !== null && row.entrances !== undefined ? ` · ${fmtInt(row.entrances)} entrance${row.entrances === 1 ? "" : "s"} · ${fmtInt(row.exits)} exit${row.exits === 1 ? "" : "s"} (session events)` : ""}.</p>
-    <div class="an-two"><div><h4 class="an-h4">Visitors go next to</h4>${model.flow ? list(next, "to") : `<p class="an-empty">Visitor flow is not available.</p>`}</div><div><h4 class="an-h4">Visitors arrive from</h4>${model.flow ? list(prev, "from") : `<p class="an-empty">Visitor flow is not available.</p>`}</div></div></section>`;
-}
-
-/* ------------------------------------------------------------ visitor flow */
-export function flowView(model) {
-  const f = model.flow;
-  if (!f) return sectionStatus(model, "flow", "Visitor flow");
-  const REASONS = { no_page_views_in_period: "No page views were counted in this period, so there is nothing to follow.", page_views_without_session_events: "Page views were counted, but none carry session events, so journeys cannot be built. This is a tracking gap, not a quiet period." };
-  if (f.status === "no_events") return `<p class="an-empty">${esc(REASONS[f.reason] || "No session events recorded in this period.")}</p>`;
-  const label = p => esc(PAGE_LABELS[p] || p);
-  const list = (items, empty) => (items.length ? `<ul class="an-flow-list">${items.slice(0, 6).map(i => `<li><span>${i.label}</span><b>${fmtInt(i.visits)}</b></li>`).join("")}</ul>` : `<p class="an-empty">${esc(empty)}</p>`);
-  const limited = f.status === "limited" ? `<p class="an-state an-state-missing" role="status">${icon("info")}<span>Only ${fmtInt(f.visits)} visit${f.visits === 1 ? "" : "s"} recorded: fewer than ${fmtInt(f.min_visits)}, so these patterns are shown for reference and are not reliable.</span></p>` : "";
-  return `${limited}<div class="an-stats"><span><b>${fmtInt(f.visits)}</b> visits</span><span><b>${fmtInt(f.multi_page_visits)}</b> multi-page</span><span><b>${fmtInt(f.single_page_visits)}</b> single-page</span><span class="an-muted">Session coverage ${f.session_coverage_pct === null ? "—" : `${f.session_coverage_pct}%`} of page views</span></div>
-    <div class="an-two"><div><h3 class="an-h3">Where visits start</h3>${list(f.entries.map(e => ({ label: label(e.page), visits: e.visits })), "None.")}</div><div><h3 class="an-h3">Where visits end</h3>${list(f.exits.map(e => ({ label: label(e.page), visits: e.visits })), "None.")}</div></div>
-    <div class="an-two"><div><h3 class="an-h3">Most common steps</h3>${list(f.transitions.map(t => ({ label: `${label(t.from)} <span aria-hidden="true">→</span><span class="cc-sr"> to </span> ${label(t.to)}`, visits: t.visits })), "No page-to-page movement recorded.")}</div>
-    <div><h3 class="an-h3">Most common journeys</h3>${list(f.journeys.map(j => ({ label: `${j.path.map(label).join(' <span aria-hidden="true">→</span> ')}${j.truncated ? " …" : ""}`, visits: j.visits })), "No multi-page journeys recorded.")}</div></div>
-    <p class="an-fine">${basisBadge("measured")} Built from anonymous session events only: a new visit starts after ${fmtInt(f.visit_gap_minutes)} minutes of inactivity. No IP addresses or personal data. Journeys cover only the share of page views that also stored a session event${f.session_data_since ? ` (recorded since ${esc(f.session_data_since)})` : ""}${f.events_capped ? "; the event cap was hit, so very busy periods are truncated" : ""}.</p>`;
-}
-
-/* ------------------------------------------------------------------ store */
-const STORE_LABELS = { boztik_store: "Boztik Stores", redbubble: "Redbubble", teepublic: "TeePublic", kofi: "Ko-fi Wallpapers" };
-export const storeLabel = d => STORE_LABELS[d] || d;
-export function storeView(model) {
-  const s = model.store;
-  if (!s) return sectionStatus(model, "store", "Store activity");
-  const rows = s.by_destination.map(r => `<tr><th scope="row">${esc(storeLabel(r.destination))}</th><td class="num">${fmtInt(r.clicks)}</td><td class="num">${fmtInt(r.unique_sessions)}</td><td>${esc(r.top_source || "—")}</td></tr>`).join("");
-  const place = (s.sources ?? []).slice(0, 6).map(r => `<tr><th scope="row">${esc(r.source_placement)}</th><td class="num">${fmtInt(r.clicks)}</td></tr>`).join("");
-  const prev = !s.previous || !s.data_since ? ""
-    : s.data_since > s.previous.since ? `<span class="an-muted">Click recording began after the previous period started, so it cannot be compared.</span>`
-      : `<span class="an-muted">Previous period: ${fmtInt(s.previous.total)} clicks</span>`;
-  return `<div class="an-stats"><span><b>${fmtInt(s.total)}</b> store-link clicks</span><span><b>${fmtInt(s.outbound_total)}</b> to outside stores</span><span><b>${fmtInt(s.unique_sessions)}</b> anonymous sessions</span><span><b>${fmtInt(s.store_page_views)}</b> Stores page views</span><span><b>${fmtInt(s.product_card_clicks)}</b> product-card clicks</span>${prev}</div>
-    <div class="an-two"><div class="an-table-wrap"><table class="an-table"><caption class="cc-sr">Store-link clicks by destination</caption><thead><tr><th scope="col">Destination</th><th scope="col" class="num">Clicks</th><th scope="col" class="num">Sessions</th><th scope="col">Top placement</th></tr></thead><tbody>${rows}</tbody></table></div>
-    <div class="an-table-wrap"><table class="an-table"><caption class="cc-sr">Clicks by placement on the site</caption><thead><tr><th scope="col">Placement</th><th scope="col" class="num">Clicks</th></tr></thead><tbody>${place || `<tr><td colspan="2" class="an-empty">No clicks recorded.</td></tr>`}</tbody></table></div></div>
-    <p class="an-fine">${basisBadge("measured")} A click records activation of a store link, not a completed purchase.${s.data_since ? ` Click recording began ${esc(s.data_since)}.` : " No click has been recorded yet."}</p>`;
+    <p class="an-muted">${fmtInt(row.views)} counted page view${row.views === 1 ? "" : "s"} in this period${row.entrances !== null && row.entrances !== undefined ? ` · ${fmtInt(row.entrances)} entrance${row.entrances === 1 ? "" : "s"} · ${fmtInt(row.exits)} exit${row.exits === 1 ? "" : "s"} (session events)` : ""}.</p></section>`;
 }
 
 /* ---------------------------------------------------------------- deliver */
