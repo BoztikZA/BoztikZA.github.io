@@ -85,6 +85,7 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
       if (displayName.length < 2 || tagline.length < 8 || description.length < 30) throw new HttpError(422, "invalid_profile", "Please provide a name, a clear tagline and a description of at least 30 characters.");
       if (!CATEGORIES.has(category)) throw new HttpError(422, "invalid_category", "Choose a valid category.");
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new HttpError(422, "invalid_email", "Enter a valid contact email.");
+      if (b.contact_email !== undefined && !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(contactEmail)) throw new HttpError(422, "invalid_email", "Enter a valid contact email.");
       if (b.website_url && !website) throw new HttpError(422, "invalid_url", "Website links must use HTTPS.");
       if (b.consent !== true) throw new HttpError(422, "consent_required", "Confirm that you own or are authorised to submit this profile.");
       const social: Record<string,string> = {};
@@ -155,6 +156,34 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
   return wrap(async () => {
     await requireSession(request, env);
     const seg = segments(path);
+    if (seg.length === 1 && seg[0] === "profile" && request.method === "POST") {
+      requireJson(request);
+      const b = await readJson(request, 12 * 1024);
+      const displayName = clean(b.display_name, 80), tagline = clean(b.tagline, 120);
+      const description = clean(b.description, 900), category = clean(b.category, 40);
+      const email = clean(b.contact_email, 254).toLowerCase();
+      const website = b.website_url ? safeUrl(b.website_url) : null;
+      const songTrack = b.song_url ? spotifyTrack(b.song_url) : null;
+      if (b.song_url && !songTrack) throw new HttpError(422, "invalid_spotify_track", "Use a public Spotify track link.");
+      const song = songTrack ? await spotifyMetadata(songTrack) : null;
+      if (displayName.length < 2 || tagline.length < 8 || description.length < 30) throw new HttpError(422, "invalid_profile", "Please provide a name, a clear tagline and a description of at least 30 characters.");
+      if (!CATEGORIES.has(category)) throw new HttpError(422, "invalid_category", "Choose a valid category.");
+      if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) throw new HttpError(422, "invalid_email", "Enter a valid contact email.");
+      if (b.website_url && !website) throw new HttpError(422, "invalid_url", "Website links must use HTTPS.");
+      const social: Record<string,string> = {};
+      if (b.social_links && typeof b.social_links === "object" && !Array.isArray(b.social_links)) {
+        for (const key of ["youtube","twitch","instagram","tiktok","facebook","linkedin","x","spotify"]) {
+          const value = (b.social_links as Record<string,unknown>)[key];
+          if (value) { const url = safeUrl(value); if (!url) throw new HttpError(422, "invalid_social_url", "Social links must use HTTPS."); social[key] = url; }
+        }
+      }
+      const id = ID(), timestamp = now(), slug = slugify(displayName) + "-" + id.slice(0, 5);
+      await env.DB.prepare(
+        "INSERT INTO spotlight_profiles (id,slug,display_name,tagline,description,category,contact_email,website_url,social_links,song_metadata,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,'pending',?,?)"
+      ).bind(id,slug,displayName,tagline,description,category,email,website,JSON.stringify(social),song ? JSON.stringify(song) : null,timestamp,timestamp).run();
+      const row = await env.DB.prepare("SELECT * FROM spotlight_profiles WHERE id=?").bind(id).first<any>();
+      return json({ ok:true, profile:{...publicDto(row),contact_email:row.contact_email,status:row.status} }, 201);
+    }
     if (!seg.length && request.method === "GET") {
       const rows = await env.DB.prepare("SELECT * FROM spotlight_profiles ORDER BY CASE status WHEN 'pending' THEN 0 WHEN 'published' THEN 1 ELSE 2 END, created_at DESC LIMIT 300").all<any>();
       return json({ ok: true, profiles: (rows.results || []).map((r:any) => ({ ...publicDto(r), contact_email:r.contact_email, status:r.status })) });
@@ -176,6 +205,7 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       const tagline = b.tagline === undefined ? old.tagline : clean(b.tagline, 120);
       const description = b.description === undefined ? old.description : clean(b.description, 900);
       const category = b.category === undefined ? old.category : clean(b.category, 40);
+      const contactEmail = b.contact_email === undefined ? old.contact_email : clean(b.contact_email, 254).toLowerCase();
       const website = b.website_url === undefined ? old.website_url : (b.website_url ? safeUrl(b.website_url) : null);
       const songTrack = b.song_url === undefined ? (old.song_metadata ? spotifyTrack(JSON.parse(old.song_metadata).url) : null) : (b.song_url ? spotifyTrack(b.song_url) : null);
       if (b.song_url && !songTrack) throw new HttpError(422, "invalid_spotify_track", "Use a public Spotify track link.");
@@ -191,7 +221,7 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       // Only one profile can hold the daily featured placement at a time.
       await env.DB.batch([
         env.DB.prepare("UPDATE spotlight_profiles SET featured_until=NULL WHERE featured_until > ? AND id<>?").bind(updated,seg[1]),
-        env.DB.prepare("UPDATE spotlight_profiles SET display_name=?,tagline=?,description=?,category=?,website_url=?,social_links=?,song_metadata=?,status=?,featured_until=?,updated_at=?,published_at=CASE WHEN ?='published' THEN COALESCE(published_at,?) ELSE published_at END WHERE id=?").bind(displayName,tagline,description,category,website,JSON.stringify(social),song ? JSON.stringify(song) : null,status,featured,updated,status,updated,seg[1])
+        env.DB.prepare("UPDATE spotlight_profiles SET display_name=?,tagline=?,description=?,category=?,contact_email=?,website_url=?,social_links=?,song_metadata=?,status=?,featured_until=?,updated_at=?,published_at=CASE WHEN ?='published' THEN COALESCE(published_at,?) ELSE published_at END WHERE id=?").bind(displayName,tagline,description,category,contactEmail,website,JSON.stringify(social),song ? JSON.stringify(song) : null,status,featured,updated,status,updated,seg[1])
       ]);
       const row = await env.DB.prepare("SELECT * FROM spotlight_profiles WHERE id=?").bind(seg[1]).first<any>();
       return json({ ok:true, profile:{...publicDto(row),contact_email:row.contact_email,status:row.status} });
