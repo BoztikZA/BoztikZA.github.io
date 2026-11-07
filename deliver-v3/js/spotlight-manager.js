@@ -63,7 +63,9 @@ async function load() {
       <div class="sp-admin-metric">
         <strong>${esc(p.display_name)}</strong>
         <span>${Number(p.views || 0).toLocaleString()} views</span>
+        <span>${Number(p.unique_views || 0).toLocaleString()} unique visitors</span>
         <span>${Number(p.outbound_clicks || 0).toLocaleString()} outbound clicks</span>
+        <span>${Number(p.featured_impressions || 0).toLocaleString()} featured impressions</span>
       </div>`).join("") : "<p class='cc-muted'>Engagement will appear when visitors start exploring profiles.</p>";
     feedback.textContent = "Spotlight data updated.";
   } catch (error) {
