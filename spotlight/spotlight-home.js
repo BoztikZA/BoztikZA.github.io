@@ -37,6 +37,7 @@
            data-profile-id="${escapeHtml(profile.id)}"
            data-featured="${profile.featured ? "1" : "0"}">
           <small>${profile.featured ? "Featured today" : escapeHtml(profile.category.replace(/-/g, " "))}</small>
+          ${profile.featured ? '<span class="hm-spotlight-countdown" data-countdown="${Number(profile.featured_until||0)}">Ends in <time>--:--:--</time></span>' : ""}
           <a class="hm-spotlight-card-link" href="spotlight/profile.html?slug=${encodeURIComponent(profile.slug)}">
             <strong>${escapeHtml(profile.display_name)}</strong>
             <p>${escapeHtml(profile.tagline)}</p>
@@ -70,7 +71,7 @@
         });
       });
 
-      const featuredCard = host.querySelector('[data-featured="1"]');
+      const updateCountdowns=()=>{const now=Math.floor(Date.now()/1000);host.querySelectorAll("[data-countdown]").forEach(el=>{const left=Math.max(0,Number(el.dataset.countdown||0)-now),t=el.querySelector("time");if(t){const h=Math.floor(left/3600),m=Math.floor(left%3600/60),s=left%60;t.textContent=[h,m,s].map(v=>String(v).padStart(2,"0")).join(":");}if(!left){el.remove();const card=el.closest(".hm-spotlight-card");if(card){card.dataset.featured="0";card.querySelector("small").textContent="Spotlight creator";}}});};updateCountdowns();setInterval(updateCountdowns,1000);\n\n      const featuredCard = host.querySelector('[data-featured="1"]');
       if (!featuredCard) return;
       if ("IntersectionObserver" in window) {
         const observer = new IntersectionObserver(entries => {
