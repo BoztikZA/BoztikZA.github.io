@@ -772,12 +772,15 @@ function runAnimationPreview(animationId, soundEnabled = false) {
   const play = () => {
     stopAnimationPreview();
     els.animationPreviewStage.innerHTML = "";
+    const demoWrap = document.createElement("div");
+    demoWrap.className = "deliver-reaction-preview-wrap";
     const demoButton = document.createElement("button");
     demoButton.type = "button";
     demoButton.className = "deliver-download-all";
     demoButton.textContent = "Download";
     demoButton.setAttribute("aria-label", "Preview download reaction");
-    els.animationPreviewStage.appendChild(demoButton);
+    demoWrap.appendChild(demoButton);
+    els.animationPreviewStage.appendChild(demoWrap);
     try {
       activeAnimationPreview = createDeliveryReactionController(
         els.animationPreviewStage,
