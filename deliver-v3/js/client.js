@@ -25,7 +25,7 @@ import {
   formatLabelFor
 } from "./fileinfo.js";
 
-import { createDeliveryAnimationController } from "./animations/controller.js";
+import { createDeliveryReactionController } from "./animations/reactions.js";
 import { applyDeliveryTheme } from "./animations/theme.js";
 import { initShare } from "./share.js";
 
@@ -61,10 +61,6 @@ const els = {
 
   animationLayer:
     $("deliver-animation-layer"),
-
-  animationReplay:
-    $("deliver-animation-replay"),
-
 
   title:
     $("deliver-project-name"),
@@ -164,6 +160,12 @@ const els = {
 
   supportDetails:
     $("deliver-support-details"),
+
+  supportNudge:
+    $("deliver-support-nudge"),
+
+  supportNudgeClose:
+    $("deliver-support-nudge-close"),
 
   /* Tip jar shown on the expired page (kept outside #deliver-active). */
   expiredSupport:
@@ -334,6 +336,25 @@ function wireSupportPopup() {
 
 wireSupportPopup();
 
+els.supportNudgeClose?.addEventListener("click", () => {
+  if (els.supportNudge) els.supportNudge.hidden = true;
+});
+
+function showFirstDownloadSupportNudge() {
+  if (isPhotoshopBattlesDelivery || !delivery?.id || !els.supportNudge || supportNudgeShownThisPage) return;
+  const key = "boztik-deliver-support-nudge:" + delivery.id;
+  try {
+    if (localStorage.getItem(key) === "1") return;
+    localStorage.setItem(key, "1");
+  } catch {
+    // The in-memory guard still prevents repeat prompts during this page view.
+  }
+  supportNudgeShownThisPage = true;
+  els.supportNudge.hidden = false;
+  els.supportNudge.classList.remove("is-visible");
+  requestAnimationFrame(() => els.supportNudge?.classList.add("is-visible"));
+}
+
 
 /* =========================================================
    DELIVERY STATE
@@ -341,6 +362,9 @@ wireSupportPopup();
 
 let delivery =
   null;
+
+let deliveryReactionController = null;
+let supportNudgeShownThisPage = false;
 
 let timer =
   null;
@@ -699,7 +723,13 @@ function state(
   }
 
   if (els.supportDetails) {
-    els.supportDetails.hidden = name !== "active" || isPhotoshopBattlesDelivery;
+    // Replace the oversized persistent support panel with a compact note
+    // that appears only after a successful download interaction.
+    els.supportDetails.hidden = true;
+  }
+
+  if (els.supportNudge && (name !== "active" || isPhotoshopBattlesDelivery)) {
+    els.supportNudge.hidden = true;
   }
 
   /* Expired page keeps the existing Ko-fi / PayPal tip jar (the link may have
@@ -3173,6 +3203,8 @@ async function download(
     button
   ) {
 
+    deliveryReactionController?.play(button);
+
     button.disabled =
       true;
 
@@ -3316,10 +3348,8 @@ async function download(
       file.file_name
     );
 
-    /*
-      Keep the delivery action focused. Support remains available below the
-      files, but never interrupts or competes with a client's download.
-    */
+    // Optional support appears only after the signed download is ready.
+    showFirstDownloadSupportNudge();
 
     return true;
 
@@ -4094,6 +4124,7 @@ async function init() {
                 multiple simultaneous downloads.
               */
 
+              deliveryReactionController?.play(els.all);
               let succeeded = 0;
 
               for (
@@ -4217,44 +4248,28 @@ async function init() {
     }
 
     /*
-      Premium Delivery Animations — entirely optional and backend-free.
-      The chosen animation (if any) travels as a query param on this
-      page's own URL, e.g. ?id=BZ-XXXX&anim=congratulations — nothing
-      is read from the delivery record itself. PhotoshopBattles pages
-      are a Reddit utility, not a personal delivery, so they never play
-      one even if a stray "anim" param is present.
-
-      Wrapped in its own try/catch, separate from the outer one: an
-      animation failing to initialize must never surface the full-page
-      error state or affect anything else on this page.
+      Delivery Experience 2.0: local reaction code is armed at page load,
+      but the effect only runs when the client first clicks Download.
+      Photoshop Battles receives the same Boztik-hosted experience on
+      this page; its separate direct image URL remains unchanged.
     */
     try {
-      if (!isPhotoshopBattlesDelivery) {
-        const animationId =
-          new URLSearchParams(location.search)
-            .get("anim")
-            ?.trim()
-            .toLowerCase();
-
-        // Persistent theme is applied independently of the transient
-        // animation canvas below: it is never removed by the animation
-        // controller's stop()/destroy()/replay path, and its own failure
-        // (or the animation's) can never affect the other.
-        try {
-          applyDeliveryTheme(animationId);
-        } catch (themeError) {
-          console.error("[Boztik Deliver] Theme failed to apply:", themeError);
-        }
-
-        const animationController =
-          createDeliveryAnimationController(
-            els.animationLayer,
-            els.animationReplay
-          );
-        animationController.start(animationId);
+      const params = new URLSearchParams(location.search);
+      const animationId = params.get("anim")?.trim().toLowerCase() || null;
+      const soundEnabled = params.get("sfx") === "1";
+      try {
+        applyDeliveryTheme(animationId);
+      } catch (themeError) {
+        console.error("[Boztik Deliver] Theme failed to apply:", themeError);
       }
+      deliveryReactionController = createDeliveryReactionController(
+        els.animationLayer,
+        animationId,
+        { soundEnabled }
+      );
+      deliveryReactionController.arm(document);
     } catch (animationError) {
-      console.error("[Boztik Deliver] Animation failed to initialize:", animationError);
+      console.error("[Boztik Deliver] Reaction engine failed to initialize:", animationError);
     }
 
 

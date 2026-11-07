@@ -9,9 +9,11 @@ export function deliveryId() { const values = crypto.getRandomValues(new Uint8Ar
 // chosen, it rides along as a query param on the link itself — the only
 // "storage" involved is the link the client is given. See
 // deliver-v3/js/animations/ (registry.js is the canonical id list).
-export const deliveryLink = (id, animationId = null) => {
-  const url = `${config.publicBaseUrl}?id=${encodeURIComponent(id)}`;
-  return animationId && animationId !== "none" ? `${url}&anim=${encodeURIComponent(animationId)}` : url;
+export const deliveryLink = (id, animationId = null, soundEnabled = false) => {
+  const url = new URL(`${config.publicBaseUrl}?id=${encodeURIComponent(id)}`);
+  if (animationId && animationId !== "none") url.searchParams.set("anim", animationId);
+  if (soundEnabled) url.searchParams.set("sfx", "1");
+  return url.toString();
 };
 export function toast(message, kind = "success") { let host = document.querySelector("#deliver-toast-container"); if (!host) { host = document.createElement("div"); host.id = "deliver-toast-container"; host.setAttribute("aria-live", "polite"); document.body.append(host); } const el = document.createElement("div"); el.className = `deliver-toast deliver-toast--${kind}`; el.textContent = message; host.append(el); requestAnimationFrame(() => el.classList.add("is-visible")); setTimeout(() => { el.classList.remove("is-visible"); setTimeout(() => el.remove(), 300); }, 4200); }
 export function safeFileName(name) { return name.normalize("NFKD").replace(/[^a-zA-Z0-9._-]/g, "_").replace(/_+/g, "_").slice(0, 120); }

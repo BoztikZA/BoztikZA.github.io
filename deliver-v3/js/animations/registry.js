@@ -92,7 +92,7 @@ const CATALOG = [
 
   {
     id: "congratulations", name: "Congratulations", label: "Confetti & Fireworks",
-    description: "A soft fall of celebratory confetti with a few restrained fireworks above the delivery.",
+    description: "A golden particle burst and celebratory message appear when the client starts the download.",
     duration: 5000, color: "#8eff3d",
     build(root) {
       const palette = ["#8eff3d", "#ffd166", "#5fe3c2", "#ff7b9c", "#ffffff"];
@@ -121,7 +121,7 @@ const CATALOG = [
 
   {
     id: "birthday", name: "Birthday", label: "Floating Celebration",
-    description: "A large, colourful spread of balloons and confetti drifts across the whole page.",
+    description: "A lively confetti burst radiates from the download control with a birthday message.",
     duration: 6200, color: "#ffd166",
     build(root) {
       const palette = ["#ff7b7b", "#5fe3c2", "#ffd166", "#a78bfa", "#8eff3d"];
@@ -186,7 +186,7 @@ const CATALOG = [
 
   {
     id: "wedding", name: "Wedding", label: "Rings & Hearts",
-    description: "Wedding rings and soft hearts drift gracefully across the page in champagne gold and blush, with a few elegant petals.",
+    description: "Two elegant gold wedding rings sweep around the download control with soft romantic sparkles.",
     duration: 6000, color: "#e8c468",
     build(root) {
       const petalColors = ["#f3d7de", "#fbeee2", "#e8c7cf"];
@@ -455,7 +455,7 @@ const CATALOG = [
 
   {
     id: "big-laugh", name: "Big Laugh", label: "Laughing Faces",
-    description: "A burst of original laughing faces tumbles and bounces across the whole screen — playful and energetic.",
+    description: "The download button makes a playful one-time dodge, with comic speed streaks and a cheeky reaction when clicked.",
     duration: 4200, color: "#ffcf5c",
     build(root) {
       const faceColor = "#ffcf5c";
@@ -486,7 +486,7 @@ const CATALOG = [
 
   {
     id: "halloween", name: "Halloween", label: "Floating Pumpkins",
-    description: "Glowing jack-o'-lanterns drift across the page in orange and deep purple — spooky, playful, and festive.",
+    description: "A haunted purple mist and subtle glitch effect rise from the download control when clicked.",
     duration: 6200, color: "#ff8c1a",
     build(root) {
       const palette = ["#ff8c1a", "#e8720f", "#c25e12"];

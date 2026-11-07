@@ -24,6 +24,7 @@
   <link rel="stylesheet" href="css/command-centre.css?v=4">
   <link rel="stylesheet" href="css/analytics.css?v=an6">
   <link rel="stylesheet" href="css/deliver-animations.css?v=1">
+  <link rel="stylesheet" href="css/deliver-experience.css?v=1">
 
   <style>
     /* =====================================================
@@ -918,15 +919,16 @@
                 </div>
 
                 <p class="dash-field-help">
-                  Plays once when the client opens the link. Purely
-                  decorative — it never changes what the delivery
-                  notes say.
+                  Plays when the client first clicks a download button.
+                  Choose a reaction, preview it, and optionally enable
+                  a locally generated sound effect. The download always
+                  works independently of the animation.
                 </p>
 
                 <div class="dash-field">
 
                   <label for="dash-animation">
-                    Animation
+                    Download reaction
                   </label>
 
                   <div class="dash-animation-row">
@@ -948,6 +950,11 @@
                   </div>
 
                 </div>
+
+                <label class="dash-animation-sound-option">
+                  <input type="checkbox" id="dash-animation-sound" name="animation_sound">
+                  <span><strong>Sound effects</strong><small>Optional audio, played only after the client clicks Download.</small></span>
+                </label>
 
               </div>
 
@@ -2243,15 +2250,15 @@
               </div>
 
               <p class="dash-field-help">
-                Remembered on this device only. Changing this has no
-                effect on a link you've already sent — copy the link
-                again afterward so the client sees it.
+                The reaction plays on the client's first download click.
+                Changing it affects newly copied links only; existing links
+                remain unchanged until you share the updated link.
               </p>
 
               <div class="dash-field">
 
                 <label for="dash-edit-animation">
-                  Animation
+                  Download reaction
                 </label>
 
                 <div class="dash-animation-row">
@@ -2273,6 +2280,11 @@
                 </div>
 
               </div>
+
+              <label class="dash-animation-sound-option">
+                <input type="checkbox" id="dash-edit-animation-sound" name="animation_sound">
+                <span><strong>Sound effects</strong><small>Optional audio, played only after the client clicks Download.</small></span>
+              </label>
 
             </div>
 
