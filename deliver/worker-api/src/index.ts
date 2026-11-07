@@ -3,6 +3,7 @@ import { handleAdmin } from "./routes/admin";
 import { handleAuth } from "./routes/auth";
 import { handlePublic } from "./routes/public";
 import { handlePromotionAdmin, handlePromotionPublic } from "./routes/promotions";
+import { handleSpotlightAdmin, handleSpotlightPublic } from "./routes/spotlight";
 import { corsHeaders, error, json } from "./routes/util";
 import { scheduled as runScheduled } from "./scheduled";
 
@@ -28,14 +29,18 @@ export default {
         const publicPath = path.slice(`${API}/public/`.length);
         response = publicPath.startsWith("promotions") || publicPath.startsWith("promotion-image")
           ? await handlePromotionPublic(request, publicPath.split("/").filter(Boolean), env)
-          : await handlePublic(request, publicPath, env, ctx);
+          : publicPath.startsWith("spotlight")
+            ? await handleSpotlightPublic(request, publicPath.slice("spotlight".length).replace(/^\\//, ""), env)
+            : await handlePublic(request, publicPath, env, ctx);
       } else if (path.startsWith(`${API}/auth/`)) {
         response = await handleAuth(request, path.slice(`${API}/auth/`.length), env);
       } else if (path.startsWith(`${API}/admin/`)) {
         const adminPath = path.slice(`${API}/admin/`.length);
         response = adminPath.startsWith("promotions")
           ? await handlePromotionAdmin(request, adminPath.split("/").filter(Boolean).slice(1), env)
-          : await handleAdmin(request, adminPath, env, ctx);
+          : adminPath.startsWith("spotlight")
+            ? await handleSpotlightAdmin(request, adminPath.slice("spotlight".length).replace(/^\\//, ""), env)
+            : await handleAdmin(request, adminPath, env, ctx);
       } else {
         response = error("Not found", 404);
       }
