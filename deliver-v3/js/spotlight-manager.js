@@ -156,7 +156,31 @@ editForm.addEventListener("submit", async event => {
   }
 });
 
-$("sp-admin-edit-cancel").addEventListener("click", () => { editForm.reset(); editForm.hidden = true; });
+
+$("sp-profile-image-upload").addEventListener("click", async () => {
+  const profileId = editForm.elements.id.value;
+  const file = $("sp-profile-image").files[0];
+  const status = $("sp-profile-image-status");
+  if (!profileId) { status.textContent = "Save or select a profile first."; return; }
+  if (!file) { status.textContent = "Choose an image first."; return; }
+  if (file.size > 2 * 1024 * 1024) { status.textContent = "Image must be 2 MB or smaller."; return; }
+  if (!["image/jpeg","image/png","image/webp"].includes(file.type)) { status.textContent = "Choose a JPG, PNG or WebP image."; return; }
+  const button = $("sp-profile-image-upload");
+  button.disabled = true; status.textContent = "Uploading and checking storage…";
+  try {
+    const response = await fetch(config.apiBaseUrl + "/api/admin/spotlight/profile/" + encodeURIComponent(profileId) + "/image", {
+      method: "PUT", headers: { ...authHeaders(), "Content-Type": file.type }, body: file
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "Image upload failed.");
+    status.textContent = "Image uploaded. It will appear publicly when the profile is published.";
+    const preview = $("sp-profile-image-preview"), url = URL.createObjectURL(file);
+    preview.innerHTML = '<img alt="Uploaded Spotlight profile image" src="' + url + '">';
+    await load();
+  } catch (error) { status.textContent = error.message; }
+  finally { button.disabled = false; }
+});
+\n$("sp-admin-edit-cancel").addEventListener("click", () => { editForm.reset(); editForm.hidden = true; });
 $("sp-admin-refresh").addEventListener("click", load);
 
 onAuthChange(session => {
