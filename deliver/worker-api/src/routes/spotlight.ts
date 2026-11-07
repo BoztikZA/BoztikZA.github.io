@@ -60,7 +60,7 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
       if (b.consent !== true) throw new HttpError(422, "consent_required", "Confirm that you own or are authorised to submit this profile.");
       const social: Record<string,string> = {};
       if (b.social_links && typeof b.social_links === "object" && !Array.isArray(b.social_links)) {
-        for (const key of ["youtube","twitch","instagram","tiktok","facebook","linkedin","x"]) {
+        for (const key of ["youtube","twitch","instagram","tiktok","facebook","linkedin","x","spotify"]) {
           const value = (b.social_links as Record<string,unknown>)[key];
           if (value) { const url = safeUrl(value); if (!url) throw new HttpError(422, "invalid_social_url", "Social links must use HTTPS."); if (url) social[key] = url; }
         }
@@ -70,9 +70,18 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
       await env.DB.prepare(
         "INSERT INTO spotlight_profiles (id,slug,display_name,tagline,description,category,contact_email,website_url,social_links,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,'pending',?,?)"
       ).bind(id,slug,displayName,tagline,description,category,email,website,JSON.stringify(social),timestamp,timestamp).run();
-      // Notify the owner asynchronously; email failure must never lose a submission.
-      ctx.waitUntil(notifySpotlightSubmission(env, { displayName, tagline, category, email, website, id }).catch(e => console.error("[spotlight] notification failed", e)));
-      return json({ ok: true, message: "Your profile has been submitted for review." }, 201);
+      // Attempt the owner notification before responding so the submitter sees
+      // whether the email alert was sent. The D1 submission is already safely
+      // stored, so provider failure never loses the profile.
+      const notificationSent = await notifySpotlightSubmission(env, { displayName, tagline, category, email, website, id })
+        .catch(e => { console.error("[spotlight] notification failed", e); return false; });
+      return json({
+        ok: true,
+        notification_sent: notificationSent,
+        message: notificationSent
+          ? "Your profile has been received. The Boztik team has also been notified."
+          : "Your profile has been safely received for review, but the email alert could not be sent. You do not need to submit it again."
+      }, 201);
     }
     if (request.method === "POST" && seg[0] === "event" && seg.length === 1) {
       checkPublicRate(request, env, "spotlight-event", 2);
@@ -161,9 +170,9 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
   });
 }
 
-async function notifySpotlightSubmission(env: Env, item: {displayName:string;tagline:string;category:string;email:string;website:string|null;id:string}): Promise<void> {
+async function notifySpotlightSubmission(env: Env, item: {displayName:string;tagline:string;category:string;email:string;website:string|null;id:string}): Promise<boolean> {
   const to=env.NOTIFY_EMAIL_TO?.trim(), from=env.NOTIFY_EMAIL_FROM?.trim(), url=env.EMAIL_PROVIDER_URL?.trim();
-  if(!to||!from||!url){console.warn("[spotlight] owner email notification is not configured; submission remains safely queued in D1.");return;}
+  if(!to||!from||!url){console.warn("[spotlight] owner email notification is not configured; submission remains safely queued in D1.");return false;}
   const subject="New Boztik Spotlight submission: "+item.displayName;
   const textBody=[
     "A new Spotlight profile is waiting for review.",
@@ -181,4 +190,5 @@ async function notifySpotlightSubmission(env: Env, item: {displayName:string;tag
   if(env.EMAIL_PROVIDER_KEY)headers.Authorization="Bearer "+env.EMAIL_PROVIDER_KEY;
   const response=await fetch(url,{method:"POST",headers,body:JSON.stringify({from,to,subject,text:textBody})});
   if(!response.ok)throw new Error("Email provider returned "+response.status);
+  return true;
 }
