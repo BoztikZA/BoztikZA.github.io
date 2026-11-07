@@ -24,7 +24,8 @@ function spotifyTrack(value: unknown): { id: string; url: string } | null {
     const u = new URL(value.trim());
     if (u.protocol !== "https:" || !["open.spotify.com", "www.open.spotify.com"].includes(u.hostname)) return null;
     const match = u.pathname.match(/^\/track\/([A-Za-z0-9]{22})\/?$/);
-    return match ? { id: match[1], url: "https://open.spotify.com/track/" + match[1] } : null;
+    const trackId = match?.[1];
+    return trackId ? { id: trackId, url: "https://open.spotify.com/track/" + trackId } : null;
   } catch { return null; }
 }
 async function spotifyMetadata(track: { id: string; url: string }): Promise<{ id: string; url: string; title: string; artwork: string | null }> {
@@ -85,7 +86,6 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
       if (displayName.length < 2 || tagline.length < 8 || description.length < 30) throw new HttpError(422, "invalid_profile", "Please provide a name, a clear tagline and a description of at least 30 characters.");
       if (!CATEGORIES.has(category)) throw new HttpError(422, "invalid_category", "Choose a valid category.");
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new HttpError(422, "invalid_email", "Enter a valid contact email.");
-      if (b.contact_email !== undefined && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail)) throw new HttpError(422, "invalid_email", "Enter a valid contact email.");
       if (b.website_url && !website) throw new HttpError(422, "invalid_url", "Website links must use HTTPS.");
       if (b.consent !== true) throw new HttpError(422, "consent_required", "Confirm that you own or are authorised to submit this profile.");
       const social: Record<string,string> = {};
@@ -188,7 +188,7 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       const rows = await env.DB.prepare("SELECT * FROM spotlight_profiles ORDER BY CASE status WHEN 'pending' THEN 0 WHEN 'published' THEN 1 ELSE 2 END, created_at DESC LIMIT 300").all<any>();
       return json({ ok: true, profiles: (rows.results || []).map((r:any) => ({ ...publicDto(r), contact_email:r.contact_email, status:r.status })) });
     }
-    if (seg.length === 3 && seg[0] === "profile" && seg[2] === "image" && request.method === "PUT") return uploadSpotlightImage(request,env,seg[1]);
+    if (seg.length === 3 && seg[0] === "profile" && seg[2] === "image" && request.method === "PUT") return uploadSpotlightImage(request,env,seg[1]!);
     if (seg.length === 3 && seg[0] === "profile" && seg[2] === "image" && request.method === "GET") {
       const row=await env.DB.prepare("SELECT image_key,image_content_type FROM spotlight_profiles WHERE id=?").bind(seg[1]).first<any>();
       if(!row?.image_key)return error("Image not found",404);
@@ -212,6 +212,7 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       const song = b.song_url === undefined ? (old.song_metadata ? JSON.parse(old.song_metadata) : null) : (songTrack ? await spotifyMetadata(songTrack) : null);
       const social = b.social_links === undefined ? JSON.parse(old.social_links || "{}") : b.social_links;
       if (displayName.length < 2 || tagline.length < 8 || description.length < 30 || !CATEGORIES.has(category)) throw new HttpError(422, "invalid_profile", "Check the name, tagline, description and category.");
+      if (b.contact_email !== undefined && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail)) throw new HttpError(422, "invalid_email", "Enter a valid contact email.");
       if (b.website_url && !website) throw new HttpError(422, "invalid_url", "Website links must use HTTPS.");
       if (!social || typeof social !== "object" || Array.isArray(social)) throw new HttpError(422, "invalid_social_links", "Social links must be an object.");
       for (const [key,value] of Object.entries(social)) { if (!["youtube","twitch","instagram","tiktok","facebook","linkedin","x","spotify"].includes(key) || !safeUrl(value)) throw new HttpError(422, "invalid_social_url", "Social links must use HTTPS."); }
