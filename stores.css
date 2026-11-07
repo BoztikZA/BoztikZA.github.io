@@ -86,3 +86,9 @@
     radial-gradient(ellipse at 22% 18%, rgba(255,255,255,.035), transparent 42%),
     radial-gradient(ellipse at 78% 82%, rgba(142,255,61,.035), transparent 48%);
 }
+
+/* Large storefront version of the Boztik Stores mark already used on the homepage. */
+.stores-mark--hero{width:max-content;max-width:100%;gap:13px;padding:15px 19px 17px;margin:0 0 27px;border-radius:7px;box-shadow:inset 0 0 24px rgba(142,255,61,.08),0 0 0 1px rgba(142,255,61,.06),0 0 34px rgba(142,255,61,.13)}
+.stores-mark--hero span{font-size:clamp(2rem,4.7vw,3.5rem);letter-spacing:-.1em}
+.stores-mark--hero i{font-size:.72rem;letter-spacing:.23em}
+@media(max-width:680px){.stores-mark--hero{padding:13px 15px 15px;margin-bottom:21px}.stores-mark--hero span{font-size:2.25rem}}
