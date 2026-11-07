@@ -22,7 +22,7 @@
   <link rel="stylesheet" href="../styles-premium.css?v=20261106a">
   <link rel="stylesheet" href="css/deliver.css?v=13">
   <link rel="stylesheet" href="css/command-centre.css?v=4">
-  <link rel="stylesheet" href="css/analytics.css?v=an5">
+  <link rel="stylesheet" href="css/analytics.css?v=an6">
   <link rel="stylesheet" href="css/deliver-animations.css?v=1">
 
   <style>
@@ -1626,7 +1626,7 @@
           <article class="cc-card cc-report" id="cc-report-panel" aria-labelledby="cc-report-title" hidden>
             <header class="cc-card-head">
               <div><span class="cc-eyebrow">Plain text · ready for ChatGPT</span><h2 id="cc-report-title">Traffic analysis report</h2>
-                <p class="cc-card-desc">Includes page performance, visitor journeys, traffic sources, external store clicks, Deliver activity and data limitations. Copy it into ChatGPT for a traffic analysis.</p></div>
+                <p class="cc-card-desc">Includes page performance, traffic sources, tracked store-link clicks, Deliver activity and data limitations. Copy it into ChatGPT for a traffic analysis.</p></div>
               <div class="cc-report-actions">
                 <button type="button" class="cc-btn cc-btn--primary" id="cc-report-copy">Copy Report</button>
                 <button type="button" class="cc-btn" id="cc-report-close">Close</button>
@@ -1665,20 +1665,8 @@
 
           <article class="cc-card an-grid-half" aria-labelledby="cc-site-pages-title">
             <header class="cc-card-head"><div><span class="cc-eyebrow">4 · Public website</span><h2 id="cc-site-pages-title">Page performance</h2>
-              <p class="cc-card-desc">Which pages attract attention, where visits begin and end, and how complete the tracking is.</p></div></header>
+              <p class="cc-card-desc">Which pages attract attention, ranked by views, with period comparisons and entrances or exits where available.</p></div></header>
             <div id="cc-site-pages"><p class="cc-muted">Loading…</p></div>
-          </article>
-
-          <article class="cc-card cc-flow-card an-grid-half" aria-labelledby="cc-visitor-flow-title">
-            <header class="cc-card-head"><div><span class="cc-eyebrow">5 · Anonymous sessions</span><h2 id="cc-visitor-flow-title">Visitor flow</h2>
-              <p class="cc-card-desc">See where recorded visits start and finish, the most common page-to-page steps, and complete journeys where session data is available.</p></div></header>
-            <div id="cc-visitor-flow" aria-live="polite"><p class="cc-muted">Loading visitor flow…</p></div>
-          </article>
-
-          <article class="cc-card an-grid-half" aria-labelledby="cc-store-clicks-title">
-            <header class="cc-card-head"><div><span class="cc-eyebrow">6 · Boztik Stores</span><h2 id="cc-store-clicks-title">Store performance</h2>
-              <p class="cc-card-desc">Store page views and clicks to the configured storefronts. Clicks are not purchases.</p></div></header>
-            <div id="cc-store-clicks" aria-live="polite"><p class="cc-muted">Loading Store activity…</p></div>
           </article>
 
           <article class="cc-card an-grid-half" aria-labelledby="cc-health-title">
