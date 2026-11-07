@@ -106,7 +106,8 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       const old = await env.DB.prepare("SELECT * FROM spotlight_profiles WHERE id=?").bind(seg[1]).first<any>();
       if (!old) return error("Profile not found",404);
       const status = ["pending","published","archived"].includes(String(b.status)) ? String(b.status) : old.status;
-      const featured = b.featured === true ? now()+86400 : b.featured === false ? null : old.featured_until;
+      if (b.featured === true && status !== "published") throw new HttpError(422, "feature_requires_published", "Publish the profile before featuring it.");
+      const featured = status !== "published" ? null : b.featured === true ? now()+86400 : b.featured === false ? null : old.featured_until;
       const updated = now();
       // Only one profile can hold the daily featured placement at a time.
       if (b.featured === true) {
