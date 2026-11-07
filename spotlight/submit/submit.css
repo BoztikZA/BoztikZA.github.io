@@ -2,3 +2,13 @@
 #sp-submit-status{margin:14px 0 0;line-height:1.6;font-size:.9rem;color:#c4d1c8}#sp-submit-status[data-delivery="sent"]{color:#8eff3d}#sp-submit-status[data-delivery="not-sent"]{color:#ffd28a}
 
 .sp-email-submit{display:grid;gap:20px}.sp-email-submit-note{padding:18px;border:1px solid rgba(255,255,255,.1);border-radius:10px;background:rgba(255,255,255,.025)}.sp-email-submit-note>strong{display:block;color:#f2f7f3;font-size:.9rem;margin-bottom:10px}.sp-email-submit-note ul{margin:0;padding-left:19px;color:#b5c2ba;font-size:.8rem;line-height:1.9}.sp-email-submit-button{width:100%;justify-content:center;text-align:center;text-decoration:none;font:700 .85rem Inter}.sp-email-submit-help,.sp-email-submit-privacy{margin:0;color:#9aa79f;font-size:.76rem;line-height:1.7}.sp-email-submit-help a,.sp-email-submit-privacy a{color:var(--sp-green);text-underline-offset:3px}.sp-email-submit-privacy{padding-top:15px;border-top:1px solid rgba(255,255,255,.09)}.sp-email-submit-button:focus-visible{outline:3px solid rgba(142,255,61,.55);outline-offset:3px}
+
+/* Clearer email-first submission layout */
+.sp-email-submit{gap:22px}
+.sp-email-submit-note{padding:22px 24px;background:linear-gradient(145deg,rgba(142,255,61,.045),rgba(255,255,255,.018));border-color:rgba(142,255,61,.18)}
+.sp-email-submit-note>strong{font:700 1rem "Plus Jakarta Sans",Inter,sans-serif;letter-spacing:.01em;margin-bottom:13px}
+.sp-email-submit-note ul{padding-left:20px;line-height:2}
+.sp-email-submit-button{min-height:54px;letter-spacing:.01em}
+.sp-email-submit-help{padding:0 2px;line-height:1.85}
+.sp-email-submit-privacy{padding-top:18px;line-height:1.85}
+@media(min-width:601px){.sp-form-panel{padding:36px}.sp-form-head p{line-height:1.8;margin-bottom:30px}}

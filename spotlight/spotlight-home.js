@@ -30,16 +30,45 @@
       const profiles = (data.profiles || []).slice(0, 3);
       if (!profiles.length) return;
 
-      host.innerHTML = profiles.map(profile => `
-        <a class="hm-spotlight-card"
-           href="spotlight/profile.html?slug=${encodeURIComponent(profile.slug)}"
+      host.innerHTML = profiles.map(profile => {
+        const profileUrl = new URL("spotlight/profile.html?slug=" + encodeURIComponent(profile.slug), location.href).href;
+        return `
+        <article class="hm-spotlight-card"
            data-profile-id="${escapeHtml(profile.id)}"
            data-featured="${profile.featured ? "1" : "0"}">
           <small>${profile.featured ? "Featured today" : escapeHtml(profile.category.replace(/-/g, " "))}</small>
-          <strong>${escapeHtml(profile.display_name)}</strong>
-          <p>${escapeHtml(profile.tagline)}</p>
-          <b>Discover their work ↗</b>
-        </a>`).join("");
+          <a class="hm-spotlight-card-link" href="spotlight/profile.html?slug=${encodeURIComponent(profile.slug)}">
+            <strong>${escapeHtml(profile.display_name)}</strong>
+            <p>${escapeHtml(profile.tagline)}</p>
+            <b>Discover their work ↗</b>
+          </a>
+          <button class="hm-spotlight-share" type="button"
+            data-share-url="${escapeHtml(profileUrl)}"
+            data-share-title="${escapeHtml(profile.display_name)}">Share profile ↗</button>
+          <span class="hm-spotlight-share-status" role="status" aria-live="polite"></span>
+        </article>`;
+      }).join("");
+
+      host.querySelectorAll(".hm-spotlight-share").forEach(button => {
+        button.addEventListener("click", async () => {
+          const url = button.dataset.shareUrl;
+          const title = button.dataset.shareTitle;
+          const status = button.parentElement.querySelector(".hm-spotlight-share-status");
+          try {
+            if (navigator.share) {
+              await navigator.share({ title: title + " — Boztik Spotlight", text: "Discover " + title + " on Boztik Spotlight.", url });
+              status.textContent = "Thanks for sharing.";
+            } else if (navigator.clipboard?.writeText) {
+              await navigator.clipboard.writeText(url);
+              status.textContent = "Profile link copied.";
+            } else {
+              status.textContent = "Copy this link: " + url;
+            }
+          } catch (error) {
+            if (error?.name !== "AbortError") status.textContent = "Copy this link: " + url;
+          }
+        });
+      });
 
       const featuredCard = host.querySelector('[data-featured="1"]');
       if (!featuredCard) return;
