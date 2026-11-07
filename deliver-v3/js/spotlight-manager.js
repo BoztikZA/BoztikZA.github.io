@@ -83,6 +83,17 @@ function openEditor(profile) {
   editForm.elements.song_url.value = profile.song?.url || "";
   for (const key of ["youtube", "twitch", "instagram", "tiktok", "facebook", "linkedin", "x", "spotify"]) editForm.elements[key].value = profile.social_links?.[key] || "";
   editForm.hidden = false;
+  const preview = $("sp-profile-image-preview");
+  preview.textContent = "Loading image…";
+  fetch(config.apiBaseUrl + "/api/admin/spotlight/profile/" + encodeURIComponent(profile.id) + "/image", { headers: authHeaders() })
+    .then(async response => {
+      if (!response.ok) throw new Error("No image uploaded");
+      const blob = await response.blob();
+      preview.innerHTML = '<img alt="Current Spotlight profile image" src="' + URL.createObjectURL(blob) + '">';
+    })
+    .catch(() => { preview.textContent = "No image uploaded"; });
+  $("sp-profile-image").value = "";
+  $("sp-profile-image-status").textContent = "";
   editForm.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
