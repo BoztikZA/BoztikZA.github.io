@@ -19,3 +19,5 @@
 .hm-spotlight-share-status{min-height:1em;margin-top:7px;color:#a5b1aa;font-size:.68rem;overflow-wrap:anywhere}
 
 .hm-spotlight-countdown{margin:4px 0 10px;font-size:.68rem}
+
+.hm-spotlight-countdown{display:inline-flex;align-items:center;gap:6px;margin:4px 0 8px;color:#b9d9a7;font:700 .68rem/1.4 Inter,system-ui,sans-serif}.hm-spotlight-countdown time{font-variant-numeric:tabular-nums;color:#8eff3d;letter-spacing:.08em}
