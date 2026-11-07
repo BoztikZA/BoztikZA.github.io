@@ -246,6 +246,18 @@ export function createDeliveryReactionController(layer, animationId, options = {
   let activeVisual = null;
   let captionTimer = 0;
 
+  function arm(root = document) {
+    if (id !== "big-laugh" || !root?.addEventListener) return;
+    root.addEventListener("pointerover", event => {
+      if (event.pointerType === "touch") return;
+      const button = event.target?.closest?.("#deliver-download-all, [data-download]");
+      if (!button || button.dataset.boztikDodgeUsed === "1" || button.disabled) return;
+      button.dataset.boztikDodgeUsed = "1";
+      button.classList.add("deliver-reaction-dodge");
+      window.setTimeout(() => button.classList.remove("deliver-reaction-dodge"), 720);
+    }, { passive: true });
+  }
+
   function play(button) {
     if (played) return false;
     played = true;
@@ -285,6 +297,7 @@ export function createDeliveryReactionController(layer, animationId, options = {
   }
 
   return {
+    arm,
     play,
     destroy() {
       window.clearTimeout(captionTimer);
