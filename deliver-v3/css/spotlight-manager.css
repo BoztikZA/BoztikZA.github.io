@@ -10,3 +10,6 @@
 @media(max-width:600px){.sp-admin-edit-grid{grid-template-columns:1fr}.sp-admin-edit-wide{grid-column:auto}}
 
 .sp-image-editor{display:grid;gap:12px;padding:16px;border:1px solid rgba(142,255,61,.2);border-radius:10px;background:rgba(142,255,61,.035)}.sp-profile-image-preview{width:112px;height:112px;display:grid;place-items:center;overflow:hidden;border:1px dashed rgba(142,255,61,.35);border-radius:12px;color:#9ba8a2;font-size:.75rem;text-align:center}.sp-profile-image-preview img{width:100%;height:100%;object-fit:cover}.sp-image-editor small{display:block;color:#9ba8a2;margin-top:5px}.sp-image-editor [role=status]{font-size:.8rem;color:#8eff3d}
+
+.sp-admin-toolbar{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+@media(max-width:600px){.sp-admin-toolbar{width:100%;justify-content:flex-start}.sp-admin-toolbar .cc-btn{flex:1}}
