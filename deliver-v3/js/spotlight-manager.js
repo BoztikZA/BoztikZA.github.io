@@ -40,7 +40,7 @@ function render() {
       </div>
       <div class="sp-admin-actions">
         <button class="cc-btn" data-action="edit" data-id="${esc(p.id)}">Edit profile</button>
-        ${p.status === "pending" ? '<button class="cc-btn sp-approve" data-action="publish">Approve &amp; publish</button>'.replace('data-action="publish"', `data-action="publish" data-id="${esc(p.id)}`) : p.status === "published" ? `<button class="cc-btn" data-action="archive" data-id="${esc(p.id)}">Archive</button>` : `<button class="cc-btn" data-action="publish" data-id="${esc(p.id)}">Republish</button>`}
+        ${p.status === "pending" ? `<button class="cc-btn sp-approve" data-action="publish" data-id="${esc(p.id)}">Approve &amp; publish</button>` : p.status === "published" ? `<button class="cc-btn" data-action="archive" data-id="${esc(p.id)}">Archive</button>` : `<button class="cc-btn" data-action="publish" data-id="${esc(p.id)}">Republish</button>`}
         ${p.status === "published" ? (p.featured ? `<button class="cc-btn" data-action="unfeature" data-id="${esc(p.id)}">Remove feature</button>` : `<button class="cc-btn" data-action="feature" data-id="${esc(p.id)}">Feature 24h</button>`) : ""}
         <button class="cc-btn sp-delete" data-action="delete" data-id="${esc(p.id)}">Delete</button>
       </div>
