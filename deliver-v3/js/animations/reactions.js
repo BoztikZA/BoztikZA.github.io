@@ -89,6 +89,7 @@ function createCinematicCanvas(layer, button, id) {
   const duration = id === "halloween" ? 2700 : 2250;
   const palette = PALETTES[id] || PALETTES.welcome;
   const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches === true;
+  if (reduced) { canvas.remove(); return { destroy() {} }; }
   let raf = 0;
   let started = 0;
   let width = 0;
