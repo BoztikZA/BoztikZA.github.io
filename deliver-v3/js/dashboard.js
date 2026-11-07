@@ -113,6 +113,7 @@ const els = {
   battleExpiryNote: $("dash-battle-expiry-note"),
   animationSection: $("dash-animation-section"),
   animation: $("dash-animation"),
+  animationSound: $("dash-animation-sound"),
   animationPreviewBtn: $("dash-animation-preview"),
   createSubmit: $("dash-create-submit"),
   createSubmitLabel: $("dash-create-submit-label"),
@@ -178,6 +179,7 @@ const els = {
   editNotes: $("dash-edit-notes"),
   editAnimationSection: $("dash-edit-animation-section"),
   editAnimation: $("dash-edit-animation"),
+  editAnimationSound: $("dash-edit-animation-sound"),
   editAnimationPreviewBtn: $("dash-edit-animation-preview"),
 
   editRedditSourceUrl: $("dash-edit-reddit-source-url"),
@@ -688,6 +690,7 @@ function setupTabs() {
    choice; it is never read by the public delivery page.
 ========================================================= */
 const ANIM_LOCAL_STORE_KEY = "boztik-deliver-local-animations-v1";
+const ANIM_SOUND_STORE_KEY = "boztik-deliver-local-animation-sounds-v1";
 
 function readAnimStore() {
   try { return JSON.parse(localStorage.getItem(ANIM_LOCAL_STORE_KEY) || "{}"); }
@@ -701,6 +704,17 @@ function setLocalAnimation(deliveryId, animationId) {
   if (animationId) store[deliveryId] = animationId; else delete store[deliveryId];
   try { localStorage.setItem(ANIM_LOCAL_STORE_KEY, JSON.stringify(store)); }
   catch (error) { console.error("[Boztik Deliver] Could not remember the chosen animation locally:", error); }
+}
+function readAnimSoundStore() {
+  try { return JSON.parse(localStorage.getItem(ANIM_SOUND_STORE_KEY) || "{}"); }
+  catch { return {}; }
+}
+function getLocalSound(deliveryId) { return readAnimSoundStore()[deliveryId] === true; }
+function setLocalSound(deliveryId, enabled) {
+  const store = readAnimSoundStore();
+  if (enabled) store[deliveryId] = true; else delete store[deliveryId];
+  try { localStorage.setItem(ANIM_SOUND_STORE_KEY, JSON.stringify(store)); }
+  catch (error) { console.error("[Boztik Deliver] Could not remember the sound preference locally:", error); }
 }
 
 /** Populates a <select> from the single animation catalog — the Command
@@ -1127,7 +1141,8 @@ async function handleCreateSubmit(event) {
   const id = deliveryId();
   // Explicit opt-in only — never inferred from notes — and never sent to
   // the Worker: the animation travels with the delivery link itself.
-  const animationId = isBattleMode ? null : (els.animation?.value && els.animation.value !== "none" ? els.animation.value : null);
+  const animationId = els.animation?.value && els.animation.value !== "none" ? els.animation.value : null;
+  const soundEnabled = Boolean(els.animationSound?.checked);
 
   const metadata = {
     id,
@@ -1173,7 +1188,8 @@ async function handleCreateSubmit(event) {
       file_size: selectedFiles.reduce((total, file) => total + file.size, 0)
     };
     setLocalAnimation(created.id, animationId);
-    showSuccessModal(created, animationId);
+    setLocalSound(created.id, soundEnabled);
+    showSuccessModal(created, animationId, soundEnabled);
 
     resetCreateForm();
     await loadDeliveries();
@@ -1204,8 +1220,8 @@ function setupCreateForm() {
    SUCCESS MODAL
 ========================================================= */
 
-function showSuccessModal(delivery, animationId = null) {
-  const url = deliveryLink(delivery.id, animationId);
+function showSuccessModal(delivery, animationId = null, soundEnabled = false) {
+  const url = deliveryLink(delivery.id, animationId, soundEnabled);
   const battle = isBattle(delivery);
 
   if (els.successMessage) {
@@ -1324,7 +1340,7 @@ async function refreshInsights() {
 async function handleAttentionAction(kind, id) {
   const delivery = id ? deliveries.find(d => d.id === id) : null;
   if (kind === "extend" && delivery) { switchTab("deliveries"); openEditModal(delivery, true); return; }
-  if (kind === "copy" && delivery) { await copyToClipboard(deliveryLink(delivery.id, getLocalAnimation(delivery.id)), "Delivery link"); return; }
+  if (kind === "copy" && delivery) { await copyToClipboard(deliveryLink(delivery.id, getLocalAnimation(delivery.id), getLocalSound(delivery.id)), "Delivery link"); return; }
   if (kind === "deliveries") { if (els.statusFilter) els.statusFilter.value = "active"; if (els.sortSelect) els.sortSelect.value = "expires-asc"; switchTab("deliveries"); renderDeliveryList(); return; }
   if (kind === "cleanup" || kind === "reconcile") { await runUsageAction(kind); return; }
   if (kind === "refresh") { await loadDeliveries(); }
@@ -1571,6 +1587,7 @@ function renderDeliveryCard(delivery) {
     try {
       const newId = await duplicateDelivery(delivery);
       setLocalAnimation(newId, getLocalAnimation(delivery.id));
+      setLocalSound(newId, getLocalSound(delivery.id));
       showToast("Delivery duplicated.");
       await loadDeliveries();
     } catch (error) {
@@ -1619,8 +1636,7 @@ function setEditSaving(saving) {
 function applyEditSourceFieldVisibility() {
   const battleMode = els.editSource?.value === "photoshop_battles";
   if (els.editRedditFields) els.editRedditFields.hidden = !battleMode;
-  if (els.editAnimationSection) els.editAnimationSection.hidden = battleMode;
-  if (battleMode && els.editAnimation) els.editAnimation.value = "none";
+  if (els.editAnimationSection) els.editAnimationSection.hidden = false;
 }
 
 function toDateTimeLocal(value) {
@@ -1647,6 +1663,7 @@ function openEditModal(delivery, extensionMode = false) {
   if (els.editRedditUrl) els.editRedditUrl.value = delivery.source_meta?.redditUrl || "";
   if (els.editNotes) els.editNotes.value = delivery.notes || "";
   if (els.editAnimation) els.editAnimation.value = getLocalAnimation(delivery.id) || "none";
+  if (els.editAnimationSound) els.editAnimationSound.checked = getLocalSound(delivery.id);
   if (els.editAnimationPreviewBtn) els.editAnimationPreviewBtn.disabled = (els.editAnimation?.value || "none") === "none";
 
   editRedditSource.load(delivery.reddit_source || null);
@@ -1721,10 +1738,9 @@ async function handleEditSubmit(event) {
   // that never had one attached.
   updates.reddit_source = editRedditSource.get();
 
-  const animationId = uiSource === "photoshop_battles"
-    ? null
-    : (els.editAnimation?.value && els.editAnimation.value !== "none" ? els.editAnimation.value : null);
-  const animationChanged = animationId !== getLocalAnimation(editingId);
+  const animationId = els.editAnimation?.value && els.editAnimation.value !== "none" ? els.editAnimation.value : null;
+  const soundEnabled = Boolean(els.editAnimationSound?.checked);
+  const animationChanged = animationId !== getLocalAnimation(editingId) || soundEnabled !== getLocalSound(editingId);
 
   setEditSaving(true);
 
@@ -1735,6 +1751,7 @@ async function handleEditSubmit(event) {
     if (index !== -1) deliveries[index] = { ...deliveries[index], ...updated };
 
     setLocalAnimation(editingId, animationId);
+    setLocalSound(editingId, soundEnabled);
 
     renderOverview();
     renderDeliveryList();
