@@ -23,6 +23,7 @@
   <link rel="stylesheet" href="css/deliver.css?v=13">
   <link rel="stylesheet" href="css/command-centre.css?v=4">
   <link rel="stylesheet" href="css/analytics.css?v=an6">
+  <link rel="stylesheet" href="css/spotlight-manager.css?v=1">
   <link rel="stylesheet" href="css/deliver-animations.css?v=1">
   <link rel="stylesheet" href="css/deliver-experience.css?v=1">
 
@@ -318,6 +319,9 @@
           <span class="dash-tab-icon">✦</span><span><strong>Store Promotions</strong><small>Publish &amp; feature</small></span>
         </button>
 
+        <button type="button" class="dash-tab" id="tab-spotlight" role="tab" aria-selected="false" aria-controls="panel-spotlight" tabindex="-1" data-tab="spotlight">
+          <span class="dash-tab-icon">✳</span><span><strong>Spotlight</strong><small>Review &amp; feature creators</small></span>
+        </button>
         <button type="button" class="dash-tab" id="tab-analytics" role="tab" aria-selected="false" aria-controls="panel-analytics" tabindex="-1" data-tab="analytics">
           <span class="dash-tab-icon"><svg class="cc-i" aria-hidden="true" focusable="false"><use href="#i-chart"/></svg></span>
           <span><strong>Analytics</strong><small>Traffic & performance</small></span>
@@ -334,6 +338,18 @@
         <div class="dash-section-heading"><div><span class="dash-section-eyebrow">Boztik Stores</span><h2>Store Promotions</h2><p>Draft, publish, reorder and feature store releases — including Ko-fi wallpapers — on the homepage New Releases.</p></div></div>
         <article class="dash-panel promotion-manager"><form id="promotion-form"><input id="promotion-id" type="hidden"><div class="promotion-form-grid"><label>Store<select id="promotion-store" required><option value="redbubble">Redbubble</option><option value="teepublic">TeePublic</option><option value="kofi">Ko-fi Wallpapers</option></select></label><label>Title<input id="promotion-title" maxlength="100" required></label><label class="promotion-wide">Description<textarea id="promotion-description" maxlength="600" rows="3"></textarea></label><label>CTA label<input id="promotion-cta" maxlength="48" value="Shop Redbubble" required></label><label>Destination URL<input id="promotion-destination" type="url" required></label><label>Status<select id="promotion-status"><option value="draft">Draft</option><option value="published">Published</option><option value="archived">Archived</option></select></label><label id="promotion-feature-wrap"><input id="promotion-feature" type="checkbox"> Include in homepage New Releases</label><label class="promotion-wide">Image <input id="promotion-image" type="file" accept="image/jpeg,image/png,image/webp"><small>JPG, PNG or WebP, up to 12 MB. Upload after saving the record.</small></label></div><div class="promotion-actions"><button class="dash-btn dash-btn-primary" type="submit">Save promotion</button><button class="dash-btn" id="promotion-reset" type="button">New promotion</button><span id="promotion-feedback" role="status" aria-live="polite"></span></div></form></article>
         <article class="dash-panel"><div class="promotion-toolbar"><label>Show <select id="promotion-filter"><option value="">All Promotions</option><option value="redbubble">Redbubble</option><option value="teepublic">TeePublic</option><option value="kofi">Ko-fi Wallpapers</option></select></label><button class="dash-btn" id="promotion-refresh" type="button">Refresh</button></div><div id="promotion-list" class="promotion-list" aria-live="polite">Sign in to load promotions.</div></article>
+      </section>
+
+      <section id="panel-spotlight" class="dash-tab-panel" role="tabpanel" aria-labelledby="tab-spotlight" data-panel="spotlight" hidden>
+        <div class="dash-section-heading"><div><span class="dash-section-eyebrow">Boztik discovery network</span><h2>Spotlight Manager</h2><p>Review submissions, publish approved profiles and manage the daily featured placement. Directory listings remain published until you archive or remove them.</p></div></div>
+        <div class="cc-kpis sp-admin-kpis">
+          <article class="cc-kpi"><header>Pending review</header><strong class="cc-kpi-val" id="sp-admin-pending">—</strong></article>
+          <article class="cc-kpi"><header>Published profiles</header><strong class="cc-kpi-val" id="sp-admin-published">—</strong></article>
+          <article class="cc-kpi"><header>Featured today</header><strong class="cc-kpi-val" id="sp-admin-featured">—</strong></article>
+          <article class="cc-kpi"><header>Profile views · all time</header><strong class="cc-kpi-val" id="sp-admin-views">—</strong></article>
+        </div>
+        <article class="cc-card"><header class="cc-card-head"><div><span class="cc-eyebrow">Moderation queue</span><h3>Submissions &amp; profiles</h3><p class="cc-card-desc">Publishing makes a profile visible in the public directory. Featuring it gives it the 24-hour homepage and directory highlight.</p></div><button class="cc-btn" id="sp-admin-refresh" type="button">Refresh</button></header><div id="sp-admin-feedback" role="status" aria-live="polite" class="cc-muted">Loading Spotlight profiles…</div><div id="sp-admin-list" class="sp-admin-list"></div></article>
+        <article class="cc-card"><header class="cc-card-head"><div><span class="cc-eyebrow">Performance</span><h3>Profile engagement</h3><p class="cc-card-desc">Aggregated profile views and outbound clicks. These are separate from website page views and Deliver analytics.</p></div></header><div id="sp-admin-analytics" class="sp-admin-analytics">Loading engagement…</div></article>
       </section>
 
       <section id="panel-overview" class="dash-tab-panel is-active" role="tabpanel" aria-labelledby="tab-overview" data-panel="overview">
@@ -2609,6 +2625,7 @@
     src="js/dashboard.js?v=cf-5"
   ></script>
   <script type="module" src="js/promotions.js"></script>
+  <script type="module" src="js/spotlight-manager.js?v=1"></script>
 
 </body>
 </html>
