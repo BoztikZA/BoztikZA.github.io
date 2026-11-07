@@ -4271,6 +4271,7 @@ async function init() {
         animationId,
         { soundEnabled }
       );
+      deliveryReactionController.arm(document);
     } catch (animationError) {
       console.error("[Boztik Deliver] Reaction engine failed to initialize:", animationError);
     }
