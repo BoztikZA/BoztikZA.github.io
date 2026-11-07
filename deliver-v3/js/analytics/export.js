@@ -93,19 +93,17 @@ export function buildFullReport(model, { generatedAt = new Date() } = {}) {
     items.forEach((item, i) => line(`${i + 1}. ${render(item)}`));
   };
 
-  line("BOZTIK WEBSITE TRAFFIC & VISITOR MOVEMENT REPORT");
+  line("BOZTIK WEBSITE TRAFFIC & PERFORMANCE REPORT");
   line(`Period: ${model.periodLabel || "Selected period"}${model.period?.since ? ` (${model.period.since} to ${model.period.until})` : ""}`);
   if (model.period?.previous) line(`Comparison: ${model.period.previous.since} to ${model.period.previous.until}`);
   line(`Generated: ${stamp(generatedAt)} (local time)`);
   if (model.timezone?.label) line(`Reporting timezone: ${model.timezone.label}`);
-  line("Purpose: understand which public pages attract attention, how recorded visits move between pages, and whether visitors click through to Boztik's external stores. Deliver usage is reported separately.");
+  line("Purpose: understand which public pages attract attention, the traffic sources they receive, tracked store-link clicks and separate Deliver usage.");
 
   line(); line("1. EXECUTIVE SUMMARY");
   line(`- Page views (counted page loads): ${n(w.total)} (not unique people).`);
   line(`- Most-viewed page: ${model.top ? `${model.top.label} — ${fmtInt(model.top.views)} views (${model.top.share ?? "—"}% of counted page views)` : "No page recorded"}.`);
-  line(`- Recorded visitor-flow sessions: ${f ? fmtInt(f.visits) : "not available"}.`);
-  line(`- Multi-page sessions: ${f ? fmtInt(f.multi_page_visits) : "not available"}; single-page sessions: ${f ? fmtInt(f.single_page_visits) : "not available"}.`);
-  line(`- External store-link clicks: ${s ? fmtInt(s.outbound_total) : "not available"}.`);
+  line(`- Tracked store-link clicks: ${n(model.totals?.store_clicks)} (link activations, not purchases).`);
   line(`- Private Deliver views: ${d?.available ? fmtInt(d.totals.views) : "not available"} (separate counter; not website page views).`);
 
   line(); line("2. WEBSITE PAGE PERFORMANCE");
@@ -116,25 +114,6 @@ export function buildFullReport(model, { generatedAt = new Date() } = {}) {
     model.pages.forEach((p, i) => line(`${i + 1}. ${p.label} [${p.page}]: ${fmtInt(p.views)} views; ${p.share === null ? "share not measured" : `${p.share}% of page views`}; entrances ${n(p.entrances)}; exits ${n(p.exits)}.`));
   } else line("- Page-level data is unavailable.");
 
-  line(); line("3. VISITOR MOVEMENT");
-  if (!f) line("- Visitor-flow data is unavailable for this period.");
-  else {
-    line(`- Sessions represented in the flow data: ${fmtInt(f.visits)}.`);
-    line(`- Multi-page sessions: ${fmtInt(f.multi_page_visits)}; single-page sessions: ${fmtInt(f.single_page_visits)}.`);
-    line(`- Session-event coverage: ${f.session_coverage_pct === null ? "not measured" : `${f.session_coverage_pct}% of counted page views`}.`);
-    if (f.status === "limited") line("- Flow sample is below the minimum session threshold; treat patterns as indicative only.");
-    if (f.events_capped) line("- The event cap was reached; the recorded journey sample is truncated.");
-    line("Most common entry pages:");
-    list(f.entries, x => `${pageName(x.page)} — ${fmtInt(x.visits)} visits`, "No entry-page records.");
-    line("Most common exit pages:");
-    list(f.exits, x => `${pageName(x.page)} — ${fmtInt(x.visits)} visits`, "No exit-page records.");
-    line("Most common page-to-page transitions:");
-    list(f.transitions, x => `${pageName(x.from)} → ${pageName(x.to)} — ${fmtInt(x.visits)} visits`, "No transitions recorded.");
-    line("Most common recorded journeys:");
-    list(f.journeys, x => `${x.path.map(pageName).join(" → ")}${x.truncated ? " → …" : ""} — ${fmtInt(x.visits)} visits`, "No multi-page journeys recorded.");
-    line(`- A new visit starts after ${fmtInt(f.visit_gap_minutes)} minutes of inactivity. Single-page sessions do not produce page-to-page transitions.`);
-  }
-
   line(); line("4. TRAFFIC SOURCES");
   if (!sources) line("- Traffic-source attribution is unavailable.");
   else {
@@ -143,23 +122,10 @@ export function buildFullReport(model, { generatedAt = new Date() } = {}) {
     line("- Attribution uses the referrer hostname. Hidden referrers and visits without a referrer are grouped as Direct / unknown; this is not proof someone typed the address.");
   }
 
-  line(); line("5. EXTERNAL STORE CLICKS");
-  if (!s) line("- Store-link click data is unavailable.");
-  else {
-    line(`- Stores page views: ${fmtInt(s.store_page_views)}.`);
-    line(`- All tracked store-link clicks: ${fmtInt(s.total)}; clicks to external stores: ${fmtInt(s.outbound_total)}.`);
-    line(`- Anonymous sessions with a store click: ${fmtInt(s.unique_sessions)}.`);
-    line(`- Product-card clicks: ${fmtInt(s.product_card_clicks)}.`);
-    const names = { boztik_store: "Boztik Stores", redbubble: "Redbubble", teepublic: "TeePublic", kofi: "Ko-fi" };
-    line("Clicks by destination:");
-    list(s.by_destination, x => `${names[x.destination] || x.destination}: ${fmtInt(x.clicks)} clicks from ${fmtInt(x.unique_sessions)} sessions${x.top_source ? `; leading placement: ${x.top_source}` : ""}`, "No destination clicks recorded.");
-    line("Clicks by page placement:");
-    list(s.sources, x => `${x.source_placement}: ${fmtInt(x.clicks)} clicks`, "No placement breakdown recorded.");
-    line(`- Outbound clicks per 100 Stores-page views: ${s.store_page_views > 0 ? (Math.round((s.outbound_total / s.store_page_views) * 1000) / 10).toFixed(1) : "not calculable"}.`);
-    line("- This is a click-to-page-view ratio, not a purchase or conversion rate. A click records link activation, not a completed purchase.");
-  }
-
-  line(); line("6. DELIVER ACTIVITY (SEPARATE SYSTEM)");
+  line(); line("4. TRACKED STORE-LINK CLICKS");
+  line(`- Store-link clicks: ${n(model.totals?.store_clicks)}.`);
+  line("- These are recorded link activations, not completed purchases. A destination-level breakdown is not available in the current dashboard connection.");
+  line(); line("5. DELIVER ACTIVITY (SEPARATE SYSTEM)");
   if (!d?.available) line("- Deliver activity is unavailable for this period.");
   else {
     line(`- Views: ${fmtInt(d.totals.views)}; downloads: ${fmtInt(d.totals.downloads)}; shares: ${fmtInt(d.totals.shares)}; active deliveries: ${fmtInt(d.totals.active)}.`);
@@ -170,7 +136,7 @@ export function buildFullReport(model, { generatedAt = new Date() } = {}) {
     line("- Deliver views are private delivery-page or direct-image loads. They are not added to public website page views.");
   }
 
-  line(); line("7. TREND (like-for-like) — DAILY TRAFFIC & ACTIVITY");
+  line(); line("6. TREND (like-for-like) — DAILY TRAFFIC & ACTIVITY");
   if (!t?.buckets?.length) line("- Trend data is unavailable.");
   else {
     line(`- Bucket granularity: ${model.granularity === "hour" ? "hourly" : "daily"}.`);
