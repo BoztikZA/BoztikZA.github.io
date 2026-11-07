@@ -89,6 +89,7 @@ function openEditor(profile) {
   editForm.elements.description.value = profile.description || "";
   editForm.elements.category.value = profile.category || "other";
   editForm.elements.website_url.value = profile.website_url || "";
+  editForm.elements.contact_email.value = profile.contact_email || "";
   editForm.elements.song_url.value = profile.song?.url || "";
   for (const key of ["youtube", "twitch", "instagram", "tiktok", "facebook", "linkedin", "x", "spotify"]) editForm.elements[key].value = profile.social_links?.[key] || "";
   editForm.hidden = false;
