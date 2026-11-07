@@ -81,17 +81,11 @@ export function buildCsv(model, { generatedAt = new Date() } = {}) {
   return L.join("\r\n");
 }
 
-/** The existing report plus the new sections. The original sections are untouched so older prompts still work. */
-/** Decision-ready report for analysing how visitors move through Boztik. */
+/** Decision-ready report for analysing Boztik website traffic and performance. */
 export function buildFullReport(model, { generatedAt = new Date() } = {}) {
   const L = [], line = (s = "") => L.push(s);
   const n = v => (v === null || v === undefined || !Number.isFinite(Number(v)) ? "not measured" : fmtInt(Number(v)));
-  const w = model.website ?? {}, f = model.flow, s = model.store, d = model.deliver, t = model.trend, sources = model.sources;
-  const pageName = p => model.pages?.find(x => x.page === p)?.label || PAGE_LABELS_FOR_REPORT[p] || p;
-  const list = (items, render, empty) => {
-    if (!items?.length) { line(`- ${empty}`); return; }
-    items.forEach((item, i) => line(`${i + 1}. ${render(item)}`));
-  };
+  const w = model.website ?? {}, d = model.deliver, t = model.trend, sources = model.sources;
 
   line("BOZTIK WEBSITE TRAFFIC & PERFORMANCE REPORT");
   line(`Period: ${model.periodLabel || "Selected period"}${model.period?.since ? ` (${model.period.since} to ${model.period.until})` : ""}`);
