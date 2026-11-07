@@ -271,7 +271,8 @@ async function uploadSpotlightImage(request:Request,env:Env,profileId:string):Pr
   if(!/^[a-f0-9]{20}$/i.test(profileId))return error("Profile not found",404);
   const profile=await env.DB.prepare("SELECT id,image_key,image_size FROM spotlight_profiles WHERE id=?").bind(profileId).first<any>();
   if(!profile)return error("Profile not found",404);
-  const type=(request.headers.get("Content-Type")||"").split(";")[0].trim().toLowerCase();
+  const contentType=request.headers.get("Content-Type")||"";
+  const type=contentType.split(";")[0]?.trim().toLowerCase()||"";
   const declaredHeader=request.headers.get("Content-Length");
   const declared=declaredHeader===null?null:Number(declaredHeader);
   const maxBytes=2*1024*1024;
