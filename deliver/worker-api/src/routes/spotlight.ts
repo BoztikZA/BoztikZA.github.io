@@ -140,9 +140,6 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       const featured = status !== "published" ? null : b.featured === true ? now()+86400 : b.featured === false ? null : old.featured_until;
       const updated = now();
       // Only one profile can hold the daily featured placement at a time.
-      if (b.featured === true) {
-        await env.DB.prepare("UPDATE spotlight_profiles SET featured_until=NULL WHERE featured_until > ?").bind(updated).run();
-      }
       await env.DB.batch([
         env.DB.prepare("UPDATE spotlight_profiles SET featured_until=NULL WHERE featured_until > ? AND id<>?").bind(updated,seg[1]),
         env.DB.prepare("UPDATE spotlight_profiles SET display_name=?,tagline=?,description=?,category=?,website_url=?,social_links=?,status=?,featured_until=?,updated_at=?,published_at=CASE WHEN ?='published' THEN COALESCE(published_at,?) ELSE published_at END WHERE id=?").bind(displayName,tagline,description,category,website,JSON.stringify(social),status,featured,updated,status,updated,seg[1])
