@@ -80,6 +80,7 @@ function openEditor(profile) {
   editForm.elements.description.value = profile.description || "";
   editForm.elements.category.value = profile.category || "other";
   editForm.elements.website_url.value = profile.website_url || "";
+  editForm.elements.song_url.value = profile.song?.url || "";
   for (const key of ["youtube", "twitch", "instagram", "tiktok", "facebook", "linkedin", "x", "spotify"]) editForm.elements[key].value = profile.social_links?.[key] || "";
   editForm.hidden = false;
   editForm.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -129,6 +130,7 @@ editForm.addEventListener("submit", async event => {
     else delete social[key];
   }
   const body = {
+    song_url: form.get("song_url"),
     display_name: form.get("display_name"),
     tagline: form.get("tagline"),
     description: form.get("description"),
