@@ -144,7 +144,7 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       if (displayName.length < 2 || tagline.length < 8 || description.length < 30 || !CATEGORIES.has(category)) throw new HttpError(422, "invalid_profile", "Check the name, tagline, description and category.");
       if (b.website_url && !website) throw new HttpError(422, "invalid_url", "Website links must use HTTPS.");
       if (!social || typeof social !== "object" || Array.isArray(social)) throw new HttpError(422, "invalid_social_links", "Social links must be an object.");
-      for (const [key,value] of Object.entries(social)) { if (!["youtube","twitch","instagram","tiktok","facebook","linkedin","x"].includes(key) || !safeUrl(value)) throw new HttpError(422, "invalid_social_url", "Social links must use HTTPS."); }
+      for (const [key,value] of Object.entries(social)) { if (!["youtube","twitch","instagram","tiktok","facebook","linkedin","x","spotify"].includes(key) || !safeUrl(value)) throw new HttpError(422, "invalid_social_url", "Social links must use HTTPS."); }
       if (b.featured === true && status !== "published") throw new HttpError(422, "feature_requires_published", "Publish the profile before featuring it.");
       const featured = status !== "published" ? null : b.featured === true ? now()+86400 : b.featured === false ? null : old.featured_until;
       const updated = now();
