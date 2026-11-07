@@ -92,7 +92,6 @@ body {
 }
 .deliver-download-all:disabled { filter: saturate(.55); transform: none; }
 .boztik-files-support-layout { gap: clamp(18px, 3vw, 34px); }
-#deliver-support-details { display: none !important; }
 
 /* Compact optional support note appears only after the first successful download. */
 .deliver-support-nudge {
