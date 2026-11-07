@@ -14,7 +14,14 @@ const REACTIONS = {
   graduation: { style: "achievement", title: "THE NEXT CHAPTER", message: "Congratulations on reaching this milestone." },
   "thank-you": { style: "gratitude", title: "THANK YOU", message: "Your support and trust mean a lot." },
   welcome: { style: "reveal", title: "WELCOME", message: "Your files are ready when you are." },
-  "best-wishes": { style: "reveal", title: "WITH BEST WISHES", message: "A little brightness for what comes next." }
+  "best-wishes": { style: "reveal", title: "WITH BEST WISHES", message: "A little brightness for what comes next." },
+  condolences: { style: "gratitude", title: "WITH SYMPATHY", message: "Thinking of you and sending comfort." },
+  "new-baby": { style: "birthday", title: "A LITTLE MIRACLE", message: "Wishing your family a lifetime of love." },
+  "good-luck": { style: "reveal", title: "YOU HAVE THIS", message: "Wishing you confidence and good fortune." },
+  "get-well": { style: "gratitude", title: "SENDING GOOD THOUGHTS", message: "Wishing you comfort and a smooth recovery." },
+  christmas: { style: "celebrate", title: "SEASON'S GREETINGS", message: "Wishing you warmth, joy and a little magic." },
+  "new-year": { style: "celebrate", title: "A FRESH BEGINNING", message: "Here's to new possibilities." },
+  farewell: { style: "reveal", title: "UNTIL NEXT TIME", message: "Wishing you the very best in what comes next." }
 };
 
 const PALETTES = {
@@ -230,7 +237,7 @@ function createCinematicCanvas(layer, button, id) {
 
 export function createDeliveryReactionController(layer, animationId, options = {}) {
   const id = String(animationId || "").trim().toLowerCase();
-  const reaction = REACTIONS[id] || null;
+  const reaction = REACTIONS[id] || (getAnimation(id) ? { style: "reveal", title: "YOUR FILE IS READY", message: "Your Boztik delivery is ready to enjoy." } : null);
   const knownAnimation = getAnimation(id);
   const soundEnabled = options.soundEnabled === true;
   let played = false;
@@ -259,6 +266,8 @@ export function createDeliveryReactionController(layer, animationId, options = {
       message.textContent = reaction.message;
       caption.append(title, message);
       layer.append(caption);
+      const status = document.getElementById("deliver-reaction-status");
+      if (status) status.textContent = reaction.title + ". " + reaction.message;
       window.setTimeout(() => caption.classList.add("is-visible"), 30);
       window.setTimeout(() => caption.classList.add("is-leaving"), 2050);
       captionTimer = window.setTimeout(() => caption.remove(), 2700);
