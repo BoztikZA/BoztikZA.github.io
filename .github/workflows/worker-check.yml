@@ -1,0 +1,38 @@
+name: Worker API checks
+
+on:
+  push:
+    branches: [feature/boztik-spotlight]
+    paths:
+      - "deliver/worker-api/**"
+      - ".github/workflows/worker-check.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "deliver/worker-api/**"
+      - ".github/workflows/worker-check.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  worker:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: deliver/worker-api
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: deliver/worker-api/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Type-check Worker
+        run: npm run typecheck
+      - name: Run existing unit and analytics tests
+        run: npm test
