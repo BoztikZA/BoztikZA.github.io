@@ -1133,6 +1133,7 @@ function resetCreateForm() {
   createRedditSource.reset();
   if (els.animation) els.animation.value = "none";
   if (els.animationPreviewBtn) els.animationPreviewBtn.disabled = true;
+  if (els.animationSound) els.animationSound.disabled = true;
 }
 
 async function handleCreateSubmit(event) {
