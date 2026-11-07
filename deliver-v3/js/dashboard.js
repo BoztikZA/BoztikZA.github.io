@@ -1173,7 +1173,7 @@ async function handleCreateSubmit(event) {
   // Explicit opt-in only — never inferred from notes — and never sent to
   // the Worker: the animation travels with the delivery link itself.
   const animationId = els.animation?.value && els.animation.value !== "none" ? els.animation.value : null;
-  const soundEnabled = Boolean(els.animationSound?.checked);
+  const soundEnabled = Boolean(animationId && els.animationSound?.checked);
 
   const metadata = {
     id,
@@ -1694,7 +1694,10 @@ function openEditModal(delivery, extensionMode = false) {
   if (els.editRedditUrl) els.editRedditUrl.value = delivery.source_meta?.redditUrl || "";
   if (els.editNotes) els.editNotes.value = delivery.notes || "";
   if (els.editAnimation) els.editAnimation.value = getLocalAnimation(delivery.id) || "none";
-  if (els.editAnimationSound) els.editAnimationSound.checked = getLocalSound(delivery.id);
+  if (els.editAnimationSound) {
+    els.editAnimationSound.checked = getLocalSound(delivery.id);
+    els.editAnimationSound.disabled = (els.editAnimation?.value || "none") === "none";
+  }
   if (els.editAnimationPreviewBtn) els.editAnimationPreviewBtn.disabled = (els.editAnimation?.value || "none") === "none";
 
   editRedditSource.load(delivery.reddit_source || null);
@@ -1770,7 +1773,7 @@ async function handleEditSubmit(event) {
   updates.reddit_source = editRedditSource.get();
 
   const animationId = els.editAnimation?.value && els.editAnimation.value !== "none" ? els.editAnimation.value : null;
-  const soundEnabled = Boolean(els.editAnimationSound?.checked);
+  const soundEnabled = Boolean(animationId && els.editAnimationSound?.checked);
   const animationChanged = animationId !== getLocalAnimation(editingId) || soundEnabled !== getLocalSound(editingId);
 
   setEditSaving(true);
