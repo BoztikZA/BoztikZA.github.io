@@ -1,9 +1,13 @@
 import assert from "node:assert/strict";
 import { spotlightProfileSaveRequest } from "../../../deliver-v3/js/spotlight-profile-request.mjs";
-import { handleSpotlightPublic, safeSocialUrl, uploadSpotlightImage } from "../src/routes/spotlight.ts";
+import { handleSpotlightAdmin, handleSpotlightPublic, safeSocialUrl, uploadSpotlightImage } from "../src/routes/spotlight.ts";
 import { readImageDimensions } from "../src/lib/spotlight-image.ts";
 import { HARD_CAP_BYTES, reconcileStorage, releaseStoredPending } from "../src/lib/storage.ts";
 import { cleanupSpotlightExpiry } from "../src/lib/cleanup.ts";
+import { sessionTokenHash } from "../src/lib/auth.ts";
+
+const ADMIN_SALT = "spotlight-delete-test-salt";
+const ADMIN_TOKEN = "spotlight-delete-test-token";
 
 type BoundStatement = {
   sql: string;
@@ -59,6 +63,7 @@ class FakeD1 {
   submissions: any[] = [];
   emailOutbox = new Map<string, any>();
   reviewEvents: any[] = [];
+  sessions = new Map<string, { email: string; expires_at: number; revoked: number }>();
   submissionLimit = new Map<string, { window_start: number; request_count: number }>();
   private queue: Promise<void> = Promise.resolve();
 
@@ -77,6 +82,7 @@ class FakeD1 {
   }
 
   async first(sql: string, args: unknown[]): Promise<any> {
+    if (sql.includes("FROM sessions WHERE token_hash")) return this.sessions.get(String(args[0])) ?? null;
     if (sql.includes("INSERT INTO spotlight_submission_limits")) {
       return this.withLock(() => {
         const [key, timestamp, resetTime, window, resetTimeAgain, windowAgain, nextStart] = args as number[] | [string, number, number, number, number, number, number];
@@ -356,6 +362,20 @@ class FakeD1 {
         image_key: null, image_size: 0, image_content_type: null, featured_until: null,
         created_at: createdAt, updated_at: updatedAt,
       });
+      return 1;
+    }
+    if (sql.startsWith("DELETE FROM spotlight_profiles WHERE id=? AND image_key IS ?")) {
+      const [profileId, expectedImageKey] = args;
+      const profile = this.profiles.get(String(profileId));
+      if (!profile || (profile.image_key ?? null) !== (expectedImageKey ?? null)) return 0;
+      this.profiles.delete(String(profileId));
+      for (const [id, image] of this.gallery) {
+        if (String(image.profile_id) === String(profileId)) this.gallery.delete(id);
+      }
+      this.reviewEvents = this.reviewEvents.filter(event => String(event[1]) !== String(profileId));
+      for (const [id, email] of this.emailOutbox) {
+        if (String(email.profile_id) === String(profileId)) this.emailOutbox.delete(id);
+      }
       return 1;
     }
     if (sql.startsWith("INSERT OR IGNORE INTO spotlight_email_outbox")) {
@@ -855,6 +875,55 @@ console.log("Published gallery images are listed and publicly served");
   assert.equal(image.status, 200);
   assert.equal(image.headers.get("Content-Type"), "image/png");
   assert.equal((await image.arrayBuffer()).byteLength, 24);
+}
+
+console.log("Command Centre deletes profiles with primary and gallery images");
+{
+  const db = new FakeD1();
+  const bucket = new FakeBucket();
+  const id = "f".repeat(20);
+  const primaryKey = `spotlight/${id}/${"1".repeat(16)}`;
+  const galleryKey = `spotlight/${id}/${"2".repeat(16)}`;
+  db.profiles.set(id, publishedProfile(35, {
+    id,
+    image_key: primaryKey,
+    image_size: 24,
+    image_content_type: "image/jpeg",
+  }));
+  db.gallery.set(`${id}:1`, {
+    profile_id: id,
+    position: 1,
+    image_key: galleryKey,
+    image_size: 24,
+    image_content_type: "image/jpeg",
+    created_at: 35,
+  });
+  bucket.objects.set(primaryKey, makeImage(24));
+  bucket.objects.set(galleryKey, makeImage(24));
+  db.storage.total_bytes = 48;
+  db.sessions.set(await sessionTokenHash(ADMIN_TOKEN, ADMIN_SALT), {
+    email: "admin@example.com",
+    expires_at: Math.floor(Date.now() / 1000) + 3600,
+    revoked: 0,
+  });
+  const env = {
+    DB: db,
+    BUCKET: bucket,
+    AUTH_TOKEN_SALT: ADMIN_SALT,
+    STORAGE_LIMIT_BYTES: String(HARD_CAP_BYTES),
+  };
+  const request = new Request(`https://worker.test/api/admin/spotlight/profile/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${ADMIN_TOKEN}` },
+  });
+  const response = await handleSpotlightAdmin(request, `profile/${id}`, env as never);
+  assert.equal(response.status, 200);
+  assert.equal((await response.json() as any).ok, true);
+  assert.equal(db.profiles.has(id), false);
+  assert.equal(db.gallery.has(`${id}:1`), false);
+  assert.equal(bucket.bytes(), 0);
+  assert.equal(db.storage.total_bytes, 0);
+  assert.equal(db.storage.needs_reconcile, 0);
 }
 
 console.log("Expired listings are hidden, their images are removed, and shared storage is reconciled");

@@ -322,7 +322,8 @@ list.addEventListener("click", async event => {
       });
     }
     await load();
-    if (action === "start-review") feedback.textContent = "Application marked as under review.";
+    if (action === "delete") feedback.textContent = "Profile and its images deleted; shared storage accounting was reconciled.";
+    else if (action === "start-review") feedback.textContent = "Application marked as under review.";
     else if (action === "approve") feedback.textContent = "Application approved. Publish it separately within 72 hours.";
     else if (action === "decline") feedback.textContent = "Application declined. The reason is stored and an email is queued when the applicant supplied an address.";
     else if (action === "mark-read") feedback.textContent = "Application marked as read.";

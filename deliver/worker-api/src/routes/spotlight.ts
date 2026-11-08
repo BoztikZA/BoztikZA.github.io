@@ -735,8 +735,8 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       let deleted;
       try {
         deleted = await env.DB.prepare(
-          "DELETE FROM spotlight_profiles WHERE id=? AND image_key IS ? AND NOT EXISTS (SELECT 1 FROM spotlight_gallery_images WHERE profile_id=?)",
-        ).bind(seg[1], old.image_key ?? null, seg[1]).run();
+          "DELETE FROM spotlight_profiles WHERE id=? AND image_key IS ?",
+        ).bind(seg[1], old.image_key ?? null).run();
       } catch (e) {
         console.error("[spotlight] profile deletion could not be committed after image removal", e);
         await markUncertain(env, "spotlight_profile_delete_commit_failed");
