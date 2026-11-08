@@ -271,7 +271,7 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
         '<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#080b0d;color:#f2f5f2;font:16px Inter,system-ui,sans-serif}.card{width:min(520px,calc(100% - 48px));padding:32px;border:1px solid #28332c;border-radius:16px;background:#101719;text-align:center}.mark{color:#8eff3d;font-weight:800;letter-spacing:.16em}.card p{color:#aab7ae;line-height:1.6}.card a{display:inline-block;margin-top:12px;padding:12px 18px;border-radius:8px;background:#8eff3d;color:#0b1207;text-decoration:none;font-weight:800}</style>' +
         '</head><body><main class="card"><div class="mark">BOZTIK SPOTLIGHT</div><h1>' + escapeHtml(profile.display_name) + '</h1><p>' + escapeHtml(description) + '</p><p>Opening this profile…</p><a href="' + escapeHtml(profileUrl) + '">View profile</a></main>' +
         "<script>location.replace(" + JSON.stringify(profileUrl) + ");</script></body></html>";
-      return new Response(page, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=300, stale-while-revalidate=600", "X-Robots-Tag": "noindex" } });
+      return new Response(page, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=300, stale-while-revalidate=600", "X-Robots-Tag": "noindex", "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'" } });
     }
     if (request.method === "GET" && seg[0] === "profile" && seg.length === 2) {
       checkPublicRate(request, env, "spotlight-profile", 2);
