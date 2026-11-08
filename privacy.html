@@ -15,7 +15,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Privacy Policy | Boztik Creative Toolkit</title>
+    <title>Privacy Policy | Boztik</title>
 
     <meta name="description"
         content="Learn how Boztik Creative Toolkit protects your privacy, handles browser permissions, processes images locally, and manages user data.">
@@ -291,16 +291,37 @@ profile information and links in the public Spotlight directory. The contact
 email is used for administration and is not displayed on the public profile.
 </p>
 <p>
+A Spotlight submission may include one primary logo or profile image and up to
+two supporting images. Images are resized in the browser to a maximum 2,000 px
+long edge and optimized to WebP before upload. The submitted profile details
+and moderation status are stored in Boztik's Cloudflare D1 database; image
+files are stored in the private Cloudflare R2 bucket used by Boztik Deliver.
+Images are not publicly accessible while an application is awaiting review.
+If a profile is approved and published, the selected profile information,
+website and social links, and images become publicly visible in the directory.
+</p>
+<p>
+New applications awaiting a decision and approved profiles have a 72-hour
+review window. Once published, a listing remains available in the public
+directory for 72 hours. Expired Spotlight images are removed through the
+scheduled storage-cleanup process. If an object cannot be deleted, its
+database reference is retained for reconciliation rather than being treated
+as successfully deleted. Submission and moderation records, including review
+decisions and any decline reason, may remain in the database after a listing
+or its images expire; there is currently no fixed deletion period for those
+records. Contact Boztik to request access, correction or removal where
+applicable.
+</p>
+<p>
 Spotlight profile views, estimated daily unique visitors, featured-placement
 impressions and outbound link clicks are counted as aggregated engagement
 metrics. For daily unique-visitor estimates, the browser stores a random
 first-party identifier and the server converts it to a daily keyed hash; the
-raw identifier is not stored in the database, and these event-level records
-are deleted after 90 days. We do not store raw IP addresses for Spotlight
-analytics. Submission records are stored in Boztik's existing
-Cloudflare-hosted database. You can contact Boztik to request correction or
-removal of a submitted profile. A submission does not guarantee publication,
-traffic or commercial results.
+raw identifier is not stored in the database. Spotlight event-level records
+are subject to the 90-day cleanup process described below. We do not store
+raw IP addresses for Spotlight analytics. A submission does not guarantee
+publication, visibility, traffic, engagement, followers, sales or other
+commercial results.
 </p>
 
 <h3>For the extension's core features, we do not ask you to provide:</h3>
@@ -703,6 +724,20 @@ delivery — on Boztik-controlled Cloudflare infrastructure (D1 and R2). Files
 are removed through the delivery expiry cleanup process; delivery records
 and related analytics may remain after file removal. Their retention period
 is not specified here.
+</p>
+
+<p>
+For Boztik Spotlight, application details and moderation history are held in
+the Cloudflare D1 database, while uploaded profile images are held in the
+private Cloudflare R2 bucket. Published listings expire after 72 hours, and
+the scheduled cleanup process removes their expired image objects and
+releases the associated storage. A failed object deletion is kept visible to
+the storage reconciliation process and is not treated as completed. Profile,
+application and moderation records (including review decisions and decline
+reasons) may remain after listing expiry or image removal; no fixed retention
+period is currently specified for those records. You may contact Boztik to
+request correction or removal, subject to applicable legal, security and
+record-keeping requirements.
 </p>
 
 <p>
