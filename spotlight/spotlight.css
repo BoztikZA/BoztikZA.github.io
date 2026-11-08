@@ -116,3 +116,8 @@
   .sp-brand-wordmark:after,.sp-nav-current span,.sp-directory-glow strong{animation:none}
   .sp-social-link,.sp-profile-social-link,.sp-nav nav a{transition:none}
 }
+
+
+/* Quiet expectations note: visible without competing with the Spotlight hero. */
+.sp-disclaimer{max-width:720px;margin:18px 0 0;color:rgba(220,230,220,.62);font:400 .76rem/1.65 Inter,system-ui,sans-serif;letter-spacing:.005em}
+@media(max-width:600px){.sp-disclaimer{font-size:.72rem;line-height:1.6}}
