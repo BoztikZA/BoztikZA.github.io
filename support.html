@@ -229,5 +229,9 @@
   <script defer src="js/store-clicks.js?v=2"></script>
   <script src="js/site.js?v=20260805a"></script>
   <script src="js/support.js"></script>
+  <script type="module">
+    import { initSpotlightInvitation } from "./deliver-v3/js/spotlight-invitation.js?v=spotlight-site-wide-3";
+    initSpotlightInvitation(null, { pageType: "support" });
+  </script>
 </body>
 </html>
