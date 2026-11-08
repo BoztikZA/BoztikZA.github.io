@@ -71,7 +71,7 @@ async function load() {
     const rows = Array.isArray(analyticsResponse.profiles) ? analyticsResponse.profiles : [];
     const views = rows.reduce((total, p) => total + Number(p.views || 0), 0);
     $("sp-admin-views").textContent = views.toLocaleString();
-    analytics.innerHTML = rows.length ? rows.map(p => `
+    if (!analyticsUnavailable) analytics.innerHTML = rows.length ? rows.map(p => `
       <div class="sp-admin-metric">
         <strong>${esc(p.display_name)}</strong>
         <span>${Number(p.views || 0).toLocaleString()} views</span>
