@@ -7,6 +7,16 @@ const list = $("sp-admin-list");
 const feedback = $("sp-admin-feedback");
 const analytics = $("sp-admin-analytics");
 const editForm = $("sp-admin-edit");
+const descriptionField = editForm.elements.description;
+const descriptionCount = $("sp-description-count");
+const DESCRIPTION_MAX_LENGTH = 5000;
+function updateDescriptionCount() {
+  const length = descriptionField.value.length;
+  descriptionCount.textContent = `${length.toLocaleString()} / ${DESCRIPTION_MAX_LENGTH.toLocaleString()} characters`;
+  descriptionCount.classList.toggle("is-near-limit", length >= DESCRIPTION_MAX_LENGTH * 0.9);
+}
+descriptionField.addEventListener("input", updateDescriptionCount);
+updateDescriptionCount();
 let profiles = [];
 
 const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({
