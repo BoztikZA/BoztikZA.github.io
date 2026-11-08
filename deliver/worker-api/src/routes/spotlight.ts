@@ -405,12 +405,12 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
             SELECT 1 FROM spotlight_profiles
              WHERE contact_email=? AND lower(display_name)=lower(?) AND status<>'archived' AND created_at>=?
           )`,
-      ).bind(id,slug,displayName,tagline,description,category,email,website,JSON.stringify(social),song ? JSON.stringify(song) : null,timestamp + SPOTLIGHT_TERM_SECONDS,timestamp,timestamp,email,displayName,timestamp - 86400).run();
+      ).bind(id,slug,displayName,tagline,description,category,email,website,JSON.stringify(social),song ? JSON.stringify(song) : null,timestamp + SPOTLIGHT_TERM_SECONDS,timestamp,timestamp,email,displayName,timestamp - SPOTLIGHT_TERM_SECONDS).run();
       if ((inserted.meta.changes || 0) === 0) {
         return json({
           ok: true,
           duplicate: true,
-          message: "A recent submission with those details is already in review. You do not need to submit it again.",
+          message: "A submission with those details was received within the last 72 hours. You can submit again after the 72-hour Spotlight application window has passed.",
         });
       }
       if (mainImage) {
