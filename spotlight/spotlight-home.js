@@ -31,7 +31,7 @@
       if (!profiles.length) return;
 
       host.innerHTML = profiles.map(profile => {
-        const profileUrl = new URL("spotlight/profile.html?slug=" + encodeURIComponent(profile.slug), location.href).href;
+        const profileUrl = "https://deliver-api.boztik.com/api/public/spotlight/share/" + encodeURIComponent(profile.slug);
         return `
         <article class="hm-spotlight-card"
            data-profile-id="${escapeHtml(profile.id)}"
