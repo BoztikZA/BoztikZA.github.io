@@ -41,6 +41,7 @@
       "/creative-assistant.html": "tools",
       "/creative-toolkit.html": "toolkit",
       "/deliver.html": "deliver",
+      "/spotlight/": "spotlight",
       "/guides.html": "guides",
       "/guide-photo-restoration.html": "guides",
       "/guide-object-removal.html": "guides",
