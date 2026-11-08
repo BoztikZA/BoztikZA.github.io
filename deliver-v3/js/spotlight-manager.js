@@ -1,10 +1,34 @@
 import { config } from "./config.js";
 import { authHeaders, getSession, onAuthChange } from "./auth.js";
-import { spotlightProfileSaveRequest } from "./spotlight-profile-request.mjs";
+import { spotlightProfileSaveRequest, normaliseWebsiteUrl, validateSpotlightDraft, publishGateState, describeSaveError } from "./spotlight-profile-request.mjs?v=2";
 
 const $ = id => document.getElementById(id);
 const list = $("sp-admin-list");
 const feedback = $("sp-admin-feedback");
+const formStatus = $("sp-admin-form-status");
+
+// Save/publish results are shown right beside the buttons (the page-level status line
+// sits above the form and is usually scrolled out of view), and mirrored there too.
+function showFormStatus(kind, message) {
+  feedback.textContent = message;
+  feedback.classList.toggle("sp-admin-feedback-success", kind === "success");
+  if (!formStatus) return;
+  formStatus.hidden = !message;
+  formStatus.textContent = message;
+  formStatus.dataset.kind = kind;
+  if (message) formStatus.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+function clearFormStatus() {
+  feedback.classList.remove("sp-admin-feedback-success");
+  if (formStatus) { formStatus.hidden = true; formStatus.textContent = ""; }
+}
+function applyPublishGate(profileId, status) {
+  const gate = publishGateState(profileId, status);
+  const button = $("sp-admin-publish");
+  button.hidden = false;
+  button.disabled = gate.disabled;
+  button.textContent = gate.label;
+}
 const analytics = $("sp-admin-analytics");
 const editForm = $("sp-admin-edit");
 const descriptionField = editForm.elements.description;
@@ -29,7 +53,11 @@ const api = async (path, init = {}) => {
     headers: { ...authHeaders(), ...(init.headers || {}) }
   });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.error || "Spotlight request failed.");
+  if (!response.ok) {
+    const failure = new Error(data.error || "Spotlight request failed.");
+    failure.status = response.status;
+    throw failure;
+  }
   return data;
 };
 
@@ -103,9 +131,8 @@ function openNewProfile() {
   $("sp-profile-image-preview").textContent = "Save the profile first, then upload its logo or photograph.";
   $("sp-profile-image-status").textContent = "";
   $("sp-profile-feature").checked = false;
-  $("sp-admin-publish").hidden = false;
-  $("sp-admin-publish").disabled = true;
-  $("sp-admin-publish").textContent = "Save draft to unlock publishing";
+  clearFormStatus();
+  applyPublishGate("");
   editForm.hidden = false;
   editForm.scrollIntoView({ behavior: "smooth", block: "center" });
 }
@@ -120,9 +147,8 @@ function openEditor(profile) {
   editForm.elements.contact_email.value = profile.contact_email || "";
   editForm.elements.song_url.value = profile.song?.url || "";
   $("sp-profile-feature").checked = Boolean(profile.featured);
-  $("sp-admin-publish").hidden = false;
-  $("sp-admin-publish").disabled = false;
-  $("sp-admin-publish").textContent = profile.status === "published" ? "Apply live settings" : "Publish profile";
+  clearFormStatus();
+  applyPublishGate(profile.id, profile.status);
   for (const key of ["youtube", "twitch", "instagram", "tiktok", "facebook", "linkedin", "x", "spotify"]) editForm.elements[key].value = profile.social_links?.[key] || "";
   editForm.hidden = false;
   const preview = $("sp-profile-image-preview");
@@ -143,17 +169,11 @@ $("sp-admin-new").addEventListener("click", openNewProfile);
 
 // Accept pasted domains and add HTTPS before validating or saving.
 function normaliseProfileUrls() {
-  for (const input of editForm.querySelectorAll('input[type="url"]')) {
-    const value = input.value.trim();
-    if (value && !/^[a-z][a-z0-9+.-]*:\/\//i.test(value)) input.value = "https://" + value.replace(/^\/+/, "");
-  }
+  for (const input of editForm.querySelectorAll('input[type="url"]')) input.value = normaliseWebsiteUrl(input.value);
 }
 editForm.addEventListener("focusout", event => {
   const input = event.target;
-  if (input instanceof HTMLInputElement && input.type === "url") {
-    const value = input.value.trim();
-    if (value && !/^[a-z][a-z0-9+.-]*:\/\//i.test(value)) input.value = "https://" + value.replace(/^\/+/, "");
-  }
+  if (input instanceof HTMLInputElement && input.type === "url") input.value = normaliseWebsiteUrl(input.value);
 }, true);
 
 list.addEventListener("click", async event => {
@@ -193,13 +213,13 @@ list.addEventListener("click", async event => {
 $("sp-admin-publish").addEventListener("click", async () => {
   const id = editForm.elements.id.value;
   if (!id) {
-    feedback.textContent = "Save the profile draft first, then publish it.";
+    showFormStatus("error", "Save the profile draft first, then publish it.");
     return;
   }
   const button = $("sp-admin-publish");
   const name = editForm.elements.display_name.value.trim() || "Profile";
   button.disabled = true;
-  feedback.textContent = "Publishing profile…";
+  showFormStatus("info", "Publishing profile…");
   try {
     const result = await api("/api/admin/spotlight/profile/" + encodeURIComponent(id), {
       method: "PATCH",
@@ -208,12 +228,12 @@ $("sp-admin-publish").addEventListener("click", async () => {
     });
     if (result?.profile?.status !== "published") throw new Error("The server did not confirm that the profile is live. Refresh and check its status.");
     await load();
-    feedback.textContent = $("sp-profile-feature").checked
+    showFormStatus("success", $("sp-profile-feature").checked
       ? "✓ " + name + " is live on Boztik and featured on the homepage for 24 hours."
-      : "✓ " + name + " is now live on the Boztik Spotlight directory.";
+      : "✓ " + name + " is now live on the Boztik Spotlight directory.");
     button.textContent = "Apply live settings";
   } catch (error) {
-    feedback.textContent = error.message;
+    showFormStatus("error", "Could not publish: " + describeSaveError(error));
   } finally {
     button.disabled = false;
   }
@@ -221,19 +241,26 @@ $("sp-admin-publish").addEventListener("click", async () => {
 
 editForm.addEventListener("submit", async event => {
   event.preventDefault();
+  if (editForm.dataset.saving === "true") return;
   normaliseProfileUrls();
+  const draft = Object.fromEntries(new FormData(editForm).entries());
+  const problem = validateSpotlightDraft(draft);
+  if (problem) {
+    showFormStatus("error", problem);
+    return;
+  }
   if (!editForm.checkValidity()) {
     const invalid = editForm.querySelector(":invalid");
-    feedback.textContent = invalid?.validationMessage || "Please complete the required profile fields.";
+    const label = invalid?.closest("label")?.firstChild?.textContent?.trim();
+    showFormStatus("error", (label ? label + ": " : "") + (invalid?.validationMessage || "Please complete the required profile fields."));
     editForm.reportValidity();
     invalid?.focus();
     return;
   }
-  if (editForm.dataset.saving === "true") return;
   const id = editForm.elements.id.value;
   const profile = profiles.find(item => item.id === id);
   if (id && !profile) {
-    feedback.textContent = "This profile is no longer in the manager list. Refresh Spotlight and try again.";
+    showFormStatus("error", "This profile is no longer in the manager list. Refresh Spotlight and try again.");
     return;
   }
   const form = new FormData(editForm);
@@ -256,7 +283,7 @@ editForm.addEventListener("submit", async event => {
   const save = editForm.querySelector('button[type="submit"]');
   editForm.dataset.saving = "true";
   save.disabled = true;
-  feedback.textContent = "Saving profile changes…";
+  showFormStatus("info", "Saving…");
   try {
     const request = spotlightProfileSaveRequest(id, body);
     const saved = await api(request.path, request.init);
@@ -265,20 +292,16 @@ editForm.addEventListener("submit", async event => {
     if (savedIndex === -1) profiles.unshift(saved.profile);
     else profiles[savedIndex] = saved.profile;
     render();
-    if (!id) {
-      editForm.elements.id.value = saved.profile.id;
-      $("sp-admin-publish").hidden = false;
-      $("sp-admin-publish").disabled = false;
-      $("sp-admin-publish").textContent = "Publish profile";
-    }
+    // The server has confirmed the save (it returned the stored profile), so publishing may unlock.
+    editForm.elements.id.value = saved.profile.id;
+    applyPublishGate(saved.profile.id, saved.profile.status);
     const refreshed = await load();
-    if (id) editForm.hidden = true;
-    feedback.textContent = id
-      ? refreshed ? "✓ Profile changes saved. Publish or apply live settings when ready." : "Profile changes saved, but the list could not refresh. Use Refresh to sync."
-      : refreshed ? "✓ Draft saved. Upload its logo or photograph, then select Publish profile when ready."
-        : "Draft saved, but the list could not refresh. Use Refresh to sync.";
+    showFormStatus("success", id
+      ? refreshed ? "✓ Profile changes saved. Publish or apply live settings when ready." : "✓ Profile changes saved, but the list could not refresh. Use Refresh to sync."
+      : refreshed ? "✓ Draft saved and added to the list below. Upload its logo or photograph, then select Publish profile when ready."
+        : "✓ Draft saved, but the list could not refresh. Use Refresh to sync.");
   } catch (error) {
-    feedback.textContent = error.message;
+    showFormStatus("error", "Could not save the draft: " + describeSaveError(error));
   } finally {
     editForm.dataset.saving = "false";
     save.disabled = false;
@@ -313,6 +336,7 @@ $("sp-profile-image-upload").addEventListener("click", async () => {
 $("sp-admin-edit-cancel").addEventListener("click", () => {
   editForm.reset();
   editForm.hidden = true;
+  clearFormStatus();
   $("sp-admin-publish").hidden = true;
   $("sp-admin-publish").disabled = true;
 });

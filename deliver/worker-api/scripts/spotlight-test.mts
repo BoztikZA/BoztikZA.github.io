@@ -627,7 +627,8 @@ console.log("Directory pagination, sorting, filtering, and cursor boundaries");
 
   const movingDb = new FakeD1();
   const movingRows = [
-    publishedProfile(11, { featured_until: timestamp + 1, published_at: 11 }),
+    // Must still be featured when page one is read; a 1s margin made this race the wall clock.
+    publishedProfile(11, { featured_until: timestamp + 300, published_at: 11 }),
     publishedProfile(12, { published_at: 10 }),
     publishedProfile(13, { published_at: 9 }),
   ];
