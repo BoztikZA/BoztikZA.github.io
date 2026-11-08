@@ -196,8 +196,7 @@ export function initSpotlightInvitation(delivery) {
   if (!delivery || !delivery.id || !(delivery.delivery_files?.length > 0)) return;
   if (new URLSearchParams(location.search).get("preview") === "1") return;
 
-  // Photoshop Battles pages deliberately keep a non-commercial presentation.
-  if (delivery.source === "reddit" && delivery.source_meta?.type === "photoshop_battles") return;
+  // Apply consistently to every live client delivery, including Photoshop Battles.
 
   if (readSuppressionUntil() > Date.now()) return;
 
