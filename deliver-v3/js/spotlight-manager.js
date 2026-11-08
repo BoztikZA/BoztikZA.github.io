@@ -97,12 +97,9 @@ function render() {
   const reviewActions = p => {
     if (p.application_status === "new") return `
       ${p.review_unread ? `<button class="cc-btn" data-action="mark-read" data-id="${esc(p.id)}">Mark read</button>` : ""}
-      <button class="cc-btn" data-action="start-review" data-id="${esc(p.id)}">Start review</button>
-      <button class="cc-btn sp-approve" data-action="approve" data-id="${esc(p.id)}">Approve</button>
-      <button class="cc-btn sp-decline" data-action="decline" data-id="${esc(p.id)}">Decline</button>`;
+      <button class="cc-btn sp-review" data-action="review" data-id="${esc(p.id)}">Review application</button>`;
     if (p.application_status === "under_review") return `
-      <button class="cc-btn sp-approve" data-action="approve" data-id="${esc(p.id)}">Approve</button>
-      <button class="cc-btn sp-decline" data-action="decline" data-id="${esc(p.id)}">Decline</button>`;
+      <button class="cc-btn sp-review" data-action="review" data-id="${esc(p.id)}">Review application</button>`;
     if (p.application_status === "approved" && p.status !== "published") return `<button class="cc-btn sp-approve" data-action="publish" data-id="${esc(p.id)}">Publish</button>`;
     if (p.status === "published" && p.listing_expires_at && p.listing_expires_at * 1000 <= Date.now()) return "<small>Expired listing · cleanup pending</small>";
     if (p.status === "published") return `<button class="cc-btn" data-action="archive" data-id="${esc(p.id)}">Archive</button>`;
@@ -123,6 +120,7 @@ function render() {
         <p>${esc(p.tagline)}</p>
       </div>
       <div class="sp-admin-actions">
+        <button class="cc-btn" data-action="review" data-id="${esc(p.id)}">Review</button>
         <button class="cc-btn" data-action="edit" data-id="${esc(p.id)}">Edit profile</button>
         ${reviewActions(p)}
         ${p.status === "published" && (!p.listing_expires_at || p.listing_expires_at * 1000 > Date.now()) ? (p.featured ? `<button class="cc-btn" data-action="unfeature" data-id="${esc(p.id)}">Remove feature</button>` : `<button class="cc-btn" data-action="feature" data-id="${esc(p.id)}">Feature 24h</button>`) : ""}
@@ -286,6 +284,164 @@ editForm.addEventListener("focusout", event => {
   if (input instanceof HTMLInputElement && input.type === "url") input.value = normaliseWebsiteUrl(input.value);
 }, true);
 
+
+/* Private application review dialog: all applicant-supplied content is escaped,
+   and external destinations are rendered as explicit HTTPS links. */
+const reviewModal = document.createElement("div");
+reviewModal.className = "sp-review-modal";
+reviewModal.hidden = true;
+reviewModal.innerHTML = `
+  <div class="sp-review-backdrop" data-review-close></div>
+  <section class="sp-review-card" role="dialog" aria-modal="true" aria-labelledby="sp-review-title">
+    <button type="button" class="sp-review-close" data-review-close aria-label="Close review">×</button>
+    <span class="cc-eyebrow">Private application review</span>
+    <h2 id="sp-review-title">Review application</h2>
+    <div id="sp-review-content" class="sp-review-content">Loading application…</div>
+    <div id="sp-review-decline-panel" class="sp-review-decline-panel" hidden>
+      <label for="sp-review-decline-reason">Reason for declining (at least 10 characters)</label>
+      <textarea id="sp-review-decline-reason" rows="4" maxlength="1000" placeholder="Explain why the application cannot be approved."></textarea>
+      <div class="sp-review-actions">
+        <button type="button" class="cc-btn" data-review-cancel-decline>Back</button>
+        <button type="button" class="cc-btn sp-decline" data-review-confirm-decline>Confirm decline</button>
+      </div>
+    </div>
+    <div id="sp-review-actions" class="sp-review-actions">
+      <button type="button" class="cc-btn" data-review-close>Close</button>
+      <button type="button" class="cc-btn sp-approve" data-review-approve>Approve application</button>
+      <button type="button" class="cc-btn sp-decline" data-review-decline>Decline</button>
+    </div>
+    <p id="sp-review-status" role="status" aria-live="polite"></p>
+  </section>`;
+document.body.append(reviewModal);
+const reviewContent = reviewModal.querySelector("#sp-review-content");
+const reviewStatus = reviewModal.querySelector("#sp-review-status");
+const reviewDeclinePanel = reviewModal.querySelector("#sp-review-decline-panel");
+const reviewActionsPanel = reviewModal.querySelector("#sp-review-actions");
+let activeReviewProfile = null;
+let reviewObjectUrls = [];
+function closeReviewModal() {
+  reviewModal.hidden = true;
+  reviewObjectUrls.forEach(url => URL.revokeObjectURL(url));
+  reviewObjectUrls = [];
+  activeReviewProfile = null;
+}
+function reviewLink(label, url) {
+  if (!url) return "";
+  return `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label)} ↗</a>`;
+}
+async function openReviewModal(profile) {
+  activeReviewProfile = profile;
+  reviewModal.hidden = false;
+  reviewContent.innerHTML = "<p>Loading private application details…</p>";
+  reviewStatus.textContent = "";
+  reviewDeclinePanel.hidden = true;
+  reviewActionsPanel.hidden = false;
+  reviewObjectUrls.forEach(url => URL.revokeObjectURL(url));
+  reviewObjectUrls = [];
+  if (profile.application_status === "new") {
+    try {
+      await api("/api/admin/spotlight/profile/" + encodeURIComponent(profile.id) + "/review", {
+        method: "PATCH", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "start_review" })
+      });
+      await load();
+      profile = profiles.find(item => item.id === profile.id) || profile;
+      activeReviewProfile = profile;
+    } catch (error) {
+      reviewStatus.textContent = "Could not mark this application as under review: " + error.message;
+    }
+  }
+  const socials = Object.entries(profile.social_links || {}).map(([key, value]) => reviewLink(key, value)).join("");
+  const song = profile.song?.url ? reviewLink("Spotify track: " + (profile.song.title || "Open track"), profile.song.url) : "";
+  reviewContent.innerHTML = `
+    <div class="sp-review-identity">
+      <div class="sp-review-avatar" id="sp-review-avatar">Loading image…</div>
+      <div><h3>${esc(profile.display_name)}</h3><p>${esc(profile.tagline)}</p><span>${esc((profile.category || "other").replace(/-/g," "))} · Submitted ${esc(new Date(profile.created_at * 1000).toLocaleString())}</span></div>
+    </div>
+    <dl class="sp-review-facts">
+      <div><dt>Contact email</dt><dd>${profile.contact_email ? `<a href="mailto:${esc(profile.contact_email)}">${esc(profile.contact_email)}</a>` : "Not supplied"}</dd></div>
+      <div><dt>Website</dt><dd>${reviewLink(profile.website_url, profile.website_url) || "Not supplied"}</dd></div>
+    </dl>
+    <section><h4>About the applicant</h4><p class="sp-review-description">${esc(profile.description || "No description supplied.")}</p></section>
+    <section><h4>Website and social profiles</h4><div class="sp-review-links">${socials || "<span>No social links supplied.</span>"}${song}</div></section>
+    <section><h4>Showcase images</h4><div id="sp-review-gallery" class="sp-review-gallery"><span>Loading showcase images…</span></div></section>`;
+  const loadPrivateImage = async (path, alt, target) => {
+    try {
+      const response = await fetch(config.apiBaseUrl + path, { headers: authHeaders() });
+      if (!response.ok) throw new Error("Image unavailable");
+      const url = URL.createObjectURL(await response.blob());
+      reviewObjectUrls.push(url);
+      const img = document.createElement("img");
+      img.src = url; img.alt = alt;
+      target.replaceChildren(img);
+    } catch { target.textContent = "Image unavailable"; }
+  };
+  const avatar = reviewContent.querySelector("#sp-review-avatar");
+  const gallery = reviewContent.querySelector("#sp-review-gallery");
+  await loadPrivateImage("/api/admin/spotlight/profile/" + encodeURIComponent(profile.id) + "/image", "Applicant logo or profile image", avatar);
+  const positions = Array.isArray(profile.gallery_positions) ? profile.gallery_positions : [];
+  gallery.replaceChildren();
+  if (!positions.length) gallery.textContent = "No additional showcase images supplied.";
+  else for (const position of positions) {
+    const tile = document.createElement("div");
+    tile.className = "sp-review-gallery-item";
+    tile.textContent = "Loading…";
+    gallery.append(tile);
+    await loadPrivateImage("/api/admin/spotlight/profile/" + encodeURIComponent(profile.id) + "/gallery/" + position, "Applicant showcase image " + position, tile);
+  }
+  reviewModal.querySelector("[data-review-approve]").hidden = !["new","under_review"].includes(profile.application_status);
+  reviewModal.querySelector("[data-review-decline]").hidden = !["new","under_review"].includes(profile.application_status);
+  reviewModal.querySelector(".sp-review-card").focus?.();
+}
+reviewModal.addEventListener("click", async event => {
+  const target = event.target.closest("[data-review-close],[data-review-approve],[data-review-decline],[data-review-cancel-decline],[data-review-confirm-decline]");
+  if (!target) return;
+  if (target.hasAttribute("data-review-close")) { closeReviewModal(); return; }
+  if (!activeReviewProfile) return;
+  if (target.hasAttribute("data-review-decline")) {
+    reviewDeclinePanel.hidden = false; reviewActionsPanel.hidden = true;
+    reviewModal.querySelector("#sp-review-decline-reason").focus(); return;
+  }
+  if (target.hasAttribute("data-review-cancel-decline")) {
+    reviewDeclinePanel.hidden = true; reviewActionsPanel.hidden = false; return;
+  }
+  const profile = activeReviewProfile;
+  if (target.hasAttribute("data-review-approve")) {
+    target.disabled = true;
+    try {
+      await api("/api/admin/spotlight/profile/" + encodeURIComponent(profile.id) + "/review", {
+        method: "PATCH", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "approve" })
+      });
+      closeReviewModal(); await load();
+      feedback.textContent = "Application approved. Publish it separately within 72 hours.";
+    } catch (error) { reviewStatus.textContent = error.message; target.disabled = false; }
+    return;
+  }
+  if (target.hasAttribute("data-review-confirm-decline")) {
+    const reason = reviewModal.querySelector("#sp-review-decline-reason").value.trim();
+    if (reason.length < 10) { reviewStatus.textContent = "Please provide a reason of at least 10 characters."; return; }
+    target.disabled = true;
+    try {
+      await api("/api/admin/spotlight/profile/" + encodeURIComponent(profile.id) + "/review", {
+        method: "PATCH", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "decline", reason })
+      });
+      if (profile.contact_email) {
+        const subject = "Update on your Boztik Spotlight application";
+        const body = `Hello ${profile.display_name},\n\nThank you for applying for Boztik Spotlight. Unfortunately, we are unable to approve your application at this time.\n\nReason: ${reason}\n\nYou are welcome to review your submission and contact us if you have questions.\n\nThe Boztik team\nhttps://www.boztik.com/`;
+        window.location.href = "mailto:" + encodeURIComponent(profile.contact_email) + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+        closeReviewModal(); await load();
+        feedback.textContent = "Application declined. Your email app should open with the applicant’s address and your reason ready to review and send.";
+      } else {
+        await api("/api/admin/spotlight/profile/" + encodeURIComponent(profile.id), { method: "DELETE" });
+        closeReviewModal(); await load();
+        feedback.textContent = "Application declined. No email was supplied, so the profile and all its images were permanently deleted.";
+      }
+    } catch (error) { reviewStatus.textContent = error.message; target.disabled = false; }
+  }
+});
+
 list.addEventListener("click", async event => {
   const button = event.target.closest("button[data-action]");
   if (!button) return;
@@ -293,22 +449,21 @@ list.addEventListener("click", async event => {
   const profile = profiles.find(item => item.id === id);
   if (!profile) return;
   if (action === "edit") { openEditor(profile); return; }
+  if (action === "review") { openReviewModal(profile); return; }
   if (action === "delete" && !confirm("Permanently delete this profile and its analytics? This cannot be undone.")) return;
-  const declineReason = action === "decline" ? prompt("Enter the reason to share with the applicant (at least 10 characters):") : null;
-  if (action === "decline" && declineReason === null) return;
 
   button.disabled = true;
   feedback.textContent = "Updating profile…";
   try {
     if (action === "delete") {
       await api("/api/admin/spotlight/profile/" + encodeURIComponent(id), { method: "DELETE" });
-    } else if (["mark-read", "start-review", "approve", "decline"].includes(action)) {
+    } else if (["mark-read", "start-review", "approve"].includes(action)) {
       await api("/api/admin/spotlight/profile/" + encodeURIComponent(id) + "/review", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: action === "mark-read" ? "mark_read" : action === "start-review" ? "start_review" : action,
-          ...(action === "decline" ? { reason: declineReason } : {})
+          
         })
       });
     } else {
@@ -325,7 +480,6 @@ list.addEventListener("click", async event => {
     if (action === "delete") feedback.textContent = "Profile and its images deleted; shared storage accounting was reconciled.";
     else if (action === "start-review") feedback.textContent = "Application marked as under review.";
     else if (action === "approve") feedback.textContent = "Application approved. Publish it separately within 72 hours.";
-    else if (action === "decline") feedback.textContent = "Application declined. The reason is stored and an email is queued when the applicant supplied an address.";
     else if (action === "mark-read") feedback.textContent = "Application marked as read.";
     else if (action === "publish") feedback.textContent = "✓ Profile is live on the Boztik Spotlight directory for 72 hours.";
     else if (action === "feature") feedback.textContent = "✓ Homepage feature is active for 24 hours.";

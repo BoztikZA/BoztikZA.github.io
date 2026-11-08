@@ -617,25 +617,9 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
           "INSERT INTO spotlight_review_events(id,profile_id,actor,action,from_status,to_status,reason,created_at) SELECT ?,?,?,?,?,?,?,? WHERE changes()>0",
         ).bind(ID(),seg[1],actor,action,fromStatus,toStatus,reason,timestamp),
       ];
-      if (action === "decline" && old.contact_email) {
-        statements.push(env.DB.prepare(
-          `INSERT OR IGNORE INTO spotlight_email_outbox
-             (id,profile_id,kind,recipient,state,attempts,next_attempt_at,created_at)
-           SELECT ?,spotlight_profiles.id,'declined',contact_email,'pending',0,?,?
-             FROM spotlight_profiles
-            WHERE spotlight_profiles.id=? AND application_status='declined' AND contact_email<>'' AND changes()>0`,
-        ).bind(ID(),timestamp,timestamp,seg[1]));
-      }
       const result = await env.DB.batch(statements);
       if ((result[0]?.meta.changes || 0) !== 1) return error("Profile changed during review. Refresh and try again.", 409);
-      if (action === "decline" && old.contact_email) {
-        try {
-          await processSpotlightEmailOutbox(env, 1, seg[1], "declined");
-        } catch (notificationError) {
-          console.error("[spotlight] decline email remains queued for retry", notificationError);
-        }
-      }
-      return json({ ok: true, application_status: toStatus, notification_queued: action === "decline" && Boolean(old.contact_email) });
+      return json({ ok: true, application_status: toStatus, email_available: Boolean(old.contact_email) });
     }
     if (seg.length === 3 && seg[0] === "profile" && seg[2] === "image" && request.method === "PUT") return uploadSpotlightImage(request,env,seg[1]!);
     if (seg.length === 4 && seg[0] === "profile" && seg[2] === "gallery" && /^[1-4]$/.test(seg[3]!) && request.method === "PUT") return uploadSpotlightImage(request,env,seg[1]!,Number(seg[3]));

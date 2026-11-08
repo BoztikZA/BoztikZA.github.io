@@ -350,7 +350,8 @@ console.log("Application review is separate from publishing and tracks unread, a
   assert.equal(decline.status, 200);
   assert.equal(declineRow.application_status, "declined");
   assert.equal(declineRow.decline_reason, "The submitted profile needs clearer service details.");
-  assert.equal([...db.outbox.values()].filter(item => item.profile_id === declineRow.id && item.kind === "declined").length, 1);
+  assert.equal((await decline.json() as any).email_available, true);
+  assert.equal([...db.outbox.values()].filter(item => item.profile_id === declineRow.id && item.kind === "declined").length, 0, "declines are handled by the administrator email draft, not an automatic generic email");
 }
 
 console.log("All Spotlight admin save-draft tests passed.");
