@@ -10,7 +10,7 @@
 //   / reddit                    whether the person actually posted can't be known)
 import { recordShare } from "./api.js";
 import { toast } from "./shared.js";
-import { initSpotlightInvitation } from "./spotlight-invitation.js";
+import { initSpotlightInvitation } from "./spotlight-invitation.js?v=spotlight-footer-1";
 
 const SOCIAL_METHODS = Object.freeze(["whatsapp", "facebook", "x", "reddit"]);
 
