@@ -22,7 +22,8 @@ export const PAGE_LABELS = {
   guides: "Guides (hub + 4 guide articles)",
   about: "About",
   support: "Support",
-  contact: "Contact"
+  contact: "Contact",
+  spotlight: "Boztik Spotlight"
 };
 /** Short names for journeys and flow tables. */
 export const SHORT_LABELS = {
