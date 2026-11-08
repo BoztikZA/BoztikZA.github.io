@@ -10,7 +10,6 @@
 //   / reddit                    whether the person actually posted can't be known)
 import { recordShare } from "./api.js";
 import { toast } from "./shared.js";
-import { initSpotlightInvitation } from "./spotlight-invitation.js?v=spotlight-legacy-fix-1";
 
 const SOCIAL_METHODS = Object.freeze(["whatsapp", "facebook", "x", "reddit"]);
 
@@ -114,11 +113,6 @@ function onShareButtonClick() {
 
 export function initShare(delivery) {
   if (!delivery || !delivery.id) return;
-
-  // Initialise Spotlight for both modern multi-file and legacy single-file
-  // deliveries. The invitation module validates that at least one file exists.
-  // Keep the share controls' existing multi-file requirement unchanged.
-  initSpotlightInvitation(delivery);
 
   if (!(delivery.delivery_files?.length > 0)) return;
 
