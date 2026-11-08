@@ -92,6 +92,9 @@ function openNewProfile() {
   editForm.elements.id.value = "";
   $("sp-profile-image-preview").textContent = "Save the profile first, then upload its logo or photograph.";
   $("sp-profile-image-status").textContent = "";
+  $("sp-profile-feature").checked = false;
+  $("sp-admin-publish").hidden = true;
+  $("sp-admin-publish").textContent = "Publish profile";
   editForm.hidden = false;
   editForm.scrollIntoView({ behavior: "smooth", block: "center" });
 }
@@ -105,6 +108,9 @@ function openEditor(profile) {
   editForm.elements.website_url.value = profile.website_url || "";
   editForm.elements.contact_email.value = profile.contact_email || "";
   editForm.elements.song_url.value = profile.song?.url || "";
+  $("sp-profile-feature").checked = Boolean(profile.featured);
+  $("sp-admin-publish").hidden = false;
+  $("sp-admin-publish").textContent = profile.status === "published" ? "Apply live settings" : "Publish profile";
   for (const key of ["youtube", "twitch", "instagram", "tiktok", "facebook", "linkedin", "x", "spotify"]) editForm.elements[key].value = profile.social_links?.[key] || "";
   editForm.hidden = false;
   const preview = $("sp-profile-image-preview");
@@ -122,6 +128,21 @@ function openEditor(profile) {
 }
 
 $("sp-admin-new").addEventListener("click", openNewProfile);
+
+// Accept pasted domains and add HTTPS before validating or saving.
+function normaliseProfileUrls() {
+  for (const input of editForm.querySelectorAll('input[type="url"]')) {
+    const value = input.value.trim();
+    if (value && !/^[a-z][a-z0-9+.-]*:\/\//i.test(value)) input.value = "https://" + value.replace(/^\/+/, "");
+  }
+}
+editForm.addEventListener("focusout", event => {
+  const input = event.target;
+  if (input instanceof HTMLInputElement && input.type === "url") {
+    const value = input.value.trim();
+    if (value && !/^[a-z][a-z0-9+.-]*:\/\//i.test(value)) input.value = "https://" + value.replace(/^\/+/, "");
+  }
+}, true);
 
 list.addEventListener("click", async event => {
   const button = event.target.closest("button[data-action]");
@@ -154,8 +175,45 @@ list.addEventListener("click", async event => {
   }
 });
 
+$("sp-admin-publish").addEventListener("click", async () => {
+  const id = editForm.elements.id.value;
+  if (!id) {
+    feedback.textContent = "Save the profile draft first, then publish it.";
+    return;
+  }
+  const button = $("sp-admin-publish");
+  const name = editForm.elements.display_name.value.trim() || "Profile";
+  button.disabled = true;
+  feedback.textContent = "Publishing profile…";
+  try {
+    const result = await api("/api/admin/spotlight/profile/" + encodeURIComponent(id), {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "published", featured: $("sp-profile-feature").checked })
+    });
+    if (result?.profile?.status !== "published") throw new Error("The server did not confirm that the profile is live. Refresh and check its status.");
+    await load();
+    feedback.textContent = $("sp-profile-feature").checked
+      ? "✓ " + name + " is live on Boztik and featured on the homepage for 24 hours."
+      : "✓ " + name + " is now live on the Boztik Spotlight directory.";
+    button.textContent = "Apply live settings";
+  } catch (error) {
+    feedback.textContent = error.message;
+  } finally {
+    button.disabled = false;
+  }
+});
+
 editForm.addEventListener("submit", async event => {
   event.preventDefault();
+  normaliseProfileUrls();
+  if (!editForm.checkValidity()) {
+    const invalid = editForm.querySelector(":invalid");
+    feedback.textContent = invalid?.validationMessage || "Please complete the required profile fields.";
+    editForm.reportValidity();
+    invalid?.focus();
+    return;
+  }
   if (editForm.dataset.saving === "true") return;
   const id = editForm.elements.id.value;
   const profile = profiles.find(item => item.id === id);
@@ -194,13 +252,15 @@ editForm.addEventListener("submit", async event => {
     render();
     if (!id) {
       editForm.elements.id.value = saved.profile.id;
+      $("sp-admin-publish").hidden = false;
+      $("sp-admin-publish").textContent = "Publish profile";
     }
     const refreshed = await load();
     if (id) editForm.hidden = true;
     feedback.textContent = id
-      ? refreshed ? "Profile changes saved." : "Profile changes saved, but the list could not refresh. Use Refresh to sync."
-      : refreshed ? "Profile created as pending review. You can now upload its logo or photograph below."
-        : "Profile created as pending review, but the list could not refresh. Use Refresh to sync.";
+      ? refreshed ? "✓ Profile changes saved. Publish or apply live settings when ready." : "Profile changes saved, but the list could not refresh. Use Refresh to sync."
+      : refreshed ? "✓ Draft saved. Upload its logo or photograph, then select Publish profile when ready."
+        : "Draft saved, but the list could not refresh. Use Refresh to sync.";
   } catch (error) {
     feedback.textContent = error.message;
   } finally {
@@ -234,7 +294,11 @@ $("sp-profile-image-upload").addEventListener("click", async () => {
   finally { button.disabled = false; }
 });
 
-$("sp-admin-edit-cancel").addEventListener("click", () => { editForm.reset(); editForm.hidden = true; });
+$("sp-admin-edit-cancel").addEventListener("click", () => {
+  editForm.reset();
+  editForm.hidden = true;
+  $("sp-admin-publish").hidden = true;
+});
 $("sp-admin-refresh").addEventListener("click", load);
 
 let authChangeVersion = 0;
