@@ -243,6 +243,36 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
       if (!object) return error("Image not found",404);
       return new Response(object.body,{headers:{"Content-Type":row.image_content_type || "image/jpeg","Cache-Control":"public, max-age=3600","X-Content-Type-Options":"nosniff"}});
     }
+    if (request.method === "GET" && seg[0] === "share" && seg.length === 2) {
+      checkPublicRate(request, env, "spotlight-share", 2);
+      const slug = clean(seg[1], 60);
+      if (!slug || !/^[a-z0-9-]+$/.test(slug)) return error("Profile not found", 404);
+      const row = await env.DB.prepare("SELECT * FROM spotlight_profiles WHERE slug=? AND status='published'").bind(slug).first<any>();
+      if (!row) return error("Profile not found", 404);
+      const profile = publicDto(row);
+      const origin = "https://www.boztik.com";
+      const profileUrl = origin + "/spotlight/profile.html?slug=" + encodeURIComponent(profile.slug);
+      const shareUrl = "https://deliver-api.boztik.com/api/public/spotlight/share/" + encodeURIComponent(profile.slug);
+      const imageUrl = profile.image_url || origin + "/images/boztik-mark.png";
+      const title = clean(profile.display_name, 80) + " — Boztik Spotlight";
+      const description = clean(profile.tagline, 180) || clean(profile.description, 180) || "Discover independent businesses and creators on Boztik Spotlight.";
+      const escapeHtml = (value: unknown) => String(value ?? "").replace(/[&<>"\']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"' : "&quot;", "\'": "&#39;" }[char] || char));
+      const page =
+        '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+        "<title>" + escapeHtml(title) + "</title><meta name=\"description\" content=\"" + escapeHtml(description) + "\">" +
+        '<link rel="canonical" href="' + escapeHtml(profileUrl) + '">' +
+        '<meta property="og:type" content="profile"><meta property="og:site_name" content="Boztik Spotlight">' +
+        '<meta property="og:title" content="' + escapeHtml(title) + '"><meta property="og:description" content="' + escapeHtml(description) + '">' +
+        '<meta property="og:url" content="' + escapeHtml(shareUrl) + '"><meta property="og:image" content="' + escapeHtml(imageUrl) + '">' +
+        '<meta property="og:image:alt" content="' + escapeHtml(profile.display_name) + ' on Boztik Spotlight">' +
+        '<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="' + escapeHtml(title) + '">' +
+        '<meta name="twitter:description" content="' + escapeHtml(description) + '"><meta name="twitter:image" content="' + escapeHtml(imageUrl) + '">' +
+        '<meta http-equiv="refresh" content="2;url=' + escapeHtml(profileUrl) + '"><meta name="theme-color" content="#080b0d">' +
+        '<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#080b0d;color:#f2f5f2;font:16px Inter,system-ui,sans-serif}.card{width:min(520px,calc(100% - 48px));padding:32px;border:1px solid #28332c;border-radius:16px;background:#101719;text-align:center}.mark{color:#8eff3d;font-weight:800;letter-spacing:.16em}.card p{color:#aab7ae;line-height:1.6}.card a{display:inline-block;margin-top:12px;padding:12px 18px;border-radius:8px;background:#8eff3d;color:#0b1207;text-decoration:none;font-weight:800}</style>' +
+        '</head><body><main class="card"><div class="mark">BOZTIK SPOTLIGHT</div><h1>' + escapeHtml(profile.display_name) + '</h1><p>' + escapeHtml(description) + '</p><p>Opening this profile…</p><a href="' + escapeHtml(profileUrl) + '">View profile</a></main>' +
+        "<script>location.replace(" + JSON.stringify(profileUrl) + ");</script></body></html>";
+      return new Response(page, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=300, stale-while-revalidate=600", "X-Robots-Tag": "noindex" } });
+    }
     if (request.method === "GET" && seg[0] === "profile" && seg.length === 2) {
       checkPublicRate(request, env, "spotlight-profile", 2);
       const row = await env.DB.prepare("SELECT * FROM spotlight_profiles WHERE slug=? AND status='published'").bind(seg[1]).first<any>();
