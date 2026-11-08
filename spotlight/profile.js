@@ -85,7 +85,7 @@ function bindShare(profile) {
   const shareButton = host.querySelector("#sp-share-profile");
   const shareStatus = host.querySelector("#sp-share-status");
   const shareFallback = host.querySelector("#sp-share-fallback");
-  const shareUrl = location.href;
+  const shareUrl = "https://deliver-api.boztik.com/api/public/spotlight/share/" + encodeURIComponent(profile.slug);
   shareButton?.addEventListener("click", async () => {
     const shareData = {
       title: profile.display_name + " — Boztik Spotlight",
