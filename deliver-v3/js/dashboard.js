@@ -2177,19 +2177,48 @@ async function loadDeliveries() {
   renderOverview();
   renderDeliveryList();
   renderAnalytics();
-  void refreshInsights();
+  await refreshInsights();
 }
 
 /* =========================================================
    BOOTSTRAP
 ========================================================= */
 
+let globalRefreshInProgress = false;
+async function runGlobalRefresh() {
+  if (globalRefreshInProgress) return;
+  globalRefreshInProgress = true;
+  const button = els.refreshBtn;
+  const originalLabel = button?.innerHTML;
+  if (button) {
+    button.disabled = true;
+    button.setAttribute("aria-busy", "true");
+    button.innerHTML = '<svg class="cc-i" aria-hidden="true" focusable="false"><use href="#i-refresh"/></svg> Refreshing…';
+    button.classList.add("is-refreshing");
+  }
+  try {
+    // Refresh all dashboard data in parallel; Spotlight listens for the same
+    // event and refreshes both applications and engagement analytics.
+    const results = await Promise.allSettled([
+      loadDeliveries(),
+      loadStorageUsage(),
+      refreshStorageMonitor()
+    ]);
+    window.dispatchEvent(new CustomEvent("boztik:refresh-spotlight"));
+    const failed = results.filter(result => result.status === "rejected");
+    if (failed.length) console.warn("[Boztik Deliver] Some dashboard refresh tasks failed:", failed);
+  } finally {
+    globalRefreshInProgress = false;
+    if (button) {
+      button.disabled = false;
+      button.removeAttribute("aria-busy");
+      button.classList.remove("is-refreshing");
+      button.innerHTML = originalLabel || '<svg class="cc-i" aria-hidden="true" focusable="false"><use href="#i-refresh"/></svg> Refresh';
+    }
+  }
+}
 function setupGlobalRefresh() {
-  els.refreshBtn?.addEventListener("click", () => {
-    loadDeliveries();
-    loadStorageUsage();
-    void refreshStorageMonitor();
-  });
+  els.refreshBtn?.addEventListener("click", () => { void runGlobalRefresh(); });
 }
 
 async function bootstrapDashboard() {
