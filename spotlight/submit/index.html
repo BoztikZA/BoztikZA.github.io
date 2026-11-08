@@ -7,7 +7,7 @@
   <meta name="description" content="Submit your independent business or creator profile to Boztik Spotlight. Every profile is reviewed before publication.">
   <link rel="canonical" href="https://www.boztik.com/spotlight/submit/">
   <link rel="stylesheet" href="../../styles-premium.css?v=20261106a">
-  <link rel="stylesheet" href="../spotlight.css?v=10">
+  <link rel="stylesheet" href="../spotlight.css?v=11">
   <link rel="stylesheet" href="submit.css?v=5">
 </head>
 <body class="spotlight-body">
@@ -24,15 +24,15 @@
         <p>Spotlight introduces real independent businesses and creators to people looking for something worth discovering. Share your story and images; our team reviews every profile before it goes live.</p>
         <ul>
           <li><b>01</b><span><strong>Free to submit</strong><small>There is no listing fee during our pilot.</small></span></li>
-          <li><b>02</b><span><strong>Human-reviewed</strong><small>Your profile stays private while it is under review.</small></span></li>
-          <li><b>03</b><span><strong>Show your work</strong><small>Add a logo or portrait and up to four more images.</small></span></li>
+          <li><b>02</b><span><strong>Human-reviewed</strong><small>New applications are reviewed within 72 hours; approval and publishing are separate.</small></span></li>
+          <li><b>03</b><span><strong>Show your work</strong><small>Add a logo or portrait and up to two more images.</small></span></li>
         </ul>
       </section>
       <section class="sp-form-panel" aria-labelledby="sp-submit-title">
         <div class="sp-form-head">
           <span class="sp-kicker">PROFILE SUBMISSION</span>
           <h2 id="sp-submit-title">Tell us about you.</h2>
-          <p>Fields marked required are needed for review. Your images and information are stored securely and only published after approval.</p>
+          <p>Fields marked required are needed for review. Your images and information are stored securely; approved profiles are published manually and remain listed for 72 hours.</p>
         </div>
         <form id="sp-submit-form" enctype="multipart/form-data" novalidate>
           <div class="sp-form-row">
@@ -49,9 +49,9 @@
           </div>
           <fieldset class="sp-image-fieldset">
             <legend>Your images <span aria-hidden="true">*</span></legend>
-            <p>Your first image is your profile logo or portrait. Add up to four supporting images. JPG, PNG or WebP; up to 2 MB per image.</p>
+            <p>Your first image is your profile logo or portrait. Add up to two supporting images. Images are resized to a maximum 2,000 px long edge and optimized to WebP (up to 5 MB each).</p>
             <label>Main logo or profile photograph <span aria-hidden="true">*</span><input name="main_image" id="sp-submit-main-image" type="file" accept="image/jpeg,image/png,image/webp" required><small>Square logos and portraits both work. Images are displayed without changing their proportions.</small></label>
-            <label>Additional showcase images <small>Optional · maximum 4</small><input name="showcase_images" id="sp-submit-showcase-images" type="file" accept="image/jpeg,image/png,image/webp" multiple><small>Choose images of your work, products, space or team.</small></label>
+            <label>Additional showcase images <small>Optional · maximum 2</small><input name="showcase_images" id="sp-submit-showcase-images" type="file" accept="image/jpeg,image/png,image/webp" multiple><small>Choose images of your work, products, space or team. Images are optimized before upload.</small></label>
             <div id="sp-submit-image-preview" class="sp-submit-image-preview" aria-live="polite"></div>
           </fieldset>
           <fieldset class="sp-social-fields">
@@ -78,6 +78,6 @@
       </section>
     </div>
   </main>
-  <script type="module" src="./submit.js?v=5"></script>
+  <script type="module" src="./submit.js?v=6"></script>
 </body>
 </html>

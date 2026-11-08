@@ -1,5 +1,6 @@
 import { config } from "./config.js";
 import { authHeaders, getSession, onAuthChange } from "./auth.js";
+import { prepareSpotlightImage } from "../../spotlight/image-processing.js";
 import { spotlightProfileSaveRequest, normaliseWebsiteUrl, validateSpotlightDraft, publishGateState, describeSaveError } from "./spotlight-profile-request.mjs?v=2";
 
 const $ = id => document.getElementById(id);
@@ -23,12 +24,16 @@ function clearFormStatus() {
   if (formStatus) { formStatus.hidden = true; formStatus.textContent = ""; }
 }
 function applyPublishGate(profileId, status) {
-  const gate = publishGateState(profileId, status);
+  const expired = status === "expired";
+  const canPublish = status === "approved" || status === "published";
+  const gate = publishGateState(profileId, status === "published" ? "published" : "pending");
   const button = $("sp-admin-publish");
   button.hidden = false;
-  button.disabled = gate.disabled;
-  button.textContent = gate.label;
+  button.disabled = gate.disabled || (Boolean(profileId) && (!canPublish || expired));
+  button.textContent = expired ? "Listing expired" : profileId && !canPublish ? "Approve application to publish" : gate.label;
 }
+const publishState = profile => profile.status === "published" && profile.listing_expires_at
+  && profile.listing_expires_at * 1000 <= Date.now() ? "expired" : profile.application_status || profile.status;
 function updatePublicationEmail(profile) {
   const panel = $("sp-publication-email");
   const available = profile?.status === "published" && profile.contact_email;
@@ -53,6 +58,7 @@ function updateDescriptionCount() {
 descriptionField.addEventListener("input", updateDescriptionCount);
 updateDescriptionCount();
 let profiles = [];
+let moderation = { unread_count: 0, pending_decision_count: 0, approved_count: 0 };
 let galleryPreviewUrls = [];
 
 const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({
@@ -74,28 +80,52 @@ const api = async (path, init = {}) => {
 };
 
 function render() {
-  const pending = profiles.filter(p => p.status === "pending");
-  const published = profiles.filter(p => p.status === "published");
+  const pending = profiles.filter(p => ["new", "under_review"].includes(p.application_status));
+  const published = profiles.filter(p => p.status === "published" && (!p.listing_expires_at || p.listing_expires_at * 1000 > Date.now()));
   const featured = published.find(p => p.featured);
-  $("sp-admin-pending").textContent = pending.length;
+  $("sp-admin-pending").textContent = Number(moderation.pending_decision_count ?? pending.length).toLocaleString();
+  $("sp-admin-unread").textContent = Number(moderation.unread_count || 0).toLocaleString();
+  $("sp-admin-approved").textContent = Number(moderation.approved_count ?? profiles.filter(p => p.application_status === "approved").length).toLocaleString();
+  const unreadBadge = $("sp-admin-tab-unread");
+  unreadBadge.textContent = Number(moderation.unread_count || 0) + " unread";
+  unreadBadge.hidden = !moderation.unread_count;
   $("sp-admin-published").textContent = published.length;
   $("sp-admin-featured").textContent = featured ? featured.display_name : "None";
   const overviewCount = $("stat-spotlight-active");
   if (overviewCount) overviewCount.textContent = published.length.toLocaleString();
 
+  const reviewActions = p => {
+    if (p.application_status === "new") return `
+      ${p.review_unread ? `<button class="cc-btn" data-action="mark-read" data-id="${esc(p.id)}">Mark read</button>` : ""}
+      <button class="cc-btn" data-action="start-review" data-id="${esc(p.id)}">Start review</button>
+      <button class="cc-btn sp-approve" data-action="approve" data-id="${esc(p.id)}">Approve</button>
+      <button class="cc-btn sp-decline" data-action="decline" data-id="${esc(p.id)}">Decline</button>`;
+    if (p.application_status === "under_review") return `
+      <button class="cc-btn sp-approve" data-action="approve" data-id="${esc(p.id)}">Approve</button>
+      <button class="cc-btn sp-decline" data-action="decline" data-id="${esc(p.id)}">Decline</button>`;
+    if (p.application_status === "approved" && p.status !== "published") return `<button class="cc-btn sp-approve" data-action="publish" data-id="${esc(p.id)}">Publish</button>`;
+    if (p.status === "published" && p.listing_expires_at && p.listing_expires_at * 1000 <= Date.now()) return "<small>Expired listing · cleanup pending</small>";
+    if (p.status === "published") return `<button class="cc-btn" data-action="archive" data-id="${esc(p.id)}">Archive</button>`;
+    if (p.application_status === "published" && p.status === "archived") return `<button class="cc-btn" data-action="publish" data-id="${esc(p.id)}">Republish</button>`;
+    return "";
+  };
   list.innerHTML = profiles.length ? profiles.map(p => `
     <article class="sp-admin-row">
       <div class="sp-admin-main">
         <strong>${esc(p.display_name)}</strong>
-        <span>${esc(p.category.replace(/-/g, " "))} · ${esc(p.status)} · ${new Date(p.created_at * 1000).toLocaleDateString()}</span>
+        <span>${esc(p.category.replace(/-/g, " "))} · ${esc(p.application_status || p.status)} · ${new Date(p.created_at * 1000).toLocaleDateString()}</span>
         <small>${esc(p.contact_email || "")}</small>
+        ${p.application_status === "new" || p.application_status === "under_review" || p.application_status === "approved"
+          ? `<small>Decision deadline: ${p.review_expires_at ? new Date(p.review_expires_at * 1000).toLocaleString() : "Not set"}</small>` : ""}
+        ${p.status === "published" && p.listing_expires_at ? `<small>Listing expires: ${new Date(p.listing_expires_at * 1000).toLocaleString()}</small>` : ""}
+        ${p.decline_reason ? `<small>Decline reason: ${esc(p.decline_reason)}</small>` : ""}
         ${p.invalid_social_links?.length ? `<small class="sp-admin-link-warning">Review invalid ${esc(p.invalid_social_links.join(", "))} link(s) before publishing.</small>` : ""}
         <p>${esc(p.tagline)}</p>
       </div>
       <div class="sp-admin-actions">
         <button class="cc-btn" data-action="edit" data-id="${esc(p.id)}">Edit profile</button>
-        ${p.status === "pending" ? `<button class="cc-btn sp-approve" data-action="publish" data-id="${esc(p.id)}">Approve &amp; publish</button>` : p.status === "published" ? `<button class="cc-btn" data-action="archive" data-id="${esc(p.id)}">Archive</button>` : `<button class="cc-btn" data-action="publish" data-id="${esc(p.id)}">Republish</button>`}
-        ${p.status === "published" ? (p.featured ? `<button class="cc-btn" data-action="unfeature" data-id="${esc(p.id)}">Remove feature</button>` : `<button class="cc-btn" data-action="feature" data-id="${esc(p.id)}">Feature 24h</button>`) : ""}
+        ${reviewActions(p)}
+        ${p.status === "published" && (!p.listing_expires_at || p.listing_expires_at * 1000 > Date.now()) ? (p.featured ? `<button class="cc-btn" data-action="unfeature" data-id="${esc(p.id)}">Remove feature</button>` : `<button class="cc-btn" data-action="feature" data-id="${esc(p.id)}">Feature 24h</button>`) : ""}
         <button class="cc-btn sp-delete" data-action="delete" data-id="${esc(p.id)}">Delete</button>
       </div>
     </article>`).join("") : "<p class='cc-muted'>No submissions yet. New entries will appear here for review.</p>";
@@ -106,6 +136,7 @@ async function load() {
   try {
     const profilesResponse = await api("/api/admin/spotlight");
     profiles = Array.isArray(profilesResponse.profiles) ? profilesResponse.profiles : [];
+    moderation = profilesResponse;
     render();
 
     // Analytics are secondary: keep profile creation and moderation usable if
@@ -167,7 +198,7 @@ function openEditor(profile) {
   editForm.elements.song_url.value = profile.song?.url || "";
   $("sp-profile-feature").checked = Boolean(profile.featured);
   clearFormStatus();
-  applyPublishGate(profile.id, profile.status);
+  applyPublishGate(profile.id, publishState(profile));
   for (const key of ["youtube", "twitch", "instagram", "tiktok", "facebook", "linkedin", "x", "spotify", "pinterest"]) editForm.elements[key].value = profile.social_links?.[key] || "";
   editForm.hidden = false;
   const preview = $("sp-profile-image-preview");
@@ -263,12 +294,23 @@ list.addEventListener("click", async event => {
   if (!profile) return;
   if (action === "edit") { openEditor(profile); return; }
   if (action === "delete" && !confirm("Permanently delete this profile and its analytics? This cannot be undone.")) return;
+  const declineReason = action === "decline" ? prompt("Enter the reason to share with the applicant (at least 10 characters):") : null;
+  if (action === "decline" && declineReason === null) return;
 
   button.disabled = true;
   feedback.textContent = "Updating profile…";
   try {
     if (action === "delete") {
       await api("/api/admin/spotlight/profile/" + encodeURIComponent(id), { method: "DELETE" });
+    } else if (["mark-read", "start-review", "approve", "decline"].includes(action)) {
+      await api("/api/admin/spotlight/profile/" + encodeURIComponent(id) + "/review", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: action === "mark-read" ? "mark_read" : action === "start-review" ? "start_review" : action,
+          ...(action === "decline" ? { reason: declineReason } : {})
+        })
+      });
     } else {
       const body = action === "publish" ? { status: "published" }
         : action === "archive" ? { status: "archived" }
@@ -280,7 +322,11 @@ list.addEventListener("click", async event => {
       });
     }
     await load();
-    if (action === "publish") feedback.textContent = "✓ Profile is live on the Boztik Spotlight directory.";
+    if (action === "start-review") feedback.textContent = "Application marked as under review.";
+    else if (action === "approve") feedback.textContent = "Application approved. Publish it separately within 72 hours.";
+    else if (action === "decline") feedback.textContent = "Application declined. The reason is stored and an email is queued when the applicant supplied an address.";
+    else if (action === "mark-read") feedback.textContent = "Application marked as read.";
+    else if (action === "publish") feedback.textContent = "✓ Profile is live on the Boztik Spotlight directory for 72 hours.";
     else if (action === "feature") feedback.textContent = "✓ Homepage feature is active for 24 hours.";
     else if (action === "unfeature") feedback.textContent = "Homepage feature removed.";
   } catch (error) {
@@ -375,7 +421,7 @@ editForm.addEventListener("submit", async event => {
     render();
     // The server has confirmed the save (it returned the stored profile), so publishing may unlock.
     editForm.elements.id.value = saved.profile.id;
-    applyPublishGate(saved.profile.id, saved.profile.status);
+    applyPublishGate(saved.profile.id, publishState(saved.profile));
     const refreshed = await load();
     const refreshedProfile = profiles.find(item => item.id === saved.profile.id);
     if (refreshedProfile) {
@@ -401,18 +447,20 @@ $("sp-profile-image-upload").addEventListener("click", async () => {
   const status = $("sp-profile-image-status");
   if (!profileId) { status.textContent = "Save or select a profile first."; return; }
   if (!file) { status.textContent = "Choose an image first."; return; }
-  if (file.size > 2 * 1024 * 1024) { status.textContent = "Image must be 2 MB or smaller."; return; }
+  if (file.size > 20 * 1024 * 1024) { status.textContent = "Choose a source image no larger than 20 MB."; return; }
   if (!["image/jpeg","image/png","image/webp"].includes(file.type)) { status.textContent = "Choose a JPG, PNG or WebP image."; return; }
   const button = $("sp-profile-image-upload");
   button.disabled = true; status.textContent = "Uploading and checking storage…";
   try {
+    status.textContent = "Optimizing image…";
+    const optimized = await prepareSpotlightImage(file);
     const response = await fetch(config.apiBaseUrl + "/api/admin/spotlight/profile/" + encodeURIComponent(profileId) + "/image", {
-      method: "PUT", headers: { ...authHeaders(), "Content-Type": file.type }, body: file
+      method: "PUT", headers: { ...authHeaders(), "Content-Type": optimized.type }, body: optimized
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.error || "Image upload failed.");
     status.textContent = "Image uploaded. It will appear publicly when the profile is published.";
-    const preview = $("sp-profile-image-preview"), url = URL.createObjectURL(file);
+    const preview = $("sp-profile-image-preview"), url = URL.createObjectURL(optimized);
     preview.innerHTML = '<img alt="Uploaded Spotlight profile image" src="' + url + '">';
     await load();
   } catch (error) { status.textContent = error.message; }
@@ -443,26 +491,26 @@ $("sp-gallery-upload").addEventListener("click", async () => {
   const status = $("sp-gallery-status");
   if (!profileId) { status.textContent = "Save or select a profile first."; return; }
   if (!files.length) { status.textContent = "Choose one or more images first."; return; }
-  if (files.length > 4) { status.textContent = "Choose no more than four images at a time."; return; }
-  if (files.some(file => file.size > 2 * 1024 * 1024 || !["image/jpeg", "image/png", "image/webp"].includes(file.type))) {
-    status.textContent = "Each image must be JPG, PNG or WebP and no larger than 2 MB.";
+  if (files.length > 2) { status.textContent = "Choose no more than two images at a time."; return; }
+  if (files.some(file => file.size > 20 * 1024 * 1024 || !["image/jpeg", "image/png", "image/webp"].includes(file.type))) {
+    status.textContent = "Choose JPG, PNG or WebP source images no larger than 20 MB.";
     return;
   }
   const profile = profiles.find(item => item.id === profileId);
   if (!profile) { status.textContent = "Refresh Spotlight and select the profile again."; return; }
   const occupied = new Set(profile.gallery_positions || []);
-  const slots = [1, 2, 3, 4].filter(position => !occupied.has(position));
+  const slots = [1, 2].filter(position => !occupied.has(position));
   if (files.length > slots.length) {
     status.textContent = "This profile has room for " + slots.length + " more showcase image(s). Remove an image first to make space.";
     return;
   }
   const button = $("sp-gallery-upload");
   button.disabled = true;
-  status.textContent = "Uploading images and checking shared storage…";
+  status.textContent = "Optimizing images and checking shared storage…";
   let uploaded = 0;
   try {
     for (let index = 0; index < files.length; index += 1) {
-      const file = files[index];
+      const file = await prepareSpotlightImage(files[index]);
       const response = await fetch(config.apiBaseUrl + "/api/admin/spotlight/profile/" + encodeURIComponent(profileId) + "/gallery/" + slots[index], {
         method: "PUT", headers: { ...authHeaders(), "Content-Type": file.type }, body: file
       });

@@ -1,3 +1,5 @@
+import { prepareSpotlightImage } from "../image-processing.js";
+
 const API = "https://deliver-api.boztik.com/api/public/spotlight/submit";
 const form = document.querySelector("#sp-submit-form");
 const status = document.querySelector("#sp-submit-status");
@@ -34,10 +36,10 @@ function showPreviews() {
 
 mainImage.addEventListener("change", showPreviews);
 galleryImages.addEventListener("change", () => {
-  if (galleryImages.files.length > 4) {
+  if (galleryImages.files.length > 2) {
     galleryImages.value = "";
     status.dataset.kind = "error";
-    status.textContent = "Choose no more than four additional images.";
+    status.textContent = "Choose no more than two additional images.";
   }
   showPreviews();
 });
@@ -58,15 +60,20 @@ form.addEventListener("submit", async event => {
     return;
   }
   const files = [mainImage.files[0], ...Array.from(galleryImages.files || [])].filter(Boolean);
-  if (galleryImages.files.length > 4) {
+  if (galleryImages.files.length > 2) {
     status.dataset.kind = "error";
-    status.textContent = "Choose no more than four additional images.";
+    status.textContent = "Choose no more than two additional images.";
     galleryImages.focus();
     return;
   }
-  if (files.some(file => !["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 2 * 1024 * 1024)) {
+  if (files.length > 3) {
     status.dataset.kind = "error";
-    status.textContent = "Each image must be a JPG, PNG or WebP file no larger than 2 MB.";
+    status.textContent = "Choose up to three images in total.";
+    return;
+  }
+  if (files.some(file => !["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 20 * 1024 * 1024)) {
+    status.dataset.kind = "error";
+    status.textContent = "Choose JPG, PNG or WebP images no larger than 20 MB before optimization.";
     return;
   }
   const website = form.elements.website_url;
@@ -93,8 +100,12 @@ form.addEventListener("submit", async event => {
   payload.set("website_url", website.value);
   payload.set("social_links", JSON.stringify(socialLinks));
   button.disabled = true;
-  status.textContent = "Sending your profile securely for review…";
+  status.textContent = "Optimizing images and sending your profile securely for review…";
   try {
+    const optimized = await Promise.all(files.map(prepareSpotlightImage));
+    payload.set("main_image", optimized[0], optimized[0].name);
+    payload.delete("showcase_images");
+    optimized.slice(1).forEach(file => payload.append("showcase_images", file, file.name));
     const response = await fetch(API, { method: "POST", body: payload });
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.error || "We couldn't submit your profile. Please try again.");

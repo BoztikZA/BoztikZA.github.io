@@ -11,11 +11,13 @@ import { HttpError } from "../types";
 import { R2_PREFIX } from "./ids";
 import { deleteObject, listAllObjects } from "./r2";
 import {
+  markUncertain,
   reconcileStorage,
   releaseFile,
   releaseReservation,
   releaseStoredPending,
 } from "./storage";
+import { processSpotlightEmailOutbox } from "./spotlight-email";
 
 const nowSec = () => Math.floor(Date.now() / 1000);
 
@@ -244,7 +246,8 @@ export async function sweepOrphans(env: Env, max = 50): Promise<{ deleted: numbe
     await env.DB.prepare(
       `SELECT r2_key FROM delivery_files
        UNION SELECT r2_key FROM pending_uploads
-       UNION SELECT image_key AS r2_key FROM spotlight_profiles WHERE image_key IS NOT NULL`,
+       UNION SELECT image_key AS r2_key FROM spotlight_profiles WHERE image_key IS NOT NULL
+       UNION SELECT image_key AS r2_key FROM spotlight_gallery_images`,
     ).all<{ r2_key: string }>()
   ).results;
   const known = new Set(keys.map((k) => k.r2_key));
@@ -266,6 +269,125 @@ export async function sweepOrphans(env: Env, max = 50): Promise<{ deleted: numbe
   return { deleted, failed };
 }
 
+export interface SpotlightExpiryReport {
+  expired: number;
+  failed: number;
+  removed_images: number;
+}
+
+/** Expire review applications after their review window and published listings
+ * after their listing term. Keep profile and decision records as tombstones. */
+export async function cleanupSpotlightExpiry(env: Env, max = 25): Promise<SpotlightExpiryReport> {
+  const timestamp = nowSec();
+  const due = await env.DB.prepare(
+    `SELECT id,application_status,status
+       FROM spotlight_profiles
+      WHERE (application_status IN ('new','under_review','approved','declined','expired')
+             AND review_expires_at IS NOT NULL AND review_expires_at<=?)
+         OR (status='published' AND listing_expires_at IS NOT NULL AND listing_expires_at<=?)
+      ORDER BY COALESCE(review_expires_at,listing_expires_at)
+      LIMIT ?`,
+  ).bind(timestamp, timestamp, max).all<{ id: string; application_status: string; status: string }>();
+  const report: SpotlightExpiryReport = { expired: 0, failed: 0, removed_images: 0 };
+  let storageReconcileNeeded = false;
+
+  for (const profile of due.results || []) {
+    const current = await env.DB.prepare(
+      "SELECT id,application_status,status,review_expires_at,listing_expires_at,image_key FROM spotlight_profiles WHERE id=?",
+    ).bind(profile.id).first<any>();
+    if (!current) continue;
+    const reviewDue = ["new","under_review","approved","declined","expired"].includes(current.application_status)
+      && current.review_expires_at !== null && Number(current.review_expires_at) <= nowSec();
+    const listingDue = current.status === "published"
+      && current.listing_expires_at !== null && Number(current.listing_expires_at) <= nowSec();
+    if (!reviewDue && !listingDue) continue;
+
+    const nextApplicationStatus = current.application_status === "declined" ? "declined" : "expired";
+    if (current.status !== "archived" || current.application_status !== nextApplicationStatus) {
+      const expiryAt = current.review_expires_at ?? current.listing_expires_at ?? timestamp;
+      const staged = await env.DB.batch([
+        env.DB.prepare(
+          `UPDATE spotlight_profiles
+              SET status='archived',application_status=?,featured_until=NULL,
+                  review_expires_at=COALESCE(review_expires_at,?),updated_at=?
+            WHERE id=? AND application_status=? AND status=?`,
+        ).bind(nextApplicationStatus,expiryAt,nowSec(),profile.id,current.application_status,current.status),
+        env.DB.prepare(
+          `INSERT INTO spotlight_review_events(id,profile_id,actor,action,from_status,to_status,created_at)
+           SELECT ?,?,'system','expire',?,?,? WHERE changes()>0`,
+        ).bind(crypto.randomUUID().replace(/-/g,"").slice(0,20),profile.id,current.application_status,nextApplicationStatus,nowSec()),
+      ]);
+      if ((staged[0]?.meta.changes || 0) !== 1) {
+        report.failed += 1;
+        continue;
+      }
+    }
+
+    const stagedProfile = await env.DB.prepare(
+      "SELECT image_key FROM spotlight_profiles WHERE id=? AND status='archived' AND application_status=?",
+    ).bind(profile.id,nextApplicationStatus).first<{ image_key: string | null }>();
+    if (!stagedProfile) continue;
+    const gallery = await env.DB.prepare(
+      "SELECT image_key FROM spotlight_gallery_images WHERE profile_id=?",
+    ).bind(profile.id).all<{ image_key: string }>();
+    const keys = [stagedProfile.image_key, ...(gallery.results || []).map(image => image.image_key)]
+      .filter((key): key is string => Boolean(key));
+    let deletionFailed = false;
+    for (const key of keys) {
+      try {
+        await deleteObject(env, key);
+        report.removed_images += 1;
+        storageReconcileNeeded = true;
+      } catch (error) {
+        console.error("[spotlight] expired image delete failed", profile.id, error);
+        deletionFailed = true;
+      }
+    }
+    if (deletionFailed) {
+      report.failed += 1;
+      await markUncertain(env, "spotlight_expiry_image_delete_failed");
+      continue;
+    }
+
+    try {
+      const result = await env.DB.batch([
+        env.DB.prepare(
+          `UPDATE spotlight_profiles
+              SET image_key=NULL,image_size=0,image_content_type=NULL,
+                  listing_expires_at=NULL,review_expires_at=NULL,updated_at=?
+            WHERE id=? AND application_status=? AND status='archived' AND image_key IS ?`,
+        ).bind(nowSec(),profile.id,nextApplicationStatus,stagedProfile.image_key ?? null),
+        env.DB.prepare("DELETE FROM spotlight_gallery_images WHERE profile_id=?").bind(profile.id),
+      ]);
+      if ((result[0]?.meta.changes || 0) !== 1) {
+        report.failed += 1;
+        await markUncertain(env, "spotlight_expiry_profile_changed");
+        continue;
+      }
+      report.expired += 1;
+      if (keys.length) await markUncertain(env, "spotlight_expiry_images_removed");
+    } catch (error) {
+      console.error("[spotlight] expiry metadata cleanup failed", profile.id, error);
+      report.failed += 1;
+      await markUncertain(env, "spotlight_expiry_metadata_cleanup_failed");
+    }
+  }
+  if (storageReconcileNeeded) {
+    try {
+      const reconciled = await reconcileStorage(env);
+      if (reconciled.deferred || reconciled.state.needs_reconcile === 1) {
+        report.failed += 1;
+        await markUncertain(env, "spotlight_expiry_storage_reconcile_deferred");
+      }
+    } catch (error) {
+      console.error("[spotlight] expiry storage reconciliation failed", error);
+      report.failed += 1;
+      await markUncertain(env, "spotlight_expiry_storage_reconcile_failed");
+    }
+  }
+  return report;
+}
+
 export async function housekeeping(env: Env): Promise<void> {
   const now = nowSec();
   const cutoffHour = new Date(Date.now() - 8 * 86400_000).toISOString().slice(0, 13);
@@ -278,6 +400,8 @@ export async function housekeeping(env: Env): Promise<void> {
 
 export interface CronReport {
   expiry: ExpiryReport | null;
+  spotlight_expiry: SpotlightExpiryReport | null;
+  spotlight_emails: { sent: number; deferred: number } | null;
   abandoned: { released: number; failed: number } | null;
   page_view_events_deleted: number | null;
   traffic_source_visits_deleted: number | null;
@@ -290,6 +414,8 @@ export interface CronReport {
 export async function runMaintenance(env: Env): Promise<CronReport> {
   const report: CronReport = {
     expiry: null,
+    spotlight_expiry: null,
+    spotlight_emails: null,
     abandoned: null,
     page_view_events_deleted: null,
     traffic_source_visits_deleted: null,
@@ -305,6 +431,8 @@ export async function runMaintenance(env: Env): Promise<CronReport> {
     }
   };
   report.expiry = await step("expiry", () => cleanupExpired(env, 25));
+  report.spotlight_expiry = await step("spotlight-expiry", () => cleanupSpotlightExpiry(env, 25));
+  report.spotlight_emails = await step("spotlight-email-outbox", () => processSpotlightEmailOutbox(env, 10));
   report.abandoned = await step("abandoned", () => sweepAbandonedUploads(env));
   report.page_view_events_deleted = await step("page-view-event-retention", () => cleanupPageViewEvents(env));
   report.traffic_source_visits_deleted = await step("traffic-source-retention", () => cleanupTrafficSourceVisits(env));

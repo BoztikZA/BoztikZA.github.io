@@ -18,8 +18,9 @@
     "test:client": "node scripts/analytics-client-test.mjs",
     "test:spotlight": "tsx scripts/spotlight-test.mts",
     "test:spotlight-admin": "tsx scripts/spotlight-admin-test.mts",
+    "test:spotlight-email": "tsx scripts/spotlight-email-test.mts",
     "test:spotlight-form": "node scripts/spotlight-form-test.mjs",
-    "test": "npm run test:unit && npm run test:retention && npm run test:traffic-source && npm run test:analytics && npm run test:client && npm run test:spotlight && npm run test:spotlight-admin && npm run test:spotlight-form"
+    "test": "npm run test:unit && npm run test:retention && npm run test:traffic-source && npm run test:analytics && npm run test:client && npm run test:spotlight && npm run test:spotlight-admin && npm run test:spotlight-email && npm run test:spotlight-form"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260901.0",

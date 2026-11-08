@@ -56,15 +56,24 @@ node scripts/milestone-test.mts                                                 
 node scripts/traffic-source-test.mts                                             # isolated source attribution tests
 node scripts/client-contract.mjs                                                    # real frontend modules vs the Worker
 npm run test:spotlight                                                             # Spotlight storage, API, and manager regression tests
+npm run test:spotlight-email                                                      # Spotlight notification outbox retries
 # real 3 GiB boundary: restart WITHOUT the STORAGE_LIMIT_BYTES override, then E2E_HARD=1 ... npm run test:e2e
 ```
 Note: under `wrangler dev` signed URLs carry the route hostname (`deliver-api.boztik.com`); the tests rewrite it.
 
-Spotlight reliability changes require migration `0016_spotlight_reliability.sql`. Apply it with
+Spotlight lifecycle and upload changes require migration `0018_spotlight_lifecycle.sql`. Apply it with
 `npm run db:migrate:local` in development and the normal reviewed remote migration process before deploying
-the Worker. Spotlight images remain subject to the shared 3 GiB Deliver ledger. The Worker validates size,
-declared MIME type, and format signatures/structure, but does not fully decode or re-encode pixels because the
-current Cloudflare Worker runtime has no lightweight built-in image decoder.
+the Worker. Public applications move through new, under-review, approved, and published states; new
+applications awaiting a decision and approved profiles have a 72-hour window, and published listings expire
+after 72 hours.
+Review decisions and decline reasons are retained with the profile. Expired images are removed with R2-first
+cleanup; a failed deletion keeps its database references and triggers storage reconciliation.
+
+The submission form accepts one primary image and up to two additional images. The browser decodes and
+resizes them to a maximum 2,000 px longest edge, then optimizes them to WebP under 5 MB each. The Worker
+independently checks image type signatures, dimensions, and size before upload; it does not fully decode or
+re-encode pixels. All Spotlight assets continue to use the same private bucket, reservations, and shared
+3 GiB Deliver storage ledger.
 
 ## Milestone notification emails (backend-only)
 
@@ -82,15 +91,16 @@ Metrics & spacing: **views** every 1,000 · **downloads** every 10 · **shares**
 - Secrets (see `src/types.ts`): `NOTIFY_EMAIL_TO`, `NOTIFY_EMAIL_FROM`, `EMAIL_PROVIDER_URL`,
   `EMAIL_PROVIDER_KEY` (optional bearer key) — set with `npx wrangler secret put …`.
 
-Spotlight owner notifications use a JSON POST with `from`, `to`, `subject`,
-and `text`. For Resend, set `EMAIL_PROVIDER_URL` to
+Spotlight owner and applicant notifications use a JSON POST with `from`, `to`, `subject`,
+and `text`. An idempotent D1 outbox retries temporary provider failures from the ten-minute maintenance
+trigger. For Resend, set `EMAIL_PROVIDER_URL` to
 `https://api.resend.com/emails`, `EMAIL_PROVIDER_KEY` to the Resend API key,
 `NOTIFY_EMAIL_FROM` to a sender verified with Resend, and
 `NOTIFY_EMAIL_TO` to the inbox that should receive submissions. Configure
 these as Worker secrets (never in frontend code or committed files). The
-profile is inserted into D1 before notification is attempted; the submit page
-reports if the email could not be delivered, and the pending profile remains
-available in Command Centre for manual review.
+profile is stored before notification is attempted; the submit page reports whether the owner alert was
+sent, and the queued profile remains available in Command Centre for manual review even if email is
+temporarily unavailable.
 - Rules live in `src/lib/milestones.ts` (pure, unit-tested by `scripts/milestone-test.mts`); the engine is
   `src/lib/notify.ts`. Requires migration `0004_milestone_notifications.sql`.
 

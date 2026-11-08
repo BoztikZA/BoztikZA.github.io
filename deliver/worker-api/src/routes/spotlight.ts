@@ -2,10 +2,13 @@ import type { Env } from "../types";
 import { HttpError } from "../types";
 import { requireSession } from "../lib/auth";
 import { localDay } from "../lib/db";
+import { enqueueSpotlightEmail, processSpotlightEmailOutbox } from "../lib/spotlight-email";
+import { readImageDimensions } from "../lib/spotlight-image";
 import { reserveUpload, claimUpload, commitUpload, getPendingUpload, holdStoredUploadReservation, releaseReservation, releaseStoredPending, markUncertain, reconcileStorage } from "../lib/storage";
 import { assertSameSiteOrigin, checkPublicRate, error, json, readJson, requireJson, segments, wrap } from "./util";
 
 const CATEGORIES = new Set(["small-business","youtube","twitch","gaming","photography","design","music","creator","freelance","other"]);
+const SPOTLIGHT_TERM_SECONDS = 72 * 60 * 60;
 const ID = () => crypto.randomUUID().replace(/-/g, "").slice(0, 20);
 const now = () => Math.floor(Date.now() / 1000);
 const day = (env: Env) => localDay(env);
@@ -230,8 +233,8 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
       }
       const cursor = decodeCursor(requestUrl.searchParams.get("cursor"));
       const timestamp = cursor?.asOf ?? now();
-      const clauses = ["status='published'"];
-      const bindings: (string | number)[] = [];
+      const clauses = ["status='published'", "(listing_expires_at IS NULL OR listing_expires_at>?)"];
+      const bindings: (string | number)[] = [now()];
       if (category !== "all") {
         clauses.push("category=?");
         bindings.push(category);
@@ -275,24 +278,24 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
         profiles: page.map(row => publicDto(row, gallery.get(row.id))),
         next_cursor: nextCursor,
         has_more: hasMore,
-      }, 200, { "Cache-Control": "public, max-age=60, stale-while-revalidate=120" });
+      }, 200, { "Cache-Control": "no-store" });
     }
     if (request.method === "GET" && seg[0] === "image" && (seg.length === 2 || seg.length === 3)) {
       const position = seg.length === 3 ? Number(seg[2]) : 0;
       if (seg.length === 3 && (!Number.isInteger(position) || position < 1 || position > 4)) return error("Image not found",404);
       const row = position === 0
-        ? await env.DB.prepare("SELECT image_key,image_content_type FROM spotlight_profiles WHERE id=? AND status='published'").bind(seg[1]).first<any>()
-        : await env.DB.prepare("SELECT g.image_key,g.image_content_type FROM spotlight_gallery_images g JOIN spotlight_profiles p ON p.id=g.profile_id WHERE g.profile_id=? AND g.position=? AND p.status='published'").bind(seg[1], position).first<any>();
+        ? await env.DB.prepare("SELECT image_key,image_content_type FROM spotlight_profiles WHERE id=? AND status='published' AND (listing_expires_at IS NULL OR listing_expires_at>?)").bind(seg[1],now()).first<any>()
+        : await env.DB.prepare("SELECT g.image_key,g.image_content_type FROM spotlight_gallery_images g JOIN spotlight_profiles p ON p.id=g.profile_id WHERE g.profile_id=? AND g.position=? AND p.status='published' AND (p.listing_expires_at IS NULL OR p.listing_expires_at>?)").bind(seg[1], position, now()).first<any>();
       if (!row?.image_key) return error("Image not found",404);
       const object = await env.BUCKET.get(row.image_key);
       if (!object) return error("Image not found",404);
-      return new Response(object.body,{headers:{"Content-Type":row.image_content_type || "image/jpeg","Cache-Control":"public, max-age=3600","X-Content-Type-Options":"nosniff"}});
+      return new Response(object.body,{headers:{"Content-Type":row.image_content_type || "image/jpeg","Cache-Control":"public, max-age=60","X-Content-Type-Options":"nosniff"}});
     }
     if (request.method === "GET" && seg[0] === "share" && seg.length === 2) {
       checkPublicRate(request, env, "spotlight-share", 2);
       const slug = clean(seg[1], 60);
       if (!slug || !/^[a-z0-9-]+$/.test(slug)) return error("Profile not found", 404);
-      const row = await env.DB.prepare("SELECT * FROM spotlight_profiles WHERE slug=? AND status='published'").bind(slug).first<any>();
+      const row = await env.DB.prepare("SELECT * FROM spotlight_profiles WHERE slug=? AND status='published' AND (listing_expires_at IS NULL OR listing_expires_at>?)").bind(slug,now()).first<any>();
       if (!row) return error("Profile not found", 404);
       const gallery = await spotlightGalleryByProfile(env, [row.id]);
       const profile = publicDto(row, gallery.get(row.id));
@@ -317,14 +320,14 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
         '<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#080b0d;color:#f2f5f2;font:16px Inter,system-ui,sans-serif}.card{width:min(520px,calc(100% - 48px));padding:32px;border:1px solid #28332c;border-radius:16px;background:#101719;text-align:center}.mark{color:#8eff3d;font-weight:800;letter-spacing:.16em}.card p{color:#aab7ae;line-height:1.6}.card a{display:inline-block;margin-top:12px;padding:12px 18px;border-radius:8px;background:#8eff3d;color:#0b1207;text-decoration:none;font-weight:800}</style>' +
         '</head><body><main class="card"><div class="mark">BOZTIK SPOTLIGHT</div><h1>' + escapeHtml(profile.display_name) + '</h1><p>' + escapeHtml(description) + '</p><p>Opening this profile…</p><a href="' + escapeHtml(profileUrl) + '">View profile</a></main>' +
         "<script>location.replace(" + JSON.stringify(profileUrl) + ");</script></body></html>";
-      return new Response(page, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=300, stale-while-revalidate=600", "X-Robots-Tag": "noindex", "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'" } });
+      return new Response(page, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-Robots-Tag": "noindex", "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'" } });
     }
     if (request.method === "GET" && seg[0] === "profile" && seg.length === 2) {
       checkPublicRate(request, env, "spotlight-profile", 2);
-      const row = await env.DB.prepare("SELECT * FROM spotlight_profiles WHERE slug=? AND status='published'").bind(seg[1]).first<any>();
+      const row = await env.DB.prepare("SELECT * FROM spotlight_profiles WHERE slug=? AND status='published' AND (listing_expires_at IS NULL OR listing_expires_at>?)").bind(seg[1],now()).first<any>();
       if (!row) return error("Profile not found", 404);
       const gallery = await spotlightGalleryByProfile(env, [row.id]);
-      return json({ ok: true, profile: publicDto(row, gallery.get(row.id)) }, 200, { "Cache-Control": "public, max-age=60, stale-while-revalidate=120" });
+      return json({ ok: true, profile: publicDto(row, gallery.get(row.id)) }, 200, { "Cache-Control": "no-store" });
     }
     if (request.method === "POST" && seg[0] === "submit" && seg.length === 1) {
       checkPublicRate(request, env, "spotlight-submit", 0.25);
@@ -337,7 +340,7 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
       let showcaseImages: File[] = [];
       if (isMultipart) {
         const contentLength = Number(request.headers.get("Content-Length") || 0);
-        if (contentLength > 11 * 1024 * 1024) throw new HttpError(413, "submission_too_large", "All Spotlight images together must be no larger than 10 MB.");
+        if (contentLength > 16 * 1024 * 1024) throw new HttpError(413, "submission_too_large", "All Spotlight images together must be no larger than 15 MB.");
         const form = await request.formData();
         const value = (key: string) => form.get(key);
         let socialLinks: unknown = {};
@@ -356,11 +359,11 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
         mainImage = typeof File !== "undefined" && primary instanceof File && primary.size ? primary : null;
         showcaseImages = form.getAll("showcase_images")
           .filter((file): file is File => typeof File !== "undefined" && file instanceof File && file.size > 0);
-        if (showcaseImages.length > 4) throw new HttpError(422, "too_many_images", "Choose one main image and no more than four additional images.");
+        if (showcaseImages.length > 2) throw new HttpError(422, "too_many_images", "Choose one main image and no more than two additional images.");
         if (!mainImage) throw new HttpError(422, "main_image_required", "Choose your main logo or profile image first.");
         for (const file of [mainImage, ...showcaseImages]) {
           if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) throw new HttpError(415, "invalid_image_type", "Choose JPG, PNG or WebP images.");
-          if (file.size > 2 * 1024 * 1024) throw new HttpError(413, "image_too_large", "Each Spotlight image must be no larger than 2 MB.");
+          if (file.size > 5 * 1024 * 1024) throw new HttpError(413, "image_too_large", "Each Spotlight image must be no larger than 5 MB.");
         }
       } else {
         requireJson(request);
@@ -394,13 +397,15 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
       const id = ID(), timestamp = now();
       const slug = slugify(displayName) + "-" + id.slice(0, 5);
       const inserted = await env.DB.prepare(
-        `INSERT INTO spotlight_profiles (id,slug,display_name,tagline,description,category,contact_email,website_url,social_links,song_metadata,status,created_at,updated_at)
-         SELECT ?,?,?,?,?,?,?,?,?,?,'pending',?,?
+        `INSERT INTO spotlight_profiles
+          (id,slug,display_name,tagline,description,category,contact_email,website_url,social_links,song_metadata,
+           status,application_status,review_expires_at,review_unread,created_at,updated_at)
+         SELECT ?,?,?,?,?,?,?,?,?,?,'pending','new',?,1,?,?
           WHERE NOT EXISTS (
             SELECT 1 FROM spotlight_profiles
              WHERE contact_email=? AND lower(display_name)=lower(?) AND status<>'archived' AND created_at>=?
           )`,
-      ).bind(id,slug,displayName,tagline,description,category,email,website,JSON.stringify(social),song ? JSON.stringify(song) : null,timestamp,timestamp,email,displayName,timestamp - 86400).run();
+      ).bind(id,slug,displayName,tagline,description,category,email,website,JSON.stringify(social),song ? JSON.stringify(song) : null,timestamp + SPOTLIGHT_TERM_SECONDS,timestamp,timestamp,email,displayName,timestamp - 86400).run();
       if ((inserted.meta.changes || 0) === 0) {
         return json({
           ok: true,
@@ -437,17 +442,24 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
           throw uploadError;
         }
       }
-      // Attempt the owner notification before responding so the submitter sees
-      // whether the email alert was sent. The D1 submission is already safely
-      // stored, so provider failure never loses the profile.
-      const notificationSent = await notifySpotlightSubmission(env, { displayName, tagline, category, email, website, id })
-        .catch(e => { console.error("[spotlight] notification failed", e); return false; });
+      let notificationQueued = false;
+      let notificationSent = false;
+      try {
+        await enqueueSpotlightEmail(env, id, "new_submission");
+        notificationQueued = true;
+        notificationSent = (await processSpotlightEmailOutbox(env, 1, id, "new_submission")).sent > 0;
+      } catch (notificationError) {
+        console.error("[spotlight] owner notification could not be processed", notificationError);
+      }
       return json({
         ok: true,
         notification_sent: notificationSent,
+        notification_queued: notificationQueued,
         message: notificationSent
           ? "Your profile has been received. The Boztik team has also been notified."
-          : "Your profile has been safely received for review, but the email alert could not be sent. You do not need to submit it again."
+          : notificationQueued
+            ? "Your profile has been safely received for review. The email alert is queued for retry; you do not need to submit it again."
+            : "Your profile has been safely received for review, but the email alert could not be queued. You do not need to submit it again."
       }, 201);
     }
     if (request.method === "POST" && seg[0] === "event" && seg.length === 1) {
@@ -457,7 +469,7 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
       const eventId = clean(b.event_id, 64), profileId = clean(b.profile_id, 32), type = b.type;
       const visitorId = clean(b.visitor_id, 64);
       if (!/^[a-zA-Z0-9_-]{12,64}$/.test(eventId) || !/^[a-f0-9]{20}$/i.test(profileId) || !["view","click"].includes(String(type)) || (type === "view" && !/^[a-f0-9-]{36}$/i.test(visitorId))) throw new HttpError(422, "invalid_event", "Invalid analytics event.");
-      const profile = await env.DB.prepare("SELECT id FROM spotlight_profiles WHERE id=? AND status='published'").bind(profileId).first();
+      const profile = await env.DB.prepare("SELECT id FROM spotlight_profiles WHERE id=? AND status='published' AND (listing_expires_at IS NULL OR listing_expires_at>?)").bind(profileId,now()).first();
       if (!profile) return json({ ok: true, counted: false });
       const d = day(env), t = now();
       const insert = await env.DB.prepare("INSERT OR IGNORE INTO spotlight_events(event_id,profile_id,event_type,day,created_at) VALUES(?,?,?,?,?)").bind(eventId,profileId,type,d,t).run();
@@ -479,7 +491,7 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
       const eventId = clean(b.event_id, 64), profileId = clean(b.profile_id, 32);
       if (!/^[a-zA-Z0-9_-]{12,64}$/.test(eventId) || !/^[a-f0-9]{20}$/i.test(profileId)) throw new HttpError(422, "invalid_event", "Invalid impression event.");
       const d = day(env), t = now();
-      const featured = await env.DB.prepare("SELECT id FROM spotlight_profiles WHERE id=? AND status='published' AND featured_until>?").bind(profileId,t).first();
+      const featured = await env.DB.prepare("SELECT id FROM spotlight_profiles WHERE id=? AND status='published' AND featured_until>? AND (listing_expires_at IS NULL OR listing_expires_at>?)").bind(profileId,t,t).first();
       if (!featured) return json({ok:true,counted:false});
       const insert = await env.DB.prepare("INSERT OR IGNORE INTO spotlight_impressions(event_id,profile_id,day,created_at) VALUES(?,?,?,?)").bind(eventId,profileId,d,t).run();
       if ((insert.meta.changes || 0) > 0) await env.DB.prepare("INSERT INTO spotlight_daily_metrics(profile_id,day,featured_impressions) VALUES(?,?,1) ON CONFLICT(profile_id,day) DO UPDATE SET featured_impressions=featured_impressions+1").bind(profileId,d).run();
@@ -491,7 +503,7 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
 
 export function handleSpotlightAdmin(request: Request, path: string, env: Env): Promise<Response> {
   return wrap(async () => {
-    await requireSession(request, env);
+    const actor = await requireSession(request, env);
     const seg = segments(path);
     if (seg.length === 1 && seg[0] === "profile" && request.method === "POST") {
       requireJson(request);
@@ -521,21 +533,109 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       }
       const id = ID(), timestamp = now(), slug = slugify(displayName) + "-" + id.slice(0, 5);
       await env.DB.prepare(
-        "INSERT INTO spotlight_profiles (id,slug,display_name,tagline,description,category,contact_email,website_url,social_links,song_metadata,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,'pending',?,?)"
+        "INSERT INTO spotlight_profiles (id,slug,display_name,tagline,description,category,contact_email,website_url,social_links,song_metadata,status,application_status,review_unread,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,'pending','approved',0,?,?)"
       ).bind(id,slug,displayName,tagline,description,category,email,website,JSON.stringify(social),song ? JSON.stringify(song) : null,timestamp,timestamp).run();
       const row = await env.DB.prepare("SELECT * FROM spotlight_profiles WHERE id=?").bind(id).first<any>();
-      return json({ ok:true, profile:{...publicDto(row),contact_email:row.contact_email,status:row.status} }, 201);
+      return json({ ok:true, profile:{...publicDto(row),contact_email:row.contact_email,status:row.status,application_status:row.application_status} }, 201);
     }
     if (!seg.length && request.method === "GET") {
-      const rows = await env.DB.prepare("SELECT * FROM spotlight_profiles ORDER BY CASE status WHEN 'pending' THEN 0 WHEN 'published' THEN 1 ELSE 2 END, created_at DESC LIMIT 300").all<any>();
+      const rows = await env.DB.prepare(
+        "SELECT * FROM spotlight_profiles ORDER BY CASE application_status WHEN 'new' THEN 0 WHEN 'under_review' THEN 1 WHEN 'approved' THEN 2 WHEN 'declined' THEN 3 WHEN 'expired' THEN 4 ELSE 5 END, created_at DESC LIMIT 300",
+      ).all<any>();
+      const counts = await env.DB.prepare(
+        `SELECT SUM(CASE WHEN application_status IN ('new','under_review') THEN 1 ELSE 0 END) AS pending_decision_count,
+                SUM(CASE WHEN application_status='new' AND review_unread=1 THEN 1 ELSE 0 END) AS unread_count,
+                SUM(CASE WHEN application_status='approved' THEN 1 ELSE 0 END) AS approved_count
+           FROM spotlight_profiles`,
+      ).first<any>();
       const gallery = await spotlightGalleryByProfile(env, (rows.results || []).map((row: any) => row.id));
-      return json({ ok: true, profiles: (rows.results || []).map((r:any) => ({
+      const profiles = (rows.results || []).map((r:any) => ({
         ...publicDto(r, gallery.get(r.id)),
         contact_email:r.contact_email,
         status:r.status,
+        application_status:r.application_status,
+        review_unread:Boolean(r.review_unread),
+        review_expires_at:r.review_expires_at,
+        listing_expires_at:r.listing_expires_at,
+        decline_reason:r.decline_reason,
         gallery_positions:(gallery.get(r.id) || []).map((image: any) => Number(image.position)),
         invalid_social_links: invalidSocialLinkKeys(r.social_links),
-      })) });
+      }));
+      return json({
+        ok: true,
+        profiles,
+        unread_count: Number(counts?.unread_count || 0),
+        pending_decision_count: Number(counts?.pending_decision_count || 0),
+        approved_count: Number(counts?.approved_count || 0),
+      });
+    }
+    if (seg.length === 3 && seg[0] === "profile" && seg[2] === "review" && request.method === "PATCH") {
+      requireJson(request);
+      const body = await readJson(request, 4096);
+      const action = clean(body.action, 24);
+      const old = await env.DB.prepare("SELECT * FROM spotlight_profiles WHERE id=?").bind(seg[1]).first<any>();
+      if (!old) return error("Profile not found", 404);
+      const timestamp = now();
+      const fromStatus = String(old.application_status || (old.status === "published" ? "published" : "new"));
+      if (action === "mark_read") {
+        if (fromStatus !== "new" || !old.review_unread) return json({ ok: true, unread: false });
+        const result = await env.DB.batch([
+          env.DB.prepare("UPDATE spotlight_profiles SET review_unread=0 WHERE id=? AND application_status='new' AND review_unread=1").bind(seg[1]),
+          env.DB.prepare(
+            "INSERT INTO spotlight_review_events(id,profile_id,actor,action,from_status,to_status,created_at) SELECT ?,?,?,?,?,?,? WHERE changes()>0",
+          ).bind(ID(),seg[1],actor,"mark_read",fromStatus,fromStatus,timestamp),
+        ]);
+        if ((result[0]?.meta.changes || 0) !== 1) return error("Profile changed during review. Refresh and try again.", 409);
+        return json({ ok: true, unread: false });
+      }
+
+      let toStatus: string;
+      let updateSql: string;
+      let updateArgs: unknown[];
+      let reason: string | null = null;
+      if (action === "start_review" && fromStatus === "new") {
+        toStatus = "under_review";
+        updateSql = "UPDATE spotlight_profiles SET application_status='under_review',review_unread=0,reviewed_at=COALESCE(reviewed_at,?) WHERE id=? AND application_status='new'";
+        updateArgs = [timestamp,seg[1]];
+      } else if (action === "approve" && ["new","under_review"].includes(fromStatus)) {
+        toStatus = "approved";
+        updateSql = "UPDATE spotlight_profiles SET application_status='approved',review_unread=0,review_expires_at=?,reviewed_at=COALESCE(reviewed_at,?),decided_at=? WHERE id=? AND application_status IN ('new','under_review')";
+        updateArgs = [timestamp + SPOTLIGHT_TERM_SECONDS,timestamp,timestamp,seg[1]];
+      } else if (action === "decline" && ["new","under_review"].includes(fromStatus)) {
+        reason = cleanDescription(body.reason).slice(0, 1000);
+        if (reason.length < 10) throw new HttpError(422, "decline_reason_required", "Provide a clear decline reason of at least 10 characters.");
+        toStatus = "declined";
+        updateSql = "UPDATE spotlight_profiles SET application_status='declined',review_unread=0,decline_reason=?,review_expires_at=?,reviewed_at=COALESCE(reviewed_at,?),decided_at=? WHERE id=? AND application_status IN ('new','under_review')";
+        updateArgs = [reason,timestamp + 7 * 86400,timestamp,timestamp,seg[1]];
+      } else {
+        throw new HttpError(409, "invalid_review_transition", "This application can no longer make that review transition. Refresh the queue and try again.");
+      }
+
+      const statements = [
+        env.DB.prepare(updateSql).bind(...updateArgs),
+        env.DB.prepare(
+          "INSERT INTO spotlight_review_events(id,profile_id,actor,action,from_status,to_status,reason,created_at) SELECT ?,?,?,?,?,?,?,? WHERE changes()>0",
+        ).bind(ID(),seg[1],actor,action,fromStatus,toStatus,reason,timestamp),
+      ];
+      if (action === "decline" && old.contact_email) {
+        statements.push(env.DB.prepare(
+          `INSERT OR IGNORE INTO spotlight_email_outbox
+             (id,profile_id,kind,recipient,state,attempts,next_attempt_at,created_at)
+           SELECT ?,spotlight_profiles.id,'declined',contact_email,'pending',0,?,?
+             FROM spotlight_profiles
+            WHERE spotlight_profiles.id=? AND application_status='declined' AND contact_email<>'' AND changes()>0`,
+        ).bind(ID(),timestamp,timestamp,seg[1]));
+      }
+      const result = await env.DB.batch(statements);
+      if ((result[0]?.meta.changes || 0) !== 1) return error("Profile changed during review. Refresh and try again.", 409);
+      if (action === "decline" && old.contact_email) {
+        try {
+          await processSpotlightEmailOutbox(env, 1, seg[1], "declined");
+        } catch (notificationError) {
+          console.error("[spotlight] decline email remains queued for retry", notificationError);
+        }
+      }
+      return json({ ok: true, application_status: toStatus, notification_queued: action === "decline" && Boolean(old.contact_email) });
     }
     if (seg.length === 3 && seg[0] === "profile" && seg[2] === "image" && request.method === "PUT") return uploadSpotlightImage(request,env,seg[1]!);
     if (seg.length === 4 && seg[0] === "profile" && seg[2] === "gallery" && /^[1-4]$/.test(seg[3]!) && request.method === "PUT") return uploadSpotlightImage(request,env,seg[1]!,Number(seg[3]));
@@ -561,7 +661,11 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       requireJson(request); const b = await readJson(request, 32 * 1024);
       const old = await env.DB.prepare("SELECT * FROM spotlight_profiles WHERE id=?").bind(seg[1]).first<any>();
       if (!old) return error("Profile not found",404);
-      const status = ["pending","published","archived"].includes(String(b.status)) ? String(b.status) : old.status;
+      if (b.status !== undefined && !["pending","published","archived"].includes(String(b.status))) {
+        throw new HttpError(422, "invalid_status", "Choose pending, published or archived.");
+      }
+      const status = b.status === undefined ? old.status : String(b.status);
+      const applicationStatus = String(old.application_status || (old.status === "published" ? "published" : "new"));
       const displayName = b.display_name === undefined ? old.display_name : clean(b.display_name, 80);
       const tagline = b.tagline === undefined ? old.tagline : clean(b.tagline, 120);
       const description = b.description === undefined ? old.description : cleanDescription(b.description);
@@ -576,15 +680,43 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       if (b.contact_email !== undefined && contactEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail)) throw new HttpError(422, "invalid_email", "Enter a valid contact email, or leave the field blank.");
       if (b.website_url && !website) throw new HttpError(422, "invalid_url", "Website links must use HTTPS.");
       if (b.featured === true && status !== "published") throw new HttpError(422, "feature_requires_published", "Publish the profile before featuring it.");
+      if (status === "published" && !["approved","published"].includes(applicationStatus)) {
+        throw new HttpError(409, "application_not_approved", "Approve this application in the review queue before publishing it.");
+      }
       const featured = status !== "published" ? null : b.featured === true ? now()+86400 : b.featured === false ? null : old.featured_until;
       const updated = now();
+      if (status === "published" && old.status === "published" && old.listing_expires_at
+        && Number(old.listing_expires_at) <= updated && (b.status === "published" || b.featured === true)) {
+        throw new HttpError(409, "listing_expired", "This listing has expired and cannot be republished or featured.");
+      }
+      const nextApplicationStatus = status === "published" ? "published" : applicationStatus;
+      const listingExpiresAt = status === "published"
+        ? (old.status === "published" ? old.listing_expires_at : updated + SPOTLIGHT_TERM_SECONDS)
+        : null;
       // Only one profile can hold the daily featured placement at a time.
-      await env.DB.batch([
+      const statements = [
         env.DB.prepare("UPDATE spotlight_profiles SET featured_until=NULL WHERE featured_until > ? AND id<>?").bind(updated,seg[1]),
-        env.DB.prepare("UPDATE spotlight_profiles SET display_name=?,tagline=?,description=?,category=?,contact_email=?,website_url=?,social_links=?,song_metadata=?,status=?,featured_until=?,updated_at=?,published_at=CASE WHEN ?='published' THEN COALESCE(published_at,?) ELSE published_at END WHERE id=?").bind(displayName,tagline,description,category,contactEmail,website,JSON.stringify(social),song ? JSON.stringify(song) : null,status,featured,updated,status,updated,seg[1])
-      ]);
+        env.DB.prepare(
+          "UPDATE spotlight_profiles SET display_name=?,tagline=?,description=?,category=?,contact_email=?,website_url=?,social_links=?,song_metadata=?,status=?,application_status=?,review_expires_at=CASE WHEN ?='published' THEN NULL ELSE review_expires_at END,listing_expires_at=?,featured_until=?,updated_at=?,published_at=CASE WHEN ?='published' THEN COALESCE(published_at,?) ELSE published_at END WHERE id=?",
+        ).bind(displayName,tagline,description,category,contactEmail,website,JSON.stringify(social),song ? JSON.stringify(song) : null,status,nextApplicationStatus,status,listingExpiresAt,featured,updated,status,updated,seg[1])
+      ];
+      if (status === "published" && old.status !== "published") {
+        statements.push(env.DB.prepare(
+          "INSERT INTO spotlight_review_events(id,profile_id,actor,action,from_status,to_status,created_at) SELECT ?,?,?,'publish',?,'published',? WHERE changes()>0",
+        ).bind(ID(),seg[1],actor,applicationStatus,updated));
+      }
+      await env.DB.batch(statements);
       const row = await env.DB.prepare("SELECT * FROM spotlight_profiles WHERE id=?").bind(seg[1]).first<any>();
-      return json({ ok:true, profile:{...publicDto(row),contact_email:row.contact_email,status:row.status} });
+      return json({
+        ok:true,
+        profile:{
+          ...publicDto(row),
+          contact_email:row.contact_email,
+          status:row.status,
+          application_status:row.application_status,
+          listing_expires_at:row.listing_expires_at,
+        },
+      });
     }
     if (seg.length === 2 && seg[0] === "profile" && request.method === "DELETE") {
       const old=await env.DB.prepare("SELECT image_key,image_size FROM spotlight_profiles WHERE id=?").bind(seg[1]).first<any>();
@@ -625,29 +757,6 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
     }
     return error("Not found",404);
   });
-}
-
-async function notifySpotlightSubmission(env: Env, item: {displayName:string;tagline:string;category:string;email:string;website:string|null;id:string}): Promise<boolean> {
-  const to=env.NOTIFY_EMAIL_TO?.trim(), from=env.NOTIFY_EMAIL_FROM?.trim(), url=env.EMAIL_PROVIDER_URL?.trim();
-  if(!to||!from||!url){console.warn("[spotlight] owner email notification is not configured; submission remains safely queued in D1.");return false;}
-  const subject="New Boztik Spotlight submission: "+item.displayName;
-  const textBody=[
-    "A new Spotlight profile is waiting for review.",
-    "",
-    "Name: "+item.displayName,
-    "Category: "+item.category,
-    "Tagline: "+item.tagline,
-    "Contact: "+item.email,
-    "Website: "+(item.website||"Not supplied"),
-    "",
-    "Review it in the Boztik Command Centre > Spotlight.",
-    "Submission reference: "+item.id
-  ].join("\n");
-  const headers:Record<string,string>={"Content-Type":"application/json"};
-  if(env.EMAIL_PROVIDER_KEY)headers.Authorization="Bearer "+env.EMAIL_PROVIDER_KEY;
-  const response=await fetch(url,{method:"POST",headers,body:JSON.stringify({from,to,subject,text:textBody})});
-  if(!response.ok)throw new Error("Email provider returned "+response.status);
-  return true;
 }
 
 // Spotlight images share the existing atomic storage ledger and the same 3 GiB ceiling as Deliver.
@@ -771,9 +880,10 @@ async function rollbackSpotlightUpload(env: Env, uploadId: string, key: string, 
 
 export async function uploadSpotlightImage(request:Request,env:Env,profileId:string,position=0):Promise<Response>{
   if(!/^[a-f0-9]{20}$/i.test(profileId))return error("Profile not found",404);
-  if(!Number.isInteger(position)||position<0||position>4)return error("Image slot not found",404);
-  const profile=await env.DB.prepare("SELECT id,image_key,image_size FROM spotlight_profiles WHERE id=?").bind(profileId).first<any>();
+  if(!Number.isInteger(position)||position<0||position>2)return error("Image slot not found",404);
+  const profile=await env.DB.prepare("SELECT id,image_key,image_size,application_status FROM spotlight_profiles WHERE id=?").bind(profileId).first<any>();
   if(!profile)return error("Profile not found",404);
+  if(["declined","expired"].includes(String(profile.application_status)))return error("This application is no longer accepting image changes.",409);
   const previous = position === 0
     ? profile
     : await env.DB.prepare("SELECT image_key,image_size FROM spotlight_gallery_images WHERE profile_id=? AND position=?").bind(profileId,position).first<any>();
@@ -782,9 +892,9 @@ export async function uploadSpotlightImage(request:Request,env:Env,profileId:str
   const type=contentType.split(";")[0]?.trim().toLowerCase()||"";
   const declaredHeader=request.headers.get("Content-Length");
   const declared=declaredHeader===null?null:Number(declaredHeader);
-  const maxBytes=2*1024*1024;
+  const maxBytes=5*1024*1024;
   if(!["image/jpeg","image/png","image/webp"].includes(type))throw new HttpError(415,"invalid_image_type","Choose a JPG, PNG or WebP image.");
-  if(declared!==null&&(!Number.isInteger(declared)||declared<1||declared>maxBytes))throw new HttpError(413,"image_too_large","Spotlight images must be no larger than 2 MB.");
+  if(declared!==null&&(!Number.isInteger(declared)||declared<1||declared>maxBytes))throw new HttpError(413,"image_too_large","Spotlight images must be no larger than 5 MB.");
   const reader=request.body?.getReader();
   if(!reader)throw new HttpError(422,"empty_image","Choose an image to upload.");
   const chunks:Uint8Array[]=[];let total=0;
@@ -792,7 +902,7 @@ export async function uploadSpotlightImage(request:Request,env:Env,profileId:str
     const part=await reader.read();
     if(part.done)break;
     total+=part.value.byteLength;
-    if(total>maxBytes){await reader.cancel();throw new HttpError(413,"image_too_large","Spotlight images must be no larger than 2 MB.");}
+    if(total>maxBytes){await reader.cancel();throw new HttpError(413,"image_too_large","Spotlight images must be no larger than 5 MB.");}
     chunks.push(part.value);
   }
   if(total<1)throw new HttpError(422,"empty_image","Choose an image to upload.");
@@ -805,6 +915,13 @@ export async function uploadSpotlightImage(request:Request,env:Env,profileId:str
       ? bytes.length>=20&&bytes[0]===137&&bytes[1]===80&&bytes[2]===78&&bytes[3]===71&&new TextDecoder().decode(bytes.slice(-8,-4))==="IEND"
       : bytes.length>=12&&new TextDecoder().decode(bytes.slice(0,4))==="RIFF"&&new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength).getUint32(4,true)+8===bytes.length&&new TextDecoder().decode(bytes.slice(8,12))==="WEBP";
   if(!valid)throw new HttpError(422,"invalid_image","The file contents do not match the selected image type.");
+  const dimensions = readImageDimensions(bytes,type);
+  if (!dimensions || dimensions.width < 1 || dimensions.height < 1) {
+    throw new HttpError(422,"invalid_image_dimensions","The image dimensions could not be verified.");
+  }
+  if (Math.max(dimensions.width,dimensions.height) > 2000) {
+    throw new HttpError(422,"image_dimensions_too_large","Resize images so their longest side is no more than 2,000 pixels.");
+  }
   const uploadId=crypto.randomUUID().replace(/-/g,"").slice(0,16),fileId=crypto.randomUUID().replace(/-/g,"").slice(0,16),key="spotlight/"+profileId+"/"+uploadId;
   await reserveUpload(env,{uploadId,deliveryId:profileId,fileId,r2Key:key,fileName:"spotlight-profile-image",fileSize:bytes.length,contentType:type});
   let writeAttempted=false,attached=false;
@@ -817,8 +934,8 @@ export async function uploadSpotlightImage(request:Request,env:Env,profileId:str
     const previousFileId=crypto.randomUUID().replace(/-/g,"").slice(0,16);
     const attachedAt=now();
     const attachStatement = position === 0
-      ? env.DB.prepare("UPDATE spotlight_profiles SET image_key=?,image_size=?,image_content_type=?,updated_at=? WHERE id=? AND image_key IS ?").bind(key,bytes.length,type,attachedAt,profileId,previousKey)
-      : env.DB.prepare("INSERT INTO spotlight_gallery_images(profile_id,position,image_key,image_size,image_content_type,created_at) VALUES(?,?,?,?,?,?) ON CONFLICT(profile_id,position) DO UPDATE SET image_key=excluded.image_key,image_size=excluded.image_size,image_content_type=excluded.image_content_type,created_at=excluded.created_at WHERE spotlight_gallery_images.image_key IS ?").bind(profileId,position,key,bytes.length,type,attachedAt,previousKey);
+      ? env.DB.prepare("UPDATE spotlight_profiles SET image_key=?,image_size=?,image_content_type=?,updated_at=? WHERE id=? AND image_key IS ? AND application_status NOT IN ('declined','expired')").bind(key,bytes.length,type,attachedAt,profileId,previousKey)
+      : env.DB.prepare("INSERT INTO spotlight_gallery_images(profile_id,position,image_key,image_size,image_content_type,created_at) VALUES(?,?,?,?,?,?) ON CONFLICT(profile_id,position) DO UPDATE SET image_key=excluded.image_key,image_size=excluded.image_size,image_content_type=excluded.image_content_type,created_at=excluded.created_at WHERE spotlight_gallery_images.image_key IS ? AND EXISTS (SELECT 1 FROM spotlight_profiles WHERE id=? AND application_status NOT IN ('declined','expired'))").bind(profileId,position,key,bytes.length,type,attachedAt,previousKey,profileId);
     const attachedResult=await env.DB.batch([
       attachStatement,
       env.DB.prepare("DELETE FROM pending_uploads WHERE upload_id=? AND state='stored' AND changes()>0").bind(uploadId),

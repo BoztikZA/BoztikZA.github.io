@@ -19,11 +19,21 @@ class AdminStatement {
 
 class AdminDb {
   profiles = new Map<string, any>();
+  reviewEvents: any[] = [];
+  outbox = new Map<string, any>();
   sessions = new Map<string, { email: string; expires_at: number; revoked: number }>();
   failInserts = false;
   prepare(sql: string) { return new AdminStatement(this, sql); }
   async first(sql: string, args: unknown[]) {
     if (sql.includes("FROM sessions WHERE token_hash")) return this.sessions.get(String(args[0])) ?? null;
+    if (sql.includes("SUM(CASE WHEN application_status")) {
+      const profiles = [...this.profiles.values()];
+      return {
+        pending_decision_count: profiles.filter(row => ["new","under_review"].includes(row.application_status)).length,
+        unread_count: profiles.filter(row => row.application_status === "new" && row.review_unread).length,
+        approved_count: profiles.filter(row => row.application_status === "approved").length,
+      };
+    }
     if (sql.includes("FROM spotlight_profiles WHERE id=?")) {
       const row = this.profiles.get(String(args[0]));
       return row ? { ...row } : null;
@@ -36,27 +46,82 @@ class AdminDb {
       const [id, slug, display_name, tagline, description, category, contact_email, website_url, social_links, song_metadata, created_at, updated_at] = args as any[];
       this.profiles.set(id, {
         id, slug, display_name, tagline, description, category, contact_email, website_url, social_links, song_metadata,
-        status: "pending", featured_until: null, image_key: null, created_at, updated_at, published_at: null,
+        status: "pending", application_status: "approved", review_unread: 0, featured_until: null, image_key: null, created_at, updated_at, published_at: null,
       });
+      return { meta: { changes: 1 } };
+    }
+    if (sql.startsWith("INSERT OR IGNORE INTO spotlight_email_outbox")) {
+      const [id, profile_id, kind, recipient, next_attempt_at, created_at] = args;
+      if ([...this.outbox.values()].some(item => item.profile_id === profile_id && item.kind === kind)) return { meta: { changes: 0 } };
+      this.outbox.set(String(id), { id, profile_id, kind, recipient, state: "pending", attempts: 0, next_attempt_at, created_at });
       return { meta: { changes: 1 } };
     }
     throw new Error("Unexpected run() SQL: " + sql);
   }
   async all(sql: string) {
+    if (sql.includes("FROM spotlight_email_outbox e")) return { results: [] };
     if (sql.includes("FROM spotlight_gallery_images")) return { results: [] };
-    if (sql.includes("FROM spotlight_profiles ORDER BY CASE status")) {
+    if (sql.includes("FROM spotlight_profiles ORDER BY CASE application_status")) {
       return { results: [...this.profiles.values()].sort((a, b) => b.created_at - a.created_at).map(r => ({ ...r })) };
     }
     throw new Error("Unexpected all() SQL: " + sql);
   }
   async batch(statements: AdminStatement[]) {
+    let previousChanges = 0;
     return statements.map(statement => {
       if (statement.sql.startsWith("UPDATE spotlight_profiles SET display_name=?")) {
-        const [display_name, tagline, description, category, contact_email, website_url, social_links, song_metadata, status, featured_until, updated_at, , , id] = statement.args as any[];
+        const [display_name, tagline, description, category, contact_email, website_url, social_links, song_metadata, status, application_status, , listing_expires_at, featured_until, updated_at, , , id] = statement.args as any[];
         const row = this.profiles.get(id);
-        Object.assign(row, { display_name, tagline, description, category, contact_email, website_url, social_links, song_metadata, status, featured_until, updated_at });
+        Object.assign(row, { display_name, tagline, description, category, contact_email, website_url, social_links, song_metadata, status, application_status, listing_expires_at, featured_until, updated_at });
+        previousChanges = 1;
+        return { meta: { changes: previousChanges } };
+      }
+      if (statement.sql.startsWith("UPDATE spotlight_profiles SET review_unread=0")) {
+        const row = this.profiles.get(String(statement.args[0]));
+        previousChanges = row?.application_status === "new" && row.review_unread ? 1 : 0;
+        if (previousChanges) row.review_unread = 0;
+        return { meta: { changes: previousChanges } };
+      }
+      if (statement.sql.startsWith("UPDATE spotlight_profiles SET application_status='under_review'")) {
+        const row = this.profiles.get(String(statement.args[1]));
+        previousChanges = row?.application_status === "new" ? 1 : 0;
+        if (previousChanges) Object.assign(row, { application_status: "under_review", review_unread: 0, reviewed_at: statement.args[0] });
+        return { meta: { changes: previousChanges } };
+      }
+      if (statement.sql.startsWith("UPDATE spotlight_profiles SET application_status='approved'")) {
+        const row = this.profiles.get(String(statement.args[3]));
+        previousChanges = row && ["new","under_review"].includes(row.application_status) ? 1 : 0;
+        if (previousChanges) Object.assign(row, { application_status: "approved", review_unread: 0, review_expires_at: statement.args[0], reviewed_at: statement.args[1], decided_at: statement.args[2] });
+        return { meta: { changes: previousChanges } };
+      }
+      if (statement.sql.startsWith("UPDATE spotlight_profiles SET application_status='declined'")) {
+        const row = this.profiles.get(String(statement.args[4]));
+        previousChanges = row && ["new","under_review"].includes(row.application_status) ? 1 : 0;
+        if (previousChanges) Object.assign(row, { application_status: "declined", review_unread: 0, decline_reason: statement.args[0], review_expires_at: statement.args[1], reviewed_at: statement.args[2], decided_at: statement.args[3] });
+        return { meta: { changes: previousChanges } };
+      }
+      if (statement.sql.startsWith("INSERT INTO spotlight_review_events")) {
+        if (previousChanges) this.reviewEvents.push(statement.args);
+        const changes = previousChanges;
+        previousChanges = changes;
+        return { meta: { changes } };
+      }
+      if (statement.sql.startsWith("INSERT OR IGNORE INTO spotlight_email_outbox")) {
+        const [id, next_attempt_at, created_at, profile_id] = statement.args;
+        const row = this.profiles.get(String(profile_id));
+        if (!previousChanges || !row?.contact_email
+          || [...this.outbox.values()].some(item => item.profile_id === profile_id && item.kind === "declined")) {
+          previousChanges = 0;
+          return { meta: { changes: 0 } };
+        }
+        this.outbox.set(String(id), {
+          id, profile_id, kind: "declined", recipient: row.contact_email, state: "pending",
+          attempts: 0, next_attempt_at, created_at,
+        });
+        previousChanges = 1;
         return { meta: { changes: 1 } };
       }
+      previousChanges = 0;
       return { meta: { changes: 0 } };
     });
   }
@@ -98,6 +163,7 @@ console.log("1. Website-only profile saves (no email, no social links)");
   assert.equal(data.ok, true);
   assert.ok(data.profile.id);
   assert.equal(data.profile.status, "pending");
+  assert.equal(data.profile.application_status, "approved");
   assert.equal(data.profile.contact_email, "");
   assert.equal(data.profile.website_url, "https://www.example.com/");
   assert.equal(db.profiles.size, 1);
@@ -199,6 +265,7 @@ console.log("9. Saved profiles appear in the admin list");
   assert.equal(list.status, 200);
   assert.deepEqual(data.profiles.map((p: any) => p.id), [created.profile.id]);
   assert.equal(data.profiles[0].status, "pending");
+  assert.equal(data.profiles[0].application_status, "approved");
 }
 
 console.log("Edit path still accepts a blank email and rejects a bad one");
@@ -209,6 +276,81 @@ console.log("Edit path still accepts a blank email and rejects a bad one");
   assert.equal(blank.status, 200);
   const bad = await handleSpotlightAdmin(adminRequest("PATCH", { contact_email: "nope" }), "profile/" + created.profile.id, env);
   assert.equal(bad.status, 422);
+}
+
+console.log("Application review is separate from publishing and tracks unread, approval, decline, and expiry");
+{
+  const { db, env } = await makeEnv();
+  const created = await (await create(env, websiteOnly({ contact_email: "applicant@example.com" }))).json() as any;
+  const row = db.profiles.get(created.profile.id);
+  Object.assign(row, { application_status: "new", review_unread: 1, review_expires_at: Math.floor(Date.now() / 1000) + 3600 });
+
+  const publishBeforeApproval = await handleSpotlightAdmin(
+    adminRequest("PATCH", { status: "published" }),
+    "profile/" + row.id,
+    env,
+  );
+  assert.equal(publishBeforeApproval.status, 409);
+
+  const markRead = await handleSpotlightAdmin(
+    adminRequest("PATCH", { action: "mark_read" }),
+    "profile/" + row.id + "/review",
+    env,
+  );
+  assert.equal(markRead.status, 200);
+  assert.equal(row.review_unread, 0);
+  const startReview = await handleSpotlightAdmin(
+    adminRequest("PATCH", { action: "start_review" }),
+    "profile/" + row.id + "/review",
+    env,
+  );
+  assert.equal(startReview.status, 200);
+  assert.equal(row.application_status, "under_review");
+
+  const approve = await handleSpotlightAdmin(
+    adminRequest("PATCH", { action: "approve" }),
+    "profile/" + row.id + "/review",
+    env,
+  );
+  assert.equal(approve.status, 200);
+  assert.equal(row.application_status, "approved");
+  assert.ok(row.review_expires_at > Math.floor(Date.now() / 1000));
+
+  const publish = await handleSpotlightAdmin(
+    adminRequest("PATCH", { status: "published", featured: true }),
+    "profile/" + row.id,
+    env,
+  );
+  assert.equal(publish.status, 200);
+  assert.equal(row.application_status, "published");
+  assert.ok(row.listing_expires_at >= Math.floor(Date.now() / 1000) + 72 * 60 * 60 - 2);
+  row.listing_expires_at = Math.floor(Date.now() / 1000) - 1;
+  const republishExpired = await handleSpotlightAdmin(
+    adminRequest("PATCH", { status: "published", featured: true }),
+    "profile/" + row.id,
+    env,
+  );
+  assert.equal(republishExpired.status, 409);
+
+  const declined = await create(env, websiteOnly({ contact_email: "owner@example.com" }));
+  const declinedData = await declined.json() as any;
+  const declineRow = db.profiles.get(declinedData.profile.id);
+  Object.assign(declineRow, { application_status: "new", review_unread: 1 });
+  const shortReason = await handleSpotlightAdmin(
+    adminRequest("PATCH", { action: "decline", reason: "No." }),
+    "profile/" + declineRow.id + "/review",
+    env,
+  );
+  assert.equal(shortReason.status, 422);
+  const decline = await handleSpotlightAdmin(
+    adminRequest("PATCH", { action: "decline", reason: "The submitted profile needs clearer service details." }),
+    "profile/" + declineRow.id + "/review",
+    env,
+  );
+  assert.equal(decline.status, 200);
+  assert.equal(declineRow.application_status, "declined");
+  assert.equal(declineRow.decline_reason, "The submitted profile needs clearer service details.");
+  assert.equal([...db.outbox.values()].filter(item => item.profile_id === declineRow.id && item.kind === "declined").length, 1);
 }
 
 console.log("All Spotlight admin save-draft tests passed.");

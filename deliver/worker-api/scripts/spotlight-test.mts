@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import { spotlightProfileSaveRequest } from "../../../deliver-v3/js/spotlight-profile-request.mjs";
 import { handleSpotlightPublic, safeSocialUrl, uploadSpotlightImage } from "../src/routes/spotlight.ts";
+import { readImageDimensions } from "../src/lib/spotlight-image.ts";
 import { HARD_CAP_BYTES, reconcileStorage, releaseStoredPending } from "../src/lib/storage.ts";
+import { cleanupSpotlightExpiry } from "../src/lib/cleanup.ts";
 
 type BoundStatement = {
   sql: string;
@@ -55,6 +57,8 @@ class FakeD1 {
     lock_reason: null,
   };
   submissions: any[] = [];
+  emailOutbox = new Map<string, any>();
+  reviewEvents: any[] = [];
   submissionLimit = new Map<string, { window_start: number; request_count: number }>();
   private queue: Promise<void> = Promise.resolve();
 
@@ -122,6 +126,19 @@ class FakeD1 {
   }
 
   async all(sql: string, args: unknown[]): Promise<any> {
+    if (sql.includes("FROM spotlight_email_outbox e")) return { results: [] };
+    if (sql.includes("FROM spotlight_profiles") && sql.includes("review_expires_at IS NOT NULL")) {
+      const [reviewCutoff, listingCutoff, limit] = args.map(Number);
+      return {
+        results: [...this.profiles.values()]
+          .filter(profile =>
+            (["new","under_review","approved","declined","expired"].includes(profile.application_status)
+              && profile.review_expires_at != null && Number(profile.review_expires_at) <= reviewCutoff)
+            || (profile.status === "published" && profile.listing_expires_at != null && Number(profile.listing_expires_at) <= listingCutoff))
+          .slice(0, limit)
+          .map(profile => ({ id: profile.id, application_status: profile.application_status, status: profile.status })),
+      };
+    }
     if (sql.includes("FROM spotlight_gallery_images")) {
       const profileIds = new Set(args.map(String));
       return { results: [...this.gallery.values()].filter(image => profileIds.has(String(image.profile_id))).map(image => ({ ...image })) };
@@ -189,11 +206,39 @@ class FakeD1 {
       }
       return 0;
     }
-    if (sql.startsWith("UPDATE spotlight_profiles SET image_key=")) {
+    if (sql.startsWith("UPDATE spotlight_profiles SET image_key=") && !sql.startsWith("UPDATE spotlight_profiles SET image_key=NULL")) {
       const [key, size, contentType, updatedAt, profileId, expectedKey] = args;
       const profile = this.profiles.get(String(profileId));
       if (!profile || (profile.image_key ?? null) !== (expectedKey ?? null)) return 0;
       Object.assign(profile, { image_key: key, image_size: size, image_content_type: contentType, updated_at: updatedAt });
+      return 1;
+    }
+    if (sql.includes("SET status='archived',application_status=")) {
+      const [applicationStatus, reviewExpiry, updatedAt, id, expectedApplicationStatus, expectedStatus] = args;
+      const profile = this.profiles.get(String(id));
+      if (!profile || profile.application_status !== expectedApplicationStatus || profile.status !== expectedStatus) return 0;
+      Object.assign(profile, {
+        status: "archived",
+        application_status: applicationStatus,
+        featured_until: null,
+        review_expires_at: profile.review_expires_at ?? reviewExpiry,
+        updated_at: updatedAt,
+      });
+      return 1;
+    }
+    if (sql.startsWith("INSERT INTO spotlight_review_events")) {
+      if (previousChanges) this.reviewEvents.push([...args]);
+      return previousChanges ? 1 : 0;
+    }
+    if (sql.includes("SET image_key=NULL")) {
+      const [updatedAt, id, applicationStatus, expectedKey] = args;
+      const profile = this.profiles.get(String(id));
+      if (!profile || profile.application_status !== applicationStatus || profile.status !== "archived"
+        || (profile.image_key ?? null) !== (expectedKey ?? null)) return 0;
+      Object.assign(profile, {
+        image_key: null, image_size: 0, image_content_type: null, listing_expires_at: null,
+        review_expires_at: null, updated_at: updatedAt,
+      });
       return 1;
     }
     if (sql.startsWith("INSERT INTO spotlight_gallery_images")) {
@@ -209,6 +254,10 @@ class FakeD1 {
       const id = `${args[0]}:${args[1]}`;
       if (this.gallery.get(id)?.image_key !== args[2]) return 0;
       this.gallery.delete(id);
+      return 1;
+    }
+    if (sql.startsWith("DELETE FROM spotlight_gallery_images WHERE profile_id=?")) {
+      for (const [id, image] of this.gallery) if (String(image.profile_id) === String(args[0])) this.gallery.delete(id);
       return 1;
     }
     if (sql.startsWith("DELETE FROM pending_uploads") && sql.includes("AND changes()>0")) {
@@ -287,7 +336,7 @@ class FakeD1 {
       return 1;
     }
     if (sql.startsWith("INSERT INTO spotlight_profiles") && sql.includes("WHERE NOT EXISTS")) {
-      const [id, slug, displayName, tagline, description, category, email, website, social, song, createdAt, updatedAt, duplicateEmail, duplicateName, cutoff] = args;
+      const [id, slug, displayName, tagline, description, category, email, website, social, song, reviewExpiresAt, createdAt, updatedAt, duplicateEmail, duplicateName, cutoff] = args;
       const duplicate = this.submissions.some(profile =>
         profile.contact_email === duplicateEmail
         && profile.display_name.toLowerCase() === String(duplicateName).toLowerCase()
@@ -297,14 +346,22 @@ class FakeD1 {
       this.submissions.push({
         id, slug, display_name: displayName, tagline, description, category, contact_email: email,
         website_url: website, social_links: social, song_metadata: song, status: "pending",
+        application_status: "new", review_expires_at: reviewExpiresAt, review_unread: 1,
         created_at: createdAt, updated_at: updatedAt,
       });
       this.profiles.set(String(id), {
         id, slug, display_name: displayName, tagline, description, category, contact_email: email,
         website_url: website, social_links: social, song_metadata: song, status: "pending",
+        application_status: "new", review_expires_at: reviewExpiresAt, review_unread: 1,
         image_key: null, image_size: 0, image_content_type: null, featured_until: null,
         created_at: createdAt, updated_at: updatedAt,
       });
+      return 1;
+    }
+    if (sql.startsWith("INSERT OR IGNORE INTO spotlight_email_outbox")) {
+      const [id, profileId, kind, recipient, nextAttemptAt, createdAt] = args;
+      if ([...this.emailOutbox.values()].some(item => item.profile_id === profileId && item.kind === kind)) return 0;
+      this.emailOutbox.set(String(id), { id, profile_id: profileId, kind, recipient, state: "pending", attempts: 0, next_attempt_at: nextAttemptAt, created_at: createdAt });
       return 1;
     }
     if (sql.startsWith("DELETE FROM spotlight_profiles WHERE id=? AND status='pending'")) {
@@ -318,7 +375,7 @@ class FakeD1 {
   }
 
   private directoryRows(sql: string, args: unknown[]): any[] {
-    let index = 0;
+    let index = 1;
     let category: string | null = null;
     let query: string | null = null;
     if (sql.includes("AND category=?")) category = String(args[index++]);
@@ -335,9 +392,11 @@ class FakeD1 {
         id: String(args[index + 4]),
       };
     }
+    const expiryTimestamp = Number(args[0]);
     const timestamp = Number(args[args.length - 2]);
     const limit = Number(args[args.length - 1]);
-    let rows = [...this.profiles.values()].filter(profile => profile.status === "published");
+    let rows = [...this.profiles.values()].filter(profile =>
+      profile.status === "published" && (!profile.listing_expires_at || Number(profile.listing_expires_at) > expiryTimestamp));
     if (category) rows = rows.filter(profile => profile.category === category);
     if (query) rows = rows.filter(profile =>
       [profile.display_name, profile.tagline, profile.description, profile.category]
@@ -401,10 +460,10 @@ class FakeBucket {
   }
 }
 
-function makeImage(size: number): Uint8Array {
+function makeImage(size: number, width = 1, height = 1): Uint8Array {
   const image = new Uint8Array(size);
-  image.set([137, 80, 78, 71], 0);
-  image.set(new TextEncoder().encode("IEND"), size - 8);
+  image.set([255,216,255,192,0,11,8,(height >> 8) & 255,height & 255,(width >> 8) & 255,width & 255,1,1,17,0,255,218], 0);
+  image.set([255,217], size - 2);
   return image;
 }
 
@@ -417,6 +476,7 @@ function makeImageEnv(options: { oldSize?: number; limit?: number } = {}) {
   db.storage.total_bytes = oldSize;
   db.profiles.set(profileId, {
     id: profileId, image_key: oldKey, image_size: oldSize, image_content_type: "image/png",
+    application_status: "approved",
   });
   const bucket = new FakeBucket();
   bucket.objects.set(oldKey, makeImage(oldSize));
@@ -426,7 +486,7 @@ function makeImageEnv(options: { oldSize?: number; limit?: number } = {}) {
 function imageRequest(size: number): Request {
   return new Request("https://worker.test/api/admin/spotlight/profile/image", {
     method: "PUT",
-    headers: { "Content-Type": "image/png" },
+    headers: { "Content-Type": "image/jpeg" },
     body: makeImage(size),
   });
 }
@@ -466,10 +526,10 @@ async function postMultipartSubmission(env: any, ip: string, options: {
   form.set("consent", "on");
   if (options.includeMain !== false) {
     const bytes = options.invalidMainContents ? new Uint8Array(24) : makeImage(options.mainSize ?? 24);
-    form.set("main_image", new File([bytes], "logo.png", { type: options.mainType || "image/png" }));
+    form.set("main_image", new File([bytes], "logo.jpg", { type: options.mainType || "image/jpeg" }));
   }
   for (let index = 0; index < (options.extraImages ?? 0); index += 1) {
-    form.append("showcase_images", new File([makeImage(24)], `work-${index}.png`, { type: "image/png" }));
+    form.append("showcase_images", new File([makeImage(24)], `work-${index}.jpg`, { type: "image/jpeg" }));
   }
   const request = new Request("https://worker.test/api/public/spotlight/submit", {
     method: "POST",
@@ -550,6 +610,19 @@ console.log("Spotlight image replacement and shared storage accounting");
   assert.equal(db.storage.reserved_bytes, 0);
   assert.equal(bucket.bytes(), db.storage.total_bytes);
   assert.equal(db.pending.size, 0);
+}
+
+console.log("Image dimensions are verified and capped at a 2,000 px longest edge");
+{
+  assert.deepEqual(readImageDimensions(makeImage(24, 2000, 1300), "image/jpeg"), { width: 2000, height: 1300 });
+  const { env, db, bucket, profileId, oldSize } = makeImageEnv();
+  await assert.rejects(uploadSpotlightImage(
+    new Request("https://worker.test/image", { method: "PUT", headers: { "Content-Type": "image/jpeg" }, body: makeImage(24, 2001, 1000) }),
+    env as never,
+    profileId,
+  ), (error: any) => error.code === "image_dimensions_too_large");
+  assert.equal(db.storage.total_bytes, oldSize);
+  assert.equal(bucket.bytes(), oldSize);
 }
 
 console.log("Gallery image upload and replacement remain within shared storage accounting");
@@ -784,6 +857,78 @@ console.log("Published gallery images are listed and publicly served");
   assert.equal((await image.arrayBuffer()).byteLength, 24);
 }
 
+console.log("Expired listings are hidden, their images are removed, and shared storage is reconciled");
+{
+  const db = new FakeD1();
+  const bucket = new FakeBucket();
+  const id = "d".repeat(20);
+  const primaryKey = `spotlight/${id}/${"1".repeat(16)}`;
+  const galleryKey = `spotlight/${id}/${"2".repeat(16)}`;
+  const expiredAt = Math.floor(Date.now() / 1000) - 1;
+  db.profiles.set(id, publishedProfile(40, {
+    id,
+    status: "published",
+    application_status: "published",
+    image_key: primaryKey,
+    image_size: 24,
+    image_content_type: "image/jpeg",
+    featured_until: Math.floor(Date.now() / 1000) + 3600,
+    listing_expires_at: expiredAt,
+  }));
+  db.gallery.set(`${id}:1`, { profile_id: id, position: 1, image_key: galleryKey, image_size: 24, image_content_type: "image/jpeg", created_at: expiredAt });
+  bucket.objects.set(primaryKey, makeImage(24));
+  bucket.objects.set(galleryKey, makeImage(24));
+  db.storage.total_bytes = 48;
+  const env = { DB: db, BUCKET: bucket, STORAGE_LIMIT_BYTES: String(HARD_CAP_BYTES) };
+
+  const publicList = await handleSpotlightPublic(new Request("https://worker.test/api/public/spotlight"), "", env as never, {} as never);
+  assert.equal((await publicList.json() as any).profiles.some((profile: any) => profile.id === id), false);
+  const report = await cleanupSpotlightExpiry(env as never);
+  assert.deepEqual(report, { expired: 1, failed: 0, removed_images: 2 });
+  assert.equal(db.profiles.get(id).application_status, "expired");
+  assert.equal(db.profiles.get(id).status, "archived");
+  assert.equal(db.profiles.get(id).image_key, null);
+  assert.equal(db.gallery.size, 0);
+  assert.equal(bucket.bytes(), 0);
+  assert.equal(db.storage.total_bytes, 0);
+  assert.equal(db.reviewEvents.length, 1);
+}
+
+console.log("Failed expiry deletion retains image references and retries without releasing storage early");
+{
+  const db = new FakeD1();
+  const bucket = new FakeBucket();
+  const id = "e".repeat(20);
+  const key = `spotlight/${id}/${"3".repeat(16)}`;
+  db.profiles.set(id, {
+    id, slug: "pending-expiry", display_name: "Pending", tagline: "A useful profile tagline",
+    description: "A sufficiently detailed pending profile for cleanup testing.", category: "creator",
+    contact_email: "", social_links: "{}", status: "pending", application_status: "new", review_unread: 1,
+    review_expires_at: Math.floor(Date.now() / 1000) - 1, listing_expires_at: null,
+    image_key: key, image_size: 24, image_content_type: "image/jpeg", featured_until: null,
+    created_at: 1, updated_at: 1,
+  });
+  bucket.objects.set(key, makeImage(24));
+  bucket.failDeletes.add(key);
+  db.storage.total_bytes = 24;
+  const env = { DB: db, BUCKET: bucket, STORAGE_LIMIT_BYTES: String(HARD_CAP_BYTES) };
+
+  const failed = await cleanupSpotlightExpiry(env as never);
+  assert.equal(failed.failed, 1);
+  assert.equal(db.profiles.get(id).status, "archived");
+  assert.equal(db.profiles.get(id).application_status, "expired");
+  assert.equal(db.profiles.get(id).image_key, key);
+  assert.equal(db.storage.total_bytes, 24);
+  assert.equal(db.storage.needs_reconcile, 1);
+
+  bucket.failDeletes.delete(key);
+  const retried = await cleanupSpotlightExpiry(env as never);
+  assert.equal(retried.expired, 1);
+  assert.equal(db.profiles.get(id).image_key, null);
+  assert.equal(bucket.bytes(), 0);
+  assert.equal(db.storage.total_bytes, 0);
+}
+
 console.log("Submission duplicate prevention and persistent rate limit");
 {
   const db = new FakeD1();
@@ -808,7 +953,7 @@ console.log("Submission duplicate prevention and persistent rate limit");
   assert.equal(sixth.status, 429);
 }
 
-console.log("Multipart submissions require a main image, accept up to four additional images, and account for every byte");
+console.log("Multipart submissions require a main image, accept up to two additional images, and account for every byte");
 {
   const db = new FakeD1();
   const bucket = new FakeBucket();
@@ -825,18 +970,21 @@ console.log("Multipart submissions require a main image, accept up to four addit
   const invalidContents = await postMultipartSubmission(env, "198.51.100.45", { invalidMainContents: true });
   assert.equal(invalidContents.status, 422);
   assert.equal(db.profiles.size, 0);
-  const oversized = await postMultipartSubmission(env, "198.51.100.44", { mainSize: 2 * 1024 * 1024 + 1 });
+  const oversized = await postMultipartSubmission(env, "198.51.100.44", { mainSize: 5 * 1024 * 1024 + 1 });
   assert.equal(oversized.status, 413);
   assert.equal(db.profiles.size, 0);
-  const tooMany = await postMultipartSubmission(env, "198.51.100.41", { extraImages: 5 });
+  const tooMany = await postMultipartSubmission(env, "198.51.100.41", { extraImages: 3 });
   assert.equal(tooMany.status, 422);
   assert.equal(db.profiles.size, 0);
-  const accepted = await postMultipartSubmission(env, "198.51.100.42", { extraImages: 4 });
+  const accepted = await postMultipartSubmission(env, "198.51.100.42", { extraImages: 2 });
   const submitted = await accepted.json() as any;
   assert.equal(accepted.status, 201, submitted.error);
   assert.equal(db.profiles.size, 1);
-  assert.equal(db.gallery.size, 4);
-  assert.equal(db.storage.total_bytes, 5 * 24);
+  assert.equal(db.gallery.size, 2);
+  assert.equal(db.storage.total_bytes, 3 * 24);
+  assert.equal([...db.profiles.values()][0].application_status, "new");
+  assert.equal([...db.profiles.values()][0].review_unread, 1);
+  assert.equal([...db.emailOutbox.values()].filter(item => item.kind === "new_submission").length, 1);
   assert.equal(bucket.bytes(), db.storage.total_bytes);
   assert.equal(db.storage.reserved_bytes, 0);
   assert.equal([...db.profiles.values()][0].website_url, "https://gallery.example.com/");

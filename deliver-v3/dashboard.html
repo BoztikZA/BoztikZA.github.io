@@ -23,7 +23,7 @@
   <link rel="stylesheet" href="css/deliver.css?v=13">
   <link rel="stylesheet" href="css/command-centre.css?v=4">
   <link rel="stylesheet" href="css/analytics.css?v=an6">
-  <link rel="stylesheet" href="css/spotlight-manager.css?v=10">
+  <link rel="stylesheet" href="css/spotlight-manager.css?v=11">
   <link rel="stylesheet" href="css/deliver-animations.css?v=1">
   <link rel="stylesheet" href="css/deliver-experience.css?v=1">
 
@@ -320,7 +320,7 @@
         </button>
 
         <button type="button" class="dash-tab" id="tab-spotlight" role="tab" aria-selected="false" aria-controls="panel-spotlight" tabindex="-1" data-tab="spotlight">
-          <span class="dash-tab-icon">✳</span><span><strong>Spotlight</strong><small>Review &amp; feature creators</small></span>
+          <span class="dash-tab-icon">✳</span><span><strong>Spotlight <b id="sp-admin-tab-unread" class="sp-admin-tab-unread" hidden>0 unread</b></strong><small>Review &amp; feature creators</small></span>
         </button>
         <button type="button" class="dash-tab" id="tab-analytics" role="tab" aria-selected="false" aria-controls="panel-analytics" tabindex="-1" data-tab="analytics">
           <span class="dash-tab-icon"><svg class="cc-i" aria-hidden="true" focusable="false"><use href="#i-chart"/></svg></span>
@@ -341,14 +341,16 @@
       </section>
 
       <section id="panel-spotlight" class="dash-tab-panel" role="tabpanel" aria-labelledby="tab-spotlight" data-panel="spotlight" hidden>
-        <div class="dash-section-heading"><div><span class="dash-section-eyebrow">Boztik discovery network</span><h2>Spotlight Manager</h2><p>Review submissions, publish approved profiles and manage the daily featured placement. Directory listings remain published until you archive or remove them.</p></div></div>
+        <div class="dash-section-heading"><div><span class="dash-section-eyebrow">Boztik discovery network</span><h2>Spotlight Manager</h2><p>Review applications, approve them, then publish when ready. Applications awaiting a decision and approved profiles expire after 72 hours; each published listing is visible for 72 hours. The homepage feature remains a separate 24-hour placement.</p></div></div>
         <div class="cc-kpis sp-admin-kpis">
-          <article class="cc-kpi"><header>Pending review</header><strong class="cc-kpi-val" id="sp-admin-pending">—</strong></article>
+          <article class="cc-kpi"><header>Pending decision</header><strong class="cc-kpi-val" id="sp-admin-pending">—</strong></article>
+          <article class="cc-kpi"><header>Unread applications</header><strong class="cc-kpi-val" id="sp-admin-unread">—</strong></article>
+          <article class="cc-kpi"><header>Approved to publish</header><strong class="cc-kpi-val" id="sp-admin-approved">—</strong></article>
           <article class="cc-kpi"><header>Published profiles</header><strong class="cc-kpi-val" id="sp-admin-published">—</strong></article>
           <article class="cc-kpi"><header>Featured today</header><strong class="cc-kpi-val" id="sp-admin-featured">—</strong></article>
           <article class="cc-kpi"><header>Profile views · all time</header><strong class="cc-kpi-val" id="sp-admin-views">—</strong></article>
         </div>
-        <article class="cc-card"><header class="cc-card-head"><div><span class="cc-eyebrow">Moderation queue</span><h3>Submissions &amp; profiles</h3><p class="cc-card-desc">Add profiles from email submissions, upload their logo or photograph, then publish approved listings. Featuring gives a profile the 24-hour homepage and directory highlight.</p></div><div class="sp-admin-toolbar"><button class="cc-btn" id="sp-admin-new" type="button">Add profile</button><button class="cc-btn" id="sp-admin-refresh" type="button">Refresh</button></div></header><div id="sp-admin-feedback" role="status" aria-live="polite" class="cc-muted">Loading Spotlight profiles…</div><form id="sp-admin-edit" class="sp-admin-edit" novalidate hidden>
+        <article class="cc-card"><header class="cc-card-head"><div><span class="cc-eyebrow">Moderation queue</span><h3>Submissions &amp; profiles</h3><p class="cc-card-desc">Review the complete profile, mark applications as read, approve or decline with a reason, then publish approved listings separately. New listings expire after 72 hours; featuring remains a separate 24-hour homepage placement. Spotlight images count toward the shared 3 GB storage cap.</p></div><div class="sp-admin-toolbar"><button class="cc-btn" id="sp-admin-new" type="button">Add profile</button><button class="cc-btn" id="sp-admin-refresh" type="button">Refresh</button></div></header><div id="sp-admin-feedback" role="status" aria-live="polite" class="cc-muted">Loading Spotlight profiles…</div><form id="sp-admin-edit" class="sp-admin-edit" novalidate hidden>
           <input type="hidden" name="id">
           <div class="sp-admin-edit-grid">
             <label>Display name<input name="display_name" maxlength="80" required minlength="2"></label>
@@ -356,8 +358,8 @@
             <label>Contact email (optional)<input name="contact_email" type="email" maxlength="254" autocomplete="email" placeholder="creator@example.com"><small>Optional. Add an email only if you want visitors to contact the business by email. A website link is enough.</small></label>
             <label>Category<select name="category" required><option value="small-business">Small business</option><option value="youtube">YouTube</option><option value="twitch">Twitch</option><option value="gaming">Gaming</option><option value="photography">Photography</option><option value="design">Design</option><option value="music">Music</option><option value="creator">Creator</option><option value="freelance">Freelance</option><option value="other">Other</option></select></label>
             <label>Website URL<input name="website_url" type="url" inputmode="url" autocomplete="url" placeholder="yourwebsite.com"><small>Paste a domain or full link — https:// is added automatically.</small></label>
-            <div class="sp-admin-edit-wide sp-image-editor"><label>Profile logo / photograph<input name="profile_image" id="sp-profile-image" type="file" accept="image/jpeg,image/png,image/webp"><small>JPG, PNG or WebP · maximum 2 MB. Uploaded images stay private until the profile is published.</small></label><div id="sp-profile-image-preview" class="sp-profile-image-preview">No image uploaded</div><button class="cc-btn" id="sp-profile-image-upload" type="button">Upload image</button><span id="sp-profile-image-status" role="status"></span></div>
-            <div class="sp-admin-edit-wide sp-image-editor"><label>Additional showcase images<input id="sp-gallery-images" type="file" accept="image/jpeg,image/png,image/webp" multiple><small>Upload up to four additional JPG, PNG or WebP images, maximum 2 MB each. All images count toward the shared storage limit.</small></label><div id="sp-gallery-image-list" class="sp-gallery-image-list" aria-live="polite">Save or select a profile to manage its additional images.</div><button class="cc-btn" id="sp-gallery-upload" type="button" disabled>Upload selected images</button><span id="sp-gallery-status" role="status"></span></div>
+            <div class="sp-admin-edit-wide sp-image-editor"><label>Profile logo / photograph<input name="profile_image" id="sp-profile-image" type="file" accept="image/jpeg,image/png,image/webp"><small>JPG, PNG or WebP · optimized to a 2,000 px longest edge and maximum 5 MB. Uploaded images stay private until the profile is published.</small></label><div id="sp-profile-image-preview" class="sp-profile-image-preview">No image uploaded</div><button class="cc-btn" id="sp-profile-image-upload" type="button">Upload image</button><span id="sp-profile-image-status" role="status"></span></div>
+            <div class="sp-admin-edit-wide sp-image-editor"><label>Additional showcase images<input id="sp-gallery-images" type="file" accept="image/jpeg,image/png,image/webp" multiple><small>Upload up to two additional images, optimized to a 2,000 px longest edge and maximum 5 MB each. All images count toward the shared storage limit.</small></label><div id="sp-gallery-image-list" class="sp-gallery-image-list" aria-live="polite">Save or select a profile to manage its additional images.</div><button class="cc-btn" id="sp-gallery-upload" type="button" disabled>Upload selected images</button><span id="sp-gallery-status" role="status"></span></div>
             <label class="sp-admin-edit-wide sp-description-field">About the profile<textarea name="description" rows="7" maxlength="5000" required minlength="30" aria-describedby="sp-description-help sp-description-count"></textarea><small id="sp-description-help">Describe the business, services, experience and what makes it different. Up to 5,000 characters.</small><small id="sp-description-count" class="sp-description-count">0 / 5,000 characters</small></label>
              <label class="sp-admin-feature-option"><input name="feature_on_homepage" id="sp-profile-feature" type="checkbox"><span><strong>Feature on the homepage</strong><small>Give this profile the 24-hour homepage highlight when you publish it.</small></span></label>
             <div class="sp-admin-edit-wide sp-social-optional-heading"><strong>Social links (optional)</strong><small>These are completely optional. A website link on its own is enough.</small></div><label>YouTube URL<input name="youtube" type="url" placeholder="https://"></label>
@@ -2657,7 +2659,7 @@
     src="js/dashboard.js?v=cf-5"
   ></script>
   <script type="module" src="js/promotions.js"></script>
-  <script type="module" src="js/spotlight-manager.js?v=16"></script>
+  <script type="module" src="js/spotlight-manager.js?v=18"></script>
 
 </body>
 </html>
