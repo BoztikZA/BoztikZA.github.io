@@ -113,11 +113,14 @@ function onShareButtonClick() {
 }
 
 export function initShare(delivery) {
-  // Only wire sharing for a valid, live delivery that actually has files.
-  if (!delivery || !delivery.id || !(delivery.delivery_files?.length > 0)) return;
+  if (!delivery || !delivery.id) return;
 
-  // The invitation is independent of the share controls and never blocks delivery.
+  // Initialise Spotlight for both modern multi-file and legacy single-file
+  // deliveries. The invitation module validates that at least one file exists.
+  // Keep the share controls' existing multi-file requirement unchanged.
   initSpotlightInvitation(delivery);
+
+  if (!(delivery.delivery_files?.length > 0)) return;
 
   buttonEl = document.getElementById("deliver-share");
   menuEl = document.getElementById("deliver-share-menu");
