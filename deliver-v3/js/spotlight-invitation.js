@@ -192,7 +192,17 @@ function addStyles() {
 }
 
 export function initSpotlightInvitation(delivery) {
-  if (!delivery || !delivery.id || !(delivery.delivery_files?.length > 0)) return;
+  // Support both current multi-file deliveries and legacy single-file records.
+  // Photoshop Battles deliveries use the same invitation path; their separate
+  // non-commercial presentation rules must not suppress this Spotlight prompt.
+  const hasMultiFileDelivery =
+    Array.isArray(delivery?.delivery_files) &&
+    delivery.delivery_files.some(file => file?.file_path && file?.file_name);
+
+  const hasLegacySingleFile =
+    Boolean(delivery?.file_path && delivery?.file_name);
+
+  if (!delivery || !delivery.id || (!hasMultiFileDelivery && !hasLegacySingleFile)) return;
   if (new URLSearchParams(location.search).get("preview") === "1") return;
   if (readSuppressionUntil() > Date.now()) return;
   if (document.getElementById("boztik-spotlight-invite-wrap")) return;
