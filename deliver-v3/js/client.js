@@ -27,7 +27,7 @@ import {
 
 import { createDeliveryReactionController } from "./animations/reactions.js";
 import { applyDeliveryTheme } from "./animations/theme.js";
-import { initShare } from "./share.js";
+import { initShare } from "./share.js?v=spotlight-footer-1";
 
 
 /* =========================================================
@@ -198,7 +198,8 @@ function applyPhotoshopBattlesPresentation() {
   hide(els.support);
   hide(els.supportModal);
   hide(els.privateRequests);
-  hide(els.footer);
+  // Keep the footer visible on every delivery type; the support column
+  // remains hidden below, preserving the non-commercial support treatment.
   hide(els.footerSupport);
 
   document.body.classList.add("is-photoshop-battles");
