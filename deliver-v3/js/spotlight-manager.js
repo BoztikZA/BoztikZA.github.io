@@ -1,5 +1,5 @@
 import { config } from "./config.js";
-import { authHeaders, onAuthChange } from "./auth.js";
+import { authHeaders, getSession, onAuthChange } from "./auth.js";
 import { spotlightProfileSaveRequest } from "./spotlight-profile-request.mjs";
 
 const $ = id => document.getElementById(id);
@@ -237,12 +237,35 @@ $("sp-profile-image-upload").addEventListener("click", async () => {
 $("sp-admin-edit-cancel").addEventListener("click", () => { editForm.reset(); editForm.hidden = true; });
 $("sp-admin-refresh").addEventListener("click", load);
 
-onAuthChange(session => {
-  if (session) load();
-  else {
+let authChangeVersion = 0;
+function handleSpotlightAuthChange(session) {
+  authChangeVersion += 1;
+  if (session) {
+    load();
+  } else {
     feedback.textContent = "Sign in to manage Spotlight.";
     list.innerHTML = "";
     analytics.innerHTML = "";
+    const overviewCount = $("stat-spotlight-active");
+    if (overviewCount) overviewCount.textContent = "—";
     editForm.hidden = true;
   }
+}
+
+onAuthChange(handleSpotlightAuthChange);
+
+// onAuthChange only subscribes to future changes; it does not emit the current
+// session. Initialise the manager for administrators who are already signed in
+// when the Command Centre loads.
+getSession().then(session => {
+  if (authChangeVersion === 0) {
+    if (session) load();
+    else {
+      feedback.textContent = "Sign in to manage Spotlight.";
+      list.innerHTML = "";
+      analytics.innerHTML = "";
+    }
+  }
+}).catch(error => {
+  feedback.textContent = "Could not initialise Spotlight: " + error.message;
 });
