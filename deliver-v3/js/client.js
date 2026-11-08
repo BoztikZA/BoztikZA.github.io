@@ -27,7 +27,7 @@ import {
 
 import { createDeliveryReactionController } from "./animations/reactions.js";
 import { applyDeliveryTheme } from "./animations/theme.js";
-import { initShare } from "./share.js?v=spotlight-footer-1";
+import { initShare } from "./share.js?v=spotlight-timing-2";
 
 
 /* =========================================================

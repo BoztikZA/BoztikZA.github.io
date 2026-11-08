@@ -1,10 +1,11 @@
-// Boztik Deliver — discreet Spotlight invitation for live client deliveries.
-// The invitation waits until the visitor has moved past the file gallery, so it
-// never sits over a delivered image. It is intentionally local-only: no tracking
-// request, visitor identifier, or server-side storage is created.
+// Boztik Deliver — lightweight Spotlight invitation for live client deliveries.
+// Delayed until the delivery data is ready, then shown briefly without scroll listeners,
+// gallery measurements, tracking requests, or server-side visitor storage.
 
-const STORAGE_KEY = "boztik-spotlight-invite-v1";
-const AUTO_HIDE_MS = 8500;
+const STORAGE_KEY = "boztik-spotlight-invite-v2";
+const SHOW_DELAY_MS = 3000;
+const VISIBLE_MS = 12000;
+const FADE_MS = 420;
 const REMIND_AFTER_AUTO_HIDE_MS = 24 * 60 * 60 * 1000;
 const REMIND_AFTER_DISMISS_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -13,7 +14,7 @@ function readSuppressionUntil() {
     const value = Number(localStorage.getItem(STORAGE_KEY) || 0);
     return Number.isFinite(value) ? value : 0;
   } catch {
-    return Number.POSITIVE_INFINITY;
+    return 0;
   }
 }
 
@@ -21,7 +22,7 @@ function saveSuppression(duration) {
   try {
     localStorage.setItem(STORAGE_KEY, String(Date.now() + duration));
   } catch {
-    // The invitation is optional; storage restrictions must never affect delivery.
+    // Storage restrictions must never affect delivery.
   }
 }
 
@@ -39,8 +40,8 @@ function addStyles() {
       width: min(354px, calc(100vw - 32px));
       pointer-events: none;
       opacity: 0;
-      transform: translate3d(0, 12px, 0);
-      transition: opacity 360ms ease, transform 360ms cubic-bezier(.2,.75,.25,1);
+      transform: translate3d(0, 10px, 0);
+      transition: opacity ${FADE_MS}ms ease, transform ${FADE_MS}ms cubic-bezier(.2,.75,.25,1);
     }
     .boztik-spotlight-invite-wrap.is-visible {
       opacity: 1;
@@ -64,8 +65,6 @@ function addStyles() {
       text-decoration: none;
       pointer-events: auto;
       -webkit-tap-highlight-color: transparent;
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
       transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
     }
     .boztik-spotlight-invite::before {
@@ -170,7 +169,7 @@ function addStyles() {
         bottom: max(12px, env(safe-area-inset-bottom));
         width: min(350px, calc(100vw - 24px));
         left: 50%;
-        transform: translate3d(-50%, 12px, 0);
+        transform: translate3d(-50%, 10px, 0);
       }
       .boztik-spotlight-invite-wrap.is-visible { transform: translate3d(-50%, 0, 0); }
       .boztik-spotlight-invite {
@@ -195,83 +194,61 @@ function addStyles() {
 export function initSpotlightInvitation(delivery) {
   if (!delivery || !delivery.id || !(delivery.delivery_files?.length > 0)) return;
   if (new URLSearchParams(location.search).get("preview") === "1") return;
-
-  // Apply consistently to every live client delivery, including Photoshop Battles.
-
   if (readSuppressionUntil() > Date.now()) return;
-
-  const gallery = document.getElementById("deliver-gallery");
-  if (!gallery || document.getElementById("boztik-spotlight-invite-wrap")) return;
-
-  addStyles();
-
-  const wrap = document.createElement("div");
-  wrap.id = "boztik-spotlight-invite-wrap";
-  wrap.className = "boztik-spotlight-invite-wrap";
-  wrap.hidden = true;
-  wrap.innerHTML = `
-    <a class="boztik-spotlight-invite" href="https://www.boztik.com/spotlight/" aria-label="Visit Boztik Spotlight and apply for a free feature">
-      <span class="boztik-spotlight-invite-mark" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="m12 2 2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2L12 2Z"/>
-          <path d="m19 14 1.1 3.1L23 18l-2.9.9L19 22l-.9-3.1L15 18l3.1-.9L19 14Z"/>
-        </svg>
-      </span>
-      <span class="boztik-spotlight-invite-copy">
-        <span class="boztik-spotlight-invite-kicker">Boztik Spotlight</span>
-        <span class="boztik-spotlight-invite-title">Own a business or creative brand?</span>
-        <span class="boztik-spotlight-invite-sub">Apply for a free feature on Boztik</span>
-      </span>
-      <span class="boztik-spotlight-invite-arrow" aria-hidden="true">↗</span>
-    </a>
-    <button class="boztik-spotlight-invite-close" type="button" aria-label="Dismiss Spotlight invitation">×</button>
-  `;
-
-  document.body.appendChild(wrap);
+  if (document.getElementById("boztik-spotlight-invite-wrap")) return;
 
   let hideTimer = 0;
-  let showTimer = 0;
   let shown = false;
+  let wrap;
 
   const hide = (dismissed = false) => {
-    if (!shown) return;
-    wrap.classList.remove("is-visible");
+    if (!shown || !wrap) return;
     shown = false;
-    saveSuppression(dismissed ? REMIND_AFTER_DISMISS_MS : REMIND_AFTER_AUTO_HIDE_MS);
-    window.setTimeout(() => { wrap.hidden = true; }, 380);
-  };
-
-  wrap.querySelector(".boztik-spotlight-invite-close")?.addEventListener("click", event => {
-    event.preventDefault();
-    event.stopPropagation();
     window.clearTimeout(hideTimer);
-    hide(true);
-  });
-
-  wrap.querySelector(".boztik-spotlight-invite")?.addEventListener("click", () => {
-    saveSuppression(REMIND_AFTER_DISMISS_MS);
-  });
+    wrap.classList.remove("is-visible");
+    saveSuppression(dismissed ? REMIND_AFTER_DISMISS_MS : REMIND_AFTER_AUTO_HIDE_MS);
+    window.setTimeout(() => {
+      if (!shown && wrap?.isConnected) wrap.remove();
+    }, FADE_MS + 40);
+  };
 
   const show = () => {
-    if (shown || readSuppressionUntil() > Date.now()) return;
+    if (readSuppressionUntil() > Date.now()) return;
+    addStyles();
+
+    wrap = document.createElement("div");
+    wrap.id = "boztik-spotlight-invite-wrap";
+    wrap.className = "boztik-spotlight-invite-wrap";
+    wrap.innerHTML = `
+      <a class="boztik-spotlight-invite" href="https://www.boztik.com/spotlight/" aria-label="Visit Boztik Spotlight and apply for a free feature">
+        <span class="boztik-spotlight-invite-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m12 2 2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2L12 2Z"/>
+            <path d="m19 14 1.1 3.1L23 18l-2.9.9L19 22l-.9-3.1L15 18l3.1-.9L19 14Z"/>
+          </svg>
+        </span>
+        <span class="boztik-spotlight-invite-copy">
+          <span class="boztik-spotlight-invite-kicker">Boztik Spotlight</span>
+          <span class="boztik-spotlight-invite-title">Own a business or creative brand?</span>
+          <span class="boztik-spotlight-invite-sub">Apply for a free feature on Boztik</span>
+        </span>
+        <span class="boztik-spotlight-invite-arrow" aria-hidden="true">↗</span>
+      </a>
+      <button class="boztik-spotlight-invite-close" type="button" aria-label="Dismiss Spotlight invitation">×</button>
+    `;
+
+    document.body.appendChild(wrap);
+    wrap.querySelector(".boztik-spotlight-invite-close")?.addEventListener("click", () => hide(true));
+    wrap.querySelector(".boztik-spotlight-invite")?.addEventListener("click", () => {
+      saveSuppression(REMIND_AFTER_DISMISS_MS);
+    });
+
     shown = true;
-    wrap.hidden = false;
-    window.requestAnimationFrame(() => wrap.classList.add("is-visible"));
-    hideTimer = window.setTimeout(() => hide(false), AUTO_HIDE_MS);
+    window.requestAnimationFrame(() => wrap?.classList.add("is-visible"));
+    hideTimer = window.setTimeout(() => hide(false), VISIBLE_MS);
   };
 
-  const checkGalleryPosition = () => {
-    if (shown || showTimer || readSuppressionUntil() > Date.now()) return;
-    // Only reveal after the entire deliverables gallery has left the viewport.
-    // This keeps the invitation away from the client's actual images.
-    if (gallery.getBoundingClientRect().bottom > 0) return;
-    showTimer = window.setTimeout(() => {
-      showTimer = 0;
-      if (gallery.getBoundingClientRect().bottom <= 0) show();
-    }, 650);
-  };
-
-  window.addEventListener("scroll", checkGalleryPosition, { passive: true });
-  window.addEventListener("resize", checkGalleryPosition, { passive: true });
-  checkGalleryPosition();
+  // Start only after the delivery has loaded and been initialized. No scroll or
+  // resize handlers are needed, so the invitation adds almost no page-start work.
+  window.setTimeout(show, SHOW_DELAY_MS);
 }
