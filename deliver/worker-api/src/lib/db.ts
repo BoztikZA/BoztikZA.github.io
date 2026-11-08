@@ -326,7 +326,7 @@ export async function recordShare(env: Env, id: string, method: string, ctx: Exe
 
 // "toolkit" = creative-toolkit.html. js/pageview.js has always sent it, but it was missing from this
 // allow-list, so those page views were silently dropped (recordPageView returns false for unknown keys).
-export const PAGE_KEYS = ["homepage", "stores", "portfolio", "tools", "toolkit", "guides", "about", "support", "contact", "services", "deliver"] as const;
+export const PAGE_KEYS = ["homepage", "stores", "portfolio", "tools", "toolkit", "guides", "about", "support", "contact", "services", "deliver", "spotlight"] as const;
 
 /** Records one public page view. Returns whether it was COUNTED.
  *  - Unknown page keys are never counted.

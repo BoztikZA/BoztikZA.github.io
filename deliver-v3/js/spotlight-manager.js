@@ -1,5 +1,5 @@
 import { config } from "./config.js";
-import { authHeaders, onAuthChange } from "./auth.js";
+import { authHeaders, getSession, onAuthChange } from "./auth.js";
 import { spotlightProfileSaveRequest } from "./spotlight-profile-request.mjs";
 
 const $ = id => document.getElementById(id);
@@ -30,6 +30,8 @@ function render() {
   $("sp-admin-pending").textContent = pending.length;
   $("sp-admin-published").textContent = published.length;
   $("sp-admin-featured").textContent = featured ? featured.display_name : "None";
+  const overviewCount = $("stat-spotlight-active");
+  if (overviewCount) overviewCount.textContent = published.length.toLocaleString();
 
   list.innerHTML = profiles.length ? profiles.map(p => `
     <article class="sp-admin-row">
@@ -52,16 +54,24 @@ function render() {
 async function load() {
   feedback.textContent = "Refreshing Spotlight…";
   try {
-    const [profilesResponse, analyticsResponse] = await Promise.all([
-      api("/api/admin/spotlight"),
-      api("/api/admin/spotlight/analytics")
-    ]);
-    profiles = profilesResponse.profiles || [];
+    const profilesResponse = await api("/api/admin/spotlight");
+    profiles = Array.isArray(profilesResponse.profiles) ? profilesResponse.profiles : [];
     render();
-    const rows = analyticsResponse.profiles || [];
+
+    // Analytics are secondary: keep profile creation and moderation usable if
+    // the analytics endpoint is temporarily unavailable.
+    let analyticsResponse = { profiles: [] };
+    let analyticsUnavailable = false;
+    try {
+      analyticsResponse = await api("/api/admin/spotlight/analytics");
+    } catch (analyticsError) {
+      analyticsUnavailable = true;
+      analytics.innerHTML = "<p class=\"cc-inline-error\" role=\"status\">Profiles are available. Engagement analytics could not load: " + esc(analyticsError.message) + "</p>";
+    }
+    const rows = Array.isArray(analyticsResponse.profiles) ? analyticsResponse.profiles : [];
     const views = rows.reduce((total, p) => total + Number(p.views || 0), 0);
     $("sp-admin-views").textContent = views.toLocaleString();
-    analytics.innerHTML = rows.length ? rows.map(p => `
+    if (!analyticsUnavailable) analytics.innerHTML = rows.length ? rows.map(p => `
       <div class="sp-admin-metric">
         <strong>${esc(p.display_name)}</strong>
         <span>${Number(p.views || 0).toLocaleString()} views</span>
@@ -69,7 +79,7 @@ async function load() {
         <span>${Number(p.outbound_clicks || 0).toLocaleString()} outbound clicks</span>
         <span>${Number(p.featured_impressions || 0).toLocaleString()} featured impressions</span>
       </div>`).join("") : "<p class='cc-muted'>Engagement will appear when visitors start exploring profiles.</p>";
-    feedback.textContent = "Spotlight data updated.";
+    feedback.textContent = analyticsUnavailable ? "Spotlight profiles loaded. Analytics are temporarily unavailable." : "Spotlight profiles and analytics updated.";
     return true;
   } catch (error) {
     feedback.textContent = error.message;
@@ -177,12 +187,11 @@ editForm.addEventListener("submit", async event => {
   try {
     const request = spotlightProfileSaveRequest(id, body);
     const saved = await api(request.path, request.init);
-    if (saved.profile) {
-      const savedIndex = profiles.findIndex(item => item.id === saved.profile.id);
-      if (savedIndex === -1) profiles.unshift(saved.profile);
-      else profiles[savedIndex] = saved.profile;
-      render();
-    }
+    if (!saved?.profile?.id) throw new Error("The server did not confirm the saved profile. Refresh Spotlight before trying again.");
+    const savedIndex = profiles.findIndex(item => item.id === saved.profile.id);
+    if (savedIndex === -1) profiles.unshift(saved.profile);
+    else profiles[savedIndex] = saved.profile;
+    render();
     if (!id) {
       editForm.elements.id.value = saved.profile.id;
     }
@@ -228,12 +237,35 @@ $("sp-profile-image-upload").addEventListener("click", async () => {
 $("sp-admin-edit-cancel").addEventListener("click", () => { editForm.reset(); editForm.hidden = true; });
 $("sp-admin-refresh").addEventListener("click", load);
 
-onAuthChange(session => {
-  if (session) load();
-  else {
+let authChangeVersion = 0;
+function handleSpotlightAuthChange(session) {
+  authChangeVersion += 1;
+  if (session) {
+    load();
+  } else {
     feedback.textContent = "Sign in to manage Spotlight.";
     list.innerHTML = "";
     analytics.innerHTML = "";
+    const overviewCount = $("stat-spotlight-active");
+    if (overviewCount) overviewCount.textContent = "—";
     editForm.hidden = true;
   }
+}
+
+onAuthChange(handleSpotlightAuthChange);
+
+// onAuthChange only subscribes to future changes; it does not emit the current
+// session. Initialise the manager for administrators who are already signed in
+// when the Command Centre loads.
+getSession().then(session => {
+  if (authChangeVersion === 0) {
+    if (session) load();
+    else {
+      feedback.textContent = "Sign in to manage Spotlight.";
+      list.innerHTML = "";
+      analytics.innerHTML = "";
+    }
+  }
+}).catch(error => {
+  feedback.textContent = "Could not initialise Spotlight: " + error.message;
 });

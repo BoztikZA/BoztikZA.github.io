@@ -205,7 +205,7 @@ export function renderSources(deliveries) {
 }
 
 /* --------------------------------------------------- analytics: site pages */
-const PAGE_LABELS = { homepage: "Home", services: "Services", portfolio: "Portfolio", tools: "Tools (Image Inspector, Creative Assistant)", guides: "Guides", about: "About", support: "Support", contact: "Contact", deliver: "Deliver (public page)" };
+const PAGE_LABELS = { homepage: "Home", services: "Services", portfolio: "Portfolio", tools: "Tools (Image Inspector, Creative Assistant)", guides: "Guides", about: "About", support: "Support", contact: "Contact", deliver: "Deliver (public page)", spotlight: "Boztik Spotlight" };
 
 export async function renderPages() {
   const host = $("cc-pages-body");
