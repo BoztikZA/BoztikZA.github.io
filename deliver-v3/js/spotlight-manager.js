@@ -30,6 +30,8 @@ function render() {
   $("sp-admin-pending").textContent = pending.length;
   $("sp-admin-published").textContent = published.length;
   $("sp-admin-featured").textContent = featured ? featured.display_name : "None";
+  const overviewCount = $("stat-spotlight-active");
+  if (overviewCount) overviewCount.textContent = published.length.toLocaleString();
 
   list.innerHTML = profiles.length ? profiles.map(p => `
     <article class="sp-admin-row">
