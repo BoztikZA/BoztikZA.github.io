@@ -397,7 +397,8 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       const song = songTrack ? await spotifyMetadata(songTrack) : null;
       if (displayName.length < 2 || tagline.length < 8 || description.length < 30) throw new HttpError(422, "invalid_profile", "Please provide a name, a clear tagline and a description of at least 30 characters.");
       if (!CATEGORIES.has(category)) throw new HttpError(422, "invalid_category", "Choose a valid category.");
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new HttpError(422, "invalid_email", "Enter a valid contact email.");
+      // Contact email is optional for admin-created profiles (the column is NOT NULL, so blank is stored as "").
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new HttpError(422, "invalid_email", "Enter a valid contact email, or leave the field blank.");
       if (b.website_url && !website) throw new HttpError(422, "invalid_url", "Website links must use HTTPS.");
       const social: Record<string,string> = {};
       if (b.social_links && typeof b.social_links === "object" && !Array.isArray(b.social_links)) {
