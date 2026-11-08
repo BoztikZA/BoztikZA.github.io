@@ -52,7 +52,9 @@ function card(profile) {
     <div class="sp-card-foot">
       ${platformIcons ? `<span class="sp-card-platforms" aria-label="Available platforms">${platformIcons}</span>` : ""}
       <a class="sp-card-link" href="profile.html?slug=${encodeURIComponent(profile.slug)}">View profile ↗</a>
+      <button class="sp-card-share" type="button" data-share-slug="${esc(profile.slug)}" data-share-name="${esc(profile.display_name)}" aria-label="Share ${esc(profile.display_name)}'s Spotlight profile">Share ↗</button>
     </div>
+    <p class="sp-card-share-status" role="status" aria-live="polite"></p>
   </article>`;
 }
 
@@ -199,6 +201,26 @@ async function load(reset = true) {
     }
   }
 }
+
+grid.addEventListener("click", async event => {
+  const button = event.target.closest("button[data-share-slug]");
+  if (!button) return;
+  const slug = button.dataset.shareSlug;
+  const name = button.dataset.shareName || "this creator";
+  const status = button.closest(".sp-card")?.querySelector(".sp-card-share-status");
+  const url = "https://deliver-api.boztik.com/api/public/spotlight/share/" + encodeURIComponent(slug);
+  try {
+    if (navigator.share) {
+      await navigator.share({ title: name + " — Boztik Spotlight", text: "Discover " + name + " on Boztik Spotlight.", url });
+      if (status) status.textContent = "Thanks for sharing.";
+    } else if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(url);
+      if (status) status.textContent = "Profile share link copied.";
+    } else if (status) status.textContent = "Copy this link: " + url;
+  } catch (error) {
+    if (error?.name !== "AbortError" && status) status.textContent = "Copy this link: " + url;
+  }
+});
 
 filters.addEventListener("click", event => {
   const button = event.target.closest("button[data-category]");
