@@ -125,6 +125,7 @@
   box-shadow: inset 0 0 0 1px rgba(142,255,61,.08), 0 18px 48px rgba(0,0,0,.24), 0 0 30px rgba(142,255,61,.08);
 }
 .hm-spotlight-image-link { display: block; color: inherit; text-decoration: none; }
+.hm-spotlight-media { position: relative; }
 .hm-spotlight-image {
   position: relative;
   display: grid;
@@ -137,12 +138,49 @@
     linear-gradient(145deg, #17211d, #0b1112);
 }
 .hm-spotlight-image img {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
   height: 100%;
   padding: 13px;
   object-fit: contain;
   object-position: center;
+  opacity: 0;
+  transition: opacity .32s ease;
+}
+.hm-spotlight-image img.is-active {
+  opacity: 1;
+}
+.hm-spotlight-gallery-controls {
+  position: absolute;
+  z-index: 2;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  gap: 6px;
+  padding: 7px;
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 20px;
+  background: rgba(5,9,8,.78);
+  backdrop-filter: blur(8px);
+}
+.hm-spotlight-gallery-controls button {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: 1px solid rgba(255,255,255,.68);
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+.hm-spotlight-gallery-controls button.is-active {
+  border-color: #8eff3d;
+  background: #8eff3d;
+}
+.hm-spotlight-gallery-controls button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
 }
 .hm-spotlight-image-fallback {
   display: grid;
@@ -341,4 +379,5 @@
   .hm-spotlight-brand:after { animation: none; }
   .hm-spotlight-card, .hm-spotlight-link { transition: none; }
   .hm-spotlight-social-link { transition: none; }
+  .hm-spotlight-image img { transition: none; }
 }

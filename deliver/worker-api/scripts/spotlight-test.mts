@@ -42,6 +42,7 @@ class FakeStatement implements BoundStatement {
 
 class FakeD1 {
   profiles = new Map<string, any>();
+  gallery = new Map<string, any>();
   pending = new Map<string, any>();
   storage = {
     id: 1,
@@ -97,6 +98,10 @@ class FakeD1 {
       const profile = this.profiles.get(String(args[0]));
       return profile ? { ...profile } : null;
     }
+    if (sql.includes("FROM spotlight_gallery_images") && sql.includes("position=?")) {
+      const image = this.gallery.get(`${args[0]}:${args[1]}`);
+      return image ? { ...image } : null;
+    }
     if (sql.includes("FROM pending_uploads WHERE upload_id = ?")) {
       const pending = this.pending.get(String(args[0]));
       return pending ? { ...pending } : null;
@@ -117,6 +122,10 @@ class FakeD1 {
   }
 
   async all(sql: string, args: unknown[]): Promise<any> {
+    if (sql.includes("FROM spotlight_gallery_images")) {
+      const profileIds = new Set(args.map(String));
+      return { results: [...this.gallery.values()].filter(image => profileIds.has(String(image.profile_id))).map(image => ({ ...image })) };
+    }
     if (sql.includes("FROM spotlight_profiles") && sql.includes("ORDER BY CASE WHEN featured_until")) {
       return { results: this.directoryRows(sql, args) };
     }
@@ -185,6 +194,21 @@ class FakeD1 {
       const profile = this.profiles.get(String(profileId));
       if (!profile || (profile.image_key ?? null) !== (expectedKey ?? null)) return 0;
       Object.assign(profile, { image_key: key, image_size: size, image_content_type: contentType, updated_at: updatedAt });
+      return 1;
+    }
+    if (sql.startsWith("INSERT INTO spotlight_gallery_images")) {
+      const [profileId, position, key, size, contentType, createdAt, expectedKey] = args;
+      const id = `${profileId}:${position}`;
+      const current = this.gallery.get(id);
+      if (current && (current.image_key ?? null) !== (expectedKey ?? null)) return 0;
+      if (!current && expectedKey) return 0;
+      this.gallery.set(id, { profile_id: profileId, position, image_key: key, image_size: size, image_content_type: contentType, created_at: createdAt });
+      return 1;
+    }
+    if (sql.startsWith("DELETE FROM spotlight_gallery_images WHERE profile_id=? AND position=? AND image_key=?")) {
+      const id = `${args[0]}:${args[1]}`;
+      if (this.gallery.get(id)?.image_key !== args[2]) return 0;
+      this.gallery.delete(id);
       return 1;
     }
     if (sql.startsWith("DELETE FROM pending_uploads") && sql.includes("AND changes()>0")) {
@@ -275,6 +299,19 @@ class FakeD1 {
         website_url: website, social_links: social, song_metadata: song, status: "pending",
         created_at: createdAt, updated_at: updatedAt,
       });
+      this.profiles.set(String(id), {
+        id, slug, display_name: displayName, tagline, description, category, contact_email: email,
+        website_url: website, social_links: social, song_metadata: song, status: "pending",
+        image_key: null, image_size: 0, image_content_type: null, featured_until: null,
+        created_at: createdAt, updated_at: updatedAt,
+      });
+      return 1;
+    }
+    if (sql.startsWith("DELETE FROM spotlight_profiles WHERE id=? AND status='pending'")) {
+      const profile = this.profiles.get(String(args[0]));
+      if (!profile || profile.status !== "pending" || (profile.image_key ?? null) !== (args[1] ?? null)) return 0;
+      this.profiles.delete(String(args[0]));
+      this.submissions = this.submissions.filter(submission => submission.id !== String(args[0]));
       return 1;
     }
     return 0;
@@ -346,6 +383,11 @@ class FakeBucket {
     return value ? { size: value.byteLength } : null;
   }
 
+  async get(key: string): Promise<{ body: Uint8Array } | null> {
+    const value = this.objects.get(key);
+    return value ? { body: value.slice() } : null;
+  }
+
   async list(options: { prefix?: string }): Promise<any> {
     return {
       objects: [...this.objects].filter(([key]) => !options.prefix || key.startsWith(options.prefix))
@@ -406,6 +448,33 @@ async function postSubmission(env: any, ip: string, displayName: string): Promis
       "CF-Connecting-IP": ip,
     },
     body: JSON.stringify(body),
+  });
+  return handleSpotlightPublic(request, "/submit", env, {} as never);
+}
+
+async function postMultipartSubmission(env: any, ip: string, options: {
+  extraImages?: number; includeMain?: boolean; mainType?: string; mainSize?: number; invalidMainContents?: boolean;
+} = {}): Promise<Response> {
+  const form = new FormData();
+  form.set("display_name", "Gallery Creator");
+  form.set("tagline", "A distinct and useful creative tagline");
+  form.set("description", "An independent creator sharing thoughtful work with their community.");
+  form.set("category", "creator");
+  form.set("website_url", "gallery.example.com");
+  form.set("contact_email", "gallery@example.com");
+  form.set("social_links", JSON.stringify({}));
+  form.set("consent", "on");
+  if (options.includeMain !== false) {
+    const bytes = options.invalidMainContents ? new Uint8Array(24) : makeImage(options.mainSize ?? 24);
+    form.set("main_image", new File([bytes], "logo.png", { type: options.mainType || "image/png" }));
+  }
+  for (let index = 0; index < (options.extraImages ?? 0); index += 1) {
+    form.append("showcase_images", new File([makeImage(24)], `work-${index}.png`, { type: "image/png" }));
+  }
+  const request = new Request("https://worker.test/api/public/spotlight/submit", {
+    method: "POST",
+    headers: { Origin: "https://www.boztik.com", "CF-Connecting-IP": ip },
+    body: form,
   });
   return handleSpotlightPublic(request, "/submit", env, {} as never);
 }
@@ -481,6 +550,25 @@ console.log("Spotlight image replacement and shared storage accounting");
   assert.equal(db.storage.reserved_bytes, 0);
   assert.equal(bucket.bytes(), db.storage.total_bytes);
   assert.equal(db.pending.size, 0);
+}
+
+console.log("Gallery image upload and replacement remain within shared storage accounting");
+{
+  const { env, db, bucket, profileId, oldSize } = makeImageEnv();
+  const first = await uploadSpotlightImage(imageRequest(24), env as never, profileId, 1);
+  assert.equal(first.status, 200);
+  const firstKey = db.gallery.get(`${profileId}:1`).image_key;
+  assert.equal(db.storage.total_bytes, oldSize + 24);
+  assert.equal(bucket.bytes(), db.storage.total_bytes);
+  const replacement = await uploadSpotlightImage(imageRequest(31), env as never, profileId, 1);
+  assert.equal(replacement.status, 200);
+  assert.equal(bucket.objects.has(firstKey), false);
+  assert.equal(db.gallery.get(`${profileId}:1`).image_size, 31);
+  assert.equal(db.storage.total_bytes, oldSize + 31);
+  assert.equal(bucket.bytes(), db.storage.total_bytes);
+  assert.equal(db.storage.reserved_bytes, 0);
+  assert.equal(db.pending.size, 0);
+  assert.equal((await uploadSpotlightImage(imageRequest(24), env as never, profileId, 5)).status, 404);
 }
 
 console.log("Two simultaneous replacements use compare-and-swap");
@@ -657,6 +745,45 @@ console.log("Directory pagination, sorting, filtering, and cursor boundaries");
   assert.equal(invalidCursor.status, 400);
 }
 
+console.log("Published gallery images are listed and publicly served");
+{
+  const db = new FakeD1();
+  const id = "c".repeat(20);
+  const primaryKey = `spotlight/${id}/primary`;
+  const extraKey = `spotlight/${id}/extra`;
+  const row = publishedProfile(30, {
+    id, slug: "gallery-profile", image_key: primaryKey, image_size: 20, image_content_type: "image/png",
+  });
+  db.profiles.set(id, row);
+  const noPrimary = publishedProfile(31, { image_key: null });
+  db.profiles.set(noPrimary.id, noPrimary);
+  db.gallery.set(`${id}:1`, {
+    profile_id: id, position: 1, image_key: extraKey, image_size: 24,
+    image_content_type: "image/png", created_at: 1,
+  });
+  db.gallery.set(`${noPrimary.id}:2`, {
+    profile_id: noPrimary.id, position: 2, image_key: `spotlight/${noPrimary.id}/extra`,
+    image_size: 24, image_content_type: "image/png", created_at: 1,
+  });
+  const bucket = new FakeBucket();
+  bucket.objects.set(primaryKey, makeImage(20));
+  bucket.objects.set(extraKey, makeImage(24));
+  bucket.objects.set(`spotlight/${noPrimary.id}/extra`, makeImage(24));
+  const env = { DB: db, BUCKET: bucket };
+  const listing = await handleSpotlightPublic(new Request("https://worker.test/api/public/spotlight?limit=5"), "", env as never, {} as never);
+  const data = await listing.json() as any;
+  const profile = data.profiles.find((item: any) => item.id === id);
+  assert.deepEqual(profile.images.map((image: any) => image.position), [0, 1]);
+  assert.equal(profile.images[1].url, `https://deliver-api.boztik.com/api/public/spotlight/image/${id}/1`);
+  const noPrimaryProfile = data.profiles.find((item: any) => item.id === noPrimary.id);
+  assert.equal(noPrimaryProfile.image_url, null);
+  assert.deepEqual(noPrimaryProfile.images.map((image: any) => image.position), [2]);
+  const image = await handleSpotlightPublic(new Request(`https://worker.test/api/public/spotlight/image/${id}/1`), `image/${id}/1`, env as never, {} as never);
+  assert.equal(image.status, 200);
+  assert.equal(image.headers.get("Content-Type"), "image/png");
+  assert.equal((await image.arrayBuffer()).byteLength, 24);
+}
+
 console.log("Submission duplicate prevention and persistent rate limit");
 {
   const db = new FakeD1();
@@ -679,6 +806,40 @@ console.log("Submission duplicate prevention and persistent rate limit");
   }
   const sixth = await postSubmission(env, "198.51.100.20", "Creator too many");
   assert.equal(sixth.status, 429);
+}
+
+console.log("Multipart submissions require a main image, accept up to four additional images, and account for every byte");
+{
+  const db = new FakeD1();
+  const bucket = new FakeBucket();
+  const env = {
+    DB: db, BUCKET: bucket, AUTH_TOKEN_SALT: "test-salt",
+    ALLOWED_ORIGINS: "https://www.boztik.com", PUBLIC_ORIGIN: "https://www.boztik.com",
+  };
+  const missingMain = await postMultipartSubmission(env, "198.51.100.40", { includeMain: false });
+  assert.equal(missingMain.status, 422);
+  assert.equal(db.profiles.size, 0);
+  const invalidType = await postMultipartSubmission(env, "198.51.100.43", { mainType: "image/gif" });
+  assert.equal(invalidType.status, 415);
+  assert.equal(db.profiles.size, 0);
+  const invalidContents = await postMultipartSubmission(env, "198.51.100.45", { invalidMainContents: true });
+  assert.equal(invalidContents.status, 422);
+  assert.equal(db.profiles.size, 0);
+  const oversized = await postMultipartSubmission(env, "198.51.100.44", { mainSize: 2 * 1024 * 1024 + 1 });
+  assert.equal(oversized.status, 413);
+  assert.equal(db.profiles.size, 0);
+  const tooMany = await postMultipartSubmission(env, "198.51.100.41", { extraImages: 5 });
+  assert.equal(tooMany.status, 422);
+  assert.equal(db.profiles.size, 0);
+  const accepted = await postMultipartSubmission(env, "198.51.100.42", { extraImages: 4 });
+  const submitted = await accepted.json() as any;
+  assert.equal(accepted.status, 201, submitted.error);
+  assert.equal(db.profiles.size, 1);
+  assert.equal(db.gallery.size, 4);
+  assert.equal(db.storage.total_bytes, 5 * 24);
+  assert.equal(bucket.bytes(), db.storage.total_bytes);
+  assert.equal(db.storage.reserved_bytes, 0);
+  assert.equal([...db.profiles.values()][0].website_url, "https://gallery.example.com/");
 }
 
 console.log("All Spotlight regression tests passed.");

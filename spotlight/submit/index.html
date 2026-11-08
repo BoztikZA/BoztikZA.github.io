@@ -4,11 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Get listed — Boztik Spotlight</title>
-  <meta name="description" content="Submit your independent business or creator profile to Boztik Spotlight by email. Free to join, reviewed by a real person.">
+  <meta name="description" content="Submit your independent business or creator profile to Boztik Spotlight. Every profile is reviewed before publication.">
   <link rel="canonical" href="https://www.boztik.com/spotlight/submit/">
   <link rel="stylesheet" href="../../styles-premium.css?v=20261106a">
   <link rel="stylesheet" href="../spotlight.css?v=10">
-  <link rel="stylesheet" href="submit.css?v=4">
+  <link rel="stylesheet" href="submit.css?v=5">
 </head>
 <body class="spotlight-body">
   <header class="sp-nav">
@@ -21,38 +21,63 @@
       <section class="sp-submit-copy">
         <p class="sp-kicker">YOUR WORK. YOUR STORY. YOUR SPACE.</p>
         <h1>Put yourself<br><em>on the map.</em></h1>
-        <p>Spotlight gives independent businesses and creators a place to be discovered. Tell us what you do, share your links and let us review your profile.</p>
+        <p>Spotlight introduces real independent businesses and creators to people looking for something worth discovering. Share your story and images; our team reviews every profile before it goes live.</p>
         <ul>
-          <li><b>01</b><span><strong>Free to join</strong><small>No listing fee during our pilot.</small></span></li>
-          <li><b>02</b><span><strong>Human-reviewed</strong><small>Every profile is checked before it goes live.</small></span></li>
-          <li><b>03</b><span><strong>Send your images directly</strong><small>Attach your logo or profile photo to the email.</small></span></li>
+          <li><b>01</b><span><strong>Free to submit</strong><small>There is no listing fee during our pilot.</small></span></li>
+          <li><b>02</b><span><strong>Human-reviewed</strong><small>Your profile stays private while it is under review.</small></span></li>
+          <li><b>03</b><span><strong>Show your work</strong><small>Add a logo or portrait and up to four more images.</small></span></li>
         </ul>
       </section>
-      <section class="sp-form-panel">
+      <section class="sp-form-panel" aria-labelledby="sp-submit-title">
         <div class="sp-form-head">
-          <span class="sp-kicker">EMAIL SUBMISSION</span>
-          <h2>Tell us about you.</h2>
-          <p>Use the structured submission template below to tell us about your work. The email opens with clearly separated sections and space to complete each answer. Attach your logo or profile photo before sending.</p>
+          <span class="sp-kicker">PROFILE SUBMISSION</span>
+          <h2 id="sp-submit-title">Tell us about you.</h2>
+          <p>Fields marked required are needed for review. Your images and information are stored securely and only published after approval.</p>
         </div>
-        <div class="sp-email-submit">
-          <div class="sp-email-submit-note">
-            <strong>What to include</strong>
-            <ul>
-              <li>Business or creator name and contact name</li>
-              <li>Your category, short introduction and description</li>
-              <li>Your contact email and website</li>
-              <li>Your social links are optional; add Pinterest under “Other links” in the template. Spotify links are also welcome.</li>
-              <li>Your logo and/or profile photo (optional attachments)</li>
-            </ul>
+        <form id="sp-submit-form" enctype="multipart/form-data" novalidate>
+          <div class="sp-form-row">
+            <label>Business or creator name <span aria-hidden="true">*</span><input name="display_name" maxlength="80" minlength="2" autocomplete="organization" required></label>
+            <label>Category <span aria-hidden="true">*</span><select name="category" required>
+              <option value="">Choose a category</option><option value="small-business">Small business</option><option value="youtube">YouTube</option><option value="twitch">Twitch</option><option value="gaming">Gaming</option><option value="photography">Photography</option><option value="design">Design</option><option value="music">Music</option><option value="creator">Creator</option><option value="freelance">Freelance</option><option value="other">Other</option>
+            </select></label>
           </div>
-          <a class="sp-button sp-button-primary sp-email-submit-button" href="mailto:boztiktech@gmail.com?subject=Boztik%20Spotlight%20%7C%20Profile%20Submission&body=BOZTIK%20SPOTLIGHT%0APROFILE%20SUBMISSION%0A%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%0A%0AThank%20you%20for%20your%20interest%20in%20being%20featured%20on%20Boztik%20Spotlight.%0A%0APlease%20complete%20the%20sections%20below.%20Take%20your%20time%20and%20give%20us%20enough%20detail%20to%20introduce%20your%20work%20properly.%20If%20something%20does%20not%20apply%2C%20enter%20N%2FA.%0A%0A%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%0A01%20%20YOUR%20BUSINESS%20OR%20CREATOR%20PROFILE%0A%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%0A%0ABusiness%20%2F%20creator%20name%3A%0A%0A%0AContact%20person%3A%0A%0A%0AContact%20email%3A%0A%0A%0ACategory%20(business%2C%20creator%2C%20music%2C%20photography%2C%20design%2C%20gaming%2C%20etc.)%3A%0A%0A%0AWebsite%20(include%20https%3A%2F%2F)%3A%0A%0A%0A%0A%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%0A02%20%20YOUR%20STORY%0A%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%0A%0AShort%20introduction%20(8%E2%80%93120%20characters)%3A%0A%0A%0AAbout%20your%20work%20(30%E2%80%93900%20characters)%3A%0A%0A%0AWhat%20makes%20your%20work%20or%20business%20worth%20discovering%3F%0A%0A%0A%0A%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%0A03%20%20YOUR%20ONLINE%20PRESENCE%0A%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%0A%0AYouTube%3A%0A%0A%0AInstagram%3A%0A%0A%0ATwitch%3A%0A%0A%0ATikTok%3A%0A%0A%0AFacebook%3A%0A%0A%0ALinkedIn%3A%0A%0A%0AX%3A%0A%0A%0ASpotify%20artist%20profile%3A%0A%0A%0AFeatured%20Spotify%20track%3A%0A%0A%0AOther%20links%3A%0A%0A%0A%0A%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%0A04%20%20YOUR%20IMAGES%0A%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%0A%0APlease%20attach%20your%20business%20logo%20and%2For%20a%20clear%20profile%20photo%20to%20this%20email%2C%20if%20available.%0A%0APreferred%20display%20name%20(if%20different%20from%20the%20name%20above)%3A%0A%0A%0A%0A%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%0A05%20%20YOUR%20CONFIRMATION%0A%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%0A%0APlease%20type%20YES%20to%20confirm%3A%0A%0AI%20confirm%20that%20I%20own%20or%20am%20authorised%20to%20submit%20this%20profile%2C%20that%20the%20information%20and%20links%20are%20accurate%2C%20and%20that%20I%20consent%20to%20Boztik%20publishing%20the%20approved%20profile%20publicly.%20I%20understand%20that%20submission%20does%20not%20guarantee%20approval%20or%20traffic.%0A%0AConfirmation%20(YES)%3A%0A%0A%0APrivacy%20Policy%3A%20https%3A%2F%2Fwww.boztik.com%2Fprivacy.html%0A%0A%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%E2%94%81%0ATHANK%20YOU%0ABoztik%20Spotlight%0Aboztiktech%40gmail.com">Open your submission template <span>↗</span></a>
-          <p class="sp-email-submit-help">Your email app will open with a neatly spaced, plain-text template ready to complete. Email apps do not reliably support colour in pre-filled messages, so the Boztik green styling appears on this page; the email itself is formatted for clarity and readability. Complete the fields, attach your images, then press Send. If no email app opens, email <a href="mailto:boztiktech@gmail.com">boztiktech@gmail.com</a> and copy the details above.</p>
-          <p class="sp-email-submit-privacy">Submissions are reviewed manually. Your contact email is used for follow-up and is not displayed publicly. See our <a href="../../privacy.html" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.</p>
-        </div>
+          <label>Tagline <span aria-hidden="true">*</span><input name="tagline" maxlength="120" minlength="8" placeholder="A short introduction to what you do" required></label>
+          <label>About your work <span aria-hidden="true">*</span><textarea name="description" rows="6" minlength="30" maxlength="5000" placeholder="Tell people about your business, services or creative work." required></textarea><small>30–5,000 characters.</small></label>
+          <div class="sp-form-row">
+            <label>Website <small>Optional</small><input name="website_url" type="url" inputmode="url" placeholder="yourwebsite.com" autocomplete="url"></label>
+            <label>Contact email <small>Optional</small><input name="contact_email" type="email" maxlength="254" autocomplete="email" placeholder="you@example.com"></label>
+          </div>
+          <fieldset class="sp-image-fieldset">
+            <legend>Your images <span aria-hidden="true">*</span></legend>
+            <p>Your first image is your profile logo or portrait. Add up to four supporting images. JPG, PNG or WebP; up to 2 MB per image.</p>
+            <label>Main logo or profile photograph <span aria-hidden="true">*</span><input name="main_image" id="sp-submit-main-image" type="file" accept="image/jpeg,image/png,image/webp" required><small>Square logos and portraits both work. Images are displayed without changing their proportions.</small></label>
+            <label>Additional showcase images <small>Optional · maximum 4</small><input name="showcase_images" id="sp-submit-showcase-images" type="file" accept="image/jpeg,image/png,image/webp" multiple><small>Choose images of your work, products, space or team.</small></label>
+            <div id="sp-submit-image-preview" class="sp-submit-image-preview" aria-live="polite"></div>
+          </fieldset>
+          <fieldset class="sp-social-fields">
+            <legend>Social links <small>Optional</small></legend>
+            <p>Your website alone is enough. Add any social links you want shown.</p>
+            <div class="sp-form-row">
+              <label>Instagram<input name="instagram" type="url" placeholder="https://instagram.com/"></label>
+              <label>YouTube<input name="youtube" type="url" placeholder="https://youtube.com/"></label>
+              <label>TikTok<input name="tiktok" type="url" placeholder="https://tiktok.com/"></label>
+              <label>Facebook<input name="facebook" type="url" placeholder="https://facebook.com/"></label>
+              <label>LinkedIn<input name="linkedin" type="url" placeholder="https://linkedin.com/"></label>
+              <label>X<input name="x" type="url" placeholder="https://x.com/"></label>
+              <label>Twitch<input name="twitch" type="url" placeholder="https://twitch.tv/"></label>
+              <label>Spotify<input name="spotify" type="url" placeholder="https://open.spotify.com/"></label>
+              <label>Pinterest<input name="pinterest" type="url" placeholder="https://pinterest.com/"></label>
+            </div>
+          </fieldset>
+          <label class="sp-consent"><input name="consent" type="checkbox" required><span>I own or am authorised to submit this content, and I agree that Boztik may publish it if approved.</span></label>
+          <label class="sp-honeypot" aria-hidden="true">Company website<input name="company_website" tabindex="-1" autocomplete="off"></label>
+          <button class="sp-button sp-button-primary" type="submit">Send profile for review</button>
+          <p id="sp-submit-status" role="status" aria-live="polite"></p>
+        </form>
+        <p class="sp-submit-email-fallback">Prefer email? <a href="mailto:boztiktech@gmail.com?subject=Boztik%20Spotlight%20profile%20submission">Contact the Spotlight team</a> and include the same profile details and images. Email submissions are also reviewed before publication.</p>
       </section>
     </div>
   </main>
-  <footer class="sp-footer"><a href="../../index.html">BOZTIK</a><span>Spotlight · Get discovered. Get followed. Get noticed.</span><a href="../">Explore directory ↗</a></footer>
-  <script src="../../js/pageview.js?v=spotlight1" defer></script>
+  <script type="module" src="./submit.js?v=5"></script>
 </body>
 </html>

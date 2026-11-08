@@ -13,6 +13,29 @@
 .sp-email-submit-privacy{padding-top:18px;line-height:1.85}
 @media(min-width:601px){.sp-form-panel{padding:36px}.sp-form-head p{line-height:1.8;margin-bottom:30px}}
 
+.sp-form-panel form{gap:20px}
+.sp-form-panel fieldset{min-width:0;margin:0;padding:19px;border:1px solid rgba(142,255,61,.19);border-radius:11px;background:rgba(255,255,255,.018)}
+.sp-form-panel legend{padding:0 7px;color:#f0f5f1;font:700 .95rem "Plus Jakarta Sans",Inter,sans-serif}
+.sp-form-panel fieldset>p{margin:0 0 16px;color:#9eaca3;font-size:.75rem;line-height:1.7}
+.sp-form-panel fieldset label{margin:0 0 14px}
+.sp-form-panel fieldset label:last-of-type{margin-bottom:0}
+.sp-form-panel fieldset label small,.sp-form-panel label>small{font-size:.68rem;color:#89968e;font-weight:400;line-height:1.5}
+.sp-form-panel input[type=file]{padding:10px;font-size:.75rem}
+.sp-image-fieldset{display:grid;gap:12px}
+.sp-image-fieldset>p{margin-bottom:0!important}
+.sp-submit-image-preview{display:flex;flex-wrap:wrap;gap:10px}
+.sp-submit-image-preview:empty{display:none}
+.sp-submit-image-preview figure{width:82px;margin:0;padding:5px;border:1px solid rgba(255,255,255,.12);border-radius:8px;background:#090e10}
+.sp-submit-image-preview img{width:70px;height:60px;display:block;object-fit:contain}
+.sp-submit-image-preview figcaption{overflow:hidden;margin-top:5px;color:#aab7ae;font-size:.62rem;text-overflow:ellipsis;white-space:nowrap}
+.sp-social-fields .sp-form-row{row-gap:12px}
+.sp-form-panel .sp-submit-email-fallback{margin:17px 0 0;padding-top:16px;border-top:1px solid rgba(255,255,255,.09);color:#909d95;font-size:.72rem;line-height:1.7}
+.sp-submit-email-fallback a{color:var(--sp-green);text-underline-offset:3px}
+#sp-submit-status[data-kind=error]{color:#ffb6a9}
+#sp-submit-status[data-kind=success]{color:var(--sp-green)}
+.sp-honeypot{position:absolute!important;left:-10000px!important;width:1px!important;height:1px!important;overflow:hidden!important}
+@media(max-width:600px){.sp-form-panel fieldset{padding:15px}.sp-form-panel .sp-social-fields .sp-form-row{grid-template-columns:1fr}}
+
 /* Clear, high-contrast email-first submission presentation. */
 .sp-email-submit-note{box-shadow:inset 3px 0 0 rgba(142,255,61,.55)}
 .sp-email-submit-button{box-shadow:0 8px 24px rgba(142,255,61,.12)}

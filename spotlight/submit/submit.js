@@ -1,2 +1,113 @@
-const API="https://deliver-api.boztik.com/api/public/spotlight/submit";const form=document.querySelector("#sp-submit-form"),status=document.querySelector("#sp-submit-status"),button=form.querySelector("button");
-form.addEventListener("submit",async e=>{e.preventDefault();status.textContent="Sending your profile for review…";button.disabled=true;const f=new FormData(form);const body={display_name:f.get("display_name"),tagline:f.get("tagline"),description:f.get("description"),category:f.get("category"),website_url:f.get("website_url"),song_url:f.get("song_url"),contact_email:f.get("contact_email"),company_website:f.get("company_website"),consent:f.get("consent")==="on",social_links:{youtube:f.get("youtube"),twitch:f.get("twitch"),instagram:f.get("instagram"),tiktok:f.get("tiktok"),facebook:f.get("facebook"),linkedin:f.get("linkedin"),x:f.get("x"),spotify:f.get("spotify"),pinterest:f.get("pinterest")}};for(const k of Object.keys(body.social_links))if(!body.social_links[k])delete body.social_links[k];try{const r=await fetch(API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});const d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error||"We couldn't submit your profile. Please try again.");form.reset();status.textContent=d.message||"Thank you. Your profile has been sent for review.";status.dataset.delivery=d.notification_sent?"sent":"not-sent";}catch(err){status.dataset.delivery="not-sent";status.textContent=err.message;}finally{button.disabled=false;}});
+const API = "https://deliver-api.boztik.com/api/public/spotlight/submit";
+const form = document.querySelector("#sp-submit-form");
+const status = document.querySelector("#sp-submit-status");
+const button = form.querySelector('button[type="submit"]');
+const mainImage = document.querySelector("#sp-submit-main-image");
+const galleryImages = document.querySelector("#sp-submit-showcase-images");
+const previews = document.querySelector("#sp-submit-image-preview");
+let previewUrls = [];
+
+function normaliseWebsite(value) {
+  const text = value.trim();
+  if (!text) return "";
+  return /^[a-z][a-z0-9+.-]*:\/\//i.test(text) ? text : "https://" + text.replace(/^\/+/, "");
+}
+
+function showPreviews() {
+  previewUrls.forEach(url => URL.revokeObjectURL(url));
+  previewUrls = [];
+  previews.replaceChildren();
+  const files = [mainImage.files[0], ...Array.from(galleryImages.files || [])].filter(Boolean);
+  files.forEach((file, index) => {
+    const url = URL.createObjectURL(file);
+    previewUrls.push(url);
+    const item = document.createElement("figure");
+    const image = document.createElement("img");
+    image.src = url;
+    image.alt = index === 0 ? "Preview of main profile image" : "Preview of showcase image " + index;
+    const caption = document.createElement("figcaption");
+    caption.textContent = index === 0 ? "Main image" : "Showcase " + index;
+    item.append(image, caption);
+    previews.append(item);
+  });
+}
+
+mainImage.addEventListener("change", showPreviews);
+galleryImages.addEventListener("change", () => {
+  if (galleryImages.files.length > 4) {
+    galleryImages.value = "";
+    status.dataset.kind = "error";
+    status.textContent = "Choose no more than four additional images.";
+  }
+  showPreviews();
+});
+
+form.querySelectorAll('input[type="url"]').forEach(input => {
+  input.addEventListener("blur", () => { input.value = normaliseWebsite(input.value); });
+});
+
+form.addEventListener("submit", async event => {
+  event.preventDefault();
+  status.textContent = "";
+  status.dataset.kind = "";
+  form.querySelectorAll('input[type="url"]').forEach(input => { input.value = normaliseWebsite(input.value); });
+  if (!form.checkValidity()) {
+    const invalid = form.querySelector(":invalid");
+    invalid?.focus();
+    form.reportValidity();
+    return;
+  }
+  const files = [mainImage.files[0], ...Array.from(galleryImages.files || [])].filter(Boolean);
+  if (galleryImages.files.length > 4) {
+    status.dataset.kind = "error";
+    status.textContent = "Choose no more than four additional images.";
+    galleryImages.focus();
+    return;
+  }
+  if (files.some(file => !["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 2 * 1024 * 1024)) {
+    status.dataset.kind = "error";
+    status.textContent = "Each image must be a JPG, PNG or WebP file no larger than 2 MB.";
+    return;
+  }
+  const website = form.elements.website_url;
+  if (website.value && !website.checkValidity()) {
+    status.dataset.kind = "error";
+    status.textContent = "Enter a valid website address.";
+    website.focus();
+    return;
+  }
+  const socialLinks = {};
+  for (const key of ["youtube", "twitch", "instagram", "tiktok", "facebook", "linkedin", "x", "spotify", "pinterest"]) {
+    const input = form.elements[key];
+    if (input.value) {
+      if (!input.checkValidity()) {
+        status.dataset.kind = "error";
+        status.textContent = "Check the " + key + " link or leave it blank.";
+        input.focus();
+        return;
+      }
+      socialLinks[key] = input.value;
+    }
+  }
+  const payload = new FormData(form);
+  payload.set("website_url", website.value);
+  payload.set("social_links", JSON.stringify(socialLinks));
+  button.disabled = true;
+  status.textContent = "Sending your profile securely for review…";
+  try {
+    const response = await fetch(API, { method: "POST", body: payload });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || "We couldn't submit your profile. Please try again.");
+    form.reset();
+    showPreviews();
+    status.dataset.kind = "success";
+    status.textContent = data.message || "Thank you. Your profile and images are queued for human review; nothing is published until approved.";
+  } catch (error) {
+    status.dataset.kind = "error";
+    status.textContent = error.message || "We couldn't submit your profile. Please try again.";
+  } finally {
+    button.disabled = false;
+  }
+});
+
+window.addEventListener("pagehide", () => previewUrls.forEach(url => URL.revokeObjectURL(url)));

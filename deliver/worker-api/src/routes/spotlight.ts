@@ -37,6 +37,12 @@ function safeUrl(value: unknown): string | null {
   catch { return null; }
 }
 
+function safeWebsiteUrl(value: unknown): string | null {
+  if (typeof value !== "string" || !value.trim()) return null;
+  const text = value.trim();
+  return safeUrl(/^[a-z][a-z0-9+.-]*:\/\//i.test(text) ? text : "https://" + text.replace(/^\/+/, ""));
+}
+
 function isAllowedPlatformHost(hostname: string, roots: string[]): boolean {
   const host = hostname.toLowerCase().replace(/\.$/, "");
   return roots.some(root => host === root || host.endsWith("." + root));
@@ -168,11 +174,39 @@ async function spotifyMetadata(track: { id: string; url: string }): Promise<{ id
   return { ...track, title: data.title.slice(0, 200), artwork };
 }
 
-function publicDto(row: any) {
+function publicImageUrl(profileId: string, position?: number): string {
+  return "https://deliver-api.boztik.com/api/public/spotlight/image/" + profileId
+    + (position === undefined ? "" : "/" + position);
+}
+
+async function spotlightGalleryByProfile(env: Env, profileIds: string[]): Promise<Map<string, any[]>> {
+  const gallery = new Map<string, any[]>();
+  if (!profileIds.length) return gallery;
+  const placeholders = profileIds.map(() => "?").join(",");
+  const rows = await env.DB.prepare(
+    `SELECT profile_id,position,image_key,image_size,image_content_type
+       FROM spotlight_gallery_images
+      WHERE profile_id IN (${placeholders})
+      ORDER BY profile_id,position`,
+  ).bind(...profileIds).all<any>();
+  for (const row of rows.results || []) {
+    const items = gallery.get(row.profile_id) || [];
+    items.push(row);
+    gallery.set(row.profile_id, items);
+  }
+  return gallery;
+}
+
+function publicDto(row: any, gallery: any[] = []) {
+  const imageUrl = row.image_key && row.status === "published" ? publicImageUrl(row.id) : null;
   return {
     id: row.id, slug: row.slug, display_name: row.display_name, tagline: row.tagline,
     description: row.description, category: row.category, website_url: row.website_url,
-    social_links: publicSocialLinks(row.social_links), song: row.song_metadata ? JSON.parse(row.song_metadata) : null, image_url: row.image_key && row.status === "published" ? "https://deliver-api.boztik.com/api/public/spotlight/image/" + row.id : null,
+    social_links: publicSocialLinks(row.social_links), song: row.song_metadata ? JSON.parse(row.song_metadata) : null, image_url: imageUrl,
+    images: row.status === "published" ? [
+      ...(imageUrl ? [{ url: imageUrl, position: 0 }] : []),
+      ...gallery.map(item => ({ url: publicImageUrl(row.id, Number(item.position)), position: Number(item.position) })),
+    ] : [],
     featured: Number(row.featured_until || 0) > now(), featured_until: Number(row.featured_until || 0) > now() ? row.featured_until : null,
     created_at: row.created_at,
   };
@@ -225,6 +259,7 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
           LIMIT ?`,
       ).bind(...bindings, timestamp, limit + 1).all<any>();
       const page = (rows.results || []).slice(0, limit);
+      const gallery = await spotlightGalleryByProfile(env, page.map(row => row.id));
       const hasMore = (rows.results || []).length > limit;
       const last = page[page.length - 1];
       const nextCursor = hasMore && last
@@ -237,13 +272,17 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
         : null;
       return json({
         ok: true,
-        profiles: page.map(publicDto),
+        profiles: page.map(row => publicDto(row, gallery.get(row.id))),
         next_cursor: nextCursor,
         has_more: hasMore,
       }, 200, { "Cache-Control": "public, max-age=60, stale-while-revalidate=120" });
     }
-    if (request.method === "GET" && seg[0] === "image" && seg.length === 2) {
-      const row = await env.DB.prepare("SELECT image_key,image_content_type FROM spotlight_profiles WHERE id=? AND status='published'").bind(seg[1]).first<any>();
+    if (request.method === "GET" && seg[0] === "image" && (seg.length === 2 || seg.length === 3)) {
+      const position = seg.length === 3 ? Number(seg[2]) : 0;
+      if (seg.length === 3 && (!Number.isInteger(position) || position < 1 || position > 4)) return error("Image not found",404);
+      const row = position === 0
+        ? await env.DB.prepare("SELECT image_key,image_content_type FROM spotlight_profiles WHERE id=? AND status='published'").bind(seg[1]).first<any>()
+        : await env.DB.prepare("SELECT g.image_key,g.image_content_type FROM spotlight_gallery_images g JOIN spotlight_profiles p ON p.id=g.profile_id WHERE g.profile_id=? AND g.position=? AND p.status='published'").bind(seg[1], position).first<any>();
       if (!row?.image_key) return error("Image not found",404);
       const object = await env.BUCKET.get(row.image_key);
       if (!object) return error("Image not found",404);
@@ -255,7 +294,8 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
       if (!slug || !/^[a-z0-9-]+$/.test(slug)) return error("Profile not found", 404);
       const row = await env.DB.prepare("SELECT * FROM spotlight_profiles WHERE slug=? AND status='published'").bind(slug).first<any>();
       if (!row) return error("Profile not found", 404);
-      const profile = publicDto(row);
+      const gallery = await spotlightGalleryByProfile(env, [row.id]);
+      const profile = publicDto(row, gallery.get(row.id));
       const origin = "https://www.boztik.com";
       const profileUrl = origin + "/spotlight/profile.html?slug=" + encodeURIComponent(profile.slug);
       const shareUrl = "https://deliver-api.boztik.com/api/public/spotlight/share/" + encodeURIComponent(profile.slug);
@@ -283,13 +323,49 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
       checkPublicRate(request, env, "spotlight-profile", 2);
       const row = await env.DB.prepare("SELECT * FROM spotlight_profiles WHERE slug=? AND status='published'").bind(seg[1]).first<any>();
       if (!row) return error("Profile not found", 404);
-      return json({ ok: true, profile: publicDto(row) }, 200, { "Cache-Control": "public, max-age=60, stale-while-revalidate=120" });
+      const gallery = await spotlightGalleryByProfile(env, [row.id]);
+      return json({ ok: true, profile: publicDto(row, gallery.get(row.id)) }, 200, { "Cache-Control": "public, max-age=60, stale-while-revalidate=120" });
     }
     if (request.method === "POST" && seg[0] === "submit" && seg.length === 1) {
       checkPublicRate(request, env, "spotlight-submit", 0.25);
-      assertSameSiteOrigin(request, env); requireJson(request);
+      assertSameSiteOrigin(request, env);
       await checkSpotlightSubmissionRate(request, env);
-      const b = await readJson(request, 32 * 1024);
+      const contentType = request.headers.get("Content-Type") || "";
+      const isMultipart = contentType.toLowerCase().startsWith("multipart/form-data");
+      let b: Record<string, any>;
+      let mainImage: File | null = null;
+      let showcaseImages: File[] = [];
+      if (isMultipart) {
+        const contentLength = Number(request.headers.get("Content-Length") || 0);
+        if (contentLength > 11 * 1024 * 1024) throw new HttpError(413, "submission_too_large", "All Spotlight images together must be no larger than 10 MB.");
+        const form = await request.formData();
+        const value = (key: string) => form.get(key);
+        let socialLinks: unknown = {};
+        const socialText = value("social_links");
+        if (typeof socialText === "string" && socialText.trim()) {
+          try { socialLinks = JSON.parse(socialText); }
+          catch { throw new HttpError(422, "invalid_social_links", "Check the social links and try submitting again."); }
+        }
+        b = {
+          display_name: value("display_name"), tagline: value("tagline"), description: value("description"),
+          category: value("category"), website_url: value("website_url"), contact_email: value("contact_email"),
+          song_url: value("song_url"), company_website: value("company_website"),
+          consent: value("consent") === "on", social_links: socialLinks,
+        };
+        const primary = value("main_image");
+        mainImage = typeof File !== "undefined" && primary instanceof File && primary.size ? primary : null;
+        showcaseImages = form.getAll("showcase_images")
+          .filter((file): file is File => typeof File !== "undefined" && file instanceof File && file.size > 0);
+        if (showcaseImages.length > 4) throw new HttpError(422, "too_many_images", "Choose one main image and no more than four additional images.");
+        if (!mainImage) throw new HttpError(422, "main_image_required", "Choose your main logo or profile image first.");
+        for (const file of [mainImage, ...showcaseImages]) {
+          if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) throw new HttpError(415, "invalid_image_type", "Choose JPG, PNG or WebP images.");
+          if (file.size > 2 * 1024 * 1024) throw new HttpError(413, "image_too_large", "Each Spotlight image must be no larger than 2 MB.");
+        }
+      } else {
+        requireJson(request);
+        b = await readJson(request, 32 * 1024);
+      }
       // Honeypot: silently accept automated submissions without storing them.
       if (clean(b.company_website, 200)) return json({ ok: true });
       const displayName = clean(b.display_name, 80), tagline = clean(b.tagline, 120);
@@ -298,7 +374,7 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
       const songTrack = b.song_url ? spotifyTrack(b.song_url) : null;
       if (b.song_url && !songTrack) throw new HttpError(422, "invalid_spotify_track", "Use a public Spotify track link.");
       const song = songTrack ? await spotifyMetadata(songTrack) : null;
-      const website = safeUrl(b.website_url);
+      const website = safeWebsiteUrl(b.website_url);
       if (displayName.length < 2 || tagline.length < 8 || description.length < 30) throw new HttpError(422, "invalid_profile", "Please provide a name, a clear tagline and a description of at least 30 characters.");
       if (!CATEGORIES.has(category)) throw new HttpError(422, "invalid_category", "Choose a valid category.");
       if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new HttpError(422, "invalid_email", "Enter a valid contact email, or leave the field blank.");
@@ -331,6 +407,35 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
           duplicate: true,
           message: "A recent submission with those details is already in review. You do not need to submit it again.",
         });
+      }
+      if (mainImage) {
+        try {
+          const requireImageUpload = async (response: Response) => {
+            if (response.ok) return;
+            const result = await response.json().catch(() => ({})) as { error?: unknown };
+            throw new HttpError(response.status, "image_upload_failed", typeof result.error === "string" ? result.error : "The image could not be uploaded.");
+          };
+          const primaryResponse = await uploadSpotlightImage(new Request(request.url, {
+            method: "PUT", headers: { "Content-Type": mainImage.type }, body: mainImage,
+          }), env, id);
+          await requireImageUpload(primaryResponse);
+          for (let index = 0; index < showcaseImages.length; index += 1) {
+            const file = showcaseImages[index]!;
+            const imageResponse = await uploadSpotlightImage(new Request(request.url, {
+              method: "PUT", headers: { "Content-Type": file.type }, body: file,
+            }), env, id, index + 1);
+            await requireImageUpload(imageResponse);
+          }
+        } catch (uploadError) {
+          console.error("[spotlight] public submission image upload failed", uploadError);
+          try {
+            await deletePendingSpotlightSubmission(env, id);
+          } catch (cleanupError) {
+            console.error("[spotlight] failed submission cleanup requires reconciliation", cleanupError);
+            throw new HttpError(503, "submission_image_cleanup_pending", "Image processing could not finish. Please contact Boztik and include submission reference " + id + ".");
+          }
+          throw uploadError;
+        }
       }
       // Attempt the owner notification before responding so the submitter sees
       // whether the email alert was sent. The D1 submission is already safely
@@ -394,7 +499,7 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       const displayName = clean(b.display_name, 80), tagline = clean(b.tagline, 120);
       const description = cleanDescription(b.description), category = clean(b.category, 40);
       const email = clean(b.contact_email, 254).toLowerCase();
-      const website = b.website_url ? safeUrl(b.website_url) : null;
+      const website = b.website_url ? safeWebsiteUrl(b.website_url) : null;
       const songTrack = b.song_url ? spotifyTrack(b.song_url) : null;
       if (b.song_url && !songTrack) throw new HttpError(422, "invalid_spotify_track", "Use a public Spotify track link.");
       const song = songTrack ? await spotifyMetadata(songTrack) : null;
@@ -423,16 +528,30 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
     }
     if (!seg.length && request.method === "GET") {
       const rows = await env.DB.prepare("SELECT * FROM spotlight_profiles ORDER BY CASE status WHEN 'pending' THEN 0 WHEN 'published' THEN 1 ELSE 2 END, created_at DESC LIMIT 300").all<any>();
+      const gallery = await spotlightGalleryByProfile(env, (rows.results || []).map((row: any) => row.id));
       return json({ ok: true, profiles: (rows.results || []).map((r:any) => ({
-        ...publicDto(r),
+        ...publicDto(r, gallery.get(r.id)),
         contact_email:r.contact_email,
         status:r.status,
+        gallery_positions:(gallery.get(r.id) || []).map((image: any) => Number(image.position)),
         invalid_social_links: invalidSocialLinkKeys(r.social_links),
       })) });
     }
     if (seg.length === 3 && seg[0] === "profile" && seg[2] === "image" && request.method === "PUT") return uploadSpotlightImage(request,env,seg[1]!);
+    if (seg.length === 4 && seg[0] === "profile" && seg[2] === "gallery" && /^[1-4]$/.test(seg[3]!) && request.method === "PUT") return uploadSpotlightImage(request,env,seg[1]!,Number(seg[3]));
+    if (seg.length === 4 && seg[0] === "profile" && seg[2] === "gallery" && /^[1-4]$/.test(seg[3]!) && request.method === "DELETE") {
+      await deleteSpotlightGalleryImage(env,seg[1]!,Number(seg[3]));
+      return json({ok:true});
+    }
     if (seg.length === 3 && seg[0] === "profile" && seg[2] === "image" && request.method === "GET") {
       const row=await env.DB.prepare("SELECT image_key,image_content_type FROM spotlight_profiles WHERE id=?").bind(seg[1]).first<any>();
+      if(!row?.image_key)return error("Image not found",404);
+      const object=await env.BUCKET.get(row.image_key);
+      if(!object)return error("Image not found",404);
+      return new Response(object.body,{headers:{"Content-Type":row.image_content_type || "image/jpeg","Cache-Control":"private, no-store","X-Content-Type-Options":"nosniff"}});
+    }
+    if (seg.length === 4 && seg[0] === "profile" && seg[2] === "gallery" && /^[1-4]$/.test(seg[3]!) && request.method === "GET") {
+      const row=await env.DB.prepare("SELECT image_key,image_content_type FROM spotlight_gallery_images WHERE profile_id=? AND position=?").bind(seg[1],Number(seg[3])).first<any>();
       if(!row?.image_key)return error("Image not found",404);
       const object=await env.BUCKET.get(row.image_key);
       if(!object)return error("Image not found",404);
@@ -448,7 +567,7 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       const description = b.description === undefined ? old.description : cleanDescription(b.description);
       const category = b.category === undefined ? old.category : clean(b.category, 40);
       const contactEmail = b.contact_email === undefined ? old.contact_email : clean(b.contact_email, 254).toLowerCase();
-      const website = b.website_url === undefined ? old.website_url : (b.website_url ? safeUrl(b.website_url) : null);
+      const website = b.website_url === undefined ? old.website_url : (b.website_url ? safeWebsiteUrl(b.website_url) : null);
       const songTrack = b.song_url === undefined ? (old.song_metadata ? spotifyTrack(JSON.parse(old.song_metadata).url) : null) : (b.song_url ? spotifyTrack(b.song_url) : null);
       if (b.song_url && !songTrack) throw new HttpError(422, "invalid_spotify_track", "Use a public Spotify track link.");
       const song = b.song_url === undefined ? (old.song_metadata ? JSON.parse(old.song_metadata) : null) : (songTrack ? await spotifyMetadata(songTrack) : null);
@@ -470,25 +589,32 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
     if (seg.length === 2 && seg[0] === "profile" && request.method === "DELETE") {
       const old=await env.DB.prepare("SELECT image_key,image_size FROM spotlight_profiles WHERE id=?").bind(seg[1]).first<any>();
       if (!old) return error("Profile not found", 404);
-      if (old.image_key) {
+      const galleryRows = await env.DB.prepare("SELECT image_key FROM spotlight_gallery_images WHERE profile_id=?").bind(seg[1]).all<any>();
+      const imageKeys = [old.image_key, ...(galleryRows.results || []).map((image: any) => image.image_key)].filter(Boolean);
+      for (const imageKey of imageKeys) {
         try {
-          await env.BUCKET.delete(old.image_key);
+          await env.BUCKET.delete(imageKey);
         } catch (e) {
-          console.error("[spotlight] profile image delete failed", e);
+          console.error("[spotlight] profile gallery image delete failed", e);
           await markUncertain(env, "spotlight_profile_image_delete_failed");
-          throw new HttpError(503, "image_delete_unverified", "The profile image could not be safely deleted. Storage verification has been scheduled.");
+          throw new HttpError(503, "image_delete_unverified", "A profile image could not be safely deleted. Storage verification has been scheduled.");
         }
       }
       let deleted;
       try {
-        deleted = await env.DB.prepare("DELETE FROM spotlight_profiles WHERE id=? AND image_key IS ?").bind(seg[1], old.image_key ?? null).run();
+        deleted = await env.DB.prepare(
+          "DELETE FROM spotlight_profiles WHERE id=? AND image_key IS ? AND NOT EXISTS (SELECT 1 FROM spotlight_gallery_images WHERE profile_id=?)",
+        ).bind(seg[1], old.image_key ?? null, seg[1]).run();
       } catch (e) {
         console.error("[spotlight] profile deletion could not be committed after image removal", e);
         await markUncertain(env, "spotlight_profile_delete_commit_failed");
-        throw new HttpError(503, "profile_delete_unverified", "The image was removed but the profile deletion could not be confirmed. Storage verification has been scheduled.");
+        throw new HttpError(503, "profile_delete_unverified", "The images were removed but the profile deletion could not be confirmed. Storage verification has been scheduled.");
       }
-      if ((deleted.meta.changes || 0) !== 1) return error("Profile changed during deletion. Refresh and try again.", 409);
-      if (old.image_key) await reconcileSpotlightImageStorage(env, "spotlight_profile_deleted");
+      if ((deleted.meta.changes || 0) !== 1) {
+        if (imageKeys.length) await reconcileSpotlightImageStorage(env, "spotlight_profile_delete_conflict");
+        return error("Profile changed during deletion. Refresh and try again.", 409);
+      }
+      if (imageKeys.length) await reconcileSpotlightImageStorage(env, "spotlight_profile_deleted");
       return json({ ok:true });
     }
     if (seg.length === 1 && seg[0] === "analytics" && request.method === "GET") {
@@ -549,6 +675,70 @@ async function reconcileSpotlightImageStorage(env: Env, reason: string): Promise
   }
 }
 
+async function deleteSpotlightGalleryImage(env: Env, profileId: string, position: number): Promise<void> {
+  const image = await env.DB.prepare(
+    "SELECT image_key FROM spotlight_gallery_images WHERE profile_id=? AND position=?",
+  ).bind(profileId, position).first<{ image_key: string }>();
+  if (!image) throw new HttpError(404, "image_not_found", "Image not found.");
+  try {
+    await env.BUCKET.delete(image.image_key);
+  } catch (e) {
+    console.error("[spotlight] gallery image delete failed", e);
+    await markUncertain(env, "spotlight_gallery_image_delete_failed");
+    throw new HttpError(503, "image_delete_unverified", "The image could not be safely deleted. Storage verification has been scheduled.");
+  }
+  let deleted;
+  try {
+    deleted = await env.DB.prepare(
+      "DELETE FROM spotlight_gallery_images WHERE profile_id=? AND position=? AND image_key=?",
+    ).bind(profileId, position, image.image_key).run();
+  } catch (e) {
+    console.error("[spotlight] gallery image metadata deletion failed after R2 removal", e);
+    await reconcileSpotlightImageStorage(env, "spotlight_gallery_image_metadata_delete_failed");
+    throw new HttpError(503, "image_delete_unverified", "The image was removed but its profile data could not be updated. Refresh and check again.");
+  }
+  if ((deleted.meta.changes || 0) !== 1) {
+    await reconcileSpotlightImageStorage(env, "spotlight_gallery_image_changed_during_delete");
+    throw new HttpError(409, "image_changed", "The image changed during deletion. Refresh and try again.");
+  }
+  await reconcileSpotlightImageStorage(env, "spotlight_gallery_image_deleted");
+}
+
+async function deletePendingSpotlightSubmission(env: Env, profileId: string): Promise<void> {
+  const profile = await env.DB.prepare(
+    "SELECT image_key FROM spotlight_profiles WHERE id=? AND status='pending'",
+  ).bind(profileId).first<{ image_key: string | null }>();
+  if (!profile) throw new HttpError(409, "submission_no_longer_pending", "The submitted profile is no longer pending review.");
+  const gallery = await env.DB.prepare(
+    "SELECT image_key FROM spotlight_gallery_images WHERE profile_id=?",
+  ).bind(profileId).all<{ image_key: string }>();
+  const keys = [profile.image_key, ...(gallery.results || []).map(image => image.image_key)].filter((key): key is string => Boolean(key));
+  for (const key of keys) {
+    try {
+      await env.BUCKET.delete(key);
+    } catch (e) {
+      console.error("[spotlight] failed submission image cleanup failed", e);
+      await markUncertain(env, "spotlight_submission_image_cleanup_failed");
+      throw new HttpError(503, "submission_image_cleanup_pending", "The uploaded images could not be safely removed. Storage verification has been scheduled.");
+    }
+  }
+  let deleted;
+  try {
+    deleted = await env.DB.prepare(
+      "DELETE FROM spotlight_profiles WHERE id=? AND status='pending' AND image_key IS ? AND NOT EXISTS (SELECT 1 FROM spotlight_gallery_images WHERE profile_id=?)",
+    ).bind(profileId, profile.image_key, profileId).run();
+  } catch (e) {
+    console.error("[spotlight] pending submission deletion failed after image cleanup", e);
+    if (keys.length) await reconcileSpotlightImageStorage(env, "spotlight_submission_delete_failed");
+    throw new HttpError(503, "submission_cleanup_pending", "The images were removed but the queued submission could not be deleted.");
+  }
+  if ((deleted.meta.changes || 0) !== 1) {
+    await reconcileSpotlightImageStorage(env, "spotlight_submission_cleanup_conflict");
+    throw new HttpError(409, "submission_cleanup_conflict", "The submission changed during image cleanup.");
+  }
+  if (keys.length) await reconcileSpotlightImageStorage(env, "spotlight_submission_images_removed");
+}
+
 async function rollbackSpotlightUpload(env: Env, uploadId: string, key: string, size: number): Promise<void> {
   try {
     await env.BUCKET.delete(key);
@@ -579,10 +769,15 @@ async function rollbackSpotlightUpload(env: Env, uploadId: string, key: string, 
   }
 }
 
-export async function uploadSpotlightImage(request:Request,env:Env,profileId:string):Promise<Response>{
+export async function uploadSpotlightImage(request:Request,env:Env,profileId:string,position=0):Promise<Response>{
   if(!/^[a-f0-9]{20}$/i.test(profileId))return error("Profile not found",404);
+  if(!Number.isInteger(position)||position<0||position>4)return error("Image slot not found",404);
   const profile=await env.DB.prepare("SELECT id,image_key,image_size FROM spotlight_profiles WHERE id=?").bind(profileId).first<any>();
   if(!profile)return error("Profile not found",404);
+  const previous = position === 0
+    ? profile
+    : await env.DB.prepare("SELECT image_key,image_size FROM spotlight_gallery_images WHERE profile_id=? AND position=?").bind(profileId,position).first<any>();
+  const previousKey=previous?.image_key??null,previousSize=Number(previous?.image_size||0);
   const contentType=request.headers.get("Content-Type")||"";
   const type=contentType.split(";")[0]?.trim().toLowerCase()||"";
   const declaredHeader=request.headers.get("Content-Length");
@@ -619,11 +814,13 @@ export async function uploadSpotlightImage(request:Request,env:Env,profileId:str
     writeAttempted=true;
     await env.BUCKET.put(key,bytes,{httpMetadata:{contentType:type}});
     if(!(await commitUpload(env,uploadId,bytes.length)))throw new HttpError(409,"upload_conflict","The image upload could not be completed.");
-    const previousKey=profile.image_key,previousSize=Number(profile.image_size||0);
     const previousFileId=crypto.randomUUID().replace(/-/g,"").slice(0,16);
     const attachedAt=now();
+    const attachStatement = position === 0
+      ? env.DB.prepare("UPDATE spotlight_profiles SET image_key=?,image_size=?,image_content_type=?,updated_at=? WHERE id=? AND image_key IS ?").bind(key,bytes.length,type,attachedAt,profileId,previousKey)
+      : env.DB.prepare("INSERT INTO spotlight_gallery_images(profile_id,position,image_key,image_size,image_content_type,created_at) VALUES(?,?,?,?,?,?) ON CONFLICT(profile_id,position) DO UPDATE SET image_key=excluded.image_key,image_size=excluded.image_size,image_content_type=excluded.image_content_type,created_at=excluded.created_at WHERE spotlight_gallery_images.image_key IS ?").bind(profileId,position,key,bytes.length,type,attachedAt,previousKey);
     const attachedResult=await env.DB.batch([
-      env.DB.prepare("UPDATE spotlight_profiles SET image_key=?,image_size=?,image_content_type=?,updated_at=? WHERE id=? AND image_key IS ?").bind(key,bytes.length,type,attachedAt,profileId,previousKey??null),
+      attachStatement,
       env.DB.prepare("DELETE FROM pending_uploads WHERE upload_id=? AND state='stored' AND changes()>0").bind(uploadId),
       env.DB.prepare(
         `INSERT INTO pending_uploads
@@ -654,7 +851,9 @@ export async function uploadSpotlightImage(request:Request,env:Env,profileId:str
     if(!attached){
       let current;
       try {
-        current=await env.DB.prepare("SELECT image_key FROM spotlight_profiles WHERE id=?").bind(profileId).first<any>();
+        current=position === 0
+          ? await env.DB.prepare("SELECT image_key FROM spotlight_profiles WHERE id=?").bind(profileId).first<any>()
+          : await env.DB.prepare("SELECT image_key FROM spotlight_gallery_images WHERE profile_id=? AND position=?").bind(profileId,position).first<any>();
       } catch (lookupError) {
         console.error("[spotlight] unable to verify image attachment after upload error",lookupError);
         await markUncertain(env,"spotlight_image_attachment_unknown");

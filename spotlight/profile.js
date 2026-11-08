@@ -19,6 +19,17 @@ const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
 }[char]));
 const label = value => String(value || "").replace(/-/g, " ").replace(/\b\w/g, char => char.toUpperCase());
+function safeProfileImageUrl(value) {
+  if (typeof value !== "string" || value.length > 2048) return "";
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "https:" || url.hostname !== "deliver-api.boztik.com"
+      || !url.pathname.startsWith("/api/public/spotlight/image/")) return "";
+    return url.href;
+  } catch {
+    return "";
+  }
+}
 const event = (profileId, type) => fetch(API + "/event", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
@@ -39,6 +50,48 @@ function renderMusic(song) {
     <iframe title="Listen to ${esc(song.title)} on Spotify" src="https://open.spotify.com/embed/track/${song.id}?utm_source=generator&amp;theme=0" width="100%" height="152" style="border:0;border-radius:12px" loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin"></iframe>
     <a class="sp-music-more" href="${url}" target="_blank" rel="noopener noreferrer" data-outbound>Want to hear more? Explore their music on Spotify ↗</a>
   </section>`;
+}
+
+function profileImages(profile) {
+  const supplied = Array.isArray(profile.images) ? profile.images : [];
+  const images = supplied
+    .map((image, index) => ({ url: safeProfileImageUrl(image?.url), position: Number(image?.position ?? index) }))
+    .filter(image => image.url);
+  if (!images.length && profile.image_url) {
+    const url = safeProfileImageUrl(profile.image_url);
+    if (url) images.push({ url, position: 0 });
+  }
+  return images;
+}
+
+function renderGallery(images, name) {
+  if (images.length < 2) return "";
+  return `<section class="sp-profile-gallery" aria-label="${esc(name)} image gallery">
+    <div class="sp-profile-gallery-heading"><span class="sp-kicker">A CLOSER LOOK</span><p>More from ${esc(name)}.</p></div>
+    <div class="sp-profile-gallery-stage"><img id="sp-gallery-active-image" src="${esc(images[0].url)}" alt="${esc(name)} — image 1 of ${images.length}" loading="lazy" decoding="async"></div>
+    <div class="sp-profile-gallery-controls" role="group" aria-label="Choose a profile image">
+      ${images.map((image, index) => `<button type="button" class="sp-gallery-thumb${index === 0 ? " is-active" : ""}" data-gallery-index="${index}" aria-label="Show image ${index + 1} of ${images.length}" aria-pressed="${index === 0}"><img src="${esc(image.url)}" alt="" loading="lazy" decoding="async"></button>`).join("")}
+    </div>
+  </section>`;
+}
+
+function bindGallery(images, name) {
+  const stage = host.querySelector("#sp-gallery-active-image");
+  if (!stage) return;
+  host.querySelectorAll("[data-gallery-index]").forEach(button => {
+    button.addEventListener("click", () => {
+      const index = Number(button.dataset.galleryIndex);
+      const selected = images[index];
+      if (!selected) return;
+      stage.src = selected.url;
+      stage.alt = `${name} — image ${index + 1} of ${images.length}`;
+      host.querySelectorAll("[data-gallery-index]").forEach(item => {
+        const active = item === button;
+        item.classList.toggle("is-active", active);
+        item.setAttribute("aria-pressed", String(active));
+      });
+    });
+  });
 }
 
 function updateCountdown(profile) {
@@ -108,6 +161,8 @@ async function load() {
     const profile = data.profile;
     document.title = profile.display_name + " — Boztik Spotlight";
     const initials = profile.display_name.split(/\s+/).slice(0, 2).map(part => part[0]).join("").toUpperCase();
+    const images = profileImages(profile);
+    const mainImage = images[0]?.url || "";
     let websiteUrl = "";
     try {
       const url = new URL(profile.website_url);
@@ -121,13 +176,14 @@ async function load() {
 
     host.innerHTML = `
       <div class="sp-profile-hero">
-        <div class="sp-profile-avatar">${profile.image_url ? `<img src="${esc(profile.image_url)}" alt="${esc(profile.display_name)}" loading="eager">` : esc(initials)}</div>
+        <div class="sp-profile-avatar">${mainImage ? `<img src="${esc(mainImage)}" alt="${esc(profile.display_name)} logo or profile photograph" loading="eager" decoding="async">` : esc(initials)}</div>
         <div>
           <p class="sp-kicker">${esc(label(profile.category))}${featuredLabel}</p>
           <h1>${esc(profile.display_name)}</h1>
           <p class="sp-profile-tagline">${esc(profile.tagline)}</p>
         </div>
       </div>
+      ${renderGallery(images, profile.display_name)}
       <article class="sp-profile-about">
         <p class="sp-kicker">THE STORY</p>
         <h2>What they're building.</h2>
@@ -152,6 +208,19 @@ async function load() {
     }
     event(profile.id, "view");
     bindShare(profile);
+    bindGallery(images, profile.display_name);
+    host.querySelector(".sp-profile-avatar img")?.addEventListener("error", event => {
+      const avatar = event.currentTarget.closest(".sp-profile-avatar");
+      avatar.textContent = initials;
+    }, { once: true });
+    host.querySelector("#sp-gallery-active-image")?.addEventListener("error", event => {
+      const stage = event.currentTarget.parentElement;
+      stage.textContent = "This image is temporarily unavailable.";
+      stage.setAttribute("role", "status");
+    }, { once: true });
+    host.querySelectorAll(".sp-gallery-thumb img").forEach(image => {
+      image.addEventListener("error", () => { image.hidden = true; }, { once: true });
+    });
     host.querySelectorAll("[data-outbound]").forEach(link => {
       link.addEventListener("click", () => event(profile.id, "click"));
     });

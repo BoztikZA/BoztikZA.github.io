@@ -43,6 +43,7 @@ class AdminDb {
     throw new Error("Unexpected run() SQL: " + sql);
   }
   async all(sql: string) {
+    if (sql.includes("FROM spotlight_gallery_images")) return { results: [] };
     if (sql.includes("FROM spotlight_profiles ORDER BY CASE status")) {
       return { results: [...this.profiles.values()].sort((a, b) => b.created_at - a.created_at).map(r => ({ ...r })) };
     }

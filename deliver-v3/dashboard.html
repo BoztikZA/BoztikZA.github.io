@@ -23,7 +23,7 @@
   <link rel="stylesheet" href="css/deliver.css?v=13">
   <link rel="stylesheet" href="css/command-centre.css?v=4">
   <link rel="stylesheet" href="css/analytics.css?v=an6">
-  <link rel="stylesheet" href="css/spotlight-manager.css?v=9">
+  <link rel="stylesheet" href="css/spotlight-manager.css?v=10">
   <link rel="stylesheet" href="css/deliver-animations.css?v=1">
   <link rel="stylesheet" href="css/deliver-experience.css?v=1">
 
@@ -357,6 +357,7 @@
             <label>Category<select name="category" required><option value="small-business">Small business</option><option value="youtube">YouTube</option><option value="twitch">Twitch</option><option value="gaming">Gaming</option><option value="photography">Photography</option><option value="design">Design</option><option value="music">Music</option><option value="creator">Creator</option><option value="freelance">Freelance</option><option value="other">Other</option></select></label>
             <label>Website URL<input name="website_url" type="url" inputmode="url" autocomplete="url" placeholder="yourwebsite.com"><small>Paste a domain or full link — https:// is added automatically.</small></label>
             <div class="sp-admin-edit-wide sp-image-editor"><label>Profile logo / photograph<input name="profile_image" id="sp-profile-image" type="file" accept="image/jpeg,image/png,image/webp"><small>JPG, PNG or WebP · maximum 2 MB. Uploaded images stay private until the profile is published.</small></label><div id="sp-profile-image-preview" class="sp-profile-image-preview">No image uploaded</div><button class="cc-btn" id="sp-profile-image-upload" type="button">Upload image</button><span id="sp-profile-image-status" role="status"></span></div>
+            <div class="sp-admin-edit-wide sp-image-editor"><label>Additional showcase images<input id="sp-gallery-images" type="file" accept="image/jpeg,image/png,image/webp" multiple><small>Upload up to four additional JPG, PNG or WebP images, maximum 2 MB each. All images count toward the shared storage limit.</small></label><div id="sp-gallery-image-list" class="sp-gallery-image-list" aria-live="polite">Save or select a profile to manage its additional images.</div><button class="cc-btn" id="sp-gallery-upload" type="button" disabled>Upload selected images</button><span id="sp-gallery-status" role="status"></span></div>
             <label class="sp-admin-edit-wide sp-description-field">About the profile<textarea name="description" rows="7" maxlength="5000" required minlength="30" aria-describedby="sp-description-help sp-description-count"></textarea><small id="sp-description-help">Describe the business, services, experience and what makes it different. Up to 5,000 characters.</small><small id="sp-description-count" class="sp-description-count">0 / 5,000 characters</small></label>
              <label class="sp-admin-feature-option"><input name="feature_on_homepage" id="sp-profile-feature" type="checkbox"><span><strong>Feature on the homepage</strong><small>Give this profile the 24-hour homepage highlight when you publish it.</small></span></label>
             <div class="sp-admin-edit-wide sp-social-optional-heading"><strong>Social links (optional)</strong><small>These are completely optional. A website link on its own is enough.</small></div><label>YouTube URL<input name="youtube" type="url" placeholder="https://"></label>
@@ -371,6 +372,7 @@
           </div>
           <div id="sp-admin-form-status" class="sp-admin-form-status" role="alert" aria-live="assertive" hidden></div>
           <div class="sp-admin-edit-actions"><button class="cc-btn" type="submit">Save draft</button><button class="cc-btn sp-publish-profile" id="sp-admin-publish" type="button" disabled>Save draft to unlock publishing</button><button class="cc-btn" id="sp-admin-edit-cancel" type="button">Cancel</button></div><p class="sp-admin-publish-hint">Save the draft first to unlock the highlighted Publish profile button. Social links are optional; a website alone is enough. Published profiles appear in the Spotlight directory. Tick the homepage feature option for a 24-hour homepage highlight.</p>
+          <section id="sp-publication-email" class="sp-publication-email sp-admin-edit-wide" hidden aria-labelledby="sp-publication-email-title"><strong id="sp-publication-email-title">Publication email template</strong><p>Copy this message and send it manually to the profile owner. Boztik does not email owners automatically.</p><label>To<input id="sp-publication-email-to" readonly></label><label>Subject<input id="sp-publication-email-subject" readonly></label><label>Message<textarea id="sp-publication-email-body" rows="7" readonly></textarea></label><button class="cc-btn" id="sp-publication-email-copy" type="button">Copy email template</button><span id="sp-publication-email-status" role="status"></span></section>
         </form>
         <div id="sp-admin-list" class="sp-admin-list"></div></article>
         <article class="cc-card"><header class="cc-card-head"><div><span class="cc-eyebrow">Performance</span><h3>Profile engagement</h3><p class="cc-card-desc">Profile views, estimated daily unique visitors, featured impressions and outbound clicks. These are separate from website page views and Deliver analytics.</p></div></header><div id="sp-admin-analytics" class="sp-admin-analytics">Loading engagement…</div></article>
@@ -2655,7 +2657,7 @@
     src="js/dashboard.js?v=cf-5"
   ></script>
   <script type="module" src="js/promotions.js"></script>
-  <script type="module" src="js/spotlight-manager.js?v=15"></script>
+  <script type="module" src="js/spotlight-manager.js?v=16"></script>
 
 </body>
 </html>

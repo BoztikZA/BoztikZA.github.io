@@ -29,6 +29,17 @@ function applyPublishGate(profileId, status) {
   button.disabled = gate.disabled;
   button.textContent = gate.label;
 }
+function updatePublicationEmail(profile) {
+  const panel = $("sp-publication-email");
+  const available = profile?.status === "published" && profile.contact_email;
+  panel.hidden = !available;
+  $("sp-publication-email-status").textContent = "";
+  if (!available) return;
+  const profileUrl = "https://www.boztik.com/spotlight/profile.html?slug=" + encodeURIComponent(profile.slug);
+  $("sp-publication-email-to").value = profile.contact_email;
+  $("sp-publication-email-subject").value = "Your Boztik Spotlight profile is live";
+  $("sp-publication-email-body").value = `Hello ${profile.display_name},\n\nYour profile is now live on Boztik Spotlight. Thank you for sharing your work with our community.\n\nView your profile: ${profileUrl}\n\nYou can share this link with your customers and community. If you would like any changes, reply to this email and our team will be happy to help.\n\nThe Boztik Spotlight team\nwww.boztik.com`;
+}
 const analytics = $("sp-admin-analytics");
 const editForm = $("sp-admin-edit");
 const descriptionField = editForm.elements.description;
@@ -42,6 +53,7 @@ function updateDescriptionCount() {
 descriptionField.addEventListener("input", updateDescriptionCount);
 updateDescriptionCount();
 let profiles = [];
+let galleryPreviewUrls = [];
 
 const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({
   "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
@@ -130,6 +142,13 @@ function openNewProfile() {
   editForm.elements.id.value = "";
   $("sp-profile-image-preview").textContent = "Save the profile first, then upload its logo or photograph.";
   $("sp-profile-image-status").textContent = "";
+  $("sp-gallery-images").value = "";
+  $("sp-gallery-image-list").textContent = "Save the profile first, then add showcase images.";
+  $("sp-gallery-upload").disabled = true;
+  $("sp-gallery-status").textContent = "";
+  updatePublicationEmail(null);
+  galleryPreviewUrls.forEach(url => URL.revokeObjectURL(url));
+  galleryPreviewUrls = [];
   $("sp-profile-feature").checked = false;
   clearFormStatus();
   applyPublishGate("");
@@ -162,7 +181,67 @@ function openEditor(profile) {
     .catch(() => { preview.textContent = "No image uploaded"; });
   $("sp-profile-image").value = "";
   $("sp-profile-image-status").textContent = "";
+  $("sp-gallery-images").value = "";
+  $("sp-gallery-status").textContent = "";
+  updatePublicationEmail(profile);
+  loadGallery(profile);
   editForm.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+async function loadGallery(profile) {
+  const list = $("sp-gallery-image-list");
+  const uploadButton = $("sp-gallery-upload");
+  galleryPreviewUrls.forEach(url => URL.revokeObjectURL(url));
+  galleryPreviewUrls = [];
+  list.replaceChildren();
+  uploadButton.disabled = !profile.id;
+  if (!profile.id) {
+    list.textContent = "Save the profile first, then add showcase images.";
+    return;
+  }
+  const positions = Array.isArray(profile.gallery_positions) ? profile.gallery_positions : [];
+  if (!positions.length) {
+    list.textContent = "No additional images uploaded.";
+    return;
+  }
+  for (const position of positions) {
+    const item = document.createElement("div");
+    item.className = "sp-gallery-admin-item";
+    item.textContent = "Loading image " + position + "…";
+    list.append(item);
+    try {
+      const response = await fetch(config.apiBaseUrl + "/api/admin/spotlight/profile/" + encodeURIComponent(profile.id) + "/gallery/" + position, { headers: authHeaders() });
+      if (!response.ok) throw new Error("Image " + position + " could not be loaded.");
+      const url = URL.createObjectURL(await response.blob());
+      galleryPreviewUrls.push(url);
+      const image = document.createElement("img");
+      image.src = url;
+      image.alt = "Spotlight showcase image " + position;
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.className = "cc-btn";
+      remove.textContent = "Remove image " + position;
+      remove.addEventListener("click", async () => {
+        remove.disabled = true;
+        $("sp-gallery-status").textContent = "Removing image…";
+        try {
+          await api("/api/admin/spotlight/profile/" + encodeURIComponent(profile.id) + "/gallery/" + position, { method: "DELETE" });
+          await load();
+          const updated = profiles.find(item => item.id === profile.id);
+          if (updated) await loadGallery(updated);
+          $("sp-gallery-status").textContent = "Image removed and shared storage accounting updated.";
+        } catch (error) {
+          $("sp-gallery-status").textContent = error.message;
+          remove.disabled = false;
+        }
+      });
+      item.replaceChildren(image, remove);
+      item.className = "sp-gallery-admin-item";
+    } catch (error) {
+      item.textContent = error.message;
+      item.classList.add("is-error");
+    }
+  }
 }
 
 $("sp-admin-new").addEventListener("click", openNewProfile);
@@ -228,6 +307,8 @@ $("sp-admin-publish").addEventListener("click", async () => {
     });
     if (result?.profile?.status !== "published") throw new Error("The server did not confirm that the profile is live. Refresh and check its status.");
     await load();
+    const publishedProfile = profiles.find(item => item.id === id);
+    if (publishedProfile) updatePublicationEmail(publishedProfile);
     showFormStatus("success", $("sp-profile-feature").checked
       ? "✓ " + name + " is live on Boztik and featured on the homepage for 24 hours."
       : "✓ " + name + " is now live on the Boztik Spotlight directory.");
@@ -296,6 +377,11 @@ editForm.addEventListener("submit", async event => {
     editForm.elements.id.value = saved.profile.id;
     applyPublishGate(saved.profile.id, saved.profile.status);
     const refreshed = await load();
+    const refreshedProfile = profiles.find(item => item.id === saved.profile.id);
+    if (refreshedProfile) {
+      await loadGallery(refreshedProfile);
+      updatePublicationEmail(refreshedProfile);
+    }
     showFormStatus("success", id
       ? refreshed ? "✓ Profile changes saved. Publish or apply live settings when ready." : "✓ Profile changes saved, but the list could not refresh. Use Refresh to sync."
       : refreshed ? "✓ Draft saved and added to the list below. Upload its logo or photograph, then select Publish profile when ready."
@@ -333,12 +419,82 @@ $("sp-profile-image-upload").addEventListener("click", async () => {
   finally { button.disabled = false; }
 });
 
+$("sp-publication-email-copy").addEventListener("click", async () => {
+  const message = $("sp-publication-email-body");
+  const status = $("sp-publication-email-status");
+  try {
+    await navigator.clipboard.writeText([
+      "To: " + $("sp-publication-email-to").value,
+      "Subject: " + $("sp-publication-email-subject").value,
+      "",
+      message.value
+    ].join("\n"));
+    status.textContent = "Publication email copied. Send it manually from your email account.";
+  } catch {
+    message.focus();
+    message.select();
+    status.textContent = "Clipboard access was unavailable. The message is selected so you can copy it manually.";
+  }
+});
+
+$("sp-gallery-upload").addEventListener("click", async () => {
+  const profileId = editForm.elements.id.value;
+  const files = Array.from($("sp-gallery-images").files || []);
+  const status = $("sp-gallery-status");
+  if (!profileId) { status.textContent = "Save or select a profile first."; return; }
+  if (!files.length) { status.textContent = "Choose one or more images first."; return; }
+  if (files.length > 4) { status.textContent = "Choose no more than four images at a time."; return; }
+  if (files.some(file => file.size > 2 * 1024 * 1024 || !["image/jpeg", "image/png", "image/webp"].includes(file.type))) {
+    status.textContent = "Each image must be JPG, PNG or WebP and no larger than 2 MB.";
+    return;
+  }
+  const profile = profiles.find(item => item.id === profileId);
+  if (!profile) { status.textContent = "Refresh Spotlight and select the profile again."; return; }
+  const occupied = new Set(profile.gallery_positions || []);
+  const slots = [1, 2, 3, 4].filter(position => !occupied.has(position));
+  if (files.length > slots.length) {
+    status.textContent = "This profile has room for " + slots.length + " more showcase image(s). Remove an image first to make space.";
+    return;
+  }
+  const button = $("sp-gallery-upload");
+  button.disabled = true;
+  status.textContent = "Uploading images and checking shared storage…";
+  let uploaded = 0;
+  try {
+    for (let index = 0; index < files.length; index += 1) {
+      const file = files[index];
+      const response = await fetch(config.apiBaseUrl + "/api/admin/spotlight/profile/" + encodeURIComponent(profileId) + "/gallery/" + slots[index], {
+        method: "PUT", headers: { ...authHeaders(), "Content-Type": file.type }, body: file
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || "Showcase image upload failed.");
+      uploaded += 1;
+    }
+    $("sp-gallery-images").value = "";
+    await load();
+    const updated = profiles.find(item => item.id === profileId);
+    if (updated) await loadGallery(updated);
+    status.textContent = uploaded + " showcase image(s) uploaded successfully.";
+  } catch (error) {
+    status.textContent = uploaded
+      ? uploaded + " image(s) uploaded. " + error.message
+      : error.message;
+    await load();
+    const updated = profiles.find(item => item.id === profileId);
+    if (updated) await loadGallery(updated);
+  } finally {
+    button.disabled = false;
+  }
+});
+
 $("sp-admin-edit-cancel").addEventListener("click", () => {
   editForm.reset();
   editForm.hidden = true;
   clearFormStatus();
   $("sp-admin-publish").hidden = true;
   $("sp-admin-publish").disabled = true;
+  galleryPreviewUrls.forEach(url => URL.revokeObjectURL(url));
+  galleryPreviewUrls = [];
 });
 $("sp-admin-refresh").addEventListener("click", load);
 

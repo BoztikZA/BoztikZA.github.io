@@ -50,6 +50,18 @@ import { socialLinksMarkup } from "./social-links.js";
     }
   }
 
+  function profileImageUrls(profile) {
+    const images = Array.isArray(profile.images) ? profile.images
+      .map(image => ({ position: Number(image?.position), url: safeProfileImageUrl(image?.url) }))
+      .filter(image => image.url)
+      .sort((a, b) => a.position - b.position) : [];
+    if (!images.some(image => image.position === 0)) {
+      const primary = safeProfileImageUrl(profile.image_url);
+      if (primary) images.unshift({ position: 0, url: primary });
+    }
+    return [...new Map(images.map(image => [image.url, image])).values()].map(image => image.url);
+  }
+
   function trackFeaturedImpression(card) {
     if (!card || card.dataset.impressionSent) return;
     card.dataset.impressionSent = "1";
@@ -70,22 +82,26 @@ import { socialLinksMarkup } from "./social-links.js";
     const featuredUntil = Number(profile.featured_until) || 0;
     const featured = profile.featured === true && featuredUntil > Math.floor(Date.now() / 1000);
     const category = label(profile.category) || "Spotlight profile";
-    const imageUrl = safeProfileImageUrl(profile.image_url);
+    const imageUrls = profileImageUrls(profile);
+    const imageUrl = imageUrls[0] || "";
     const websiteUrl = safeWebsiteUrl(profile.website_url);
     const shareUrl = API + "/share/" + encodeURIComponent(profile.slug);
     const socialLinks = socialLinksMarkup(profile.social_links, name, "hm-spotlight-social-link");
     const image = imageUrl
-      ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(name)} logo or profile photograph" width="640" height="420" loading="lazy" decoding="async" data-initials="${escapeHtml(initials(name))}" data-profile-name="${escapeHtml(name)}">`
+      ? `<img class="is-active" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(name)} logo or profile photograph" width="640" height="420" loading="lazy" decoding="async" data-layer="0"><img alt="" width="640" height="420" loading="lazy" decoding="async" data-layer="1" aria-hidden="true">`
       : `<span class="hm-spotlight-image-fallback" role="img" aria-label="Initials for ${escapeHtml(name)}">${escapeHtml(initials(name))}</span>`;
 
     return `
       <article class="hm-spotlight-card" data-profile-id="${escapeHtml(profile.id)}" data-featured="${featured ? "1" : "0"}">
-        <a class="hm-spotlight-image-link" href="${profilePath}" aria-label="View ${escapeHtml(name)}'s Boztik Spotlight profile">
-          <div class="hm-spotlight-image">
-            ${image}
-            ${featured ? `<span class="hm-spotlight-featured-label">Featured today</span>` : ""}
-          </div>
-        </a>
+        <div class="hm-spotlight-media" data-image-count="${imageUrls.length}">
+          <a class="hm-spotlight-image-link" href="${profilePath}" aria-label="View ${escapeHtml(name)}'s Boztik Spotlight profile">
+            <div class="hm-spotlight-image">
+              ${image}
+              ${featured ? `<span class="hm-spotlight-featured-label">Featured today</span>` : ""}
+            </div>
+          </a>
+          ${imageUrls.length > 1 ? `<div class="hm-spotlight-gallery-controls" role="group" aria-label="${escapeHtml(name)} image gallery">${imageUrls.map((_, index) => `<button type="button" data-gallery-index="${index}" aria-label="Show image ${index + 1} of ${imageUrls.length}" aria-pressed="${index === 0}" class="${index === 0 ? "is-active" : ""}"></button>`).join("")}</div>` : ""}
+        </div>
         ${featured ? `<p class="hm-spotlight-countdown" data-countdown="${featuredUntil}">Featured for <time>--:--:--</time> more</p>` : ""}
         <div class="hm-spotlight-card-content">
           <span class="hm-spotlight-category">${escapeHtml(category)}</span>
@@ -172,6 +188,67 @@ import { socialLinksMarkup } from "./social-links.js";
     });
   }
 
+  function bindImageGalleries(profiles) {
+    const byId = new Map(profiles.map(profile => [profile.id, profileImageUrls(profile)]));
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    host.querySelectorAll(".hm-spotlight-card").forEach(card => {
+      const urls = byId.get(card.dataset.profileId) || [];
+      const media = card.querySelector(".hm-spotlight-media");
+      const controls = [...card.querySelectorAll("[data-gallery-index]")];
+      const layers = [...card.querySelectorAll("[data-layer]")];
+      if (urls.length < 2 || layers.length !== 2) return;
+      let activeIndex = 0;
+      let activeLayer = 0;
+      let paused = false;
+      let imageFailed = media.dataset.galleryError === "1";
+      let isLoading = false;
+      const select = index => {
+        if (index === activeIndex || !urls[index] || isLoading) return;
+        isLoading = true;
+        const nextLayer = 1 - activeLayer;
+        const next = layers[nextLayer];
+        const previous = layers[activeLayer];
+        next.onload = () => {
+          next.classList.add("is-active");
+          next.removeAttribute("aria-hidden");
+          previous.classList.remove("is-active");
+          previous.setAttribute("aria-hidden", "true");
+          window.setTimeout(() => { previous.removeAttribute("src"); }, 350);
+          activeIndex = index;
+          activeLayer = nextLayer;
+          isLoading = false;
+          controls.forEach((button, buttonIndex) => {
+            const active = buttonIndex === index;
+            button.classList.toggle("is-active", active);
+            button.setAttribute("aria-pressed", String(active));
+          });
+        };
+        next.onerror = () => {
+          isLoading = false;
+          imageFailed = true;
+          media.querySelector(".hm-spotlight-gallery-controls")?.remove();
+          media.dataset.imageCount = "1";
+          next.remove();
+          previous.classList.add("is-active");
+        };
+        next.src = urls[index];
+        next.alt = card.querySelector("h3")?.textContent.trim() + " — image " + (index + 1);
+      };
+      controls.forEach(button => button.addEventListener("click", () => select(Number(button.dataset.galleryIndex))));
+      media.addEventListener("pointerenter", () => { paused = true; });
+      media.addEventListener("pointerleave", () => { paused = false; });
+      media.addEventListener("focusin", () => { paused = true; });
+      media.addEventListener("focusout", event => {
+        if (!media.contains(event.relatedTarget)) paused = false;
+      });
+      if (!reducedMotion) {
+        window.setInterval(() => {
+          if (!paused && !imageFailed) select((activeIndex + 1) % urls.length);
+        }, 4500);
+      }
+    });
+  }
+
   function showEmptyState() {
     host.innerHTML = `
       <div class="hm-spotlight-empty">
@@ -211,18 +288,21 @@ import { socialLinksMarkup } from "./social-links.js";
       }
 
       host.innerHTML = profiles.map(cardMarkup).join("");
-      host.querySelectorAll(".hm-spotlight-image img").forEach(image => {
+      host.querySelectorAll(".hm-spotlight-image [data-layer='0']").forEach(image => {
         image.addEventListener("error", () => {
           const fallback = document.createElement("span");
           fallback.className = "hm-spotlight-image-fallback";
           fallback.setAttribute("role", "img");
-          fallback.setAttribute("aria-label", "Initials for " + image.dataset.profileName);
-          fallback.textContent = image.dataset.initials || "B";
-          image.replaceWith(fallback);
+          fallback.setAttribute("aria-label", "Initials for " + image.alt.split(" logo or profile photograph")[0]);
+          fallback.textContent = initials(image.alt);
+          image.closest(".hm-spotlight-media").dataset.galleryError = "1";
+          image.closest(".hm-spotlight-media").querySelector(".hm-spotlight-gallery-controls")?.remove();
+          image.closest(".hm-spotlight-image").replaceChildren(fallback);
         }, { once: true });
       });
 
       bindShareButtons();
+      bindImageGalleries(profiles);
       trackFeaturedImpressions();
       updateCountdowns();
       if (host.querySelector("[data-countdown]")) {
