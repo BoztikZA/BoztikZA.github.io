@@ -26,3 +26,12 @@
 .sp-admin-publish-hint{margin:10px 0 0;color:var(--cc-dim);font-size:.72rem;line-height:1.5}
 #sp-admin-feedback.sp-admin-feedback-success{color:var(--cc-accent)}
 @media(max-width:600px){.sp-admin-feature-option{grid-column:auto}.sp-admin-edit-actions button{flex:1}}
+
+/* Spotlight publishing is the primary next action after a draft is saved. */
+.sp-social-optional-heading{display:grid;gap:5px;padding:12px 14px;border-left:3px solid var(--cc-accent);border-radius:6px;background:rgba(142,255,61,.045)}
+.sp-social-optional-heading strong{color:var(--cc-text);font-size:.82rem}
+.sp-social-optional-heading small{color:var(--cc-muted);font-size:.72rem;font-weight:400;line-height:1.45}
+.sp-admin-edit-actions .sp-publish-profile{min-height:46px;padding:12px 20px;border:1px solid #8eff3d;border-radius:9px;background:#8eff3d;color:#10170c;font-size:.88rem;font-weight:800;box-shadow:0 0 0 1px rgba(142,255,61,.2),0 6px 22px rgba(142,255,61,.18);transition:transform .16s ease,box-shadow .16s ease,opacity .16s ease}
+.sp-admin-edit-actions .sp-publish-profile:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 0 0 1px rgba(142,255,61,.35),0 8px 28px rgba(142,255,61,.28)}
+.sp-admin-edit-actions .sp-publish-profile:disabled{border-color:rgba(142,255,61,.35);background:rgba(142,255,61,.12);color:var(--cc-muted);box-shadow:none;cursor:not-allowed;opacity:.9}
+.sp-admin-edit-actions .sp-publish-profile:focus-visible{outline:3px solid #fff;outline-offset:3px}
