@@ -2,25 +2,29 @@
 // Delayed until the delivery data is ready, then shown briefly without scroll listeners,
 // gallery measurements, tracking requests, or server-side visitor storage.
 
-const STORAGE_KEY = "boztik-spotlight-invite-v2";
+const STORAGE_KEY_PREFIX = "boztik-spotlight-invite-v3:";
+
+function storageKey(contextKey) {
+  return `${STORAGE_KEY_PREFIX}${encodeURIComponent(contextKey)}`;
+}
 const SHOW_DELAY_MS = 3000;
 const VISIBLE_MS = 12000;
 const FADE_MS = 420;
 const REMIND_AFTER_AUTO_HIDE_MS = 24 * 60 * 60 * 1000;
 const REMIND_AFTER_DISMISS_MS = 7 * 24 * 60 * 60 * 1000;
 
-function readSuppressionUntil() {
+function readSuppressionUntil(contextKey) {
   try {
-    const value = Number(localStorage.getItem(STORAGE_KEY) || 0);
+    const value = Number(localStorage.getItem(storageKey(contextKey)) || 0);
     return Number.isFinite(value) ? value : 0;
   } catch {
     return 0;
   }
 }
 
-function saveSuppression(duration) {
+function saveSuppression(duration, contextKey) {
   try {
-    localStorage.setItem(STORAGE_KEY, String(Date.now() + duration));
+    localStorage.setItem(storageKey(contextKey), String(Date.now() + duration));
   } catch {
     // Storage restrictions must never affect delivery.
   }
@@ -191,7 +195,12 @@ function addStyles() {
   document.head.appendChild(style);
 }
 
-export function initSpotlightInvitation(delivery) {
+export function initSpotlightInvitation(delivery, options = {}) {
+  // Every active delivery gets its own reminder window, so viewing one delivery
+  // does not suppress the invitation on a different delivery. The public
+  // Support page uses a separate, page-scoped reminder key.
+  const isSupportPage = options.pageType === "support";
+
   // Support both current multi-file deliveries and legacy single-file records.
   // Photoshop Battles deliveries use the same invitation path; their separate
   // non-commercial presentation rules must not suppress this Spotlight prompt.
@@ -202,9 +211,11 @@ export function initSpotlightInvitation(delivery) {
   const hasLegacySingleFile =
     Boolean(delivery?.file_path && delivery?.file_name);
 
-  if (!delivery || !delivery.id || (!hasMultiFileDelivery && !hasLegacySingleFile)) return;
-  if (new URLSearchParams(location.search).get("preview") === "1") return;
-  if (readSuppressionUntil() > Date.now()) return;
+  if (!isSupportPage && (!delivery?.id || (!hasMultiFileDelivery && !hasLegacySingleFile))) return;
+  if (!isSupportPage && new URLSearchParams(location.search).get("preview") === "1") return;
+
+  const contextKey = isSupportPage ? "support-page" : `delivery:${delivery.id}`;
+  if (readSuppressionUntil(contextKey) > Date.now()) return;
   if (document.getElementById("boztik-spotlight-invite-wrap")) return;
 
   let hideTimer = 0;
@@ -216,14 +227,14 @@ export function initSpotlightInvitation(delivery) {
     shown = false;
     window.clearTimeout(hideTimer);
     wrap.classList.remove("is-visible");
-    saveSuppression(dismissed ? REMIND_AFTER_DISMISS_MS : REMIND_AFTER_AUTO_HIDE_MS);
+    saveSuppression(dismissed ? REMIND_AFTER_DISMISS_MS : REMIND_AFTER_AUTO_HIDE_MS, contextKey);
     window.setTimeout(() => {
       if (!shown && wrap?.isConnected) wrap.remove();
     }, FADE_MS + 40);
   };
 
   const show = () => {
-    if (readSuppressionUntil() > Date.now()) return;
+    if (readSuppressionUntil(contextKey) > Date.now()) return;
     addStyles();
 
     wrap = document.createElement("div");
@@ -250,7 +261,7 @@ export function initSpotlightInvitation(delivery) {
     document.body.appendChild(wrap);
     wrap.querySelector(".boztik-spotlight-invite-close")?.addEventListener("click", () => hide(true));
     wrap.querySelector(".boztik-spotlight-invite")?.addEventListener("click", () => {
-      saveSuppression(REMIND_AFTER_DISMISS_MS);
+      saveSuppression(REMIND_AFTER_DISMISS_MS, contextKey);
     });
 
     shown = true;
