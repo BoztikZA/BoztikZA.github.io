@@ -55,9 +55,16 @@ BASE=http://localhost:8787 E2E_USER=<user> E2E_PASS=<pass> npm run test:e2e     
 node scripts/milestone-test.mts                                                   # unit tests for milestone rules
 node scripts/traffic-source-test.mts                                             # isolated source attribution tests
 node scripts/client-contract.mjs                                                    # real frontend modules vs the Worker
+npm run test:spotlight                                                             # Spotlight storage, API, and manager regression tests
 # real 3 GiB boundary: restart WITHOUT the STORAGE_LIMIT_BYTES override, then E2E_HARD=1 ... npm run test:e2e
 ```
 Note: under `wrangler dev` signed URLs carry the route hostname (`deliver-api.boztik.com`); the tests rewrite it.
+
+Spotlight reliability changes require migration `0016_spotlight_reliability.sql`. Apply it with
+`npm run db:migrate:local` in development and the normal reviewed remote migration process before deploying
+the Worker. Spotlight images remain subject to the shared 3 GiB Deliver ledger. The Worker validates size,
+declared MIME type, and format signatures/structure, but does not fully decode or re-encode pixels because the
+current Cloudflare Worker runtime has no lightweight built-in image decoder.
 
 ## Milestone notification emails (backend-only)
 

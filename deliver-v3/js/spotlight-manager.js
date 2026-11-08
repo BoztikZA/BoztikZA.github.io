@@ -1,5 +1,6 @@
 import { config } from "./config.js";
 import { authHeaders, onAuthChange } from "./auth.js";
+import { spotlightProfileSaveRequest } from "./spotlight-profile-request.mjs";
 
 const $ = id => document.getElementById(id);
 const list = $("sp-admin-list");
@@ -36,6 +37,7 @@ function render() {
         <strong>${esc(p.display_name)}</strong>
         <span>${esc(p.category.replace(/-/g, " "))} · ${esc(p.status)} · ${new Date(p.created_at * 1000).toLocaleDateString()}</span>
         <small>${esc(p.contact_email || "")}</small>
+        ${p.invalid_social_links?.length ? `<small class="sp-admin-link-warning">Review invalid ${esc(p.invalid_social_links.join(", "))} link(s) before publishing.</small>` : ""}
         <p>${esc(p.tagline)}</p>
       </div>
       <div class="sp-admin-actions">
@@ -68,8 +70,10 @@ async function load() {
         <span>${Number(p.featured_impressions || 0).toLocaleString()} featured impressions</span>
       </div>`).join("") : "<p class='cc-muted'>Engagement will appear when visitors start exploring profiles.</p>";
     feedback.textContent = "Spotlight data updated.";
+    return true;
   } catch (error) {
     feedback.textContent = error.message;
+    return false;
   }
 }
 
@@ -142,11 +146,15 @@ list.addEventListener("click", async event => {
 
 editForm.addEventListener("submit", async event => {
   event.preventDefault();
+  if (editForm.dataset.saving === "true") return;
   const id = editForm.elements.id.value;
   const profile = profiles.find(item => item.id === id);
-  if (!profile) return;
+  if (id && !profile) {
+    feedback.textContent = "This profile is no longer in the manager list. Refresh Spotlight and try again.";
+    return;
+  }
   const form = new FormData(editForm);
-  const social = { ...(profile.social_links || {}) };
+  const social = { ...(profile?.social_links || {}) };
   for (const key of ["youtube", "twitch", "instagram", "tiktok", "facebook", "linkedin", "x", "spotify"]) {
     const value = String(form.get(key) || "").trim();
     if (value) social[key] = value;
@@ -163,30 +171,31 @@ editForm.addEventListener("submit", async event => {
     social_links: social
   };
   const save = editForm.querySelector('button[type="submit"]');
+  editForm.dataset.saving = "true";
   save.disabled = true;
   feedback.textContent = "Saving profile changes…";
   try {
-    if (id) {
-      await api("/api/admin/spotlight/profile/" + encodeURIComponent(id), {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-      });
-      editForm.hidden = true;
-      await load();
-    } else {
-      const created = await api("/api/admin/spotlight/profile", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-      });
-      editForm.elements.id.value = created.profile.id;
-      await load();
-      feedback.textContent = "Profile saved as pending. You can now upload its logo or photograph below.";
+    const request = spotlightProfileSaveRequest(id, body);
+    const saved = await api(request.path, request.init);
+    if (saved.profile) {
+      const savedIndex = profiles.findIndex(item => item.id === saved.profile.id);
+      if (savedIndex === -1) profiles.unshift(saved.profile);
+      else profiles[savedIndex] = saved.profile;
+      render();
     }
+    if (!id) {
+      editForm.elements.id.value = saved.profile.id;
+    }
+    const refreshed = await load();
+    if (id) editForm.hidden = true;
+    feedback.textContent = id
+      ? refreshed ? "Profile changes saved." : "Profile changes saved, but the list could not refresh. Use Refresh to sync."
+      : refreshed ? "Profile created as pending review. You can now upload its logo or photograph below."
+        : "Profile created as pending review, but the list could not refresh. Use Refresh to sync.";
   } catch (error) {
     feedback.textContent = error.message;
   } finally {
+    editForm.dataset.saving = "false";
     save.disabled = false;
   }
 });

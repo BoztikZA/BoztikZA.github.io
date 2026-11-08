@@ -7,10 +7,12 @@ export async function scheduled(env: Env): Promise<void> {
   const report = await runMaintenance(env);
   // Keep idempotency records bounded; daily aggregate metrics remain for reporting.
   const cutoff = Math.floor(Date.now() / 1000) - 90 * 24 * 60 * 60;
+  const submissionLimitCutoff = Math.floor(Date.now() / 1000) - 24 * 60 * 60;
   await env.DB.batch([
     env.DB.prepare("DELETE FROM spotlight_events WHERE created_at < ?").bind(cutoff),
     env.DB.prepare("DELETE FROM spotlight_visitors WHERE created_at < ?").bind(cutoff),
-    env.DB.prepare("DELETE FROM spotlight_impressions WHERE created_at < ?").bind(cutoff)
+    env.DB.prepare("DELETE FROM spotlight_impressions WHERE created_at < ?").bind(cutoff),
+    env.DB.prepare("DELETE FROM spotlight_submission_limits WHERE window_start < ?").bind(submissionLimitCutoff)
   ]);
   console.log("maintenance", JSON.stringify(report));
 }

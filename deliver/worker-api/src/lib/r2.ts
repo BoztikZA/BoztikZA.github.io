@@ -25,7 +25,8 @@ export async function sumR2Bytes(env: Env): Promise<{ bytes: number; objects: nu
 
 /** Keys must be server-generated under deliveries/. Defence in depth. */
 export function assertSafeKey(key: string): void {
-  if (!key.startsWith(R2_PREFIX) || key.includes("..") || key.includes("\\") || key.length > 400 || /[\u0000-\u001f]/.test(key)) {
+  const isSpotlightImage = /^spotlight\/[a-f0-9]{20}\/[a-f0-9]{16}$/i.test(key);
+  if ((!key.startsWith(R2_PREFIX) && !isSpotlightImage) || key.includes("..") || key.includes("\\") || key.length > 400 || /[\u0000-\u001f]/.test(key)) {
     throw new Error("unsafe object key");
   }
 }

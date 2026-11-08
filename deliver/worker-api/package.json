@@ -16,11 +16,13 @@
     "test:traffic-source": "node scripts/traffic-source-test.mts",
     "test:analytics": "node scripts/analytics-pipeline-test.mts",
     "test:client": "node scripts/analytics-client-test.mjs",
-    "test": "npm run test:unit && npm run test:retention && npm run test:traffic-source && npm run test:analytics && npm run test:client"
+    "test:spotlight": "tsx scripts/spotlight-test.mts",
+    "test": "npm run test:unit && npm run test:retention && npm run test:traffic-source && npm run test:analytics && npm run test:client && npm run test:spotlight"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260901.0",
     "esbuild": "0.28.1",
+    "tsx": "^4.23.15",
     "typescript": "^5.6.3",
     "wrangler": "^4.149.0"
   }

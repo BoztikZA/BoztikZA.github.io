@@ -237,11 +237,15 @@ export async function sweepAbandonedUploads(env: Env, max = 50): Promise<{ relea
   return { released, failed };
 }
 
-/** R2 objects under deliveries/ that no D1 row references and that are older than 1 h. */
+/** R2 objects no D1 row references and that are older than 1 h. */
 export async function sweepOrphans(env: Env, max = 50): Promise<{ deleted: number; failed: number }> {
   const objects = await listAllObjects(env); // throws if R2 unreachable -> caller logs, sweep skipped
   const keys = (
-    await env.DB.prepare("SELECT r2_key FROM delivery_files UNION SELECT r2_key FROM pending_uploads").all<{ r2_key: string }>()
+    await env.DB.prepare(
+      `SELECT r2_key FROM delivery_files
+       UNION SELECT r2_key FROM pending_uploads
+       UNION SELECT image_key AS r2_key FROM spotlight_profiles WHERE image_key IS NOT NULL`,
+    ).all<{ r2_key: string }>()
   ).results;
   const known = new Set(keys.map((k) => k.r2_key));
   const cutoffMs = Date.now() - 3600_000;
@@ -250,7 +254,7 @@ export async function sweepOrphans(env: Env, max = 50): Promise<{ deleted: numbe
   let failed = 0;
   for (const o of objects) {
     if (deleted + failed >= max) break;
-    if (!o.key.startsWith(R2_PREFIX) || known.has(o.key) || o.uploaded > cutoffMs) continue;
+    if ((!o.key.startsWith(R2_PREFIX) && !o.key.startsWith("spotlight/")) || known.has(o.key) || o.uploaded > cutoffMs) continue;
     try {
       await deleteObject(env, o.key);
       deleted += 1;

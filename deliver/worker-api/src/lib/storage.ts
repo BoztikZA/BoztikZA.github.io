@@ -214,6 +214,20 @@ export async function releaseStoredPending(env: Env, uploadId: string, size: num
   ]);
 }
 
+/** Keep an uncertain stored object charged as a reservation until cleanup verifies its deletion. */
+export async function holdStoredUploadReservation(env: Env, uploadId: string, size: number): Promise<void> {
+  const now = nowSec();
+  await env.DB.batch([
+    env.DB.prepare("UPDATE pending_uploads SET state = 'uploading' WHERE upload_id = ?1 AND state = 'stored'").bind(uploadId),
+    env.DB.prepare(
+      `UPDATE storage_state
+          SET total_bytes = MAX(0, total_bytes - ?1), reserved_bytes = reserved_bytes + ?1,
+              mutation_seq = mutation_seq + 1, last_mutation_at = ?2
+        WHERE id = 1 AND changes() > 0`,
+    ).bind(size, now),
+  ]);
+}
+
 /** After the R2 object of a finalised delivery file was deleted: drop the row and release its bytes. */
 export async function releaseFile(env: Env, fileId: string, size: number): Promise<void> {
   const now = nowSec();
@@ -230,7 +244,7 @@ export async function releaseFile(env: Env, fileId: string, size: number): Promi
 /** Flag the ledger as uncertain: uploads stay refused until reconcile verifies R2. */
 export async function markUncertain(env: Env, reason: string): Promise<void> {
   try {
-    await env.DB.prepare("UPDATE storage_state SET needs_reconcile = 1, lock_reason = COALESCE(lock_reason, ?1), last_mutation_at = ?2 WHERE id = 1")
+    await env.DB.prepare("UPDATE storage_state SET mutation_seq = mutation_seq + 1, needs_reconcile = 1, lock_reason = COALESCE(lock_reason, ?1), last_mutation_at = ?2 WHERE id = 1")
       .bind(reason, nowSec()).run();
   } catch (e) {
     console.error("markUncertain failed", e);
@@ -269,12 +283,14 @@ export async function reconcileStorage(env: Env): Promise<ReconcileResult> {
 
   const inflight = await env.DB.prepare(
     `SELECT COALESCE(SUM(CASE WHEN state = 'reserved' THEN file_size END), 0) AS reserved,
-            COALESCE(SUM(CASE WHEN state = 'uploading' THEN 1 END), 0) AS uploading
+            COALESCE(SUM(CASE WHEN state = 'uploading' THEN 1 END), 0) AS uploading,
+            COALESCE(SUM(CASE WHEN state = 'stored' AND r2_key LIKE 'spotlight/%' THEN 1 END), 0) AS spotlight_stored
        FROM pending_uploads`,
-  ).first<{ reserved: number; uploading: number }>();
+  ).first<{ reserved: number; uploading: number; spotlight_stored: number }>();
 
-  // Bytes may be landing in R2 right now: don't judge the ledger against a moving target.
-  if ((inflight?.uploading ?? 0) > 0) {
+  // Uploads may be landing in R2, or a Spotlight image may be deleted before
+  // its one-time ledger release: don't judge the ledger against a moving target.
+  if ((inflight?.uploading ?? 0) > 0 || (inflight?.spotlight_stored ?? 0) > 0) {
     return { state: before, actualBytes: actual.bytes, objectCount: actual.objects, previousTotal: before.total_bytes, driftBytes: before.total_bytes - actual.bytes, deferred: true };
   }
 

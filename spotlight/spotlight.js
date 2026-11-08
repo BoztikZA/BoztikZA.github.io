@@ -1,12 +1,222 @@
-const API="https://deliver-api.boztik.com/api/public/spotlight";
-const $=s=>document.querySelector(s);const grid=$("#sp-grid"),empty=$("#sp-empty"),count=$("#sp-count"),search=$("#sp-search"),filters=$("#sp-filters");
-let profiles=[],category="all";const impressionsSent=new Set();
-const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const label=s=>String(s||"").replace(/-/g," ").replace(/\b\w/g,c=>c.toUpperCase());
-function card(p){const initials=p.display_name.split(/\s+/).slice(0,2).map(x=>x[0]).join("").toUpperCase();const brands={youtube:["youtube","FF0033"],twitch:["twitch","9146FF"],instagram:["instagram","E4405F"],tiktok:["tiktok","FFFFFF"],facebook:["facebook","0866FF"],linkedin:["linkedin","0A66C2"],x:["x","FFFFFF"],spotify:["spotify","1DB954"]};const platformIcons=Object.entries(p.social_links||{}).filter(([k])=>brands[k]).map(([k])=>`<img src="https://cdn.simpleicons.org/${brands[k][0]}/${brands[k][1]}" alt="${label(k)}" title="${label(k)}" width="17" height="17" loading="lazy">`).join("");return `<article class="sp-card" data-profile-id="${esc(p.id)}" data-featured="${p.featured?"1":"0"}">${p.featured?'<span class="sp-featured">FEATURED TODAY</span><span class="sp-countdown" data-countdown="'+Number(p.featured_until||0)+'">Ends in <time>--:--:--</time></span>':(Date.now()/1000-p.created_at<604800?'<span class="sp-new">JUST ADDED</span>':"")}<div class="sp-card-top"><div class="sp-avatar" aria-hidden="true">${p.image_url?`<img src="${esc(p.image_url)}" alt="" loading="lazy">`:esc(initials)}</div><div><h3 class="sp-card-name">${esc(p.display_name)}</h3><span class="sp-card-category">${esc(label(p.category))}</span></div></div><h3>${esc(p.tagline)}</h3><p>${esc(p.description)}</p><div class="sp-card-foot">${platformIcons?`<span class="sp-card-platforms" aria-label="Available platforms">${platformIcons}</span>`:""}<a class="sp-card-link" href="profile.html?slug=${encodeURIComponent(p.slug)}">View profile ↗</a></div></article>`}
-function updateCountdowns(){const now=Math.floor(Date.now()/1000);document.querySelectorAll('[data-countdown]').forEach(el=>{const left=Math.max(0,Number(el.dataset.countdown||0)-now),t=el.querySelector('time');if(t){const h=Math.floor(left/3600),m=Math.floor(left%3600/60),s=left%60;t.textContent=[h,m,s].map(v=>String(v).padStart(2,'0')).join(':');}if(!left){const card=el.closest('.sp-card');if(card){card.dataset.featured='0';card.querySelector('.sp-featured')?.remove();}el.remove();}});}function render(){const q=search.value.trim().toLowerCase();const rows=profiles.filter(p=>(category==="all"||p.category===category)&&(!q||[p.display_name,p.tagline,p.description,p.category].join(" ").toLowerCase().includes(q)));count.textContent=rows.length+` ${rows.length===1?"profile":"profiles"} listed`;grid.innerHTML=rows.map(card).join("");updateCountdowns();trackImpressions();empty.hidden=rows.length>0;grid.hidden=rows.length===0;}
-function trackImpressions(){const cards=[...grid.querySelectorAll('[data-featured="1"]')];if(!cards.length)return;const send=card=>{const profileId=card.dataset.profileId;if(impressionsSent.has(profileId))return;impressionsSent.add(profileId);fetch(API+"/impression",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({event_id:crypto.randomUUID().replace(/-/g,""),profile_id:card.dataset.profileId}),keepalive:true}).catch(()=>{});};if("IntersectionObserver" in window){const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){send(entry.target);observer.unobserve(entry.target);}}),{threshold:.35});cards.forEach(card=>observer.observe(card));}else cards.forEach(send);}
-async function load(){try{const r=await fetch(API,{headers:{Accept:"application/json"}});if(!r.ok)throw Error("Directory temporarily unavailable.");const d=await r.json();profiles=Array.isArray(d.profiles)?d.profiles:[];render();}catch(e){grid.innerHTML='<div class="sp-loading">Spotlight is taking a short break. Please refresh in a moment.</div>';count.textContent="Directory unavailable";}}
-filters.addEventListener("click",e=>{const b=e.target.closest("button[data-category]");if(!b)return;category=b.dataset.category;filters.querySelectorAll("button").forEach(x=>x.classList.toggle("is-active",x===b));render();});search.addEventListener("input",render);
+const API = "https://deliver-api.boztik.com/api/public/spotlight";
+const $ = selector => document.querySelector(selector);
+const grid = $("#sp-grid");
+const empty = $("#sp-empty");
+const count = $("#sp-count");
+const search = $("#sp-search");
+const filters = $("#sp-filters");
+const loadMore = $("#sp-load-more");
+const loadStatus = $("#sp-load-status");
 
-load();setInterval(updateCountdowns,1000);
+let profiles = [];
+let category = "all";
+let nextCursor = null;
+let loading = false;
+let loaded = false;
+let lastFailedReset = false;
+let lastFailedMore = false;
+let requestNumber = 0;
+let controller = null;
+let searchTimer;
+const impressionsSent = new Set();
+
+const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({
+  "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+}[char]));
+const label = value => String(value || "").replace(/-/g, " ").replace(/\b\w/g, char => char.toUpperCase());
+
+function card(profile) {
+  const initials = profile.display_name.split(/\s+/).slice(0, 2).map(part => part[0]).join("").toUpperCase();
+  const brands = {
+    youtube: ["youtube", "FF0033"], twitch: ["twitch", "9146FF"],
+    instagram: ["instagram", "E4405F"], tiktok: ["tiktok", "FFFFFF"],
+    facebook: ["facebook", "0866FF"], linkedin: ["linkedin", "0A66C2"],
+    x: ["x", "FFFFFF"], spotify: ["spotify", "1DB954"]
+  };
+  const platformIcons = Object.entries(profile.social_links || {})
+    .filter(([platform]) => brands[platform])
+    .map(([platform]) => `<img src="https://cdn.simpleicons.org/${brands[platform][0]}/${brands[platform][1]}" alt="${label(platform)}" title="${label(platform)}" width="17" height="17" loading="lazy">`)
+    .join("");
+  const featured = profile.featured
+    ? `<span class="sp-featured">FEATURED TODAY</span><span class="sp-countdown" data-countdown="${Number(profile.featured_until || 0)}">Ends in <time>--:--:--</time></span>`
+    : Date.now() / 1000 - profile.created_at < 604800 ? '<span class="sp-new">JUST ADDED</span>' : "";
+
+  return `<article class="sp-card" data-profile-id="${esc(profile.id)}" data-featured="${profile.featured ? "1" : "0"}">
+    ${featured}
+    <div class="sp-card-top">
+      <div class="sp-avatar" aria-hidden="true">${profile.image_url ? `<img src="${esc(profile.image_url)}" alt="" loading="lazy">` : esc(initials)}</div>
+      <div><h3 class="sp-card-name">${esc(profile.display_name)}</h3><span class="sp-card-category">${esc(label(profile.category))}</span></div>
+    </div>
+    <h3>${esc(profile.tagline)}</h3>
+    <p>${esc(profile.description)}</p>
+    <div class="sp-card-foot">
+      ${platformIcons ? `<span class="sp-card-platforms" aria-label="Available platforms">${platformIcons}</span>` : ""}
+      <a class="sp-card-link" href="profile.html?slug=${encodeURIComponent(profile.slug)}">View profile ↗</a>
+    </div>
+  </article>`;
+}
+
+function updateCountdowns() {
+  const timestamp = Math.floor(Date.now() / 1000);
+  document.querySelectorAll("[data-countdown]").forEach(element => {
+    const remaining = Math.max(0, Number(element.dataset.countdown || 0) - timestamp);
+    const time = element.querySelector("time");
+    if (time) {
+      const hours = Math.floor(remaining / 3600);
+      const minutes = Math.floor((remaining % 3600) / 60);
+      const seconds = remaining % 60;
+      time.textContent = [hours, minutes, seconds].map(value => String(value).padStart(2, "0")).join(":");
+    }
+    if (!remaining) {
+      const profileCard = element.closest(".sp-card");
+      if (profileCard) {
+        profileCard.dataset.featured = "0";
+        profileCard.querySelector(".sp-featured")?.remove();
+      }
+      element.remove();
+    }
+  });
+}
+
+function trackImpressions() {
+  const cards = [...grid.querySelectorAll('[data-featured="1"]')];
+  const send = element => {
+    const profileId = element.dataset.profileId;
+    if (impressionsSent.has(profileId)) return;
+    impressionsSent.add(profileId);
+    fetch(API + "/impression", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ event_id: crypto.randomUUID().replace(/-/g, ""), profile_id: profileId }),
+      keepalive: true
+    }).catch(() => {});
+  };
+
+  if ("IntersectionObserver" in window) {
+    const observer = new IntersectionObserver(entries => entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        send(entry.target);
+        observer.unobserve(entry.target);
+      }
+    }), { threshold: 0.35 });
+    cards.forEach(element => observer.observe(element));
+  } else {
+    cards.forEach(send);
+  }
+}
+
+function render() {
+  grid.innerHTML = profiles.map(card).join("");
+  grid.hidden = profiles.length === 0;
+  empty.hidden = profiles.length > 0 || !loaded || lastFailedReset;
+  count.textContent = profiles.length
+    ? `Showing ${profiles.length} ${profiles.length === 1 ? "profile" : "profiles"}`
+    : lastFailedReset ? "Directory unavailable" : "No profiles found";
+  trackImpressions();
+  updateCountdowns();
+}
+
+function updateLoadControls() {
+  loadMore.hidden = profiles.length === 0 && !lastFailedReset;
+  loadMore.disabled = loading;
+  loadMore.textContent = loading
+    ? "Loading profiles…"
+    : lastFailedReset ? "Retry loading Spotlight"
+      : lastFailedMore ? "Retry loading more profiles"
+        : "Load more profiles";
+  if (!loading && !lastFailedReset && !nextCursor && profiles.length) {
+    loadMore.hidden = true;
+    loadStatus.textContent = "You’re all caught up.";
+  } else if (nextCursor && !loading) {
+    loadMore.hidden = false;
+    loadStatus.textContent = "";
+  }
+}
+
+async function load(reset = true) {
+  if (loading && !reset) return;
+  if (reset) {
+    requestNumber += 1;
+    controller?.abort();
+    controller = new AbortController();
+    loading = false;
+    loaded = false;
+    profiles = [];
+    nextCursor = null;
+    lastFailedReset = false;
+    lastFailedMore = false;
+    render();
+  }
+
+  const thisRequest = requestNumber;
+  const thisController = controller || new AbortController();
+  loading = true;
+  loadStatus.textContent = reset ? "Loading profiles…" : "Loading more profiles…";
+  updateLoadControls();
+
+  const url = new URL(API);
+  url.searchParams.set("limit", "30");
+  if (category !== "all") url.searchParams.set("category", category);
+  const query = search.value.trim().slice(0, 80);
+  if (query) url.searchParams.set("q", query);
+  if (!reset && nextCursor) url.searchParams.set("cursor", nextCursor);
+
+  try {
+    const response = await fetch(url, { headers: { Accept: "application/json" }, signal: thisController.signal });
+    if (!response.ok) throw new Error("Spotlight is temporarily unavailable.");
+    const data = await response.json();
+    if (thisRequest !== requestNumber) return;
+    const seen = new Set(profiles.map(profile => profile.id));
+    for (const profile of Array.isArray(data.profiles) ? data.profiles : []) {
+      if (!seen.has(profile.id)) {
+        profiles.push(profile);
+        seen.add(profile.id);
+      }
+    }
+    nextCursor = typeof data.next_cursor === "string" && data.next_cursor ? data.next_cursor : null;
+    loaded = true;
+    lastFailedReset = false;
+    lastFailedMore = false;
+    render();
+    loadStatus.textContent = nextCursor ? "More profiles are available." : "You’re all caught up.";
+  } catch (error) {
+    if (error?.name === "AbortError" || thisRequest !== requestNumber) return;
+    lastFailedReset = reset;
+    lastFailedMore = !reset;
+    loadStatus.textContent = reset
+      ? "Spotlight is taking a short break. Please retry."
+      : "Could not load more profiles. Your current results are still available.";
+    if (reset) {
+      grid.innerHTML = '<div class="sp-loading">Spotlight is taking a short break. Please try again.</div>';
+      grid.hidden = false;
+      empty.hidden = true;
+      count.textContent = "Directory unavailable";
+    }
+  } finally {
+    if (thisRequest === requestNumber) {
+      loading = false;
+      updateLoadControls();
+    }
+  }
+}
+
+filters.addEventListener("click", event => {
+  const button = event.target.closest("button[data-category]");
+  if (!button || loading) return;
+  category = button.dataset.category;
+  filters.querySelectorAll("button").forEach(item => item.classList.toggle("is-active", item === button));
+  load(true);
+});
+
+search.addEventListener("input", () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => load(true), 250);
+});
+
+loadMore.addEventListener("click", () => {
+  if (lastFailedReset) load(true);
+  else load(false);
+});
+
+load();
+setInterval(updateCountdowns, 1000);
