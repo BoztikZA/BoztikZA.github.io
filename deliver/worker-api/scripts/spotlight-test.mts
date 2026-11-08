@@ -453,6 +453,9 @@ console.log("Platform-specific social URL validation");
   assert.ok(safeSocialUrl("youtube", "https://youtu.be/abcdefghijkl"));
   assert.ok(safeSocialUrl("x", "https://twitter.com/creator"));
   assert.ok(safeSocialUrl("spotify", "https://open.spotify.com/artist/abc"));
+  assert.ok(safeSocialUrl("spotify", "https://open.spotify.com/playlist/abc"));
+  assert.ok(safeSocialUrl("pinterest", "https://www.pinterest.com/creator"));
+  assert.ok(safeSocialUrl("pinterest", "https://pin.it/abc123"));
   for (const [platform, value] of [
     ["instagram", "https://instagram.com.example.org/user"],
     ["instagram", "https://evil.example/instagram.com"],
@@ -461,6 +464,8 @@ console.log("Platform-specific social URL validation");
     ["instagram", "https://user@instagram.com/creator"],
     ["facebook", "https://fakefacebook.com/user"],
     ["spotify", "https://spotify.com.attacker.test/artist/abc"],
+    ["pinterest", "https://pinterest.com.attacker.test/creator"],
+    ["constructor", "https://example.com/profile"],
   ]) assert.equal(safeSocialUrl(platform, value), null, `${platform} should reject ${value}`);
 }
 

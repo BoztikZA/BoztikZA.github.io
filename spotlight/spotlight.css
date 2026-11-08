@@ -57,3 +57,62 @@
 
 /* Keep long profile descriptions readable in directory cards. */
 .sp-card p{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:5;overflow:hidden;overflow-wrap:anywhere;white-space:pre-line}
+
+/* Use one discovery mark and wordmark across all Spotlight pages. */
+.sp-brand{gap:10px}
+.sp-brand-emblem{width:42px;height:42px;border:0;border-radius:0;background:none;box-shadow:none;transform:none}
+.sp-brand-emblem:before,.sp-brand-emblem i{display:none}
+.sp-brand-emblem>img{display:block;width:42px;height:42px;filter:drop-shadow(0 0 12px rgba(142,255,61,.2))}
+.sp-brand-wordmark{flex-direction:column;align-items:flex-start;gap:4px;padding:7px 9px 8px}
+.sp-brand-wordmark>span{font-size:.96rem}
+.sp-brand-wordmark>b{margin:0;font-size:.52rem;letter-spacing:.14em}
+.sp-brand:focus-visible,.sp-nav nav a:focus-visible,.sp-footer a:focus-visible{outline:3px solid rgba(142,255,61,.72);outline-offset:4px}
+.sp-card-link:focus-visible,.sp-button:focus-visible,.sp-profile-links a:focus-visible{outline:3px solid rgba(142,255,61,.72);outline-offset:3px}
+.sp-nav nav a:hover{color:var(--sp-green)}
+.sp-nav nav .sp-nav-cta:hover{border-color:var(--sp-green);background:rgba(142,255,61,.07)}
+.sp-nav-current span{animation:sp-nav-star 8s linear infinite}
+
+.sp-card-platforms{flex:1 1 100%;flex-wrap:wrap;gap:7px}
+.sp-social-link,.sp-profile-social-link{
+  --social-color:#e8eee8;
+  display:inline-flex;
+  flex:0 0 auto;
+  align-items:center;
+  justify-content:center;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:8px;
+  background:rgba(255,255,255,.035);
+  color:var(--social-color);
+  transition:background-color .18s ease,border-color .18s ease,transform .18s ease;
+}
+.sp-social-link{width:36px;height:36px}
+.sp-profile-links a.sp-profile-social-link{min-height:40px;padding:10px 13px;border-color:rgba(255,255,255,.14);color:var(--social-color)}
+.sp-social-link svg,.sp-profile-social-link svg{display:block;width:17px;height:17px;flex:none;fill:currentColor}
+.sp-profile-social-link span{white-space:nowrap}
+.sp-social-link:hover,.sp-profile-social-link:hover{transform:translateY(-2px);border-color:currentColor;background:rgba(255,255,255,.08)}
+.sp-social-link:focus-visible,.sp-profile-social-link:focus-visible{outline:3px solid rgba(142,255,61,.72);outline-offset:3px}
+.sp-social-link[data-platform="youtube"],.sp-profile-social-link[data-platform="youtube"]{--social-color:#ff0033}
+.sp-social-link[data-platform="twitch"],.sp-profile-social-link[data-platform="twitch"]{--social-color:#a970ff}
+.sp-social-link[data-platform="instagram"],.sp-profile-social-link[data-platform="instagram"]{--social-color:#f06280}
+.sp-social-link[data-platform="tiktok"],.sp-profile-social-link[data-platform="tiktok"]{--social-color:#62f5eb}
+.sp-social-link[data-platform="facebook"],.sp-profile-social-link[data-platform="facebook"]{--social-color:#4a91ff}
+.sp-social-link[data-platform="linkedin"],.sp-profile-social-link[data-platform="linkedin"]{--social-color:#58a9ed}
+.sp-social-link[data-platform="spotify"],.sp-profile-social-link[data-platform="spotify"]{--social-color:#1ed760}
+.sp-social-link[data-platform="pinterest"],.sp-profile-social-link[data-platform="pinterest"]{--social-color:#ff334b}
+.sp-social-link[data-platform="x"],.sp-profile-social-link[data-platform="x"]{--social-color:#f4f4f4}
+@media(max-width:600px){
+  .sp-brand{gap:7px}
+  .sp-brand-emblem,.sp-brand-emblem>img{width:36px;height:36px}
+  .sp-brand-wordmark{gap:3px;padding:6px 7px}
+  .sp-brand-wordmark>span{font-size:.83rem}
+  .sp-brand-wordmark>b{font-size:.43rem;letter-spacing:.12em}
+  .sp-nav{padding-left:14px;padding-right:14px}
+  .sp-nav nav{gap:9px}
+  .sp-nav nav>a.sp-nav-current{display:none!important}
+  .sp-nav nav .sp-nav-cta{padding:9px 10px;font-size:.76rem}
+  .sp-card-foot{gap:9px}
+}
+@media(prefers-reduced-motion:reduce){
+  .sp-brand-wordmark:after,.sp-nav-current span,.sp-directory-glow strong{animation:none}
+  .sp-social-link,.sp-profile-social-link,.sp-nav nav a{transition:none}
+}

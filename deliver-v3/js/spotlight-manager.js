@@ -149,7 +149,7 @@ function openEditor(profile) {
   $("sp-profile-feature").checked = Boolean(profile.featured);
   clearFormStatus();
   applyPublishGate(profile.id, profile.status);
-  for (const key of ["youtube", "twitch", "instagram", "tiktok", "facebook", "linkedin", "x", "spotify"]) editForm.elements[key].value = profile.social_links?.[key] || "";
+  for (const key of ["youtube", "twitch", "instagram", "tiktok", "facebook", "linkedin", "x", "spotify", "pinterest"]) editForm.elements[key].value = profile.social_links?.[key] || "";
   editForm.hidden = false;
   const preview = $("sp-profile-image-preview");
   preview.textContent = "Loading image…";
@@ -265,7 +265,7 @@ editForm.addEventListener("submit", async event => {
   }
   const form = new FormData(editForm);
   const social = { ...(profile?.social_links || {}) };
-  for (const key of ["youtube", "twitch", "instagram", "tiktok", "facebook", "linkedin", "x", "spotify"]) {
+  for (const key of ["youtube", "twitch", "instagram", "tiktok", "facebook", "linkedin", "x", "spotify", "pinterest"]) {
     const value = String(form.get(key) || "").trim();
     if (value) social[key] = value;
     else delete social[key];

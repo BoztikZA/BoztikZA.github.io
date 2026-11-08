@@ -1,3 +1,5 @@
+import { socialLinksMarkup } from "./social-links.js";
+
 const API = "https://deliver-api.boztik.com/api/public/spotlight";
 const visitorId = (() => {
   try {
@@ -17,30 +19,6 @@ const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({
   "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
 }[char]));
 const label = value => String(value || "").replace(/-/g, " ").replace(/\b\w/g, char => char.toUpperCase());
-const platformHosts = {
-  youtube: ["youtube.com", "youtu.be"],
-  twitch: ["twitch.tv"],
-  instagram: ["instagram.com"],
-  tiktok: ["tiktok.com"],
-  facebook: ["facebook.com", "fb.watch"],
-  linkedin: ["linkedin.com", "lnkd.in"],
-  x: ["x.com", "twitter.com"],
-  spotify: ["spotify.com", "spotify.link"]
-};
-
-function safeSocialUrl(platform, value) {
-  if (typeof value !== "string" || value.length > 500 || !platformHosts[platform]) return null;
-  try {
-    const url = new URL(value);
-    if (url.protocol !== "https:" || url.username || url.password || url.port) return null;
-    const hostname = url.hostname.toLowerCase().replace(/\.$/, "");
-    const allowed = platformHosts[platform].some(root => hostname === root || hostname.endsWith("." + root));
-    return allowed ? url.href : null;
-  } catch {
-    return null;
-  }
-}
-
 const event = (profileId, type) => fetch(API + "/event", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
@@ -130,24 +108,12 @@ async function load() {
     const profile = data.profile;
     document.title = profile.display_name + " — Boztik Spotlight";
     const initials = profile.display_name.split(/\s+/).slice(0, 2).map(part => part[0]).join("").toUpperCase();
-    const platformMeta = {
-      youtube: ["YouTube", "youtube", "FF0033"],
-      twitch: ["Twitch", "twitch", "9146FF"],
-      instagram: ["Instagram", "instagram", "E4405F"],
-      tiktok: ["TikTok", "tiktok", "FFFFFF"],
-      facebook: ["Facebook", "facebook", "0866FF"],
-      linkedin: ["LinkedIn", "linkedin", "0A66C2"],
-      x: ["X", "x", "FFFFFF"],
-      spotify: ["Spotify", "spotify", "1DB954"]
-    };
-    const links = [
-      ...(profile.website_url ? [{ name: "Website", url: profile.website_url, icon: null }] : []),
-      ...Object.entries(profile.social_links || {}).flatMap(([platform, value]) => {
-        const url = safeSocialUrl(platform, value);
-        if (!url || !platformMeta[platform]) return [];
-        return [{ name: platformMeta[platform][0], url, icon: platformMeta[platform] }];
-      })
-    ];
+    let websiteUrl = "";
+    try {
+      const url = new URL(profile.website_url);
+      if (url.protocol === "https:" && !url.username && !url.password) websiteUrl = url.href;
+    } catch {}
+    const socialLinks = socialLinksMarkup(profile.social_links, profile.display_name, "sp-profile-social-link", true);
     const music = renderMusic(profile.song);
     const featuredLabel = profile.featured
       ? ` · FEATURED TODAY <span class="sp-countdown" data-countdown="${Number(profile.featured_until || 0)}">Ends in <time>--:--:--</time></span>`
@@ -166,11 +132,9 @@ async function load() {
         <p class="sp-kicker">THE STORY</p>
         <h2>What they're building.</h2>
         <p>${esc(profile.description)}</p>
-        <div class="sp-profile-links">${links.map(({ name, url, icon }) => `
-          <a href="${esc(url)}" target="_blank" rel="noopener noreferrer" data-outbound>
-            ${icon ? `<img src="https://cdn.simpleicons.org/${icon[1]}/${icon[2]}" alt="" width="18" height="18" loading="lazy">` : ""}
-            <span>${esc(name)}</span><b>↗</b>
-          </a>`).join("")}
+        <div class="sp-profile-links">
+          ${websiteUrl ? `<a href="${esc(websiteUrl)}" target="_blank" rel="noopener noreferrer" data-outbound><span>Website</span><b>↗</b></a>` : ""}
+          ${socialLinks}
         </div>
       </article>
       ${music}

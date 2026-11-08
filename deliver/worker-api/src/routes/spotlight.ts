@@ -23,6 +23,7 @@ const SOCIAL_HOSTS: Record<string, string[]> = {
   linkedin: ["linkedin.com", "lnkd.in"],
   x: ["x.com", "twitter.com"],
   spotify: ["spotify.com", "spotify.link"],
+  pinterest: ["pinterest.com", "pin.it"],
 };
 
 function safeUrl(value: unknown): string | null {
@@ -43,9 +44,11 @@ function isAllowedPlatformHost(hostname: string, roots: string[]): boolean {
 
 export function safeSocialUrl(platform: string, value: unknown): string | null {
   const url = safeUrl(value);
-  if (!url || !SOCIAL_HOSTS[platform]) return null;
+  if (!url || !Object.prototype.hasOwnProperty.call(SOCIAL_HOSTS, platform)) return null;
+  const roots = SOCIAL_HOSTS[platform];
+  if (!roots) return null;
   const parsed = new URL(url);
-  return isAllowedPlatformHost(parsed.hostname, SOCIAL_HOSTS[platform]) ? url : null;
+  return isAllowedPlatformHost(parsed.hostname, roots) ? url : null;
 }
 
 function checkedSocialLinks(value: unknown): Record<string, string> {
@@ -303,7 +306,7 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
       if (b.consent !== true) throw new HttpError(422, "consent_required", "Confirm that you own or are authorised to submit this profile.");
       const social: Record<string,string> = {};
       if (b.social_links && typeof b.social_links === "object" && !Array.isArray(b.social_links)) {
-        for (const key of ["youtube","twitch","instagram","tiktok","facebook","linkedin","x","spotify"]) {
+        for (const key of ["youtube","twitch","instagram","tiktok","facebook","linkedin","x","spotify","pinterest"]) {
           const value = (b.social_links as Record<string,unknown>)[key];
           if (value) {
             const url = safeSocialUrl(key, value);
@@ -402,7 +405,7 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       if (b.website_url && !website) throw new HttpError(422, "invalid_url", "Website links must use HTTPS.");
       const social: Record<string,string> = {};
       if (b.social_links && typeof b.social_links === "object" && !Array.isArray(b.social_links)) {
-        for (const key of ["youtube","twitch","instagram","tiktok","facebook","linkedin","x","spotify"]) {
+        for (const key of ["youtube","twitch","instagram","tiktok","facebook","linkedin","x","spotify","pinterest"]) {
           const value = (b.social_links as Record<string,unknown>)[key];
           if (value) {
             const url = safeSocialUrl(key, value);

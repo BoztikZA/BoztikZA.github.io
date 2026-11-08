@@ -1,3 +1,5 @@
+import { socialLinksMarkup } from "./social-links.js";
+
 (() => {
   const host = document.getElementById("hm-spotlight-grid");
   if (!host) return;
@@ -71,6 +73,7 @@
     const imageUrl = safeProfileImageUrl(profile.image_url);
     const websiteUrl = safeWebsiteUrl(profile.website_url);
     const shareUrl = API + "/share/" + encodeURIComponent(profile.slug);
+    const socialLinks = socialLinksMarkup(profile.social_links, name, "hm-spotlight-social-link");
     const image = imageUrl
       ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(name)} logo or profile photograph" width="640" height="420" loading="lazy" decoding="async" data-initials="${escapeHtml(initials(name))}" data-profile-name="${escapeHtml(name)}">`
       : `<span class="hm-spotlight-image-fallback" role="img" aria-label="Initials for ${escapeHtml(name)}">${escapeHtml(initials(name))}</span>`;
@@ -89,6 +92,7 @@
           <h3><a href="${profilePath}">${escapeHtml(name)}</a></h3>
           <p class="hm-spotlight-tagline">${escapeHtml(profile.tagline)}</p>
           <p class="hm-spotlight-description">${escapeHtml(profile.description)}</p>
+          ${socialLinks ? `<div class="hm-spotlight-socials" aria-label="Social profiles">${socialLinks}</div>` : ""}
           <div class="hm-spotlight-actions">
             <a class="hm-spotlight-profile-link" href="${profilePath}">View Boztik profile <span aria-hidden="true">↗</span></a>
             ${websiteUrl ? `<a class="hm-spotlight-website-link" href="${escapeHtml(websiteUrl)}" target="_blank" rel="noopener noreferrer" data-outbound>Visit website <span aria-hidden="true">↗</span></a>` : ""}

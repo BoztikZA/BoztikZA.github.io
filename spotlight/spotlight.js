@@ -1,3 +1,5 @@
+import { socialLinksMarkup } from "./social-links.js";
+
 const API = "https://deliver-api.boztik.com/api/public/spotlight";
 const $ = selector => document.querySelector(selector);
 const grid = $("#sp-grid");
@@ -27,16 +29,7 @@ const label = value => String(value || "").replace(/-/g, " ").replace(/\b\w/g, c
 
 function card(profile) {
   const initials = profile.display_name.split(/\s+/).slice(0, 2).map(part => part[0]).join("").toUpperCase();
-  const brands = {
-    youtube: ["youtube", "FF0033"], twitch: ["twitch", "9146FF"],
-    instagram: ["instagram", "E4405F"], tiktok: ["tiktok", "FFFFFF"],
-    facebook: ["facebook", "0866FF"], linkedin: ["linkedin", "0A66C2"],
-    x: ["x", "FFFFFF"], spotify: ["spotify", "1DB954"]
-  };
-  const platformIcons = Object.entries(profile.social_links || {})
-    .filter(([platform]) => brands[platform])
-    .map(([platform]) => `<img src="https://cdn.simpleicons.org/${brands[platform][0]}/${brands[platform][1]}" alt="${label(platform)}" title="${label(platform)}" width="17" height="17" loading="lazy">`)
-    .join("");
+  const platformIcons = socialLinksMarkup(profile.social_links, profile.display_name, "sp-social-link");
   const featured = profile.featured
     ? `<span class="sp-featured">FEATURED TODAY</span><span class="sp-countdown" data-countdown="${Number(profile.featured_until || 0)}">Ends in <time>--:--:--</time></span>`
     : Date.now() / 1000 - profile.created_at < 604800 ? '<span class="sp-new">JUST ADDED</span>' : "";
@@ -50,7 +43,7 @@ function card(profile) {
     <h3>${esc(profile.tagline)}</h3>
     <p>${esc(profile.description)}</p>
     <div class="sp-card-foot">
-      ${platformIcons ? `<span class="sp-card-platforms" aria-label="Available platforms">${platformIcons}</span>` : ""}
+      ${platformIcons ? `<span class="sp-card-platforms" aria-label="Social profiles">${platformIcons}</span>` : ""}
       <a class="sp-card-link" href="profile.html?slug=${encodeURIComponent(profile.slug)}">View profile ↗</a>
       <button class="sp-card-share" type="button" data-share-slug="${esc(profile.slug)}" data-share-name="${esc(profile.display_name)}" aria-label="Share ${esc(profile.display_name)}'s Spotlight profile">Share ↗</button>
     </div>
