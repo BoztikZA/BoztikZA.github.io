@@ -68,6 +68,7 @@ const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({
 const api = async (path, init = {}) => {
   const response = await fetch(config.apiBaseUrl + path, {
     ...init,
+    cache: "no-store",
     headers: { ...authHeaders(), ...(init.headers || {}) }
   });
   const data = await response.json().catch(() => ({}));
@@ -129,8 +130,21 @@ function render() {
     </article>`).join("") : "<p class='cc-muted'>No submissions yet. New entries will appear here for review.</p>";
 }
 
-async function load() {
-  feedback.textContent = "Refreshing Spotlight…";
+let spotlightLoadInProgress = false;
+let spotlightRefreshQueued = false;
+async function load({ silent = false } = {}) {
+  if (spotlightLoadInProgress) {
+    spotlightRefreshQueued = true;
+    return false;
+  }
+  spotlightLoadInProgress = true;
+  const refreshButton = $("sp-admin-refresh");
+  if (refreshButton) {
+    refreshButton.disabled = true;
+    refreshButton.setAttribute("aria-busy", "true");
+    refreshButton.textContent = "Refreshing…";
+  }
+  if (!silent) feedback.textContent = "Refreshing Spotlight profiles and views…";
   try {
     const profilesResponse = await api("/api/admin/spotlight");
     profiles = Array.isArray(profilesResponse.profiles) ? profilesResponse.profiles : [];
@@ -158,11 +172,25 @@ async function load() {
         <span>${Number(p.outbound_clicks || 0).toLocaleString()} outbound clicks</span>
         <span>${Number(p.featured_impressions || 0).toLocaleString()} featured impressions</span>
       </div>`).join("") : "<p class='cc-muted'>Engagement will appear when visitors start exploring profiles.</p>";
-    feedback.textContent = analyticsUnavailable ? "Spotlight profiles loaded. Analytics are temporarily unavailable." : "Spotlight profiles and analytics updated.";
+    const updatedAt = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    feedback.textContent = analyticsUnavailable
+      ? `Spotlight profiles loaded · analytics temporarily unavailable · Updated ${updatedAt}`
+      : `Spotlight profiles and views updated · ${updatedAt}`;
     return true;
   } catch (error) {
     feedback.textContent = error.message;
     return false;
+  } finally {
+    spotlightLoadInProgress = false;
+    if (refreshButton) {
+      refreshButton.disabled = false;
+      refreshButton.removeAttribute("aria-busy");
+      refreshButton.textContent = "Refresh";
+    }
+    if (spotlightRefreshQueued) {
+      spotlightRefreshQueued = false;
+      void load({ silent: true });
+    }
   }
 }
 
@@ -699,7 +727,23 @@ $("sp-admin-edit-cancel").addEventListener("click", () => {
   galleryPreviewUrls.forEach(url => URL.revokeObjectURL(url));
   galleryPreviewUrls = [];
 });
-$("sp-admin-refresh").addEventListener("click", load);
+$("sp-admin-refresh").addEventListener("click", () => { void load(); });
+
+// Keep new applications and engagement counts current without requiring a full
+// Command Centre page reload. Pause polling in background tabs to avoid wasted calls.
+const SPOTLIGHT_LIVE_REFRESH_MS = 30000;
+let spotlightLiveRefreshTimer = null;
+function startSpotlightLiveRefresh() {
+  clearInterval(spotlightLiveRefreshTimer);
+  spotlightLiveRefreshTimer = setInterval(() => {
+    if (!document.hidden && getSession) void load({ silent: true });
+  }, SPOTLIGHT_LIVE_REFRESH_MS);
+}
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) void load({ silent: true });
+});
+window.addEventListener("boztik:refresh-spotlight", () => { void load(); });
+startSpotlightLiveRefresh();
 
 let authChangeVersion = 0;
 function handleSpotlightAuthChange(session) {

@@ -6,6 +6,15 @@
   const toggle = document.querySelector('.nav-toggle');
   const links = document.querySelector('.nav-links');
 
+  if (nav && links && !links.querySelector('a[href*="spotlight/"]')) {
+    const spotlightLink = document.createElement('a');
+    spotlightLink.href = '/spotlight/';
+    spotlightLink.textContent = 'Spotlight';
+    const deliverLink = Array.from(links.querySelectorAll('a')).find(link => /deliver/i.test(link.textContent));
+    if (deliverLink) deliverLink.insertAdjacentElement('afterend', spotlightLink);
+    else links.append(spotlightLink);
+  }
+
   if (nav && toggle && links) {
     const closeMenu = () => {
       nav.classList.remove('is-menu-open');
