@@ -23,7 +23,7 @@
   <link rel="stylesheet" href="css/deliver.css?v=13">
   <link rel="stylesheet" href="css/command-centre.css?v=4">
   <link rel="stylesheet" href="css/analytics.css?v=an6">
-  <link rel="stylesheet" href="css/spotlight-manager.css?v=7">
+  <link rel="stylesheet" href="css/spotlight-manager.css?v=8">
   <link rel="stylesheet" href="css/deliver-animations.css?v=1">
   <link rel="stylesheet" href="css/deliver-experience.css?v=1">
 
@@ -353,7 +353,7 @@
           <div class="sp-admin-edit-grid">
             <label>Display name<input name="display_name" maxlength="80" required minlength="2"></label>
             <label>Tagline<input name="tagline" maxlength="120" required minlength="8"></label>
-            <label>Contact email<input name="contact_email" type="email" maxlength="254" required placeholder="creator@example.com"></label>
+            <label>Contact email (optional)<input name="contact_email" type="email" maxlength="254" autocomplete="email" placeholder="creator@example.com"><small>Optional. Add an email only if you want visitors to contact the business by email. A website link is enough.</small></label>
             <label>Category<select name="category" required><option value="small-business">Small business</option><option value="youtube">YouTube</option><option value="twitch">Twitch</option><option value="gaming">Gaming</option><option value="photography">Photography</option><option value="design">Design</option><option value="music">Music</option><option value="creator">Creator</option><option value="freelance">Freelance</option><option value="other">Other</option></select></label>
             <label>Website URL<input name="website_url" type="url" inputmode="url" autocomplete="url" placeholder="yourwebsite.com"><small>Paste a domain or full link — https:// is added automatically.</small></label>
             <div class="sp-admin-edit-wide sp-image-editor"><label>Profile logo / photograph<input name="profile_image" id="sp-profile-image" type="file" accept="image/jpeg,image/png,image/webp"><small>JPG, PNG or WebP · maximum 2 MB. Uploaded images stay private until the profile is published.</small></label><div id="sp-profile-image-preview" class="sp-profile-image-preview">No image uploaded</div><button class="cc-btn" id="sp-profile-image-upload" type="button">Upload image</button><span id="sp-profile-image-status" role="status"></span></div>
@@ -2653,7 +2653,7 @@
     src="js/dashboard.js?v=cf-5"
   ></script>
   <script type="module" src="js/promotions.js"></script>
-  <script type="module" src="js/spotlight-manager.js?v=13"></script>
+  <script type="module" src="js/spotlight-manager.js?v=14"></script>
 
 </body>
 </html>
