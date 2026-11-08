@@ -10,6 +10,9 @@ const ID = () => crypto.randomUUID().replace(/-/g, "").slice(0, 20);
 const now = () => Math.floor(Date.now() / 1000);
 const day = (env: Env) => localDay(env);
 const clean = (v: unknown, max: number) => typeof v === "string" ? v.trim().replace(/\s+/g, " ").slice(0, max) : "";
+const cleanDescription = (v: unknown) => typeof v === "string"
+  ? v.replace(/\r\n?/g, "\n").replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim().slice(0, 5000)
+  : "";
 
 const SOCIAL_HOSTS: Record<string, string[]> = {
   youtube: ["youtube.com", "youtu.be"],
@@ -283,11 +286,11 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
       checkPublicRate(request, env, "spotlight-submit", 0.25);
       assertSameSiteOrigin(request, env); requireJson(request);
       await checkSpotlightSubmissionRate(request, env);
-      const b = await readJson(request, 8 * 1024);
+      const b = await readJson(request, 32 * 1024);
       // Honeypot: silently accept automated submissions without storing them.
       if (clean(b.company_website, 200)) return json({ ok: true });
       const displayName = clean(b.display_name, 80), tagline = clean(b.tagline, 120);
-      const description = clean(b.description, 900), category = clean(b.category, 40);
+      const description = cleanDescription(b.description), category = clean(b.category, 40);
       const email = clean(b.contact_email, 254).toLowerCase();
       const songTrack = b.song_url ? spotifyTrack(b.song_url) : null;
       if (b.song_url && !songTrack) throw new HttpError(422, "invalid_spotify_track", "Use a public Spotify track link.");
@@ -384,9 +387,9 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
     const seg = segments(path);
     if (seg.length === 1 && seg[0] === "profile" && request.method === "POST") {
       requireJson(request);
-      const b = await readJson(request, 12 * 1024);
+      const b = await readJson(request, 32 * 1024);
       const displayName = clean(b.display_name, 80), tagline = clean(b.tagline, 120);
-      const description = clean(b.description, 900), category = clean(b.category, 40);
+      const description = cleanDescription(b.description), category = clean(b.category, 40);
       const email = clean(b.contact_email, 254).toLowerCase();
       const website = b.website_url ? safeUrl(b.website_url) : null;
       const songTrack = b.song_url ? spotifyTrack(b.song_url) : null;
@@ -432,13 +435,13 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       return new Response(object.body,{headers:{"Content-Type":row.image_content_type || "image/jpeg","Cache-Control":"private, no-store","X-Content-Type-Options":"nosniff"}});
     }
     if (seg.length === 2 && seg[0] === "profile" && request.method === "PATCH") {
-      requireJson(request); const b = await readJson(request, 8 * 1024);
+      requireJson(request); const b = await readJson(request, 32 * 1024);
       const old = await env.DB.prepare("SELECT * FROM spotlight_profiles WHERE id=?").bind(seg[1]).first<any>();
       if (!old) return error("Profile not found",404);
       const status = ["pending","published","archived"].includes(String(b.status)) ? String(b.status) : old.status;
       const displayName = b.display_name === undefined ? old.display_name : clean(b.display_name, 80);
       const tagline = b.tagline === undefined ? old.tagline : clean(b.tagline, 120);
-      const description = b.description === undefined ? old.description : clean(b.description, 900);
+      const description = b.description === undefined ? old.description : cleanDescription(b.description);
       const category = b.category === undefined ? old.category : clean(b.category, 40);
       const contactEmail = b.contact_email === undefined ? old.contact_email : clean(b.contact_email, 254).toLowerCase();
       const website = b.website_url === undefined ? old.website_url : (b.website_url ? safeUrl(b.website_url) : null);
