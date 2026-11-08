@@ -169,6 +169,9 @@ list.addEventListener("click", async event => {
       });
     }
     await load();
+    if (action === "publish") feedback.textContent = "✓ Profile is live on the Boztik Spotlight directory.";
+    else if (action === "feature") feedback.textContent = "✓ Homepage feature is active for 24 hours.";
+    else if (action === "unfeature") feedback.textContent = "Homepage feature removed.";
   } catch (error) {
     feedback.textContent = error.message;
     button.disabled = false;
