@@ -10,6 +10,7 @@
 //   / reddit                    whether the person actually posted can't be known)
 import { recordShare } from "./api.js";
 import { toast } from "./shared.js";
+import { initSpotlightInvitation } from "./spotlight-invitation.js";
 
 const SOCIAL_METHODS = Object.freeze(["whatsapp", "facebook", "x", "reddit"]);
 
@@ -114,6 +115,9 @@ function onShareButtonClick() {
 export function initShare(delivery) {
   // Only wire sharing for a valid, live delivery that actually has files.
   if (!delivery || !delivery.id || !(delivery.delivery_files?.length > 0)) return;
+
+  // The invitation is independent of the share controls and never blocks delivery.
+  initSpotlightInvitation(delivery);
 
   buttonEl = document.getElementById("deliver-share");
   menuEl = document.getElementById("deliver-share-menu");
