@@ -93,8 +93,9 @@ function openNewProfile() {
   $("sp-profile-image-preview").textContent = "Save the profile first, then upload its logo or photograph.";
   $("sp-profile-image-status").textContent = "";
   $("sp-profile-feature").checked = false;
-  $("sp-admin-publish").hidden = true;
-  $("sp-admin-publish").textContent = "Publish profile";
+  $("sp-admin-publish").hidden = false;
+  $("sp-admin-publish").disabled = true;
+  $("sp-admin-publish").textContent = "Save draft to unlock publishing";
   editForm.hidden = false;
   editForm.scrollIntoView({ behavior: "smooth", block: "center" });
 }
@@ -110,6 +111,7 @@ function openEditor(profile) {
   editForm.elements.song_url.value = profile.song?.url || "";
   $("sp-profile-feature").checked = Boolean(profile.featured);
   $("sp-admin-publish").hidden = false;
+  $("sp-admin-publish").disabled = false;
   $("sp-admin-publish").textContent = profile.status === "published" ? "Apply live settings" : "Publish profile";
   for (const key of ["youtube", "twitch", "instagram", "tiktok", "facebook", "linkedin", "x", "spotify"]) editForm.elements[key].value = profile.social_links?.[key] || "";
   editForm.hidden = false;
@@ -256,6 +258,7 @@ editForm.addEventListener("submit", async event => {
     if (!id) {
       editForm.elements.id.value = saved.profile.id;
       $("sp-admin-publish").hidden = false;
+      $("sp-admin-publish").disabled = false;
       $("sp-admin-publish").textContent = "Publish profile";
     }
     const refreshed = await load();
@@ -301,6 +304,7 @@ $("sp-admin-edit-cancel").addEventListener("click", () => {
   editForm.reset();
   editForm.hidden = true;
   $("sp-admin-publish").hidden = true;
+  $("sp-admin-publish").disabled = true;
 });
 $("sp-admin-refresh").addEventListener("click", load);
 
