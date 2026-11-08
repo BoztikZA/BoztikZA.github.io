@@ -54,3 +54,6 @@
 .sp-card-share:hover{background:rgba(142,255,61,.13)}
 .sp-card-share:focus-visible{outline:3px solid rgba(142,255,61,.45);outline-offset:3px}
 .sp-card-share-status{min-height:1em;margin:7px 0 0;color:#a5b1aa;font-size:.68rem;overflow-wrap:anywhere}
+
+/* Keep long profile descriptions readable in directory cards. */
+.sp-card p{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:5;overflow:hidden;overflow-wrap:anywhere;white-space:pre-line}
