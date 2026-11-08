@@ -179,12 +179,11 @@ editForm.addEventListener("submit", async event => {
   try {
     const request = spotlightProfileSaveRequest(id, body);
     const saved = await api(request.path, request.init);
-    if (saved.profile) {
-      const savedIndex = profiles.findIndex(item => item.id === saved.profile.id);
-      if (savedIndex === -1) profiles.unshift(saved.profile);
-      else profiles[savedIndex] = saved.profile;
-      render();
-    }
+    if (!saved?.profile?.id) throw new Error("The server did not confirm the saved profile. Refresh Spotlight before trying again.");
+    const savedIndex = profiles.findIndex(item => item.id === saved.profile.id);
+    if (savedIndex === -1) profiles.unshift(saved.profile);
+    else profiles[savedIndex] = saved.profile;
+    render();
     if (!id) {
       editForm.elements.id.value = saved.profile.id;
     }
