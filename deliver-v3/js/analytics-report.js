@@ -31,7 +31,7 @@ export const SHORT_LABELS = {
   toolkit: "Toolkit", tools: "Tools", guides: "Guides", about: "About", support: "Support", contact: "Contact", spotlight: "Spotlight"
 };
 /** Public pages that should normally receive traffic; used to spot pages with no recorded views. */
-export const KEY_PAGES = ["homepage", "stores", "deliver", "services", "portfolio", "toolkit", "tools", "guides", "about", "support", "contact"];
+export const KEY_PAGES = ["homepage", "stores", "deliver", "services", "portfolio", "toolkit", "tools", "guides", "about", "support", "contact", "spotlight"];
 
 export const TYPE_LABELS = {
   photoshop_battles: "PhotoshopBattles",
