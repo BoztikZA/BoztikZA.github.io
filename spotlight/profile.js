@@ -42,6 +42,31 @@ const event = (profileId, type) => fetch(API + "/event", {
   keepalive: true
 }).catch(() => {});
 
+function setMeta(selector, attr, value, create) {
+  let el = document.head.querySelector(selector);
+  if (!el && create) { el = document.createElement(create.tag); Object.entries(create.attrs).forEach(([k, v]) => el.setAttribute(k, v)); document.head.appendChild(el); }
+  if (el) el.setAttribute(attr, value);
+}
+
+function applySeo(profile, mainImage, websiteUrl) {
+  const name = profile.display_name;
+  const url = "https://www.boztik.com/spotlight/profile.html?slug=" + encodeURIComponent(profile.slug);
+  const text = String(profile.tagline || profile.description || "").replace(/\s+/g, " ").trim();
+  const desc = (name + " — " + (text || "independent business") + " Discover what they offer on Boztik Spotlight, the free business directory.").slice(0, 300);
+  document.title = name + " — " + label(profile.category) + " | Boztik Spotlight";
+  setMeta('meta[name="description"]', "content", desc, { tag: "meta", attrs: { name: "description" } });
+  setMeta('link[rel="canonical"]', "href", url, { tag: "link", attrs: { rel: "canonical" } });
+  [["og:title", document.title], ["og:description", desc], ["og:url", url], ["og:type", "profile"], ["og:site_name", "Boztik Spotlight"], ["og:image", mainImage || "https://www.boztik.com/images/boztik-og.png"]]
+    .forEach(([prop, value]) => setMeta('meta[property="' + prop + '"]', "content", value, { tag: "meta", attrs: { property: prop } }));
+  setMeta('meta[name="twitter:card"]', "content", "summary_large_image", { tag: "meta", attrs: { name: "twitter:card" } });
+  const sameAs = (Array.isArray(profile.social_links) ? profile.social_links : Object.values(profile.social_links || {})).map(link => typeof link === "string" ? link : link?.url).filter(value => typeof value === "string" && value.startsWith("https://"));
+  const entity = { "@type": "Organization", name, description: text || undefined, url: websiteUrl || undefined, image: mainImage || undefined, sameAs: sameAs.length ? sameAs : undefined };
+  const ld = { "@context": "https://schema.org", "@type": "ProfilePage", name: document.title, url, mainEntity: entity };
+  let script = document.getElementById("sp-jsonld");
+  if (!script) { script = document.createElement("script"); script.type = "application/ld+json"; script.id = "sp-jsonld"; document.head.appendChild(script); }
+  script.textContent = JSON.stringify(ld);
+}
+
 function renderMusic(song) {
   if (!song || typeof song.id !== "string" || !/^[A-Za-z0-9]{22}$/.test(song.id)) return "";
   const url = "https://open.spotify.com/track/" + song.id;
@@ -159,8 +184,7 @@ async function load() {
     if (!response.ok || !data.profile) throw new Error("This profile could not be found.");
 
     const profile = data.profile;
-    document.title = profile.display_name + " — Boztik Spotlight";
-    const initials = profile.display_name.split(/\s+/).slice(0, 2).map(part => part[0]).join("").toUpperCase();
+        const initials = profile.display_name.split(/\s+/).slice(0, 2).map(part => part[0]).join("").toUpperCase();
     const images = profileImages(profile);
     const mainImage = images[0]?.url || "";
     let websiteUrl = "";
@@ -169,6 +193,9 @@ async function load() {
       if (url.protocol === "https:" && !url.username && !url.password) websiteUrl = url.href;
     } catch {}
     const socialLinks = socialLinksMarkup(profile.social_links, profile.display_name, "sp-profile-social-link", true);
+    applySeo(profile, mainImage, websiteUrl);
+    const name = profile.display_name;
+    const host_ = websiteUrl ? new URL(websiteUrl).hostname.replace(/^www\./, "") : "";
     const music = renderMusic(profile.song);
     const featuredLabel = profile.featured
       ? ` · FEATURED TODAY <span class="sp-countdown" data-countdown="${Number(profile.featured_until || 0)}">Ends in <time>--:--:--</time></span>`
@@ -176,30 +203,39 @@ async function load() {
 
     host.innerHTML = `
       <div class="sp-profile-hero">
-        <div class="sp-profile-avatar">${mainImage ? `<img src="${esc(mainImage)}" alt="${esc(profile.display_name)} logo or profile photograph" loading="eager" decoding="async">` : esc(initials)}</div>
-        <div>
+        <div class="sp-profile-avatar">${mainImage ? `<img src="${esc(mainImage)}" alt="${esc(name)} logo or profile photograph" loading="eager" decoding="async">` : esc(initials)}</div>
+        <div class="sp-profile-hero-body">
           <p class="sp-kicker">${esc(label(profile.category))}${featuredLabel}</p>
-          <h1>${esc(profile.display_name)}</h1>
-          <p class="sp-profile-tagline">${esc(profile.tagline)}</p>
+          <h1>${esc(name)}</h1>
+          ${profile.tagline ? `<p class="sp-profile-tagline">${esc(profile.tagline)}</p>` : ""}
+          <div class="sp-profile-badges"><span>✓ Listed on Boztik Spotlight</span><span>Reviewed by Boztik</span></div>
+          ${websiteUrl ? `<div class="sp-profile-hero-actions"><a class="sp-button sp-button-primary" href="${esc(websiteUrl)}" target="_blank" rel="noopener noreferrer" data-outbound>Visit ${esc(name)} <span aria-hidden="true">↗</span></a></div>` : ""}
         </div>
       </div>
+      <dl class="sp-profile-facts">
+        <div><dt>Category</dt><dd>${esc(label(profile.category))}</dd></div>
+        ${host_ ? `<div><dt>Website</dt><dd>${esc(host_)}</dd></div>` : ""}
+        <div><dt>Listing</dt><dd>Boztik Spotlight</dd></div>
+      </dl>
       ${renderGallery(images, profile.display_name)}
       <article class="sp-profile-about">
-        <p class="sp-kicker">THE STORY</p>
-        <h2>What they're building.</h2>
-        <p>${esc(profile.description)}</p>
+        <p class="sp-kicker">WHAT THEY OFFER</p>
+        <h2>About ${esc(name)}</h2>
+        <p>${esc(profile.description || profile.tagline || "")}</p>
         <div class="sp-profile-links">
           ${websiteUrl ? `<a href="${esc(websiteUrl)}" target="_blank" rel="noopener noreferrer" data-outbound><span>Website</span><b>↗</b></a>` : ""}
           ${socialLinks}
         </div>
       </article>
       ${music}
+      ${websiteUrl ? `<section class="sp-visit-band" aria-label="Visit ${esc(name)}"><div><strong>Like what you see?</strong><p>Go straight to ${esc(name)} to learn more, get in touch or buy.</p></div><a class="sp-button sp-button-primary" href="${esc(websiteUrl)}" target="_blank" rel="noopener noreferrer" data-outbound>Visit ${esc(host_)} <span aria-hidden="true">↗</span></a></section>` : ""}
       <section class="sp-share-panel" aria-label="Share this creator">
         <div><strong>Know someone who should discover this work?</strong><p>Share this Spotlight profile and help more people find them.</p></div>
         <button class="sp-share-button" type="button" id="sp-share-profile">Share this profile <span aria-hidden="true">↗</span></button>
         <p class="sp-share-status" id="sp-share-status" role="status" aria-live="polite"></p>
         <div class="sp-share-fallback" id="sp-share-fallback" hidden><label for="sp-share-url">Profile link</label><input id="sp-share-url" type="url" readonly></div>
       </section>
+      <section class="sp-profile-join"><div><strong>Run a business or create something original?</strong><p>Get your own professional Spotlight profile, free during our pilot.</p></div><a class="sp-button sp-button-outline" href="submit/">Get featured for free <span aria-hidden="true">↗</span></a></section>
       <p class="sp-profile-note">Discovered on <a href="./">Boztik Spotlight</a> · Independent work deserves to be seen.</p>`;
 
     if (profile.featured) {

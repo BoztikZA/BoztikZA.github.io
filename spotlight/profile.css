@@ -29,3 +29,22 @@
 .sp-share-fallback label{color:#a5b1aa;font-size:.75rem}
 .sp-share-fallback input{width:100%;padding:11px;border:1px solid rgba(255,255,255,.16);border-radius:6px;background:#080d0f;color:#eaf1eb;font:400 .8rem Inter}
 @media(max-width:600px){.sp-share-panel{grid-template-columns:1fr;margin-left:0;margin-right:0;padding:20px}.sp-share-button{width:100%}}
+
+/* Proud-listing refinements: clearer hero, trust badges, facts, visit + join CTAs. */
+.sp-profile-hero-body{min-width:0}
+.sp-profile-hero h1{overflow-wrap:anywhere}
+.sp-profile-tagline{color:#e1e9df;font-size:1.15rem;font-weight:600}
+.sp-profile-badges{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 0}
+.sp-profile-badges span{padding:6px 11px;border:1px solid rgba(142,255,61,.3);border-radius:999px;background:rgba(142,255,61,.06);color:#c4f5a6;font:700 .68rem/1.2 Inter,sans-serif}
+.sp-profile-hero-actions{margin-top:22px}
+.sp-profile-hero-actions .sp-button{min-height:50px;box-shadow:0 10px 28px rgba(142,255,61,.2)}
+.sp-profile-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;margin:18px 0 0;overflow:hidden;border:1px solid var(--sp-line);border-radius:12px;background:var(--sp-line)}
+.sp-profile-facts div{padding:16px 20px;background:#0e1416}
+.sp-profile-facts dt{color:#8eff3d;font:800 .62rem/1 Inter,sans-serif;letter-spacing:.14em;text-transform:uppercase}
+.sp-profile-facts dd{margin:8px 0 0;color:#eaf1eb;font-weight:600;overflow-wrap:anywhere}
+.sp-visit-band,.sp-profile-join{display:flex;align-items:center;justify-content:space-between;gap:20px;margin:0 8px 30px;padding:24px 26px;border:1px solid rgba(142,255,61,.28);border-radius:13px;background:linear-gradient(100deg,rgba(142,255,61,.09),rgba(255,255,255,.02) 65%)}
+.sp-profile-join{border-color:rgba(255,255,255,.1);background:rgba(255,255,255,.025)}
+.sp-visit-band strong,.sp-profile-join strong{display:block;color:#f1f5f2;font:700 1.08rem "Plus Jakarta Sans",Inter,sans-serif}
+.sp-visit-band p,.sp-profile-join p{margin:6px 0 0;color:#a5b1aa;font-size:.85rem;line-height:1.6}
+.sp-visit-band .sp-button,.sp-profile-join .sp-button{flex:none}
+@media(max-width:600px){.sp-visit-band,.sp-profile-join{flex-direction:column;align-items:flex-start;margin-left:0;margin-right:0;padding:20px}.sp-visit-band .sp-button,.sp-profile-join .sp-button,.sp-profile-hero-actions .sp-button{width:100%;justify-content:center}}

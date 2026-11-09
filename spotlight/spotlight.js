@@ -40,11 +40,11 @@ function card(profile) {
       <div class="sp-avatar" aria-hidden="true">${profile.image_url ? `<img src="${esc(profile.image_url)}" alt="" loading="lazy">` : esc(initials)}</div>
       <div><h3 class="sp-card-name">${esc(profile.display_name)}</h3><span class="sp-card-category">${esc(label(profile.category))}</span></div>
     </div>
-    <h3>${esc(profile.tagline)}</h3>
+    ${profile.tagline ? `<h3 class="sp-card-offer">${esc(profile.tagline)}</h3>` : ""}
     <p>${esc(profile.description)}</p>
     <div class="sp-card-foot">
       ${platformIcons ? `<span class="sp-card-platforms" aria-label="Social profiles">${platformIcons}</span>` : ""}
-      <a class="sp-card-link" href="profile.html?slug=${encodeURIComponent(profile.slug)}">View profile ↗</a>
+      <a class="sp-card-link" href="profile.html?slug=${encodeURIComponent(profile.slug)}">See what they offer ↗</a>
       <button class="sp-card-share" type="button" data-share-slug="${esc(profile.slug)}" data-share-name="${esc(profile.display_name)}" aria-label="Share ${esc(profile.display_name)}'s Spotlight profile">Share ↗</button>
     </div>
     <p class="sp-card-share-status" role="status" aria-live="polite"></p>

@@ -121,3 +121,8 @@
 /* Quiet expectations note: visible without competing with the Spotlight hero. */
 .sp-disclaimer{max-width:720px;margin:18px 0 0;color:rgba(220,230,220,.62);font:400 .76rem/1.65 Inter,system-ui,sans-serif;letter-spacing:.005em}
 @media(max-width:600px){.sp-disclaimer{font-size:.72rem;line-height:1.6}}
+
+/* Directory card polish: stronger primary action. */
+.sp-card-link{padding:10px 14px;border-radius:6px;background:var(--sp-green);color:#10170c!important;font-weight:800;text-decoration:none}
+.sp-card-link:hover{filter:brightness(1.07)}
+.sp-card-offer{color:#e1e9df}
