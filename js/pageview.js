@@ -35,6 +35,7 @@
       "/": "homepage",
       "/index.html": "homepage",
       "/stores.html": "stores",
+      "/discover.html": "discover",
       "/services.html": "services",
       "/portfolio.html": "portfolio",
       "/image-inspector.html": "tools",
