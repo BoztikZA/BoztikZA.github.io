@@ -502,3 +502,159 @@
 .hm-spotlight-empty-actions .hm-spotlight-website-link{color:#b5ff8b;background:rgba(142,255,61,.05)}
 @media(max-width:680px){.hm-spotlight-empty-actions a{flex:1 1 100%}}
 @media(min-width:901px){.hm-spotlight-slot[data-span="2"]{grid-column:span 2}.hm-spotlight-slot[data-span="2"] .hm-spotlight-card-content{align-items:flex-start;max-width:560px;margin:auto 0}}
+
+
+/* Homepage feature hierarchy: celebrate the featured business first. */
+@media (min-width: 681px) {
+  .hm-spotlight-card[data-featured="1"] {
+    grid-column: span 2;
+    display: grid;
+    grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr);
+    grid-template-rows: auto 1fr;
+    align-items: stretch;
+    min-height: 390px;
+  }
+
+  .hm-spotlight-card[data-featured="1"] .hm-spotlight-media {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    display: flex;
+    min-width: 0;
+    min-height: 390px;
+  }
+
+  .hm-spotlight-card[data-featured="1"] .hm-spotlight-image-link,
+  .hm-spotlight-card[data-featured="1"] .hm-spotlight-image {
+    width: 100%;
+    height: 100%;
+  }
+
+  .hm-spotlight-card[data-featured="1"] .hm-spotlight-image {
+    min-height: 390px;
+    aspect-ratio: auto;
+    border-right: 1px solid rgba(255,255,255,.08);
+    border-bottom: 0;
+  }
+
+  .hm-spotlight-card[data-featured="1"] .hm-spotlight-image img {
+    padding: clamp(22px, 3vw, 42px);
+  }
+
+  .hm-spotlight-card[data-featured="1"] .hm-spotlight-countdown {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: end;
+    margin: 22px 28px 0;
+  }
+
+  .hm-spotlight-card[data-featured="1"] .hm-spotlight-card-content {
+    grid-column: 2;
+    grid-row: 2;
+    min-height: 0;
+    padding: 18px 28px 28px;
+  }
+
+  .hm-spotlight-card[data-featured="1"] .hm-spotlight-card-content h3 {
+    font-size: clamp(1.65rem, 2.6vw, 2.25rem);
+    line-height: 1.12;
+  }
+
+  .hm-spotlight-card[data-featured="1"] .hm-spotlight-tagline {
+    font-size: .98rem;
+  }
+
+  .hm-spotlight-card[data-featured="1"] .hm-spotlight-description {
+    font-size: .9rem;
+    line-height: 1.75;
+  }
+
+  /* The open invitation is intentionally compact and never competes with the feature. */
+  .hm-spotlight-slot,
+  .hm-spotlight-slot[data-span="2"] {
+    grid-column: span 1;
+    min-height: 0;
+    border-style: solid;
+    border-color: rgba(142,255,61,.25);
+    background:
+      radial-gradient(ellipse at 85% 12%, rgba(142,255,61,.1), transparent 48%),
+      linear-gradient(155deg, #121b17, #0b1112);
+  }
+
+  .hm-spotlight-slot .hm-spotlight-card-content {
+    justify-content: center;
+    min-height: 0;
+    padding: clamp(20px, 2.2vw, 30px);
+  }
+
+  .hm-spotlight-slot h3 {
+    margin-top: 13px;
+    font-size: clamp(1.25rem, 1.65vw, 1.55rem);
+    line-height: 1.18;
+  }
+
+  .hm-spotlight-slot .hm-spotlight-description {
+    margin-bottom: 22px;
+    font-size: .82rem;
+    line-height: 1.65;
+  }
+
+  .hm-spotlight-slot .hm-spotlight-actions a {
+    width: 100%;
+    flex: 1 1 100%;
+  }
+
+  .hm-spotlight-card[data-featured="1"] .hm-spotlight-share {
+    border-color: rgba(142,255,61,.38);
+    background: rgba(142,255,61,.055);
+    color: #c9f7ad;
+  }
+}
+
+@media (max-width: 680px) {
+  .hm-spotlight-card[data-featured="1"] {
+    display: flex;
+    grid-column: auto;
+    min-height: 0;
+  }
+
+  .hm-spotlight-card[data-featured="1"] .hm-spotlight-media {
+    display: block;
+    min-height: 0;
+  }
+
+  .hm-spotlight-card[data-featured="1"] .hm-spotlight-image-link,
+  .hm-spotlight-card[data-featured="1"] .hm-spotlight-image {
+    width: 100%;
+    height: auto;
+  }
+
+  .hm-spotlight-card[data-featured="1"] .hm-spotlight-image {
+    min-height: 0;
+    aspect-ratio: 16 / 10;
+    border-right: 0;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+
+  .hm-spotlight-card[data-featured="1"] .hm-spotlight-countdown {
+    margin: 13px 20px 0;
+  }
+
+  .hm-spotlight-card[data-featured="1"] .hm-spotlight-card-content {
+    min-height: 0;
+    padding: 20px;
+  }
+
+  .hm-spotlight-slot,
+  .hm-spotlight-slot[data-span="2"] {
+    grid-column: auto;
+  }
+
+  .hm-spotlight-slot .hm-spotlight-card-content {
+    min-height: 0;
+    padding: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hm-spotlight-card[data-featured="1"] { transition: none; }
+}
