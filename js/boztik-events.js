@@ -7,7 +7,7 @@
  *
  *   action       e.g. chrome_web_store, edge_store, kofi, paypal, redbubble_store, teepublic_store, stores_page,
  *                contact_email, contact_page, portfolio_page, external_portfolio, creative_toolkit, image_inspector, services_page,
- *                creative_assistant, launchzone_listing, social_link, deliver
+ *                creative_assistant, launchzone_listing, social_link, deliver, resource_partner
  *   destination  a hostname (external links) or a path (internal links). Never a full URL, never a query
  *                string, never an email address.
  *   position     nav | hero | footer | content
