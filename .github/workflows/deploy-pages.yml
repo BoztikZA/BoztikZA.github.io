@@ -38,7 +38,7 @@ jobs:
             guide-overedited-look.html guide-photo-restoration.html guides.html \
             guide-layers-and-masks.html guide-image-resolution-dpi.html guide-jpeg-png-tiff.html guide-scanning-old-photos.html \
             image-inspector.html portfolio.html privacy.html services.html support.html \
-            terms.html *.css CNAME robots.txt ads.txt sitemap.xml .nojekyll _site/
+            terms.html spotlight.html *.css CNAME robots.txt ads.txt sitemap.xml .nojekyll _site/
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
         with:
