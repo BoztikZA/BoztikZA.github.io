@@ -104,9 +104,18 @@ function render() {
   grid.innerHTML = profiles.map(card).join("");
   grid.hidden = profiles.length === 0;
   empty.hidden = profiles.length > 0 || !loaded || lastFailedReset;
+  if (!empty.hidden) {
+    const filtered = Boolean(document.querySelector("#sp-search")?.value.trim())
+      || (document.querySelector("#sp-filters .is-active")?.dataset.category || "all") !== "all";
+    empty.querySelector("h3").textContent = filtered ? "No matches just yet." : "Be the first featured business.";
+    empty.querySelector("p").textContent = filtered
+      ? "Try another search or category, or be one of the first to join."
+      : "New profiles are added as they are approved. Apply now to get your logo, a clear description of what you offer and a direct link to your website on Boztik, free.";
+    empty.querySelector("a").textContent = "Get featured for free ↗";
+  }
   count.textContent = profiles.length
     ? `Showing ${profiles.length} ${profiles.length === 1 ? "profile" : "profiles"}`
-    : lastFailedReset ? "Directory unavailable" : "No profiles found";
+    : lastFailedReset ? "Directory unavailable" : (document.querySelector("#sp-search")?.value.trim() ? "No profiles found" : "Profiles coming soon");
   trackImpressions();
   updateCountdowns();
 }
