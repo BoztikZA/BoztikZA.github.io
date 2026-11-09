@@ -89,7 +89,7 @@ import { socialLinksMarkup } from "./social-links.js";
     const socialLinks = socialLinksMarkup(profile.social_links, name, "hm-spotlight-social-link");
     const image = imageUrl
       ? `<img class="is-active" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(name)} logo or profile photograph" width="640" height="420" loading="lazy" decoding="async" data-layer="0"><img alt="" width="640" height="420" loading="lazy" decoding="async" data-layer="1" aria-hidden="true">`
-      : `<span class="hm-spotlight-image-fallback" role="img" aria-label="Initials for ${escapeHtml(name)}">${escapeHtml(initials(name))}</span>`;
+      : `<span class="hm-spotlight-image-fallback" role="img" aria-label="Initials for ${escapeHtml(name)}">${escapeHtml(initials(name))}</span><span class="hm-spotlight-image-note">${escapeHtml(category)}</span>`;
 
     return `
       <article class="hm-spotlight-card" data-profile-id="${escapeHtml(profile.id)}" data-featured="${featured ? "1" : "0"}">
@@ -97,7 +97,7 @@ import { socialLinksMarkup } from "./social-links.js";
           <a class="hm-spotlight-image-link" href="${profilePath}" aria-label="View ${escapeHtml(name)}'s Boztik Spotlight profile">
             <div class="hm-spotlight-image">
               ${image}
-              ${featured ? `<span class="hm-spotlight-featured-label">Featured today</span>` : ""}
+              ${featured ? `<span class="hm-spotlight-featured-label">Today's feature</span>` : ""}
             </div>
           </a>
           ${imageUrls.length > 1 ? `<div class="hm-spotlight-gallery-controls" role="group" aria-label="${escapeHtml(name)} image gallery">${imageUrls.map((_, index) => `<button type="button" data-gallery-index="${index}" aria-label="Show image ${index + 1} of ${imageUrls.length}" aria-pressed="${index === 0}" class="${index === 0 ? "is-active" : ""}"></button>`).join("")}</div>` : ""}
@@ -106,15 +106,27 @@ import { socialLinksMarkup } from "./social-links.js";
         <div class="hm-spotlight-card-content">
           <span class="hm-spotlight-category">${escapeHtml(category)}</span>
           <h3><a href="${profilePath}">${escapeHtml(name)}</a></h3>
-          <p class="hm-spotlight-tagline">${escapeHtml(profile.tagline)}</p>
+          ${profile.tagline ? `<p class="hm-spotlight-offer-label">What they offer</p><p class="hm-spotlight-tagline">${escapeHtml(profile.tagline)}</p>` : ""}
           <p class="hm-spotlight-description">${escapeHtml(profile.description)}</p>
           ${socialLinks ? `<div class="hm-spotlight-socials" aria-label="Social profiles">${socialLinks}</div>` : ""}
           <div class="hm-spotlight-actions">
-            <a class="hm-spotlight-profile-link" href="${profilePath}">View Boztik profile <span aria-hidden="true">↗</span></a>
+            <a class="hm-spotlight-profile-link" href="${profilePath}">See what ${escapeHtml(name)} offers <span aria-hidden="true">↗</span></a>
             ${websiteUrl ? `<a class="hm-spotlight-website-link" href="${escapeHtml(websiteUrl)}" target="_blank" rel="noopener noreferrer" data-outbound>Visit website <span aria-hidden="true">↗</span></a>` : ""}
             <button class="hm-spotlight-share" type="button" data-share-url="${escapeHtml(shareUrl)}" data-share-title="${escapeHtml(name)}">Share profile</button>
           </div>
           <span class="hm-spotlight-share-status" role="status" aria-live="polite"></span>
+        </div>
+      </article>`;
+  }
+
+  function openSlotMarkup(span) {
+    return `
+      <article class="hm-spotlight-card hm-spotlight-slot" data-span="${span}">
+        <div class="hm-spotlight-card-content">
+          <span class="hm-spotlight-category">OPEN FEATURE SLOT</span>
+          <h3>Your business could be here</h3>
+          <p class="hm-spotlight-description">Get a free Boztik profile with your logo, a clear description of what you sell or provide, and a direct link for customers to find you.</p>
+          <div class="hm-spotlight-actions"><a class="hm-spotlight-profile-link" href="spotlight/submit/">Get featured for free <span aria-hidden="true">↗</span></a></div>
         </div>
       </article>`;
   }
@@ -252,20 +264,20 @@ import { socialLinksMarkup } from "./social-links.js";
   function showEmptyState() {
     host.innerHTML = `
       <div class="hm-spotlight-empty">
-        <span class="hm-spotlight-category">THE DIRECTORY</span>
-        <h3>No published profiles to feature right now.</h3>
-        <p>Explore the full Spotlight directory to meet independent businesses and creators.</p>
-        <a class="hm-spotlight-profile-link" href="spotlight/">Explore all Spotlight profiles <span aria-hidden="true">↗</span></a>
+        <span class="hm-spotlight-category">FEATURED BUSINESS SPOTLIGHT</span>
+        <h3>Your business could be today's feature.</h3>
+        <p>Do you want to be featured for free? Share your logo, what you offer and your website, and get discovered by new customers on Boztik.</p>
+        <div class="hm-spotlight-empty-actions"><a class="hm-spotlight-profile-link" href="spotlight/submit/">Get featured for free <span aria-hidden="true">↗</span></a><a class="hm-spotlight-website-link" href="spotlight/">Browse the directory</a></div>
       </div>`;
   }
 
   function showUnavailableState() {
     host.innerHTML = `
       <div class="hm-spotlight-empty" role="status">
-        <span class="hm-spotlight-category">SPOTLIGHT</span>
-        <h3>Profiles are temporarily unavailable.</h3>
-        <p>Please visit the Spotlight directory and try again later.</p>
-        <a class="hm-spotlight-profile-link" href="spotlight/">Open the Spotlight directory <span aria-hidden="true">↗</span></a>
+        <span class="hm-spotlight-category">BOZTIK SPOTLIGHT</span>
+        <h3>Today's feature is loading slowly.</h3>
+        <p>Browse the full directory of featured businesses, or apply to have your own business featured for free.</p>
+        <div class="hm-spotlight-empty-actions"><a class="hm-spotlight-profile-link" href="spotlight/">Open the directory <span aria-hidden="true">↗</span></a><a class="hm-spotlight-website-link" href="spotlight/submit/">Get featured for free</a></div>
       </div>`;
   }
 
@@ -287,7 +299,7 @@ import { socialLinksMarkup } from "./social-links.js";
         return;
       }
 
-      host.innerHTML = profiles.map(cardMarkup).join("");
+      host.innerHTML = profiles.map(cardMarkup).join("") + (profiles.length < 3 ? openSlotMarkup(3 - profiles.length) : "");
       host.querySelectorAll(".hm-spotlight-image [data-layer='0']").forEach(image => {
         image.addEventListener("error", () => {
           const fallback = document.createElement("span");

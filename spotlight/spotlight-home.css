@@ -481,3 +481,24 @@
   .hm-spotlight-card,.hm-spotlight-link,.hm-spotlight-social-link{transition:none}
   .hm-spotlight-card:hover,.hm-spotlight-social-link:hover{transform:none}
 }
+
+/* Today's Feature refinement: clearer value, stronger CTAs, professional empty/no-image states. */
+.hm-spotlight-points{display:flex;flex-wrap:wrap;gap:8px 10px;margin:18px 0 0;padding:0;list-style:none}
+.hm-spotlight-points li{padding:7px 12px;border:1px solid rgba(142,255,61,.28);border-radius:999px;background:rgba(142,255,61,.06);color:#c4f5a6;font:700 .72rem/1.2 Inter,sans-serif}
+.hm-spotlight-points li:before{content:"✓";margin-right:7px;color:#8eff3d}
+.hm-spotlight-card{cursor:pointer}
+.hm-spotlight-card h3 a::after{content:"";position:absolute;inset:0;z-index:1}
+.hm-spotlight-socials,.hm-spotlight-actions,.hm-spotlight-share-status{position:relative;z-index:2}
+.hm-spotlight-image-link{position:relative;z-index:0}
+.hm-spotlight-image-note{position:absolute;bottom:14px;left:0;right:0;text-align:center;color:#9eea76;font:800 .66rem/1 Inter,sans-serif;letter-spacing:.14em;text-transform:uppercase}
+.hm-spotlight-image-fallback{margin-bottom:18px}
+.hm-spotlight-offer-label{margin:0 0 4px;color:#8eff3d;font:800 .62rem/1.3 Inter,sans-serif;letter-spacing:.14em;text-transform:uppercase}
+.hm-spotlight-profile-link{box-shadow:0 8px 22px rgba(142,255,61,.18)}
+.hm-spotlight-slot{border-style:dashed;border-color:rgba(142,255,61,.4);background:radial-gradient(ellipse at 85% 10%,rgba(142,255,61,.1),transparent 45%),linear-gradient(155deg,#14201a,#0b1112);cursor:default}
+.hm-spotlight-slot .hm-spotlight-card-content{justify-content:center;min-height:300px}
+.hm-spotlight-slot h3{font-size:clamp(1.4rem,2vw,1.8rem)}
+.hm-spotlight-empty-actions{display:flex;flex-wrap:wrap;gap:10px}
+.hm-spotlight-empty-actions a{display:inline-flex;min-height:46px;align-items:center;justify-content:center;gap:7px;padding:11px 18px;border:1px solid rgba(142,255,61,.35);border-radius:6px;font:700 .8rem/1.2 Inter,sans-serif;text-decoration:none}
+.hm-spotlight-empty-actions .hm-spotlight-website-link{color:#b5ff8b;background:rgba(142,255,61,.05)}
+@media(max-width:680px){.hm-spotlight-empty-actions a{flex:1 1 100%}}
+@media(min-width:901px){.hm-spotlight-slot[data-span="2"]{grid-column:span 2}.hm-spotlight-slot[data-span="2"] .hm-spotlight-card-content{align-items:flex-start;max-width:560px;margin:auto 0}}
