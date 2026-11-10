@@ -126,3 +126,36 @@
 .sp-card-link{padding:10px 14px;border-radius:6px;background:var(--sp-green);color:#10170c!important;font-weight:800;text-decoration:none}
 .sp-card-link:hover{filter:brightness(1.07)}
 .sp-card-offer{color:#e1e9df}
+
+/* Featured profile: the person leads; their approved media supports the story. */
+.sp-featured-showcase{padding-top:54px;padding-bottom:14px}
+.sp-featured-showcase[hidden]{display:none}
+.sp-featured-shell{display:grid;grid-template-columns:minmax(280px,.82fr) minmax(0,1.18fr);gap:clamp(24px,4vw,52px);align-items:center;padding:clamp(24px,4vw,48px);border:1px solid rgba(142,255,61,.32);border-radius:20px;background:radial-gradient(ellipse at 92% 0,rgba(142,255,61,.12),transparent 40%),linear-gradient(135deg,#151f1d,#0b1113 72%);box-shadow:0 24px 70px rgba(0,0,0,.28)}
+.sp-featured-copy{min-width:0}.sp-featured-copy>.sp-kicker{margin-bottom:22px}
+.sp-featured-person{display:flex;align-items:center;gap:17px;margin-bottom:22px}
+.sp-featured-avatar{width:88px;height:88px;flex:none;display:grid;place-items:center;overflow:hidden;border:1px solid rgba(142,255,61,.38);border-radius:17px;background:linear-gradient(145deg,#26372a,#111a15);color:var(--sp-green);font:800 1.8rem "Plus Jakarta Sans";box-shadow:0 10px 28px rgba(0,0,0,.25)}
+.sp-featured-avatar img{width:100%;height:100%;object-fit:cover}
+.sp-featured-category{color:var(--sp-green);font-size:.66rem;font-weight:800;letter-spacing:.15em;text-transform:uppercase}
+.sp-featured-person h2{margin:7px 0 0;color:#f4f8f4;font:800 clamp(1.9rem,4vw,3.2rem)/1.04 "Plus Jakarta Sans",Inter,sans-serif;letter-spacing:-.055em;overflow-wrap:anywhere}
+.sp-featured-copy h3{margin:0 0 12px;color:#e4eee5;font:700 1.12rem/1.45 "Plus Jakarta Sans",Inter,sans-serif}
+.sp-featured-description{margin:0;color:#aebbb2;font-size:.9rem;line-height:1.8;white-space:pre-line;overflow-wrap:anywhere}
+.sp-featured-actions{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-top:24px}
+.sp-featured-countdown{color:#93a097;font-size:.7rem}
+.sp-featured-media{display:grid;gap:16px;min-width:0}
+.sp-featured-media-label{display:grid;gap:6px;margin-bottom:10px}
+.sp-featured-media-label span{color:var(--sp-green);font-size:.62rem;font-weight:800;letter-spacing:.16em}
+.sp-featured-media-label strong{color:#f0f5f0;font:700 1rem "Plus Jakarta Sans",Inter,sans-serif}
+.sp-featured-video-frame{position:relative;aspect-ratio:16/9;overflow:hidden;border:1px solid rgba(255,255,255,.12);border-radius:11px;background:#050809;box-shadow:0 14px 36px rgba(0,0,0,.3)}
+.sp-featured-video-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.sp-featured-song{padding:15px;border:1px solid rgba(255,255,255,.09);border-radius:12px;background:rgba(3,8,8,.42)}
+.sp-featured-song iframe{display:block;width:100%;height:152px;border:0;border-radius:9px}
+.sp-featured-art{min-height:310px;display:grid;place-content:center;justify-items:center;gap:18px;border:1px solid rgba(142,255,61,.15);border-radius:14px;background:radial-gradient(circle,rgba(142,255,61,.1),transparent 60%),#0c1412;color:var(--sp-green)}
+.sp-featured-art span{font-size:7rem;line-height:1;text-shadow:0 0 55px rgba(142,255,61,.2)}
+.sp-featured-art small{color:#829087;font-size:.62rem;letter-spacing:.2em}
+.sp-card-media-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px}
+.sp-card-media-link{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid rgba(255,255,255,.14);border-radius:6px;color:#e9f2e9;text-decoration:none;font-size:.7rem;font-weight:750;background:rgba(255,255,255,.035)}
+.sp-card-media-link:hover{border-color:rgba(142,255,61,.45);color:var(--sp-green)}
+.sp-card-song-link{color:#7de6a0}
+@media(max-width:800px){.sp-featured-shell{grid-template-columns:1fr}.sp-featured-art{min-height:210px}}
+@media(max-width:600px){.sp-featured-showcase{padding-top:30px}.sp-featured-shell{padding:19px;border-radius:14px;gap:24px}.sp-featured-avatar{width:68px;height:68px;border-radius:13px}.sp-featured-actions{align-items:flex-start;flex-direction:column}.sp-featured-actions .sp-button{width:100%}.sp-featured-art{min-height:170px}}
+@media(prefers-reduced-motion:reduce){.sp-card-media-link{transition:none}}
