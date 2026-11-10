@@ -342,7 +342,7 @@ class FakeD1 {
       return 1;
     }
     if (sql.startsWith("INSERT INTO spotlight_profiles") && sql.includes("WHERE NOT EXISTS")) {
-      const [id, slug, displayName, tagline, description, category, email, website, social, song, reviewExpiresAt, createdAt, updatedAt, duplicateEmail, duplicateName, cutoff] = args;
+      const [id, slug, displayName, tagline, description, category, email, website, social, song, video, reviewExpiresAt, createdAt, updatedAt, duplicateEmail, duplicateName, cutoff] = args;
       const duplicate = this.submissions.some(profile =>
         profile.contact_email === duplicateEmail
         && profile.display_name.toLowerCase() === String(duplicateName).toLowerCase()
@@ -351,13 +351,13 @@ class FakeD1 {
       if (duplicate) return 0;
       this.submissions.push({
         id, slug, display_name: displayName, tagline, description, category, contact_email: email,
-        website_url: website, social_links: social, song_metadata: song, status: "pending",
+        website_url: website, social_links: social, song_metadata: song, video_metadata: video, status: "pending",
         application_status: "new", review_expires_at: reviewExpiresAt, review_unread: 1,
         created_at: createdAt, updated_at: updatedAt,
       });
       this.profiles.set(String(id), {
         id, slug, display_name: displayName, tagline, description, category, contact_email: email,
-        website_url: website, social_links: social, song_metadata: song, status: "pending",
+        website_url: website, social_links: social, song_metadata: song, video_metadata: video, status: "pending",
         application_status: "new", review_expires_at: reviewExpiresAt, review_unread: 1,
         image_key: null, image_size: 0, image_content_type: null, featured_until: null,
         created_at: createdAt, updated_at: updatedAt,
