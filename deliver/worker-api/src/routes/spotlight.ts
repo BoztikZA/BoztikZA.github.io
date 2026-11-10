@@ -284,7 +284,7 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
         bindings.push(timestamp, cursor.featured, timestamp, cursor.featured, cursor.publishedAt, cursor.publishedAt, cursor.id);
       }
       const rows = await env.DB.prepare(
-        `SELECT id,slug,display_name,tagline,description,category,website_url,social_links,song_metadata,image_key,image_size,image_content_type,status,featured_until,created_at,published_at
+        `SELECT id,slug,display_name,tagline,description,category,website_url,social_links,song_metadata,video_metadata,image_key,image_size,image_content_type,status,featured_until,created_at,published_at
            FROM spotlight_profiles
           WHERE ${clauses.join(" AND ")}
           ORDER BY CASE WHEN featured_until > ? THEN 0 ELSE 1 END,
