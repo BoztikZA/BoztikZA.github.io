@@ -84,7 +84,7 @@ function renderFeaturedVideo(video) {
     external = "https://www.youtube.com/watch?v=" + video.id;
   } else if (video.platform === "twitch" && video.kind === "channel" && /^[a-z0-9_]{3,25}$/.test(video.id)) {
     external = "https://www.twitch.tv/" + video.id;
-  } else if (video.platform === "twitch" && video.kind === "video" && /^\\d{5,20}$/.test(video.id)) {
+  } else if (video.platform === "twitch" && video.kind === "video" && /^\d{5,20}$/.test(video.id)) {
     external = "https://www.twitch.tv/videos/" + video.id;
   } else if (video.platform === "twitch" && video.kind === "clip" && /^[A-Za-z0-9_-]{5,80}$/.test(video.id)) {
     external = "https://clips.twitch.tv/" + video.id;
