@@ -77,6 +77,37 @@ function renderMusic(song) {
   </section>`;
 }
 
+function renderFeaturedVideo(video) {
+  if (!video || !["youtube", "twitch"].includes(video.platform) || typeof video.id !== "string") return "";
+  let embed = "";
+  let title = "Featured video";
+  let external = video.url;
+  if (video.platform === "youtube" && video.kind === "video" && /^[A-Za-z0-9_-]{11}$/.test(video.id)) {
+    embed = "https://www.youtube-nocookie.com/embed/" + video.id + "?controls=1&rel=0";
+    title = "Featured YouTube video";
+    external = "https://www.youtube.com/watch?v=" + video.id;
+  } else if (video.platform === "twitch" && video.kind === "channel" && /^[a-z0-9_]{3,25}$/.test(video.id)) {
+    embed = "https://player.twitch.tv/?channel=" + encodeURIComponent(video.id) + "&parent=www.boztik.com&autoplay=false";
+    title = "Featured Twitch channel";
+    external = "https://www.twitch.tv/" + video.id;
+  } else if (video.platform === "twitch" && video.kind === "video" && /^\\d{5,20}$/.test(video.id)) {
+    embed = "https://player.twitch.tv/?video=v" + video.id + "&parent=www.boztik.com&autoplay=false";
+    title = "Featured Twitch video";
+    external = "https://www.twitch.tv/videos/" + video.id;
+  } else if (video.platform === "twitch" && video.kind === "clip" && /^[A-Za-z0-9_-]{5,80}$/.test(video.id)) {
+    embed = "https://clips.twitch.tv/embed?clip=" + encodeURIComponent(video.id) + "&parent=www.boztik.com";
+    title = "Featured Twitch clip";
+    external = "https://clips.twitch.tv/" + video.id;
+  }
+  if (!embed) return "";
+  const provider = video.platform === "youtube" ? "YOUTUBE" : "TWITCH";
+  return `<section class="sp-video-card" aria-label="${title}">
+    <div class="sp-video-heading"><span class="sp-kicker">FEATURED VIDEO · ${provider}</span><strong>Watch their work</strong><p>Use the player controls to play, pause and seek where the video supports it.</p></div>
+    <div class="sp-video-frame"><iframe title="${title}" src="${embed}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+    <a class="sp-video-more" href="${esc(external)}" target="_blank" rel="noopener noreferrer" data-outbound>Open on ${video.platform === "youtube" ? "YouTube" : "Twitch"} ↗</a>
+  </section>`;
+}
+
 function profileImages(profile) {
   const supplied = Array.isArray(profile.images) ? profile.images : [];
   const images = supplied
@@ -196,7 +227,7 @@ async function load() {
     applySeo(profile, mainImage, websiteUrl);
     const name = profile.display_name;
     const host_ = websiteUrl ? new URL(websiteUrl).hostname.replace(/^www\./, "") : "";
-    const music = renderMusic(profile.song);
+    const music = renderMusic(profile.song);\n    const featuredVideo = renderFeaturedVideo(profile.video);
     const featuredLabel = profile.featured
       ? ` · FEATURED TODAY <span class="sp-countdown" data-countdown="${Number(profile.featured_until || 0)}">Ends in <time>--:--:--</time></span>`
       : "";
@@ -228,6 +259,7 @@ async function load() {
         </div>
       </article>
       ${music}
+      ${featuredVideo}
       ${websiteUrl ? `<section class="sp-visit-band" aria-label="Visit ${esc(name)}"><div><strong>Like what you see?</strong><p>Go straight to ${esc(name)} to learn more, get in touch or buy.</p></div><a class="sp-button sp-button-primary" href="${esc(websiteUrl)}" target="_blank" rel="noopener noreferrer" data-outbound>Visit ${esc(host_)} <span aria-hidden="true">↗</span></a></section>` : ""}
       <section class="sp-share-panel" aria-label="Share this creator">
         <div><strong>Know someone who should discover this work?</strong><p>Share this Spotlight profile and help more people find them.</p></div>
