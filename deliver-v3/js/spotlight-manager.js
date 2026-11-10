@@ -222,6 +222,7 @@ function openEditor(profile) {
   editForm.elements.website_url.value = profile.website_url || "";
   editForm.elements.contact_email.value = profile.contact_email || "";
   editForm.elements.song_url.value = profile.song?.url || "";
+  editForm.elements.video_url.value = profile.video?.url || "";
   $("sp-profile-feature").checked = Boolean(profile.featured);
   clearFormStatus();
   applyPublishGate(profile.id, publishState(profile));
@@ -381,6 +382,18 @@ async function openReviewModal(profile) {
   }
   const socials = Object.entries(profile.social_links || {}).map(([key, value]) => reviewLink(key, value)).join("");
   const song = profile.song?.url ? reviewLink("Spotify track: " + (profile.song.title || "Open track"), profile.song.url) : "";
+  let videoEmbed = "";
+  const video = profile.video;
+  if (video?.platform === "youtube" && video.kind === "video" && /^[A-Za-z0-9_-]{11}$/.test(video.id || "")) {
+    videoEmbed = "https://www.youtube-nocookie.com/embed/" + video.id + "?controls=1&rel=0";
+  } else if (video?.platform === "twitch" && video.kind === "channel" && /^[a-z0-9_]{3,25}$/.test(video.id || "")) {
+    videoEmbed = "https://player.twitch.tv/?channel=" + encodeURIComponent(video.id) + "&parent=www.boztik.com&autoplay=false";
+  } else if (video?.platform === "twitch" && video.kind === "video" && /^\\d{5,20}$/.test(video.id || "")) {
+    videoEmbed = "https://player.twitch.tv/?video=v" + video.id + "&parent=www.boztik.com&autoplay=false";
+  } else if (video?.platform === "twitch" && video.kind === "clip" && /^[A-Za-z0-9_-]{5,80}$/.test(video.id || "")) {
+    videoEmbed = "https://clips.twitch.tv/embed?clip=" + encodeURIComponent(video.id) + "&parent=www.boztik.com";
+  }
+  const videoPreview = videoEmbed ? `<section><h4>Applicant's featured video · ${esc(video.platform.toUpperCase())}</h4><div class="sp-review-video"><iframe title="Private review preview of applicant video" src="${esc(videoEmbed)}" loading="lazy" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div><p>Review the actual content, audio, quality and suitability before approving this application. Player controls are provided by the platform.</p>${reviewLink("Open original video", video.url)}</section>` : (video?.url ? `<section><h4>Featured video link</h4>${reviewLink("Open submitted video", video.url)}<p>The submitted link could not be embedded. Check it manually before making a decision.</p></section>` : "");
   reviewContent.innerHTML = `
     <div class="sp-review-identity">
       <div class="sp-review-avatar" id="sp-review-avatar">Loading image…</div>
@@ -392,6 +405,7 @@ async function openReviewModal(profile) {
     </dl>
     <section><h4>About the applicant</h4><p class="sp-review-description">${esc(profile.description || "No description supplied.")}</p></section>
     <section><h4>Website and social profiles</h4><div class="sp-review-links">${socials || "<span>No social links supplied.</span>"}${song}</div></section>
+    ${videoPreview}
     <section><h4>Showcase images</h4><div id="sp-review-gallery" class="sp-review-gallery"><span>Loading showcase images…</span></div></section>`;
   const loadPrivateImage = async (path, alt, target) => {
     try {
@@ -582,6 +596,7 @@ editForm.addEventListener("submit", async event => {
   }
   const body = {
     song_url: form.get("song_url"),
+    video_url: form.get("video_url"),
     display_name: form.get("display_name"),
     tagline: form.get("tagline"),
     description: form.get("description"),
