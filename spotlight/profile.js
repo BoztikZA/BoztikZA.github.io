@@ -90,7 +90,7 @@ function renderFeaturedVideo(video) {
     embed = "https://player.twitch.tv/?channel=" + encodeURIComponent(video.id) + "&parent=www.boztik.com&autoplay=false";
     title = "Featured Twitch channel";
     external = "https://www.twitch.tv/" + video.id;
-  } else if (video.platform === "twitch" && video.kind === "video" && /^\\d{5,20}$/.test(video.id)) {
+  } else if (video.platform === "twitch" && video.kind === "video" && /^\d{5,20}$/.test(video.id)) {
     embed = "https://player.twitch.tv/?video=v" + video.id + "&parent=www.boztik.com&autoplay=false";
     title = "Featured Twitch video";
     external = "https://www.twitch.tv/videos/" + video.id;
