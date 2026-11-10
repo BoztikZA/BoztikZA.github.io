@@ -3,6 +3,7 @@ import { socialLinksMarkup } from "./social-links.js";
 const API = "https://deliver-api.boztik.com/api/public/spotlight";
 const $ = selector => document.querySelector(selector);
 const grid = $("#sp-grid");
+const featuredShowcase = $("#sp-featured-showcase");
 const empty = $("#sp-empty");
 const count = $("#sp-count");
 const search = $("#sp-search");
@@ -27,6 +28,61 @@ const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({
 }[char]));
 const label = value => String(value || "").replace(/-/g, " ").replace(/\b\w/g, char => char.toUpperCase());
 
+function mediaLinks(profile) {
+  const links = [];
+  const video = profile.video;
+  if (video?.platform === "youtube" && video.kind === "video" && /^[A-Za-z0-9_-]{11}$/.test(video.id || "")) {
+    links.push(`<a class="sp-card-media-link" href="https://www.youtube.com/watch?v=${encodeURIComponent(video.id)}" target="_blank" rel="noopener noreferrer" aria-label="Watch ${esc(profile.display_name)} on YouTube">▶ YouTube</a>`);
+  } else if (video?.platform === "twitch" && typeof video.url === "string" && /^https:\/\/(www\.)?(twitch\.tv|clips\.twitch\.tv)\//i.test(video.url)) {
+    links.push(`<a class="sp-card-media-link" href="${esc(video.url)}" target="_blank" rel="noopener noreferrer" aria-label="Watch ${esc(profile.display_name)} on Twitch">▶ Twitch</a>`);
+  }
+  const songId = profile.song?.id;
+  if (typeof songId === "string" && /^[A-Za-z0-9]{22}$/.test(songId)) {
+    links.push(`<a class="sp-card-media-link sp-card-song-link" href="https://open.spotify.com/track/${songId}" target="_blank" rel="noopener noreferrer" aria-label="Listen to ${esc(profile.display_name)} on Spotify">♫ Spotify</a>`);
+  }
+  return links.length ? `<div class="sp-card-media-links" aria-label="Featured media">${links.join("")}</div>` : "";
+}
+
+function featuredVideoEmbed(video) {
+  if (!video || !["youtube", "twitch"].includes(video.platform) || typeof video.id !== "string") return "";
+  if (video.platform === "youtube" && video.kind === "video" && /^[A-Za-z0-9_-]{11}$/.test(video.id)) {
+    return { title: "Featured YouTube video", src: "https://www.youtube-nocookie.com/embed/" + video.id + "?controls=1&rel=0&playsinline=1", provider: "YOUTUBE" };
+  }
+  if (video.platform === "twitch" && video.kind === "channel" && /^[a-z0-9_]{3,25}$/.test(video.id)) {
+    return { title: "Featured Twitch channel", src: "https://player.twitch.tv/?channel=" + encodeURIComponent(video.id) + "&parent=www.boztik.com&autoplay=false", provider: "TWITCH" };
+  }
+  if (video.platform === "twitch" && video.kind === "video" && /^\d{5,20}$/.test(video.id)) {
+    return { title: "Featured Twitch video", src: "https://player.twitch.tv/?video=v" + video.id + "&parent=www.boztik.com&autoplay=false", provider: "TWITCH" };
+  }
+  if (video.platform === "twitch" && video.kind === "clip" && /^[A-Za-z0-9_-]{5,80}$/.test(video.id)) {
+    return { title: "Featured Twitch clip", src: "https://clips.twitch.tv/embed?clip=" + encodeURIComponent(video.id) + "&parent=www.boztik.com", provider: "TWITCH" };
+  }
+  return "";
+}
+
+function renderFeaturedShowcase(profile) {
+  if (!profile) { featuredShowcase.hidden = true; featuredShowcase.innerHTML = ""; return; }
+  const initials = profile.display_name.split(/\s+/).slice(0, 2).map(part => part[0]).join("").toUpperCase();
+  const image = typeof profile.image_url === "string" && /^https:\/\/deliver-api\.boztik\.com\/api\/public\/spotlight\/image\//.test(profile.image_url)
+    ? `<img src="${esc(profile.image_url)}" alt="${esc(profile.display_name)}" loading="eager" decoding="async">` : esc(initials);
+  const video = featuredVideoEmbed(profile.video);
+  const songId = profile.song?.id;
+  const song = typeof songId === "string" && /^[A-Za-z0-9]{22}$/.test(songId)
+    ? `<div class="sp-featured-song"><div class="sp-featured-media-label"><span>FEATURED SINGLE</span><strong>${esc(profile.song.title || "Listen to their music")}</strong></div><iframe title="Listen to ${esc(profile.song.title || profile.display_name)} on Spotify" src="https://open.spotify.com/embed/track/${songId}?utm_source=generator&amp;theme=0" loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin"></iframe></div>` : "";
+  const videoPlayer = video ? `<div class="sp-featured-video"><div class="sp-featured-media-label"><span>FEATURED VIDEO · ${video.provider}</span><strong>See their work in action</strong></div><div class="sp-featured-video-frame"><iframe title="${esc(video.title)}" src="${esc(video.src)}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div></div>` : "";
+  const media = videoPlayer || song ? `<div class="sp-featured-media">${videoPlayer}${song}</div>` : "";
+  const featuredUntil = Number(profile.featured_until || 0);
+  featuredShowcase.innerHTML = `<div class="sp-featured-shell">
+    <div class="sp-featured-copy"><p class="sp-kicker"><span></span> BOZTIK SPOTLIGHT · FEATURED TODAY</p>
+      <div class="sp-featured-person"><div class="sp-featured-avatar">${image}</div><div><span class="sp-featured-category">${esc(label(profile.category))}</span><h2>${esc(profile.display_name)}</h2></div></div>
+      ${profile.tagline ? `<h3>${esc(profile.tagline)}</h3>` : ""}
+      <p class="sp-featured-description">${esc(profile.description || "Discover the person behind this independent business or creative project.")}</p>
+      <div class="sp-featured-actions"><a class="sp-button sp-button-primary" href="profile.html?slug=${encodeURIComponent(profile.slug)}">Meet ${esc(profile.display_name)} <span>↗</span></a><span class="sp-featured-countdown" data-countdown="${featuredUntil}">Featured for <time>--:--:--</time></span></div>
+    </div>${media ? media : `<div class="sp-featured-art" aria-hidden="true"><span>✳</span><small>INDEPENDENT WORK. REAL PEOPLE.</small></div>`}
+  </div>`;
+  featuredShowcase.hidden = false;
+}
+
 function card(profile) {
   const initials = profile.display_name.split(/\s+/).slice(0, 2).map(part => part[0]).join("").toUpperCase();
   const platformIcons = socialLinksMarkup(profile.social_links, profile.display_name, "sp-social-link");
@@ -42,6 +98,7 @@ function card(profile) {
     </div>
     ${profile.tagline ? `<h3 class="sp-card-offer">${esc(profile.tagline)}</h3>` : ""}
     <p>${esc(profile.description)}</p>
+    ${mediaLinks(profile)}
     <div class="sp-card-foot">
       ${platformIcons ? `<span class="sp-card-platforms" aria-label="Social profiles">${platformIcons}</span>` : ""}
       <a class="sp-card-link" href="profile.html?slug=${encodeURIComponent(profile.slug)}">See what they offer ↗</a>
@@ -101,6 +158,9 @@ function trackImpressions() {
 }
 
 function render() {
+  const showFeatured = category === "all" && !search.value.trim();
+  const featuredProfile = showFeatured ? profiles.find(profile => profile.featured) : null;
+  renderFeaturedShowcase(featuredProfile);
   grid.innerHTML = profiles.map(card).join("");
   grid.hidden = profiles.length === 0;
   empty.hidden = profiles.length > 0 || !loaded || lastFailedReset;
