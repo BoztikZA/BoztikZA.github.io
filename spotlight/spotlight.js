@@ -125,6 +125,10 @@ function updateCountdowns() {
         profileCard.dataset.featured = "0";
         profileCard.querySelector(".sp-featured")?.remove();
       }
+      if (element.closest("#sp-featured-showcase")) {
+        const showcase = element.closest("#sp-featured-showcase");
+        if (showcase) { showcase.hidden = true; showcase.innerHTML = ""; }
+      }
       element.remove();
     }
   });
