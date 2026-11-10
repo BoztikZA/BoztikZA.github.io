@@ -545,6 +545,8 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       const songTrack = b.song_url ? spotifyTrack(b.song_url) : null;
       if (b.song_url && !songTrack) throw new HttpError(422, "invalid_spotify_track", "Use a public Spotify track link.");
       const song = songTrack ? await spotifyMetadata(songTrack) : null;
+      const video = b.video_url ? featuredVideo(b.video_url) : null;
+      if (b.video_url && !video) throw new HttpError(422, "invalid_featured_video", "Use a public YouTube video or Twitch channel, VOD or clip URL.");
       if (displayName.length < 2 || tagline.length < 8 || description.length < 30) throw new HttpError(422, "invalid_profile", "Please provide a name, a clear tagline and a description of at least 30 characters.");
       if (!CATEGORIES.has(category)) throw new HttpError(422, "invalid_category", "Choose a valid category.");
       // Contact email is optional for admin-created profiles (the column is NOT NULL, so blank is stored as "").
@@ -563,8 +565,8 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       }
       const id = ID(), timestamp = now(), slug = slugify(displayName) + "-" + id.slice(0, 5);
       await env.DB.prepare(
-        "INSERT INTO spotlight_profiles (id,slug,display_name,tagline,description,category,contact_email,website_url,social_links,song_metadata,status,application_status,review_unread,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,'pending','approved',0,?,?)"
-      ).bind(id,slug,displayName,tagline,description,category,email,website,JSON.stringify(social),song ? JSON.stringify(song) : null,timestamp,timestamp).run();
+        "INSERT INTO spotlight_profiles (id,slug,display_name,tagline,description,category,contact_email,website_url,social_links,song_metadata,video_metadata,status,application_status,review_unread,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,'pending','approved',0,?,?)"
+      ).bind(id,slug,displayName,tagline,description,category,email,website,JSON.stringify(social),song ? JSON.stringify(song) : null,video ? JSON.stringify(video) : null,timestamp,timestamp).run();
       const row = await env.DB.prepare("SELECT * FROM spotlight_profiles WHERE id=?").bind(id).first<any>();
       return json({ ok:true, profile:{...publicDto(row),contact_email:row.contact_email,status:row.status,application_status:row.application_status} }, 201);
     }
@@ -689,6 +691,8 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       const songTrack = b.song_url === undefined ? (old.song_metadata ? spotifyTrack(JSON.parse(old.song_metadata).url) : null) : (b.song_url ? spotifyTrack(b.song_url) : null);
       if (b.song_url && !songTrack) throw new HttpError(422, "invalid_spotify_track", "Use a public Spotify track link.");
       const song = b.song_url === undefined ? (old.song_metadata ? JSON.parse(old.song_metadata) : null) : (songTrack ? await spotifyMetadata(songTrack) : null);
+      const video = b.video_url === undefined ? (old.video_metadata ? JSON.parse(old.video_metadata) : null) : (b.video_url ? featuredVideo(b.video_url) : null);
+      if (b.video_url && !video) throw new HttpError(422, "invalid_featured_video", "Use a public YouTube video or Twitch channel, VOD or clip URL.");
       const social = b.social_links === undefined ? publicSocialLinks(old.social_links) : checkedSocialLinks(b.social_links);
       if (displayName.length < 2 || tagline.length < 8 || description.length < 30 || !CATEGORIES.has(category)) throw new HttpError(422, "invalid_profile", "Check the name, tagline, description and category.");
       if (b.contact_email !== undefined && contactEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail)) throw new HttpError(422, "invalid_email", "Enter a valid contact email, or leave the field blank.");
@@ -711,8 +715,8 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       const statements = [
         env.DB.prepare("UPDATE spotlight_profiles SET featured_until=NULL WHERE featured_until > ? AND id<>?").bind(updated,seg[1]),
         env.DB.prepare(
-          "UPDATE spotlight_profiles SET display_name=?,tagline=?,description=?,category=?,contact_email=?,website_url=?,social_links=?,song_metadata=?,status=?,application_status=?,review_expires_at=CASE WHEN ?='published' THEN NULL ELSE review_expires_at END,listing_expires_at=?,featured_until=?,updated_at=?,published_at=CASE WHEN ?='published' THEN COALESCE(published_at,?) ELSE published_at END WHERE id=?",
-        ).bind(displayName,tagline,description,category,contactEmail,website,JSON.stringify(social),song ? JSON.stringify(song) : null,status,nextApplicationStatus,status,listingExpiresAt,featured,updated,status,updated,seg[1])
+          "UPDATE spotlight_profiles SET display_name=?,tagline=?,description=?,category=?,contact_email=?,website_url=?,social_links=?,song_metadata=?,video_metadata=?,status=?,application_status=?,review_expires_at=CASE WHEN ?='published' THEN NULL ELSE review_expires_at END,listing_expires_at=?,featured_until=?,updated_at=?,published_at=CASE WHEN ?='published' THEN COALESCE(published_at,?) ELSE published_at END WHERE id=?",
+        ).bind(displayName,tagline,description,category,contactEmail,website,JSON.stringify(social),song ? JSON.stringify(song) : null,video ? JSON.stringify(video) : null,status,nextApplicationStatus,status,listingExpiresAt,featured,updated,status,updated,seg[1])
       ];
       if (status === "published" && old.status !== "published") {
         statements.push(env.DB.prepare(
