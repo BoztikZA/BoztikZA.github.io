@@ -40,3 +40,8 @@
 .sp-email-submit-note{box-shadow:inset 3px 0 0 rgba(142,255,61,.55)}
 .sp-email-submit-button{box-shadow:0 8px 24px rgba(142,255,61,.12)}
 .sp-email-submit-button:hover{box-shadow:0 10px 30px rgba(142,255,61,.2)}
+
+.sp-media-fields{display:grid;gap:14px}
+.sp-media-review-note{display:grid;gap:6px;padding:15px 16px;border:1px solid rgba(142,255,61,.25);border-radius:9px;background:rgba(142,255,61,.055);line-height:1.65}
+.sp-media-review-note strong{color:#c7f6a9;font-size:.78rem}
+.sp-media-review-note span{color:#aebbb2;font-size:.72rem;font-weight:400}
