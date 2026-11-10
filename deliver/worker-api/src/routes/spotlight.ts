@@ -224,7 +224,7 @@ function featuredVideo(value: unknown): { platform: "youtube" | "twitch"; id: st
       if (parts.length === 2 && parts[0] === "videos" && /^\d{5,20}$/.test(parts[1]!)) return { platform: "twitch", id: parts[1]!, kind: "video", url: "https://www.twitch.tv/videos/" + parts[1] };
       const clipSlug = parts.length === 2 && parts[0] === "clip" ? parts[1] : parts.length === 3 && parts[1] === "clip" ? parts[2] : "";
       if (clipSlug && /^[A-Za-z0-9_-]{5,80}$/.test(clipSlug)) return { platform: "twitch", id: clipSlug, kind: "clip", url: "https://clips.twitch.tv/" + clipSlug };
-      if (parts.length === 1 && /^[A-Za-z0-9_]{3,25}$/.test(parts[0])) return { platform: "twitch", id: parts[0].toLowerCase(), kind: "channel", url: "https://www.twitch.tv/" + parts[0].toLowerCase() };
+      if (parts.length === 1 && /^[A-Za-z0-9_]{3,25}$/.test(parts[0]!)) return { platform: "twitch", id: parts[0]!.toLowerCase(), kind: "channel", url: "https://www.twitch.tv/" + parts[0]!.toLowerCase() };
     }
   } catch {}
   return null;
