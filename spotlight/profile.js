@@ -70,41 +70,29 @@ function applySeo(profile, mainImage, websiteUrl) {
 function renderMusic(song) {
   if (!song || typeof song.id !== "string" || !/^[A-Za-z0-9]{22}$/.test(song.id)) return "";
   const url = "https://open.spotify.com/track/" + song.id;
-  return `<section class="sp-music-card" aria-label="Featured song">
-    <div class="sp-music-heading"><span class="sp-kicker">FEATURED SINGLE</span><strong>${esc(song.title)}</strong></div>
-    <iframe title="Listen to ${esc(song.title)} on Spotify" src="https://open.spotify.com/embed/track/${song.id}?utm_source=generator&amp;theme=0" width="100%" height="152" style="border:0;border-radius:12px" loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin"></iframe>
-    <a class="sp-music-more" href="${url}" target="_blank" rel="noopener noreferrer" data-outbound>Want to hear more? Explore their music on Spotify ↗</a>
+  return `<section class="sp-media-link-card" aria-label="Featured song">
+    <div><span class="sp-kicker">FEATURED SINGLE</span><strong>${esc(song.title || "Listen to their music")}</strong><p>Hear the full track on Spotify.</p></div>
+    <a class="sp-button sp-button-outline" href="${url}" target="_blank" rel="noopener noreferrer" data-outbound>Listen on Spotify ↗</a>
   </section>`;
 }
 
 function renderFeaturedVideo(video) {
   if (!video || !["youtube", "twitch"].includes(video.platform) || typeof video.id !== "string") return "";
-  let embed = "";
-  let title = "Featured video";
-  let external = video.url;
+  let external = "";
+  const provider = video.platform === "youtube" ? "YouTube" : "Twitch";
   if (video.platform === "youtube" && video.kind === "video" && /^[A-Za-z0-9_-]{11}$/.test(video.id)) {
-    embed = "https://www.youtube-nocookie.com/embed/" + video.id + "?controls=1&rel=0";
-    title = "Featured YouTube video";
     external = "https://www.youtube.com/watch?v=" + video.id;
   } else if (video.platform === "twitch" && video.kind === "channel" && /^[a-z0-9_]{3,25}$/.test(video.id)) {
-    embed = "https://player.twitch.tv/?channel=" + encodeURIComponent(video.id) + "&parent=www.boztik.com&autoplay=false";
-    title = "Featured Twitch channel";
     external = "https://www.twitch.tv/" + video.id;
-  } else if (video.platform === "twitch" && video.kind === "video" && /^\d{5,20}$/.test(video.id)) {
-    embed = "https://player.twitch.tv/?video=v" + video.id + "&parent=www.boztik.com&autoplay=false";
-    title = "Featured Twitch video";
+  } else if (video.platform === "twitch" && video.kind === "video" && /^\\d{5,20}$/.test(video.id)) {
     external = "https://www.twitch.tv/videos/" + video.id;
   } else if (video.platform === "twitch" && video.kind === "clip" && /^[A-Za-z0-9_-]{5,80}$/.test(video.id)) {
-    embed = "https://clips.twitch.tv/embed?clip=" + encodeURIComponent(video.id) + "&parent=www.boztik.com";
-    title = "Featured Twitch clip";
     external = "https://clips.twitch.tv/" + video.id;
   }
-  if (!embed) return "";
-  const provider = video.platform === "youtube" ? "YOUTUBE" : "TWITCH";
-  return `<section class="sp-video-card" aria-label="${title}">
-    <div class="sp-video-heading"><span class="sp-kicker">FEATURED VIDEO · ${provider}</span><strong>Watch their work</strong><p>Use the player controls to play, pause and seek where the video supports it.</p></div>
-    <div class="sp-video-frame"><iframe title="${title}" src="${embed}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
-    <a class="sp-video-more" href="${esc(external)}" target="_blank" rel="noopener noreferrer" data-outbound>Open on ${video.platform === "youtube" ? "YouTube" : "Twitch"} ↗</a>
+  if (!external) return "";
+  return `<section class="sp-media-link-card" aria-label="Featured video">
+    <div><span class="sp-kicker">FEATURED VIDEO · ${provider.toUpperCase()}</span><strong>Watch their work</strong><p>Open the original video or stream on ${provider}.</p></div>
+    <a class="sp-button sp-button-outline" href="${esc(external)}" target="_blank" rel="noopener noreferrer" data-outbound>Watch on ${provider} ↗</a>
   </section>`;
 }
 
