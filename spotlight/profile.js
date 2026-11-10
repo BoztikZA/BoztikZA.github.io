@@ -227,7 +227,8 @@ async function load() {
     applySeo(profile, mainImage, websiteUrl);
     const name = profile.display_name;
     const host_ = websiteUrl ? new URL(websiteUrl).hostname.replace(/^www\./, "") : "";
-    const music = renderMusic(profile.song);\n    const featuredVideo = renderFeaturedVideo(profile.video);
+    const music = renderMusic(profile.song);
+    const featuredVideo = renderFeaturedVideo(profile.video);
     const featuredLabel = profile.featured
       ? ` · FEATURED TODAY <span class="sp-countdown" data-countdown="${Number(profile.featured_until || 0)}">Ends in <time>--:--:--</time></span>`
       : "";
