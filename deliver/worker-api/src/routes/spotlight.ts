@@ -200,12 +200,40 @@ async function spotlightGalleryByProfile(env: Env, profileIds: string[]): Promis
   return gallery;
 }
 
+function featuredVideo(value: unknown): { platform: "youtube" | "twitch"; id: string; kind: "video" | "channel" | "clip"; url: string } | null {
+  if (typeof value !== "string" || !value.trim() || value.length > 500) return null;
+  try {
+    const url = new URL(value.trim());
+    if (url.protocol !== "https:" || url.username || url.password || url.port) return null;
+    const host = url.hostname.toLowerCase().replace(/^www\./, "");
+    if (["youtube.com", "m.youtube.com", "youtu.be"].includes(host)) {
+      let id = "";
+      if (host === "youtu.be") id = url.pathname.split("/").filter(Boolean)[0] || "";
+      else if (url.pathname === "/watch") id = url.searchParams.get("v") || "";
+      else if (/^\/(shorts|live|embed)\/[A-Za-z0-9_-]{11}\/?$/.test(url.pathname)) id = url.pathname.split("/")[2] || "";
+      if (!/^[A-Za-z0-9_-]{11}$/.test(id)) return null;
+      return { platform: "youtube", id, kind: "video", url: "https://www.youtube.com/watch?v=" + id };
+    }
+    if (host === "twitch.tv" || host === "clips.twitch.tv") {
+      const parts = url.pathname.split("/").filter(Boolean);
+      if (host === "clips.twitch.tv") {
+        const slug = parts[0] || "";
+        if (!/^[A-Za-z0-9_-]{5,80}$/.test(slug)) return null;
+        return { platform: "twitch", id: slug, kind: "clip", url: "https://clips.twitch.tv/" + slug };
+      }
+      if (parts.length === 2 && parts[0] === "videos" && /^\d{5,20}$/.test(parts[1])) return { platform: "twitch", id: parts[1], kind: "video", url: "https://www.twitch.tv/videos/" + parts[1] };
+      if (parts.length === 1 && /^[A-Za-z0-9_]{3,25}$/.test(parts[0])) return { platform: "twitch", id: parts[0].toLowerCase(), kind: "channel", url: "https://www.twitch.tv/" + parts[0].toLowerCase() };
+    }
+  } catch {}
+  return null;
+}
+
 function publicDto(row: any, gallery: any[] = []) {
   const imageUrl = row.image_key && row.status === "published" ? publicImageUrl(row.id) : null;
   return {
     id: row.id, slug: row.slug, display_name: row.display_name, tagline: row.tagline,
     description: row.description, category: row.category, website_url: row.website_url,
-    social_links: publicSocialLinks(row.social_links), song: row.song_metadata ? JSON.parse(row.song_metadata) : null, image_url: imageUrl,
+    social_links: publicSocialLinks(row.social_links), song: row.song_metadata ? JSON.parse(row.song_metadata) : null, video: row.video_metadata ? JSON.parse(row.video_metadata) : null, image_url: imageUrl,
     images: row.status === "published" ? [
       ...(imageUrl ? [{ url: imageUrl, position: 0 }] : []),
       ...gallery.map(item => ({ url: publicImageUrl(row.id, Number(item.position)), position: Number(item.position) })),
@@ -352,7 +380,7 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
         b = {
           display_name: value("display_name"), tagline: value("tagline"), description: value("description"),
           category: value("category"), website_url: value("website_url"), contact_email: value("contact_email"),
-          song_url: value("song_url"), company_website: value("company_website"),
+          song_url: value("song_url"), video_url: value("video_url"), company_website: value("company_website"),
           consent: value("consent") === "on", social_links: socialLinks,
         };
         const primary = value("main_image");
@@ -377,6 +405,8 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
       const songTrack = b.song_url ? spotifyTrack(b.song_url) : null;
       if (b.song_url && !songTrack) throw new HttpError(422, "invalid_spotify_track", "Use a public Spotify track link.");
       const song = songTrack ? await spotifyMetadata(songTrack) : null;
+      const video = b.video_url ? featuredVideo(b.video_url) : null;
+      if (b.video_url && !video) throw new HttpError(422, "invalid_featured_video", "Use a public YouTube video or Twitch channel, VOD or clip URL.");
       const website = safeWebsiteUrl(b.website_url);
       if (displayName.length < 2 || tagline.length < 8 || description.length < 30) throw new HttpError(422, "invalid_profile", "Please provide a name, a clear tagline and a description of at least 30 characters.");
       if (!CATEGORIES.has(category)) throw new HttpError(422, "invalid_category", "Choose a valid category.");
@@ -398,14 +428,14 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
       const slug = slugify(displayName) + "-" + id.slice(0, 5);
       const inserted = await env.DB.prepare(
         `INSERT INTO spotlight_profiles
-          (id,slug,display_name,tagline,description,category,contact_email,website_url,social_links,song_metadata,
+          (id,slug,display_name,tagline,description,category,contact_email,website_url,social_links,song_metadata,video_metadata,
            status,application_status,review_expires_at,review_unread,created_at,updated_at)
-         SELECT ?,?,?,?,?,?,?,?,?,?,'pending','new',?,1,?,?
+         SELECT ?,?,?,?,?,?,?,?,?,?,?,'pending','new',?,1,?,?
           WHERE NOT EXISTS (
             SELECT 1 FROM spotlight_profiles
              WHERE contact_email=? AND lower(display_name)=lower(?) AND status<>'archived' AND created_at>=?
           )`,
-      ).bind(id,slug,displayName,tagline,description,category,email,website,JSON.stringify(social),song ? JSON.stringify(song) : null,timestamp + SPOTLIGHT_TERM_SECONDS,timestamp,timestamp,email,displayName,timestamp - SPOTLIGHT_TERM_SECONDS).run();
+      ).bind(id,slug,displayName,tagline,description,category,email,website,JSON.stringify(social),song ? JSON.stringify(song) : null,video ? JSON.stringify(video) : null,timestamp + SPOTLIGHT_TERM_SECONDS,timestamp,timestamp,email,displayName,timestamp - SPOTLIGHT_TERM_SECONDS).run();
       if ((inserted.meta.changes || 0) === 0) {
         return json({
           ok: true,
