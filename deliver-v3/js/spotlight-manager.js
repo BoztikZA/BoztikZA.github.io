@@ -388,7 +388,7 @@ async function openReviewModal(profile) {
     videoEmbed = "https://www.youtube-nocookie.com/embed/" + video.id + "?controls=1&rel=0";
   } else if (video?.platform === "twitch" && video.kind === "channel" && /^[a-z0-9_]{3,25}$/.test(video.id || "")) {
     videoEmbed = "https://player.twitch.tv/?channel=" + encodeURIComponent(video.id) + "&parent=www.boztik.com&autoplay=false";
-  } else if (video?.platform === "twitch" && video.kind === "video" && /^\\d{5,20}$/.test(video.id || "")) {
+  } else if (video?.platform === "twitch" && video.kind === "video" && /^\d{5,20}$/.test(video.id || "")) {
     videoEmbed = "https://player.twitch.tv/?video=v" + video.id + "&parent=www.boztik.com&autoplay=false";
   } else if (video?.platform === "twitch" && video.kind === "clip" && /^[A-Za-z0-9_-]{5,80}$/.test(video.id || "")) {
     videoEmbed = "https://clips.twitch.tv/embed?clip=" + encodeURIComponent(video.id) + "&parent=www.boztik.com";
