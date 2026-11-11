@@ -179,6 +179,9 @@ test("views: visitor-flow and store-click panels render measured details and esc
   assert.ok(flowHtml.includes("Most common visitor journeys") && flowHtml.includes("60%"));
   assert.ok(storeHtml.includes("Redbubble") && storeHtml.includes("6</b> outbound store clicks"));
   assert.ok(storeHtml.includes("Store product cards") && storeHtml.includes("product-card clicks"));
+  const report = buildFullReport(m), csv = buildCsv(m);
+  assert.ok(report.includes("VISITOR FLOW") && report.includes("Redbubble") && report.includes("Outbound store clicks"));
+  assert.ok(csv.includes("VISITOR JOURNEYS") && csv.includes("homepage -> toolkit") && csv.includes("store_grid"));
   const hostile = model({
     flow: { ...flow, entries: [{ page: EVIL, visits: 1 }], journeys: [{ path: [EVIL, "toolkit"], visits: 1 }] },
     store: { ...store, by_destination: [{ destination: EVIL, clicks: 1, unique_sessions: 1, top_source: EVIL }], sources: [{ source_placement: EVIL, clicks: 1 }] },
