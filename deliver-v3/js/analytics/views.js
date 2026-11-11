@@ -195,7 +195,7 @@ export function storeView(model) {
     ? `<ul class="an-flow-list">${placements.slice(0, 6).map(r => `<li><span>${esc(PLACEMENT_LABELS[r.source_placement] || r.source_placement)}</span><b>${number(r.clicks)}</b></li>`).join("")}</ul>`
     : `<p class="an-empty">No placement breakdown recorded.</p>`;
   const previous = s.previous ? `Previous period: ${number(s.previous.total)} tracked clicks.` : "No comparable earlier period.";
-  return `<div class="an-stats"><span><b>${number(s.total)}</b> tracked clicks</span><span><b>${number(s.unique_sessions)}</b> sessions with a click</span><span><b>${number(s.store_page_views)}</b> Stores page views</span><span><b>${number(s.product_card_clicks)}</b> product-card clicks</span></div>
+  return `<div class="an-stats"><span><b>${number(s.total)}</b> tracked link activations</span><span><b>${number(s.outbound_total)}</b> outbound store clicks</span><span><b>${number(s.unique_sessions)}</b> sessions with a click</span><span><b>${number(s.store_page_views)}</b> Stores page views</span><span><b>${number(s.product_card_clicks)}</b> product-card clicks</span></div>
     ${rows}
     <details class="an-data-details"><summary>Where clicks happened</summary>${placementRows}</details>
     <p class="an-fine">${basisBadge("measured")} Link activations only — not purchases or revenue. ${esc(previous)} Store-page views are not a conversion denominator for all clicks because some placements are outside the Stores page.${s.data_since ? ` Click tracking began ${esc(s.data_since)}.` : ""}</p>`;
