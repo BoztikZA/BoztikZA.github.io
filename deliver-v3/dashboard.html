@@ -22,7 +22,7 @@
   <link rel="stylesheet" href="../styles-premium.css?v=20261106a">
   <link rel="stylesheet" href="css/deliver.css?v=13">
   <link rel="stylesheet" href="css/command-centre.css?v=4">
-  <link rel="stylesheet" href="css/analytics.css?v=an6">
+  <link rel="stylesheet" href="css/analytics.css?v=an7">
   <link rel="stylesheet" href="css/spotlight-manager.css?v=12">
   <link rel="stylesheet" href="css/deliver-animations.css?v=1">
   <link rel="stylesheet" href="css/deliver-experience.css?v=1">
@@ -1720,6 +1720,18 @@
             <div id="cc-traffic-sources" aria-live="polite"><p class="cc-muted">Loading traffic sources…</p></div>
           </article>
 
+          <article class="cc-card an-grid-half" aria-labelledby="cc-visitor-flow-title">
+            <header class="cc-card-head"><div><span class="cc-eyebrow">5 · Visitor behaviour</span><h2 id="cc-visitor-flow-title">How visitors move through Boztik</h2>
+              <p class="cc-card-desc">Recorded entry pages, common page-to-page journeys and the last page observed. Based only on the measured anonymous session sample.</p></div></header>
+            <div id="cc-visitor-flow" aria-live="polite"><p class="cc-muted">Loading visitor journeys…</p></div>
+          </article>
+
+          <article class="cc-card an-grid-half" aria-labelledby="cc-store-clicks-title">
+            <header class="cc-card-head"><div><span class="cc-eyebrow">6 · Store engagement</span><h2 id="cc-store-clicks-title">Which store links get attention?</h2>
+              <p class="cc-card-desc">Tracked destination clicks and the page or placement that generated them. Clicks are not purchases.</p></div></header>
+            <div id="cc-store-clicks" aria-live="polite"><p class="cc-muted">Loading store clicks…</p></div>
+          </article>
+
           <article class="cc-card an-grid-wide an-page-performance" aria-labelledby="cc-site-pages-title">
             <header class="cc-card-head"><div><span class="cc-eyebrow">4 · Public website</span><h2 id="cc-site-pages-title">Page performance</h2>
               <p class="cc-card-desc">Which pages attract attention, ranked by views, with period comparisons and entrances or exits where available.</p></div></header>
@@ -1808,11 +1820,11 @@
           </div>
         </article>
 
-        <article class="cc-card cc-notrack" aria-labelledby="cc-nt-title">
+        <details class="an-legacy-details"><summary>How to read these numbers and what is not tracked</summary><div class="an-legacy-content"><article class="cc-card cc-notrack" aria-labelledby="cc-nt-title">
           <header class="cc-card-head"><div><span class="cc-eyebrow">Good to know</span><h2 id="cc-nt-title">What is not tracked</h2></div></header>
           <p><strong>Website traffic</strong> uses Boztik's first-party page-view counter. It counts page loads, not unique people. Traffic-source attribution uses the referrer hostname when the browser supplies one; hidden referrers appear as Direct / unknown.</p>
           <p><strong>Visitor movement</strong> is based on a subset of anonymous session events, so entrances, exits and journeys are indicative rather than a complete funnel. <strong>Deliver views, downloads and shares</strong> come from separate delivery counters and are never added to public website page views. Store clicks record link activations, not purchases.</p>
-        </article>
+        </article></div></details>
           </div>
         </details>
 
