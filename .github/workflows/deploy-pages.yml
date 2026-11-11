@@ -40,6 +40,48 @@ jobs:
             guide-natural-portrait-retouching.html guide-faded-photo-colour-correction.html \
             image-inspector.html portfolio.html privacy.html services.html support.html \
             terms.html spotlight.html *.css CNAME robots.txt ads.txt sitemap.xml .nojekyll _site/
+
+      # Validate the exact folder that will be uploaded, not just files in the source tree.
+      - name: Validate staged Pages artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for file in index.html ads.txt robots.txt sitemap.xml; do
+            if [[ ! -s "_site/$file" ]]; then
+              echo "::error::Required public file is missing or empty: _site/$file"
+              exit 1
+            fi
+          done
+
+          expected_ads='google.com, pub-3739684241868984, DIRECT, f08c47fec0942fa0'
+          printf '%s\n' "$expected_ads" > "$RUNNER_TEMP/expected-ads.txt"
+          if ! cmp --silent "$RUNNER_TEMP/expected-ads.txt" _site/ads.txt; then
+            echo "::error::The staged ads.txt does not exactly match the expected publisher declaration."
+            echo "Expected:"
+            cat "$RUNNER_TEMP/expected-ads.txt"
+            echo "Staged:"
+            cat _site/ads.txt
+            exit 1
+          fi
+
+          if ! grep -Fq '<link rel="canonical" href="https://www.boztik.com/">' _site/index.html; then
+            echo "::error::The staged homepage is missing the expected www canonical URL."
+            exit 1
+          fi
+
+          if ! grep -Fq 'client=ca-pub-3739684241868984' _site/index.html; then
+            echo "::error::The staged homepage is missing the expected AdSense publisher loader."
+            exit 1
+          fi
+
+          if ! grep -Fq 'Sitemap: https://www.boztik.com/sitemap.xml' _site/robots.txt; then
+            echo "::error::The staged robots.txt is missing the expected sitemap URL."
+            exit 1
+          fi
+
+          echo "Staged Pages artifact passed the required-file, ads.txt, canonical, AdSense and sitemap checks."
+
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
         with:
@@ -47,3 +89,52 @@ jobs:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
+
+      # This is diagnostic only: a transient live-site failure is recorded in the
+      # Actions log but does not roll back or mark a successful deployment as failed.
+      - name: Smoke-test deployed homepage and ads.txt
+        if: success()
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          tmp_dir="$(mktemp -d)"
+          trap 'rm -rf "$tmp_dir"' EXIT
+
+          fetch_page() {
+            local url="$1"
+            local output="$2"
+            local expected_url="$3"
+            local metadata
+            local status effective_url content_type
+
+            metadata="$(curl --fail --silent --show-error --location \
+              --connect-timeout 10 --max-time 45 \
+              --retry 5 --retry-all-errors --retry-delay 5 \
+              --output "$output" \
+              --write-out '%{http_code}\t%{url_effective}\t%{content_type}' \
+              "$url")"
+
+            IFS=$'\t' read -r status effective_url content_type <<< "$metadata"
+            printf 'Requested: %s\nHTTP status: %s\nFinal URL: %s\nContent-Type: %s\n' \
+              "$url" "$status" "$effective_url" "$content_type"
+
+            [[ "$status" == "200" ]]
+            [[ "$effective_url" == "$expected_url" ]]
+          }
+
+          expected_ads="$RUNNER_TEMP/expected-live-ads.txt"
+          printf '%s\n' 'google.com, pub-3739684241868984, DIRECT, f08c47fec0942fa0' > "$expected_ads"
+
+          fetch_page 'https://www.boztik.com/' "$tmp_dir/homepage.html" 'https://www.boztik.com/'
+          grep -Fq '<link rel="canonical" href="https://www.boztik.com/">' "$tmp_dir/homepage.html"
+          grep -Fq 'client=ca-pub-3739684241868984' "$tmp_dir/homepage.html"
+
+          fetch_page 'https://www.boztik.com/ads.txt' "$tmp_dir/www-ads.txt" 'https://www.boztik.com/ads.txt'
+          cmp --silent "$expected_ads" "$tmp_dir/www-ads.txt"
+
+          fetch_page 'https://boztik.com/ads.txt' "$tmp_dir/apex-ads.txt" 'https://www.boztik.com/ads.txt'
+          cmp --silent "$expected_ads" "$tmp_dir/apex-ads.txt"
+
+          echo "Live homepage and ads.txt smoke checks passed."
