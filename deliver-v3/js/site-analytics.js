@@ -16,7 +16,7 @@ import { PRESETS, DEFAULT_RANGE, normalizeRange, rangeId, rangeLabel, validateCu
 import { buildAnalyticsModel, metricPoints, METRICS } from "./analytics/model.js?v=an2";
 import { buildSignals } from "./analytics/signals.js?v=an2";
 import { createTrendChart } from "./analytics/chart.js?v=an2";
-import { buildFullReport, buildCsv, csvFileName } from "./analytics/export.js?v=an7";
+import { buildFullReport, buildCsv, csvFileName } from "./analytics/export.js?v=an8";
 import * as V from "./analytics/views.js?v=an7";
 
 const $ = id => document.getElementById(id);
