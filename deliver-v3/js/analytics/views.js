@@ -154,6 +154,7 @@ const PLACEMENT_LABELS = {
   home: "Homepage", footer: "Footer", toolkit: "Creative Toolkit",
 };
 const pageName = key => FLOW_LABELS[key] || key;
+const placementName = value => PLACEMENT_LABELS[value] || String(value || "Not recorded").replace(/[_-]+/g, " ").replace(/\\b\\w/g, c => c.toUpperCase());
 const number = value => fmtInt(Number(value) || 0);
 
 export function flowView(model) {
@@ -189,10 +190,10 @@ export function storeView(model) {
   const destinations = (s.by_destination || []).filter(r => r.clicks > 0).sort((a, b) => b.clicks - a.clicks);
   const placements = (s.sources || []).filter(r => r.clicks > 0).sort((a, b) => b.clicks - a.clicks);
   const rows = destinations.length
-    ? `<div class="an-table-wrap"><table class="an-table"><thead><tr><th scope="col">Destination</th><th scope="col" class="num">Clicks</th><th scope="col" class="num">Sessions</th><th scope="col">Top placement</th></tr></thead><tbody>${destinations.map(r => `<tr><th scope="row">${esc(STORE_LABELS[r.destination] || r.destination)}</th><td class="num">${number(r.clicks)}</td><td class="num">${number(r.unique_sessions)}</td><td>${esc(PLACEMENT_LABELS[r.top_source] || r.top_source || "Not recorded")}</td></tr>`).join("")}</tbody></table></div>`
+    ? `<div class="an-table-wrap"><table class="an-table"><thead><tr><th scope="col">Destination</th><th scope="col" class="num">Clicks</th><th scope="col" class="num">Sessions</th><th scope="col">Top placement</th></tr></thead><tbody>${destinations.map(r => `<tr><th scope="row">${esc(STORE_LABELS[r.destination] || r.destination)}</th><td class="num">${number(r.clicks)}</td><td class="num">${number(r.unique_sessions)}</td><td>${esc(placementName(r.top_source))}</td></tr>`).join("")}</tbody></table></div>`
     : `<p class="an-empty">No store-link activations were recorded in this period.</p>`;
   const placementRows = placements.length
-    ? `<ul class="an-flow-list">${placements.slice(0, 6).map(r => `<li><span>${esc(PLACEMENT_LABELS[r.source_placement] || r.source_placement)}</span><b>${number(r.clicks)}</b></li>`).join("")}</ul>`
+    ? `<ul class="an-flow-list">${placements.slice(0, 6).map(r => `<li><span>${esc(placementName(r.source_placement))}</span><b>${number(r.clicks)}</b></li>`).join("")}</ul>`
     : `<p class="an-empty">No placement breakdown recorded.</p>`;
   const previous = s.previous ? `Previous period: ${number(s.previous.total)} tracked clicks.` : "No comparable earlier period.";
   return `<div class="an-stats"><span><b>${number(s.total)}</b> tracked link activations</span><span><b>${number(s.outbound_total)}</b> outbound store clicks</span><span><b>${number(s.unique_sessions)}</b> sessions with a click</span><span><b>${number(s.store_page_views)}</b> Stores page views</span><span><b>${number(s.product_card_clicks)}</b> product-card clicks</span></div>
