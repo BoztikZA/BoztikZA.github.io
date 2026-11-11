@@ -37,6 +37,7 @@ jobs:
             deliver.html guide-ai-vs-professional-editing.html guide-object-removal.html \
             guide-overedited-look.html guide-photo-restoration.html guides.html \
             guide-layers-and-masks.html guide-image-resolution-dpi.html guide-jpeg-png-tiff.html guide-scanning-old-photos.html \
+            guide-natural-portrait-retouching.html guide-faded-photo-colour-correction.html \
             image-inspector.html portfolio.html privacy.html services.html support.html \
             terms.html spotlight.html *.css CNAME robots.txt ads.txt sitemap.xml .nojekyll _site/
       - name: Upload site artifact
