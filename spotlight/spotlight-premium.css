@@ -1,0 +1,282 @@
+/* ==========================================================================
+   Boztik Spotlight: premium showcase layer (homepage).
+   Loaded after spotlight-home.css. Additive only: it restyles the existing
+   markup, so the JS, tracking and accessibility behaviour are unchanged.
+
+   Goals: make today's featured business feel like a premium placement worth
+   being proud of, put its website link first, and show owners what a listing
+   looks like when no live profile is available.
+   ========================================================================== */
+
+/* ---------- Section frame ---------- */
+.hm-spotlight {
+  background:
+    radial-gradient(ellipse at 85% 10%, rgba(142, 255, 61, 0.13), transparent 34%),
+    radial-gradient(ellipse at 5% 95%, rgba(142, 255, 61, 0.06), transparent 36%),
+    linear-gradient(140deg, #070b0d 0%, #101916 52%, #080d0f 100%);
+}
+.hm-spotlight-head { margin-bottom: 34px; }
+.hm-spotlight-head p:not(.hm-spotlight-kicker) { font-size: 1.05rem; max-width: 560px; }
+.hm-spotlight-kicker { letter-spacing: 0.16em; }
+
+/* ---------- Featured card: the premium placement ---------- */
+.hm-spotlight-card[data-featured="1"] {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(155deg, #16211c 0%, #0e1614 55%, #0a1011 100%) padding-box,
+    linear-gradient(135deg, #8eff3d 0%, #eaffd8 28%, #3dbb19 55%, #b4ff7e 80%, #8eff3d 100%) border-box;
+  box-shadow:
+    0 30px 80px -24px rgba(0, 0, 0, 0.7),
+    0 0 60px -14px rgba(142, 255, 61, 0.28);
+}
+.hm-spotlight-card[data-featured="1"]:hover {
+  border-color: transparent;
+  box-shadow:
+    0 36px 90px -24px rgba(0, 0, 0, 0.75),
+    0 0 76px -12px rgba(142, 255, 61, 0.4);
+}
+.hm-spotlight-card[data-featured="1"]::before {
+  left: 8%;
+  right: 8%;
+  opacity: 0.9;
+}
+
+/* Soft studio-light behind the logo. */
+.hm-spotlight-card[data-featured="1"] .hm-spotlight-image {
+  background:
+    radial-gradient(ellipse at 50% 38%, rgba(255, 255, 255, 0.1), transparent 52%),
+    radial-gradient(ellipse at 50% 100%, rgba(142, 255, 61, 0.16), transparent 60%),
+    linear-gradient(150deg, #1c2a22, #0b1212);
+}
+
+/* Filled "Today's feature" pill. */
+.hm-spotlight-card[data-featured="1"] .hm-spotlight-featured-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #a6ff62, #6fe026);
+  color: #0b1507;
+  box-shadow: 0 8px 22px -6px rgba(142, 255, 61, 0.6);
+  letter-spacing: 0.1em;
+}
+
+/* "Hand-reviewed" seal: the pride-of-listing marker. */
+.bz-spot-seal {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 11px 7px 8px;
+  border: 1px solid rgba(142, 255, 61, 0.4);
+  border-radius: 999px;
+  background: rgba(7, 13, 9, 0.82);
+  color: #d4ffbb;
+  font: 700 0.66rem/1 Inter, sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  backdrop-filter: blur(8px);
+}
+.bz-spot-seal__tick {
+  display: grid;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  border-radius: 50%;
+  background: #8eff3d;
+  color: #0b1507;
+  font-size: 0.66rem;
+  font-weight: 800;
+}
+.hm-spotlight-card[data-featured="1"] .hm-spotlight-actions { align-items: stretch; }
+
+/* Website link first and primary on the featured card: that click is the goal. */
+.hm-spotlight-card[data-featured="1"] .hm-spotlight-website-link {
+  order: -1;
+  flex: 1 1 100%;
+  min-height: 50px;
+  border-color: transparent;
+  background: #8eff3d;
+  color: #0b1507;
+  font-size: 0.86rem;
+  box-shadow: 0 14px 34px -12px rgba(142, 255, 61, 0.6);
+  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+.hm-spotlight-card[data-featured="1"] .hm-spotlight-website-link:hover {
+  background: #aaff70;
+  transform: translateY(-2px);
+  box-shadow: 0 18px 40px -12px rgba(142, 255, 61, 0.75);
+}
+.hm-spotlight-card[data-featured="1"] .hm-spotlight-profile-link {
+  flex: 1 1 140px;
+  border-color: rgba(142, 255, 61, 0.38);
+  background: rgba(142, 255, 61, 0.06);
+  color: #c9f7ad;
+  box-shadow: none;
+}
+.hm-spotlight-card[data-featured="1"] .hm-spotlight-profile-link:hover { background: rgba(142, 255, 61, 0.14); }
+
+/* Countdown reads as "live". */
+.hm-spotlight-countdown::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #8eff3d;
+  box-shadow: 0 0 0 0 rgba(142, 255, 61, 0.6);
+}
+
+/* ---------- Example listing / empty state ---------- */
+.bz-spot-preview {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  align-items: center;
+  gap: clamp(24px, 5vw, 60px);
+  min-height: 0;
+  padding: clamp(24px, 4vw, 44px);
+  border: 1px solid rgba(142, 255, 61, 0.3);
+  background:
+    radial-gradient(ellipse at 90% 15%, rgba(142, 255, 61, 0.12), transparent 40%),
+    linear-gradient(125deg, rgba(142, 255, 61, 0.07), rgba(13, 20, 20, 0.92) 58%);
+}
+.bz-spot-preview__card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 38px 24px 26px;
+  border: 1px solid transparent;
+  border-radius: 16px;
+  background:
+    linear-gradient(155deg, #16211c, #0b1112) padding-box,
+    linear-gradient(135deg, #8eff3d, #eaffd8 30%, #3dbb19 60%, #8eff3d) border-box;
+  box-shadow: 0 26px 60px -24px rgba(0, 0, 0, 0.8), 0 0 46px -16px rgba(142, 255, 61, 0.35);
+  text-align: center;
+  transform: rotate(-1.5deg);
+}
+.bz-spot-preview__tag {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(142, 255, 61, 0.14);
+  color: #b9ff90;
+  font: 800 0.58rem/1 Inter, sans-serif;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.bz-spot-preview__mark {
+  display: grid;
+  width: 72px;
+  height: 72px;
+  place-items: center;
+  margin-bottom: 6px;
+  border: 1px solid rgba(142, 255, 61, 0.4);
+  border-radius: 22px;
+  background: rgba(142, 255, 61, 0.08);
+  color: #aaff78;
+  font: 800 1.6rem/1 "Plus Jakarta Sans", Inter, sans-serif;
+  letter-spacing: -0.05em;
+}
+.bz-spot-preview__card strong {
+  color: #f3f7f3;
+  font: 750 1.2rem/1.2 "Plus Jakarta Sans", Inter, sans-serif;
+  letter-spacing: -0.03em;
+}
+.bz-spot-preview__card small { color: #a5b1aa; font-size: 0.8rem; line-height: 1.5; }
+.bz-spot-preview__btn {
+  margin-top: 10px;
+  padding: 11px 18px;
+  border-radius: 8px;
+  background: #8eff3d;
+  color: #0b1507;
+  font: 700 0.76rem/1 Inter, sans-serif;
+}
+.bz-spot-preview__copy h3 {
+  max-width: 560px;
+  margin: 12px 0 10px;
+  color: #f3f7f3;
+  font: 800 clamp(1.5rem, 3.2vw, 2.15rem)/1.12 "Plus Jakarta Sans", Inter, sans-serif;
+  letter-spacing: -0.04em;
+}
+.bz-spot-preview__copy p { max-width: 540px; margin: 0 0 22px; color: #adbab1; line-height: 1.7; }
+
+/* ---------- "Be proud of your listing" band ---------- */
+.hm-spotlight .bz-spot-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(20px, 4vw, 48px);
+  margin-top: 28px;
+  padding: clamp(22px, 3vw, 32px) clamp(22px, 3.4vw, 36px);
+  border: 1px solid rgba(142, 255, 61, 0.26);
+  border-radius: 16px;
+  background:
+    radial-gradient(ellipse at 100% 0%, rgba(142, 255, 61, 0.14), transparent 50%),
+    linear-gradient(100deg, rgba(142, 255, 61, 0.07), rgba(255, 255, 255, 0.025) 60%);
+}
+.bz-spot-cta__copy strong {
+  display: block;
+  color: #f3f7f3;
+  font: 800 clamp(1.2rem, 2.2vw, 1.55rem)/1.2 "Plus Jakarta Sans", Inter, sans-serif;
+  letter-spacing: -0.03em;
+}
+.bz-spot-cta__copy p { max-width: 600px; margin: 8px 0 0; color: #adbab1; font-size: 0.92rem; line-height: 1.7; }
+.bz-spot-cta__perks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.bz-spot-cta__perks li {
+  padding: 7px 13px;
+  border: 1px solid rgba(142, 255, 61, 0.3);
+  border-radius: 999px;
+  background: rgba(142, 255, 61, 0.06);
+  color: #c9f7ad;
+  font: 700 0.72rem/1.2 Inter, sans-serif;
+}
+.bz-spot-cta__perks li::before { content: "✓"; margin-right: 7px; color: #8eff3d; }
+.hm-spotlight .bz-spot-cta .hm-btn { flex: none; }
+
+/* ---------- Motion: a slow light sweep across the featured card ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  .hm-spotlight-card[data-featured="1"]::after {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    content: "";
+    pointer-events: none;
+    background: linear-gradient(105deg, transparent 42%, rgba(235, 255, 224, 0.09) 50%, transparent 58%);
+    transform: translateX(-120%);
+    animation: bz-spot-sheen 9s 2s ease-in-out infinite;
+  }
+  @keyframes bz-spot-sheen {
+    0%, 60% { transform: translateX(-120%); }
+    85%, 100% { transform: translateX(120%); }
+  }
+  .hm-spotlight-countdown::before { animation: bz-spot-pulse 2s ease-out infinite; }
+  @keyframes bz-spot-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(142, 255, 61, 0.55); }
+    70%, 100% { box-shadow: 0 0 0 9px rgba(142, 255, 61, 0); }
+  }
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  .bz-spot-preview { grid-template-columns: minmax(0, 1fr); }
+  .bz-spot-preview__card { max-width: 340px; margin-inline: auto; }
+}
+@media (max-width: 680px) {
+  .hm-spotlight .bz-spot-cta { align-items: flex-start; flex-direction: column; }
+  .hm-spotlight .bz-spot-cta .hm-btn { width: 100%; }
+  .bz-spot-seal { right: 10px; bottom: 10px; }
+}

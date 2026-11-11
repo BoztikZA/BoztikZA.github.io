@@ -76,11 +76,22 @@
       update();
     }, { threshold: 0 }).observe(hero);
 
+    // Hide the bar wherever another call-to-action is on screen (closing section, Spotlight).
+    var closeVisible = false;
+    var spotVisible = false;
+    function sync() { closingVisible = closeVisible || spotVisible; update(); }
     if (closing) {
       new IntersectionObserver(function (entries) {
-        closingVisible = entries[0].isIntersecting;
-        update();
+        closeVisible = entries[0].isIntersecting && entries[0].intersectionRatio > 0;
+        sync();
       }, { threshold: 0.2 }).observe(closing);
+    }
+    var spotlight = document.querySelector('.hm-spotlight');
+    if (spotlight) {
+      new IntersectionObserver(function (entries) {
+        spotVisible = entries[0].isIntersecting && entries[0].intersectionRatio > 0;
+        sync();
+      }, { threshold: 0.05 }).observe(spotlight);
     }
   })();
 })();
