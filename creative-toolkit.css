@@ -224,6 +224,19 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
 }
+/* Five feature screenshots: a balanced three-column desktop layout. */
+.tk-showcase-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.tk-showcase-card__image {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 8 / 5;
+  object-fit: contain;
+  margin: 0 0 16px;
+  border: 1px solid rgba(142, 255, 61, 0.18);
+  border-radius: 14px;
+  background: #060a07;
+}
 .tk-card {
   position: relative;
   min-width: 0;
@@ -492,12 +505,14 @@
   .tk-hero__grid { grid-template-columns: minmax(0, 1fr); }
   .tk-hero__visual { max-width: 560px; width: 100%; margin-inline: auto; }
   .tk-what { grid-template-columns: minmax(0, 1fr); }
+  .tk-showcase-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 /* ---------- mobile ---------- */
 @media (max-width: 720px) {
   .tk-tools,
   .tk-hub__grid,
+  .tk-showcase-grid,
   .tk-privacy__grid,
   .tk-where { grid-template-columns: minmax(0, 1fr); }
   .tk-steps { grid-template-columns: minmax(0, 1fr); }
