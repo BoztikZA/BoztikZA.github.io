@@ -589,3 +589,23 @@ g.is-active .an-bar { opacity: 1; filter: brightness(1.15); }
 #cc-site-analytics .an-dashboard-grid > .cc-card { padding: clamp(18px, 2vw, 26px); }
 @media (max-width: 900px) { #cc-site-analytics .an-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } #cc-site-analytics .an-trend .an-chart-host { min-height: 330px; } #cc-site-analytics .an-trend .an-chart-svg { max-height: 350px; } }
 @media (max-width: 640px) { #cc-site-analytics .an-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; } #cc-site-analytics .an-kpi { min-height: 116px; padding: 12px; } #cc-site-analytics .an-trend .an-chart-host { min-height: 250px; padding: 8px 4px; } #cc-site-analytics .an-trend .an-chart-svg { max-height: 270px; } #cc-site-analytics .an-page-performance .an-rank-row { grid-template-columns: minmax(90px, 1fr) minmax(45px, .8fr) auto; } #cc-site-analytics .an-dashboard-grid > .cc-deliver-card { grid-column: auto; } }
+
+
+/* Command Centre analytics: clearer behavioural sections and compact reading order. */
+#cc-site-analytics .an-flow-columns { margin-top: 12px; }
+#cc-site-analytics .an-flow-group { min-width: 0; }
+#cc-site-analytics .an-flow-group .an-h4 { margin-top: 0; }
+#cc-site-analytics .an-journey-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+#cc-site-analytics .an-journey-list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; border: 1px solid var(--cc-line); border-radius: 10px; background: rgba(255,255,255,.025); font-size: .86rem; }
+#cc-site-analytics .an-journey-list li > span { min-width: 0; line-height: 1.5; }
+#cc-site-analytics .an-journey-list li i { color: var(--cc-accent); font-style: normal; padding: 0 3px; }
+#cc-site-analytics .an-journey-list li > b { white-space: nowrap; font-variant-numeric: tabular-nums; }
+#cc-site-analytics .an-journey-list small { color: var(--cc-dim); font-weight: 500; }
+#cc-site-analytics .an-data-details { margin-top: 12px; }
+#cc-site-analytics .an-data-details > summary { cursor: pointer; color: var(--cc-muted); font-size: .84rem; padding: 8px 0; }
+#cc-site-analytics .an-legacy-details { margin-top: 14px; }
+#cc-site-analytics .an-legacy-details > summary { cursor: pointer; padding: 14px 16px; border: 1px solid var(--cc-line); border-radius: 12px; background: var(--cc-card); color: var(--cc-muted); font-weight: 700; }
+#cc-site-analytics .an-legacy-content { display: grid; gap: 14px; padding-top: 14px; }
+@media (max-width: 640px) {
+  #cc-site-analytics .an-journey-list li { align-items: flex-start; flex-direction: column; gap: 4px; }
+}

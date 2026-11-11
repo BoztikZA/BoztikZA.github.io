@@ -43,5 +43,7 @@ const A = "/api/admin/analytics";
 export const fetchSummary = (range, o) => get(`${A}/summary?${rangeQuery(range)}`, o);
 export const fetchTrend = (range, o) => get(`${A}/trend?${rangeQuery(range)}`, o);
 export const fetchSources = (range, o) => get(`${A}/traffic-sources?${rangeQuery(range)}`, o);
+export const fetchFlow = (range, o) => get(`${A}/visitor-flow?${rangeQuery(range)}`, o);
+export const fetchStore = (range, o) => get(`${A}/store-clicks?${rangeQuery(range)}`, o);
 export const fetchHealth = o => get(`${A}/health`, o);
 export const fetchOverview = o => get(`${A}/overview`, o);

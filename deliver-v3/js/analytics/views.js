@@ -139,6 +139,69 @@ export function sourcesView(model) {
     ${camp}</details><p class="an-fine">${basisBadge("estimated")} One count per anonymous browser session, taken from the referrer the browser reports. Referrers can be hidden or stripped, so “Direct / unknown” is not proof anyone typed the address. A referring site shows where a visit started, not the whole journey.${prev}${s.dataSince ? ` Recording began ${esc(s.dataSince)}.` : ""}</p>`;
 }
 
+/* ------------------------------------------------------- visitor flow + store clicks */
+const FLOW_LABELS = {
+  homepage: "Home", stores: "Stores", deliver: "Deliver", services: "Services", portfolio: "Portfolio",
+  toolkit: "Creative Toolkit", tools: "Tools", guides: "Guides", about: "About", support: "Support",
+  contact: "Contact", spotlight: "Spotlight",
+};
+const STORE_LABELS = {
+  redbubble: "Redbubble", teepublic: "TeePublic", kofi: "Ko-fi",
+  ko_fi: "Ko-fi", boztik_store: "Boztik Stores",
+};
+const PLACEMENT_LABELS = {
+  store_grid: "Store product cards", stores: "Stores page", homepage: "Homepage",
+  home: "Homepage", footer: "Footer", toolkit: "Creative Toolkit",
+};
+const pageName = key => FLOW_LABELS[key] || key;
+const placementName = value => PLACEMENT_LABELS[value] || String(value || "Not recorded").replace(/[_-]+/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+const number = value => fmtInt(Number(value) || 0);
+
+export function flowView(model) {
+  const f = model.flow;
+  if (!f) return sectionStatus(model, "flow", "Visitor journey") || `<p class="an-empty">Visitor journey data is not available.</p>`;
+  const coverage = f.session_coverage_pct;
+  const journeys = (f.journeys || []).filter(j => Array.isArray(j.path) && j.path.length > 1);
+  const transitions = f.transitions || [];
+  const ranked = (rows, label) => rows?.length
+    ? `<div class="an-flow-group"><h3 class="an-h4">${label}</h3><ul class="an-flow-list">${rows.slice(0, 5).map(r => `<li><span>${esc(pageName(r.page))}</span><b>${number(r.visits)}</b></li>`).join("")}</ul></div>`
+    : "";
+  const journeyRows = journeys.length
+    ? `<ol class="an-journey-list">${journeys.slice(0, 6).map(j => `<li><span>${j.path.map(pageName).map(esc).join(" <i aria-hidden=\"true\">→</i> ")}${j.truncated ? " …" : ""}</span><b>${number(j.visits)} <small>sessions</small></b></li>`).join("")}</ol>`
+    : `<p class="an-empty">No multi-page journeys were recorded in this period. Single-page visits are counted separately and do not appear as journeys.</p>`;
+  const transitionRows = transitions.length
+    ? `<div class="an-table-wrap"><table class="an-table"><thead><tr><th scope="col">Next step</th><th scope="col" class="num">Sessions</th></tr></thead><tbody>${transitions.slice(0, 8).map(t => `<tr><th scope="row">${esc(pageName(t.from))} <span aria-hidden="true">→</span> ${esc(pageName(t.to))}</th><td class="num">${number(t.visits)}</td></tr>`).join("")}</tbody></table></div>`
+    : "";
+  const sample = f.status === "limited" || (Number(f.visits) > 0 && Number(f.visits) < Number(f.min_visits || 20))
+    ? `<p class="an-state an-state-missing" role="status"><span><strong>Small sample.</strong> These patterns are directional, not a reliable picture of all visitors.</span></p>`
+    : "";
+  const cap = f.events_capped ? `<p class="an-fine">The event safety limit was reached; this view is based on a capped sample.</p>` : "";
+  return `<div class="an-stats"><span><b>${number(f.visits)}</b> recorded visits</span><span><b>${number(f.multi_page_visits)}</b> multi-page visits</span><span><b>${number(f.single_page_visits)}</b> single-page visits</span><span><b>${coverage == null ? "—" : `${coverage}%`}</b> session coverage</span></div>
+    ${sample}
+    <div class="an-two an-flow-columns">${ranked(f.entries, "Where recorded visits started")}${ranked(f.exits, "Last page observed")}</div>
+    <h3 class="an-h4">Most common visitor journeys</h3>${journeyRows}
+    ${transitions.length ? `<details class="an-data-details"><summary>See page-to-page transitions</summary>${transitionRows}</details>` : ""}
+    <p class="an-fine">${basisBadge("measured")} Built from anonymous first-party session events. A visit starts after 30 minutes without a recorded page event. “Last page observed” is not proof the visitor closed the site. Coverage is the share of page views with session events; older page views cannot be reconstructed.${f.session_data_since ? ` Path tracking began ${esc(f.session_data_since)}.` : ""}</p>${cap}`;
+}
+
+export function storeView(model) {
+  const s = model.store;
+  if (!s) return sectionStatus(model, "store", "Store-link performance") || `<p class="an-empty">Store-click data is not available.</p>`;
+  const destinations = (s.by_destination || []).filter(r => r.clicks > 0).sort((a, b) => b.clicks - a.clicks);
+  const placements = (s.sources || []).filter(r => r.clicks > 0).sort((a, b) => b.clicks - a.clicks);
+  const rows = destinations.length
+    ? `<div class="an-table-wrap"><table class="an-table"><thead><tr><th scope="col">Destination</th><th scope="col" class="num">Clicks</th><th scope="col" class="num">Sessions</th><th scope="col">Top placement</th></tr></thead><tbody>${destinations.map(r => `<tr><th scope="row">${esc(STORE_LABELS[r.destination] || r.destination)}</th><td class="num">${number(r.clicks)}</td><td class="num">${number(r.unique_sessions)}</td><td>${esc(placementName(r.top_source))}</td></tr>`).join("")}</tbody></table></div>`
+    : `<p class="an-empty">No store-link activations were recorded in this period.</p>`;
+  const placementRows = placements.length
+    ? `<ul class="an-flow-list">${placements.slice(0, 6).map(r => `<li><span>${esc(placementName(r.source_placement))}</span><b>${number(r.clicks)}</b></li>`).join("")}</ul>`
+    : `<p class="an-empty">No placement breakdown recorded.</p>`;
+  const previous = s.previous ? `Previous period: ${number(s.previous.total)} tracked clicks.` : "No comparable earlier period.";
+  return `<div class="an-stats"><span><b>${number(s.total)}</b> tracked link activations</span><span><b>${number(s.outbound_total)}</b> outbound store clicks</span><span><b>${number(s.unique_sessions)}</b> sessions with a click</span><span><b>${number(s.store_page_views)}</b> Stores page views</span><span><b>${number(s.product_card_clicks)}</b> product-card clicks</span></div>
+    ${rows}
+    <details class="an-data-details"><summary>Where clicks happened</summary>${placementRows}</details>
+    <p class="an-fine">${basisBadge("measured")} Link activations only — not purchases or revenue. ${esc(previous)} Store-page views are not a conversion denominator for all clicks because some placements are outside the Stores page.${s.data_since ? ` Click tracking began ${esc(s.data_since)}.` : ""}</p>`;
+}
+
 /* ------------------------------------------------------------------ pages */
 export const PAGE_SIZE = 8;
 const sortValue = {
