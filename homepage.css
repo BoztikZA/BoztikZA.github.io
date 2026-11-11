@@ -499,7 +499,7 @@
   border-radius: 24px;
   background: var(--hm-panel-2);
 }
-.hm-toolkit__shot img { width: 100%; height: auto; aspect-ratio: 1; }
+.hm-toolkit__shot img { display: block; width: 100%; height: auto; aspect-ratio: 11 / 7; object-fit: contain; }
 .hm-toolkit__copy { max-width: 600px; }
 .hm-toolkit__copy h2 { font-size: clamp(1.6rem, 3vw, 2.3rem); }
 .hm-toolkit__copy .hm-btn { margin-top: 26px; }
