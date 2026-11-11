@@ -17,7 +17,7 @@ import { buildAnalyticsModel, metricPoints, METRICS } from "./analytics/model.js
 import { buildSignals } from "./analytics/signals.js?v=an2";
 import { createTrendChart } from "./analytics/chart.js?v=an2";
 import { buildFullReport, buildCsv, csvFileName } from "./analytics/export.js?v=an7";
-import * as V from "./analytics/views.js?v=an6";
+import * as V from "./analytics/views.js?v=an7";
 
 const $ = id => document.getElementById(id);
 const REFRESH_MS = 5 * 60 * 1000;
