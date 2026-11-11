@@ -154,7 +154,7 @@ const PLACEMENT_LABELS = {
   home: "Homepage", footer: "Footer", toolkit: "Creative Toolkit",
 };
 const pageName = key => FLOW_LABELS[key] || key;
-const placementName = value => PLACEMENT_LABELS[value] || String(value || "Not recorded").replace(/[_-]+/g, " ").replace(/\\b\\w/g, c => c.toUpperCase());
+const placementName = value => PLACEMENT_LABELS[value] || String(value || "Not recorded").replace(/[_-]+/g, " ").replace(/\b\w/g, c => c.toUpperCase());
 const number = value => fmtInt(Number(value) || 0);
 
 export function flowView(model) {
