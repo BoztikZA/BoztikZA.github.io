@@ -11,7 +11,7 @@
 //   * the report, CSV and screen all read the same view-model (analytics/model.js)
 // The public exports (initSiteAnalytics, refreshSiteAnalytics) are unchanged: command-centre.js calls them as before.
 import { fetchPageAnalytics } from "./api.js";
-import { fetchSummary, fetchTrend, fetchSources, fetchHealth, AnalyticsError } from "./analytics/client.js?v=an3";
+import { fetchSummary, fetchTrend, fetchSources, fetchFlow, fetchStore, fetchHealth, AnalyticsError } from "./analytics/client.js?v=an4";
 import { PRESETS, DEFAULT_RANGE, normalizeRange, rangeId, rangeLabel, validateCustom, windowMatches, addDays, MIN_CUSTOM_DAY } from "./analytics/range.js?v=an2";
 import { buildAnalyticsModel, metricPoints, METRICS } from "./analytics/model.js?v=an2";
 import { buildSignals } from "./analytics/signals.js?v=an2";
@@ -23,8 +23,8 @@ const $ = id => document.getElementById(id);
 const REFRESH_MS = 5 * 60 * 1000;
 const STORE_KEY = "boztik.analytics.view.v1";
 const OPT_OUT_COOKIE = "boztik_analytics_optout";
-const KEYS = ["summary", "trend", "sources", "health"];
-const FETCH = { summary: fetchSummary, trend: fetchTrend, sources: fetchSources };
+const KEYS = ["summary", "trend", "sources", "flow", "store", "health"];
+const FETCH = { summary: fetchSummary, trend: fetchTrend, sources: fetchSources, flow: fetchFlow, store: fetchStore };
 
 const S = {
   range: { ...DEFAULT_RANGE }, compare: true, metric: "website_views",
@@ -129,6 +129,8 @@ function render() {
   renderTrend();
   set("cc-standout-list", V.signalsView(S.signals, m));
   set("cc-traffic-sources", V.sourcesView(m));
+  set("cc-visitor-flow", V.flowView(m));
+  set("cc-store-clicks", V.storeView(m));
   renderPages();
   set("cc-data-health", V.healthView(m));
   set("cc-site-deliver", V.deliverView(m));
