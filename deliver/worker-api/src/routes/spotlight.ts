@@ -4,6 +4,10 @@ import { requireSession } from "../lib/auth";
 import { localDay } from "../lib/db";
 import { enqueueSpotlightEmail, processSpotlightEmailOutbox } from "../lib/spotlight-email";
 import { readImageDimensions } from "../lib/spotlight-image";
+import {
+  fetchSpotifyMetadata, normalizeSong, normalizeVideo, parseFeaturedVideo, parseSpotifyResource,
+  type FeaturedVideo, type SpotifyMedia,
+} from "../lib/spotlight-media";
 import { reserveUpload, claimUpload, commitUpload, getPendingUpload, holdStoredUploadReservation, releaseReservation, releaseStoredPending, markUncertain, reconcileStorage } from "../lib/storage";
 import { assertSameSiteOrigin, checkPublicRate, error, json, readJson, requireJson, segments, wrap } from "./util";
 
@@ -158,23 +162,23 @@ export async function checkSpotlightSubmissionRate(request: Request, env: Env): 
 function slugify(value: string): string {
   return value.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 48) || "profile";
 }
-function spotifyTrack(value: unknown): { id: string; url: string } | null {
-  if (typeof value !== "string" || !value.trim()) return null;
-  try {
-    const u = new URL(value.trim());
-    if (u.protocol !== "https:" || !["open.spotify.com", "www.open.spotify.com"].includes(u.hostname)) return null;
-    const match = u.pathname.match(/^\/track\/([A-Za-z0-9]{22})\/?$/);
-    const trackId = match?.[1];
-    return trackId ? { id: trackId, url: "https://open.spotify.com/track/" + trackId } : null;
-  } catch { return null; }
+/**
+ * Validates a pasted Spotify link (track, album, artist or playlist) and resolves its title and artwork from
+ * Spotify's public oEmbed endpoint. Empty input means "no song". Spotify outages degrade to an unverified link.
+ */
+async function resolveSongInput(value: unknown): Promise<SpotifyMedia | null> {
+  if (!value) return null;
+  const resource = parseSpotifyResource(value);
+  if (!resource) throw new HttpError(422, "invalid_spotify_link", "Use a public Spotify track, album, artist or playlist link.");
+  return fetchSpotifyMetadata(resource);
 }
-async function spotifyMetadata(track: { id: string; url: string }): Promise<{ id: string; url: string; title: string; artwork: string | null }> {
-  const response = await fetch("https://open.spotify.com/oembed?url=" + encodeURIComponent(track.url), { headers: { Accept: "application/json" } });
-  if (!response.ok) throw new HttpError(422, "spotify_unavailable", "Spotify could not retrieve that track. Check the song link and try again.");
-  const data = await response.json() as { title?: unknown; thumbnail_url?: unknown; provider_name?: unknown };
-  if (data.provider_name !== "Spotify" || typeof data.title !== "string") throw new HttpError(422, "spotify_invalid_track", "Please provide a public Spotify track link, not an artist or playlist link.");
-  const artwork = typeof data.thumbnail_url === "string" && data.thumbnail_url.startsWith("https://") ? data.thumbnail_url : null;
-  return { ...track, title: data.title.slice(0, 200), artwork };
+
+/** Validates a pasted YouTube or Twitch link. Empty input means "no video". */
+function resolveVideoInput(value: unknown): FeaturedVideo | null {
+  if (!value) return null;
+  const video = parseFeaturedVideo(value);
+  if (!video) throw new HttpError(422, "invalid_featured_video", "Use a public YouTube video or Twitch channel, VOD or clip URL.");
+  return video;
 }
 
 function publicImageUrl(profileId: string, position?: number): string {
@@ -200,42 +204,32 @@ async function spotlightGalleryByProfile(env: Env, profileIds: string[]): Promis
   return gallery;
 }
 
-function featuredVideo(value: unknown): { platform: "youtube" | "twitch"; id: string; kind: "video" | "channel" | "clip"; url: string } | null {
-  if (typeof value !== "string" || !value.trim() || value.length > 500) return null;
-  try {
-    const url = new URL(value.trim());
-    if (url.protocol !== "https:" || url.username || url.password || url.port) return null;
-    const host = url.hostname.toLowerCase().replace(/^www\./, "");
-    if (["youtube.com", "m.youtube.com", "youtu.be"].includes(host)) {
-      let id = "";
-      if (host === "youtu.be") id = url.pathname.split("/").filter(Boolean)[0] || "";
-      else if (url.pathname === "/watch") id = url.searchParams.get("v") || "";
-      else if (/^\/(shorts|live|embed)\/[A-Za-z0-9_-]{11}\/?$/.test(url.pathname)) id = url.pathname.split("/")[2] || "";
-      if (!/^[A-Za-z0-9_-]{11}$/.test(id)) return null;
-      return { platform: "youtube", id, kind: "video", url: "https://www.youtube.com/watch?v=" + id };
-    }
-    if (host === "twitch.tv" || host === "clips.twitch.tv") {
-      const parts = url.pathname.split("/").filter(Boolean);
-      if (host === "clips.twitch.tv") {
-        const slug = parts[0] || "";
-        if (!/^[A-Za-z0-9_-]{5,80}$/.test(slug)) return null;
-        return { platform: "twitch", id: slug, kind: "clip", url: "https://clips.twitch.tv/" + slug };
-      }
-      if (parts.length === 2 && parts[0] === "videos" && /^\d{5,20}$/.test(parts[1]!)) return { platform: "twitch", id: parts[1]!, kind: "video", url: "https://www.twitch.tv/videos/" + parts[1] };
-      const clipSlug = parts.length === 2 && parts[0] === "clip" ? parts[1] : parts.length === 3 && parts[1] === "clip" ? parts[2] : "";
-      if (clipSlug && /^[A-Za-z0-9_-]{5,80}$/.test(clipSlug)) return { platform: "twitch", id: clipSlug, kind: "clip", url: "https://clips.twitch.tv/" + clipSlug };
-      if (parts.length === 1 && /^[A-Za-z0-9_]{3,25}$/.test(parts[0]!)) return { platform: "twitch", id: parts[0]!.toLowerCase(), kind: "channel", url: "https://www.twitch.tv/" + parts[0]!.toLowerCase() };
-    }
-  } catch {}
-  return null;
+type DtoOptions = {
+  /** Moderator views (admin endpoints) may see media on profiles that are not published yet. */
+  moderator?: boolean;
+};
+
+/** Public song descriptor: the internal `verified` flag is for moderators only. */
+function publicSong(song: SpotifyMedia | null): Omit<SpotifyMedia, "verified"> | null {
+  if (!song) return null;
+  const { verified: _verified, ...rest } = song;
+  return rest;
 }
 
-function publicDto(row: any, gallery: any[] = []) {
+/** Exported for tests: the second layer of defence behind the `status='published'` SQL filters. */
+export function publicDto(row: any, gallery: any[] = [], options: DtoOptions = {}) {
   const imageUrl = row.image_key && row.status === "published" ? publicImageUrl(row.id) : null;
+  // Media is only playable/visible once the profile has been approved and published. Admin views opt in.
+  const mediaVisible = options.moderator === true || row.status === "published";
+  const song = mediaVisible ? normalizeSong(row.song_metadata) : null;
+  const video = mediaVisible ? normalizeVideo(row.video_metadata) : null;
   return {
     id: row.id, slug: row.slug, display_name: row.display_name, tagline: row.tagline,
     description: row.description, category: row.category, website_url: row.website_url,
-    social_links: publicSocialLinks(row.social_links), song: row.song_metadata ? JSON.parse(row.song_metadata) : null, video: row.video_metadata ? JSON.parse(row.video_metadata) : null, image_url: imageUrl,
+    social_links: publicSocialLinks(row.social_links),
+    song: options.moderator === true ? song : publicSong(song),
+    video,
+    image_url: imageUrl,
     images: row.status === "published" ? [
       ...(imageUrl ? [{ url: imageUrl, position: 0 }] : []),
       ...gallery.map(item => ({ url: publicImageUrl(row.id, Number(item.position)), position: Number(item.position) })),
@@ -404,11 +398,8 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
       const displayName = clean(b.display_name, 80), tagline = clean(b.tagline, 120);
       const description = cleanDescription(b.description), category = clean(b.category, 40);
       const email = clean(b.contact_email, 254).toLowerCase();
-      const songTrack = b.song_url ? spotifyTrack(b.song_url) : null;
-      if (b.song_url && !songTrack) throw new HttpError(422, "invalid_spotify_track", "Use a public Spotify track link.");
-      const song = songTrack ? await spotifyMetadata(songTrack) : null;
-      const video = b.video_url ? featuredVideo(b.video_url) : null;
-      if (b.video_url && !video) throw new HttpError(422, "invalid_featured_video", "Use a public YouTube video or Twitch channel, VOD or clip URL.");
+      const song = await resolveSongInput(b.song_url);
+      const video = resolveVideoInput(b.video_url);
       const website = safeWebsiteUrl(b.website_url);
       if (displayName.length < 2 || tagline.length < 8 || description.length < 30) throw new HttpError(422, "invalid_profile", "Please provide a name, a clear tagline and a description of at least 30 characters.");
       if (!CATEGORIES.has(category)) throw new HttpError(422, "invalid_category", "Choose a valid category.");
@@ -544,11 +535,8 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       const description = cleanDescription(b.description), category = clean(b.category, 40);
       const email = clean(b.contact_email, 254).toLowerCase();
       const website = b.website_url ? safeWebsiteUrl(b.website_url) : null;
-      const songTrack = b.song_url ? spotifyTrack(b.song_url) : null;
-      if (b.song_url && !songTrack) throw new HttpError(422, "invalid_spotify_track", "Use a public Spotify track link.");
-      const song = songTrack ? await spotifyMetadata(songTrack) : null;
-      const video = b.video_url ? featuredVideo(b.video_url) : null;
-      if (b.video_url && !video) throw new HttpError(422, "invalid_featured_video", "Use a public YouTube video or Twitch channel, VOD or clip URL.");
+      const song = await resolveSongInput(b.song_url);
+      const video = resolveVideoInput(b.video_url);
       if (displayName.length < 2 || tagline.length < 8 || description.length < 30) throw new HttpError(422, "invalid_profile", "Please provide a name, a clear tagline and a description of at least 30 characters.");
       if (!CATEGORIES.has(category)) throw new HttpError(422, "invalid_category", "Choose a valid category.");
       // Contact email is optional for admin-created profiles (the column is NOT NULL, so blank is stored as "").
@@ -570,7 +558,7 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
         "INSERT INTO spotlight_profiles (id,slug,display_name,tagline,description,category,contact_email,website_url,social_links,song_metadata,video_metadata,status,application_status,review_unread,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,'pending','approved',0,?,?)"
       ).bind(id,slug,displayName,tagline,description,category,email,website,JSON.stringify(social),song ? JSON.stringify(song) : null,video ? JSON.stringify(video) : null,timestamp,timestamp).run();
       const row = await env.DB.prepare("SELECT * FROM spotlight_profiles WHERE id=?").bind(id).first<any>();
-      return json({ ok:true, profile:{...publicDto(row),contact_email:row.contact_email,status:row.status,application_status:row.application_status} }, 201);
+      return json({ ok:true, profile:{...publicDto(row, [], { moderator: true }),contact_email:row.contact_email,status:row.status,application_status:row.application_status} }, 201);
     }
     if (!seg.length && request.method === "GET") {
       const rows = await env.DB.prepare(
@@ -584,7 +572,7 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       ).first<any>();
       const gallery = await spotlightGalleryByProfile(env, (rows.results || []).map((row: any) => row.id));
       const profiles = (rows.results || []).map((r:any) => ({
-        ...publicDto(r, gallery.get(r.id)),
+        ...publicDto(r, gallery.get(r.id), { moderator: true }),
         contact_email:r.contact_email,
         status:r.status,
         application_status:r.application_status,
@@ -690,11 +678,8 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       const category = b.category === undefined ? old.category : clean(b.category, 40);
       const contactEmail = b.contact_email === undefined ? old.contact_email : clean(b.contact_email, 254).toLowerCase();
       const website = b.website_url === undefined ? old.website_url : (b.website_url ? safeWebsiteUrl(b.website_url) : null);
-      const songTrack = b.song_url === undefined ? (old.song_metadata ? spotifyTrack(JSON.parse(old.song_metadata).url) : null) : (b.song_url ? spotifyTrack(b.song_url) : null);
-      if (b.song_url && !songTrack) throw new HttpError(422, "invalid_spotify_track", "Use a public Spotify track link.");
-      const song = b.song_url === undefined ? (old.song_metadata ? JSON.parse(old.song_metadata) : null) : (songTrack ? await spotifyMetadata(songTrack) : null);
-      const video = b.video_url === undefined ? (old.video_metadata ? JSON.parse(old.video_metadata) : null) : (b.video_url ? featuredVideo(b.video_url) : null);
-      if (b.video_url && !video) throw new HttpError(422, "invalid_featured_video", "Use a public YouTube video or Twitch channel, VOD or clip URL.");
+      const song = b.song_url === undefined ? normalizeSong(old.song_metadata) : await resolveSongInput(b.song_url);
+      const video = b.video_url === undefined ? normalizeVideo(old.video_metadata) : resolveVideoInput(b.video_url);
       const social = b.social_links === undefined ? publicSocialLinks(old.social_links) : checkedSocialLinks(b.social_links);
       if (displayName.length < 2 || tagline.length < 8 || description.length < 30 || !CATEGORIES.has(category)) throw new HttpError(422, "invalid_profile", "Check the name, tagline, description and category.");
       if (b.contact_email !== undefined && contactEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail)) throw new HttpError(422, "invalid_email", "Enter a valid contact email, or leave the field blank.");
@@ -730,7 +715,7 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       return json({
         ok:true,
         profile:{
-          ...publicDto(row),
+          ...publicDto(row, [], { moderator: true }),
           contact_email:row.contact_email,
           status:row.status,
           application_status:row.application_status,
