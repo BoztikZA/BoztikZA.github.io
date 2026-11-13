@@ -20,7 +20,7 @@
     "test:spotlight-admin": "tsx scripts/spotlight-admin-test.mts",
     "test:spotlight-email": "tsx scripts/spotlight-email-test.mts",
     "test:spotlight-form": "node scripts/spotlight-form-test.mjs",
-    "test:spotlight-media": "tsx scripts/spotlight-media-test.mts && tsx scripts/spotlight-media-routes-test.mts",
+    "test:spotlight-media": "tsx scripts/spotlight-media-test.mts && tsx scripts/spotlight-media-routes-test.mts && tsx scripts/spotlight-media-client-test.mts",
     "test": "npm run test:unit && npm run test:retention && npm run test:traffic-source && npm run test:analytics && npm run test:client && npm run test:spotlight && npm run test:spotlight-admin && npm run test:spotlight-email && npm run test:spotlight-form && npm run test:spotlight-media"
   },
   "devDependencies": {

@@ -1,4 +1,5 @@
 import { socialLinksMarkup } from "./social-links.js";
+import { describeSong, describeVideo, mediaLinkCardMarkup } from "./media.js";
 
 const API = "https://deliver-api.boztik.com/api/public/spotlight";
 const visitorId = (() => {
@@ -65,35 +66,6 @@ function applySeo(profile, mainImage, websiteUrl) {
   let script = document.getElementById("sp-jsonld");
   if (!script) { script = document.createElement("script"); script.type = "application/ld+json"; script.id = "sp-jsonld"; document.head.appendChild(script); }
   script.textContent = JSON.stringify(ld);
-}
-
-function renderMusic(song) {
-  if (!song || typeof song.id !== "string" || !/^[A-Za-z0-9]{22}$/.test(song.id)) return "";
-  const url = "https://open.spotify.com/track/" + song.id;
-  return `<section class="sp-media-link-card" aria-label="Featured song">
-    <div><span class="sp-kicker">FEATURED SINGLE</span><strong>${esc(song.title || "Listen to their music")}</strong><p>Hear the full track on Spotify.</p></div>
-    <a class="sp-button sp-button-outline" href="${url}" target="_blank" rel="noopener noreferrer" data-outbound>Listen on Spotify ↗</a>
-  </section>`;
-}
-
-function renderFeaturedVideo(video) {
-  if (!video || !["youtube", "twitch"].includes(video.platform) || typeof video.id !== "string") return "";
-  let external = "";
-  const provider = video.platform === "youtube" ? "YouTube" : "Twitch";
-  if (video.platform === "youtube" && video.kind === "video" && /^[A-Za-z0-9_-]{11}$/.test(video.id)) {
-    external = "https://www.youtube.com/watch?v=" + video.id;
-  } else if (video.platform === "twitch" && video.kind === "channel" && /^[a-z0-9_]{3,25}$/.test(video.id)) {
-    external = "https://www.twitch.tv/" + video.id;
-  } else if (video.platform === "twitch" && video.kind === "video" && /^\d{5,20}$/.test(video.id)) {
-    external = "https://www.twitch.tv/videos/" + video.id;
-  } else if (video.platform === "twitch" && video.kind === "clip" && /^[A-Za-z0-9_-]{5,80}$/.test(video.id)) {
-    external = "https://clips.twitch.tv/" + video.id;
-  }
-  if (!external) return "";
-  return `<section class="sp-media-link-card" aria-label="Featured video">
-    <div><span class="sp-kicker">FEATURED VIDEO · ${provider.toUpperCase()}</span><strong>Watch their work</strong><p>Open the original video or stream on ${provider}.</p></div>
-    <a class="sp-button sp-button-outline" href="${esc(external)}" target="_blank" rel="noopener noreferrer" data-outbound>Watch on ${provider} ↗</a>
-  </section>`;
 }
 
 function profileImages(profile) {
@@ -215,8 +187,8 @@ async function load() {
     applySeo(profile, mainImage, websiteUrl);
     const name = profile.display_name;
     const host_ = websiteUrl ? new URL(websiteUrl).hostname.replace(/^www\./, "") : "";
-    const music = renderMusic(profile.song);
-    const featuredVideo = renderFeaturedVideo(profile.video);
+    const music = mediaLinkCardMarkup(describeSong(profile.song));
+    const featuredVideo = mediaLinkCardMarkup(describeVideo(profile.video));
     const featuredLabel = profile.featured
       ? ` · FEATURED TODAY <span class="sp-countdown" data-countdown="${Number(profile.featured_until || 0)}">Ends in <time>--:--:--</time></span>`
       : "";

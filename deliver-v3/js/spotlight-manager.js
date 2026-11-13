@@ -381,7 +381,7 @@ async function openReviewModal(profile) {
     }
   }
   const socials = Object.entries(profile.social_links || {}).map(([key, value]) => reviewLink(key, value)).join("");
-  const song = profile.song?.url ? reviewLink("Spotify track: " + (profile.song.title || "Open track"), profile.song.url) : "";
+  const song = profile.song?.url ? reviewLink("Spotify " + (profile.song.type || "track") + (profile.song.verified === false ? " (unverified: Spotify was unreachable)" : "") + ": " + (profile.song.title || "Open link"), profile.song.url) : "";
   let videoEmbed = "";
   const video = profile.video;
   if (video?.platform === "youtube" && video.kind === "video" && /^[A-Za-z0-9_-]{11}$/.test(video.id || "")) {
