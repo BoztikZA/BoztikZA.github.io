@@ -1,0 +1,233 @@
+/* ==========================================================================
+   Boztik homepage boost (index.html only). Additive: loaded after
+   homepage.css and never overrides working behaviour, only adds to it.
+
+   - Hero ambient glow, gradient headline accent, print hover lift
+   - Trust strip, "how it works" steps, FAQ
+   - Card/button hover polish
+   - Scroll-reveal (.bz-reveal), only hidden when JS runs AND motion is welcome
+   - Sticky mobile call-to-action
+   ========================================================================== */
+
+/* ---------- Hero polish ---------- */
+.hm-hero { position: relative; }
+.hm-hero::before {
+  content: "";
+  position: absolute;
+  top: -6%;
+  right: -8%;
+  width: min(760px, 70vw);
+  aspect-ratio: 1;
+  background: radial-gradient(closest-side, rgba(142, 255, 61, 0.15), rgba(142, 255, 61, 0.04) 55%, transparent 75%);
+  pointer-events: none;
+  z-index: 0;
+}
+.hm-hero__grid { position: relative; z-index: 1; }
+/* Three keyword-led lines: slightly smaller so the CTAs sit higher on first view. */
+.hm-hero__title { font-size: clamp(2.3rem, 3.9vw, 3.5rem); }
+
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .hm-hero__title span:first-child {
+    background: linear-gradient(92deg, #f6fff4 0%, #d4ffb0 45%, #8eff3d 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+}
+
+.bz-hero__note {
+  margin-top: 18px;
+  color: var(--hm-muted);
+  font-size: 0.92rem;
+}
+.bz-hero__note a {
+  color: var(--hm-neon);
+  text-decoration: underline;
+  text-decoration-color: rgba(142, 255, 61, 0.4);
+  text-underline-offset: 3px;
+}
+.bz-hero__note a:hover { text-decoration-color: var(--hm-neon); }
+
+.hm-btn--primary { box-shadow: 0 0 0 0 rgba(142, 255, 61, 0); }
+.hm-btn--primary:hover { box-shadow: 0 14px 34px -10px rgba(142, 255, 61, 0.55); }
+.hm-btn:focus-visible,
+.bz-strip__list a:focus-visible,
+.bz-faq__item summary:focus-visible {
+  outline: 2px solid var(--hm-neon);
+  outline-offset: 3px;
+}
+
+/* ---------- Trust strip ---------- */
+.bz-strip {
+  padding-block: 0 clamp(8px, 2vw, 20px);
+}
+.bz-strip__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0;
+  padding: 18px 0;
+  list-style: none;
+  border-block: 1px solid var(--hm-line);
+}
+.bz-strip__list a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border: 1px solid var(--hm-line);
+  border-radius: 999px;
+  background: rgba(246, 255, 244, 0.03);
+  color: var(--hm-text);
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+.bz-strip__list a::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--hm-neon);
+  box-shadow: 0 0 10px rgba(142, 255, 61, 0.7);
+}
+.bz-strip__list a:hover {
+  border-color: var(--hm-line-strong);
+  background: rgba(142, 255, 61, 0.09);
+}
+
+/* ---------- How it works ---------- */
+.bz-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(16px, 2.4vw, 28px);
+  margin: clamp(28px, 4vw, 48px) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.bz-step {
+  position: relative;
+  padding: 28px 26px 30px;
+  border: 1px solid var(--hm-line);
+  border-radius: 14px;
+  background: linear-gradient(160deg, rgba(246, 255, 244, 0.045), rgba(246, 255, 244, 0.01));
+  transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+.bz-step:hover {
+  border-color: var(--hm-line-strong);
+  box-shadow: 0 22px 50px -28px rgba(142, 255, 61, 0.4);
+}
+.bz-step__num {
+  display: block;
+  margin-bottom: 18px;
+  color: var(--hm-neon);
+  font-family: "Plus Jakarta Sans", "Inter", sans-serif;
+  font-size: 2.1rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+.bz-step h3 { margin: 0 0 8px; font-size: 1.15rem; letter-spacing: -0.02em; color: var(--hm-text); }
+.bz-step p { margin: 0; color: var(--hm-muted); line-height: 1.65; }
+.bz-process__cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 22px;
+  margin-top: clamp(28px, 4vw, 44px);
+}
+
+/* ---------- FAQ ---------- */
+.bz-faq__list {
+  max-width: 820px;
+  margin-top: clamp(24px, 3vw, 40px);
+  border-bottom: 1px solid var(--hm-line);
+}
+.bz-faq__item { border-top: 1px solid var(--hm-line); }
+.bz-faq__item summary {
+  position: relative;
+  padding: 22px 48px 22px 0;
+  color: var(--hm-text);
+  font-size: 1.08rem;
+  font-weight: 600;
+  line-height: 1.4;
+  list-style: none;
+  cursor: pointer;
+}
+.bz-faq__item summary::-webkit-details-marker { display: none; }
+.bz-faq__item summary::before,
+.bz-faq__item summary::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  width: 16px;
+  height: 2px;
+  background: var(--hm-neon);
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+.bz-faq__item summary::after { transform: rotate(90deg); }
+.bz-faq__item[open] summary::after { transform: rotate(0deg); opacity: 0; }
+.bz-faq__item p {
+  margin: 0;
+  padding: 0 48px 24px 0;
+  color: var(--hm-muted);
+  line-height: 1.7;
+}
+
+/* ---------- Card polish on existing blocks ---------- */
+.hm-offers li { transition: background-color 0.25s ease; }
+.hm-offers li:hover { background: linear-gradient(90deg, rgba(142, 255, 61, 0.06), transparent 70%); }
+.hm-guide-list a { transition: background-color 0.25s ease, border-color 0.25s ease; }
+.hm-guide-list a:hover { background: rgba(142, 255, 61, 0.05); }
+
+/* ---------- Sticky mobile CTA ---------- */
+.bz-sticky-cta { display: none; }
+@media (max-width: 720px) {
+  .bz-sticky-cta {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 40;
+    display: block;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+    background: linear-gradient(to top, rgba(5, 8, 6, 0.96) 60%, rgba(5, 8, 6, 0));
+    transform: translateY(110%);
+    transition: transform 0.3s ease;
+    pointer-events: none;
+  }
+  .bz-sticky-cta[hidden] { display: none !important; }
+  .bz-sticky-cta.is-visible { transform: none; pointer-events: auto; }
+  .bz-sticky-cta .hm-btn { width: 100%; justify-content: center; }
+  .has-bz-sticky footer { padding-bottom: 92px; }
+}
+
+/* ---------- Motion (only when JS runs and motion is welcome) ---------- */
+@media (prefers-reduced-motion: no-preference) {
+  .js .bz-reveal {
+    opacity: 0;
+    transform: translateY(18px);
+    transition: opacity 0.7s var(--hm-ease), transform 0.7s var(--hm-ease);
+    transition-delay: calc(var(--bz-i, 0) * 90ms);
+  }
+  .js .bz-reveal.is-in { opacity: 1; transform: none; }
+  .bz-step.is-in:hover { transform: translateY(-4px); transition-delay: 0s; }
+
+  .hm-print__mat { transition: transform 0.5s var(--hm-ease), box-shadow 0.5s var(--hm-ease); }
+  .hm-print:hover .hm-print__mat {
+    transform: translateY(-5px) rotate(-0.4deg);
+    box-shadow: 0 50px 80px -30px rgba(0, 0, 0, 0.9), 0 0 60px -20px rgba(142, 255, 61, 0.35);
+  }
+}
+
+@media (max-width: 900px) {
+  .bz-steps { grid-template-columns: minmax(0, 1fr); }
+  .hm-hero::before { right: -30%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bz-sticky-cta { transition: none; }
+}

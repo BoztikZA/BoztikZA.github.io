@@ -97,7 +97,7 @@ import { socialLinksMarkup } from "./social-links.js";
           <a class="hm-spotlight-image-link" href="${profilePath}" aria-label="View ${escapeHtml(name)}'s Boztik Spotlight profile">
             <div class="hm-spotlight-image">
               ${image}
-              ${featured ? `<span class="hm-spotlight-featured-label">Today's feature</span>` : ""}
+              ${featured ? `<span class="hm-spotlight-featured-label"><span aria-hidden="true">★</span> Today's feature</span><span class="bz-spot-seal"><span class="bz-spot-seal__tick" aria-hidden="true">✓</span> Hand-reviewed</span>` : ""}
             </div>
           </a>
           ${imageUrls.length > 1 ? `<div class="hm-spotlight-gallery-controls" role="group" aria-label="${escapeHtml(name)} image gallery">${imageUrls.map((_, index) => `<button type="button" data-gallery-index="${index}" aria-label="Show image ${index + 1} of ${imageUrls.length}" aria-pressed="${index === 0}" class="${index === 0 ? "is-active" : ""}"></button>`).join("")}</div>` : ""}
@@ -111,7 +111,7 @@ import { socialLinksMarkup } from "./social-links.js";
           ${socialLinks ? `<div class="hm-spotlight-socials" aria-label="Social profiles">${socialLinks}</div>` : ""}
           <div class="hm-spotlight-actions">
             <a class="hm-spotlight-profile-link" href="${profilePath}">See what ${escapeHtml(name)} offers <span aria-hidden="true">↗</span></a>
-            ${websiteUrl ? `<a class="hm-spotlight-website-link" href="${escapeHtml(websiteUrl)}" target="_blank" rel="noopener noreferrer" data-outbound>Visit website <span aria-hidden="true">↗</span></a>` : ""}
+            ${websiteUrl ? `<a class="hm-spotlight-website-link" href="${escapeHtml(websiteUrl)}" target="_blank" rel="noopener noreferrer" data-outbound>${featured ? "Visit " + escapeHtml(name) : "Visit website"} <span aria-hidden="true">↗</span></a>` : ""}
             <button class="hm-spotlight-share" type="button" data-share-url="${escapeHtml(shareUrl)}" data-share-title="${escapeHtml(name)}">Share profile</button>
           </div>
           <span class="hm-spotlight-share-status" role="status" aria-live="polite"></span>
@@ -125,8 +125,8 @@ import { socialLinksMarkup } from "./social-links.js";
         <div class="hm-spotlight-card-content">
           <span class="hm-spotlight-category">OPEN FEATURE SLOT</span>
           <h3>Your business could be here</h3>
-          <p class="hm-spotlight-description">Get a free Boztik profile with your logo, a clear description of what you sell or provide, and a direct link for customers to find you.</p>
-          <div class="hm-spotlight-actions"><a class="hm-spotlight-profile-link" href="spotlight/submit/">Get featured for free <span aria-hidden="true">↗</span></a></div>
+          <p class="hm-spotlight-description">Get a Boztik profile with your logo, a clear description of what you sell or provide, and a direct link for customers to find you.</p>
+          <div class="hm-spotlight-actions"><a class="hm-spotlight-profile-link" href="spotlight/submit/">Apply for a feature <span aria-hidden="true">↗</span></a></div>
         </div>
       </article>`;
   }
@@ -261,24 +261,43 @@ import { socialLinksMarkup } from "./social-links.js";
     });
   }
 
-  function showEmptyState() {
-    host.innerHTML = `
-      <div class="hm-spotlight-empty">
-        <span class="hm-spotlight-category">FEATURED BUSINESS SPOTLIGHT</span>
-        <h3>Your business could be today's feature.</h3>
-        <p>Do you want to be featured for free? Share your logo, what you offer and your website, and get discovered by new customers on Boztik.</p>
-        <div class="hm-spotlight-empty-actions"><a class="hm-spotlight-profile-link" href="spotlight/submit/">Get featured for free <span aria-hidden="true">↗</span></a><a class="hm-spotlight-website-link" href="spotlight/">Browse the directory</a></div>
+  function previewMarkup(kicker, heading, copy, primary, secondary) {
+    return `
+      <div class="hm-spotlight-empty bz-spot-preview">
+        <div class="bz-spot-preview__card" aria-hidden="true">
+          <span class="bz-spot-preview__tag">Example listing</span>
+          <span class="bz-spot-preview__mark">YB</span>
+          <strong>Your Business Name</strong>
+          <small>One clear line about what you offer</small>
+          <span class="bz-spot-preview__btn">Visit your website ↗</span>
+        </div>
+        <div class="bz-spot-preview__copy">
+          <span class="hm-spotlight-category">${kicker}</span>
+          <h3>${heading}</h3>
+          <p>${copy}</p>
+          <div class="hm-spotlight-empty-actions">${primary}${secondary}</div>
+        </div>
       </div>`;
   }
 
+  function showEmptyState() {
+    host.innerHTML = previewMarkup(
+      "FEATURED BUSINESS SPOTLIGHT",
+      "Your business could be today's feature.",
+      "Share your logo, what you offer and your website, and be featured on the Boztik homepage with a direct link for new customers.",
+      '<a class="hm-spotlight-profile-link" href="spotlight/submit/">Apply for a feature <span aria-hidden="true">↗</span></a>',
+      '<a class="hm-spotlight-website-link" href="spotlight/">Browse the directory</a>'
+    );
+  }
+
   function showUnavailableState() {
-    host.innerHTML = `
-      <div class="hm-spotlight-empty" role="status">
-        <span class="hm-spotlight-category">BOZTIK SPOTLIGHT</span>
-        <h3>Today's feature is loading slowly.</h3>
-        <p>Browse the full directory of featured businesses, or apply to have your own business featured for free.</p>
-        <div class="hm-spotlight-empty-actions"><a class="hm-spotlight-profile-link" href="spotlight/">Open the directory <span aria-hidden="true">↗</span></a><a class="hm-spotlight-website-link" href="spotlight/submit/">Get featured for free</a></div>
-      </div>`;
+    host.innerHTML = previewMarkup(
+      "BOZTIK SPOTLIGHT",
+      "Today's feature is loading slowly.",
+      "Browse the full directory of featured businesses, or apply to have your own business featured.",
+      '<a class="hm-spotlight-profile-link" href="spotlight/">Open the directory <span aria-hidden="true">↗</span></a>',
+      '<a class="hm-spotlight-website-link" href="spotlight/submit/">Apply for a feature</a>'
+    );
   }
 
   fetch(API + "?limit=3", { headers: { Accept: "application/json" } })

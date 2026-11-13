@@ -156,6 +156,41 @@ test("views: current Analytics renderers escape API strings", () => {
   assert.ok(!html.includes("<img"), "raw <img> reached the markup");
   assert.ok(!/onerror=alert/.test(html.replace(/&lt;img src=x onerror=alert\(1\)&gt;/g, "")), "event handler attribute reached the markup");
 });
+test("views: visitor-flow and store-click panels render measured details and escape API values", () => {
+  const flow = {
+    status: "ok", visits: 25, multi_page_visits: 10, single_page_visits: 15,
+    min_visits: 20, events_used: 25, events_capped: false, session_coverage_pct: 60,
+    session_data_since: "2026-10-01",
+    entries: [{ page: "homepage", visits: 15 }],
+    exits: [{ page: "toolkit", visits: 8 }],
+    transitions: [{ from: "homepage", to: "toolkit", visits: 5 }],
+    journeys: [{ path: ["homepage", "toolkit"], truncated: false, visits: 4 }],
+    pages: [],
+  };
+  const store = {
+    total: 8, outbound_total: 6, unique_sessions: 5, store_page_views: 20, product_card_clicks: 4,
+    by_destination: [{ destination: "redbubble", clicks: 3, unique_sessions: 2, top_source: "store_grid" }],
+    sources: [{ source_placement: "store_grid", clicks: 4 }],
+    previous: { total: 5 }, data_since: "2026-10-01",
+  };
+  const m = model({ flow, store });
+  const flowHtml = V.flowView(m), storeHtml = V.storeView(m);
+  assert.ok(flowHtml.includes("Home") && flowHtml.includes("Creative Toolkit"));
+  assert.ok(flowHtml.includes("Most common visitor journeys") && flowHtml.includes("60%"));
+  assert.ok(storeHtml.includes("Redbubble") && storeHtml.includes("6</b> outbound store clicks"));
+  assert.ok(storeHtml.includes("Store product cards") && storeHtml.includes("product-card clicks"));
+  const report = buildFullReport(m), csv = buildCsv(m);
+  assert.ok(report.includes("VISITOR FLOW") && report.includes("Redbubble") && report.includes("Outbound store clicks"));
+  assert.ok(csv.includes("VISITOR JOURNEYS") && csv.includes("homepage -> toolkit") && csv.includes("store_grid"));
+  const hostile = model({
+    flow: { ...flow, entries: [{ page: EVIL, visits: 1 }], journeys: [{ path: [EVIL, "toolkit"], visits: 1 }] },
+    store: { ...store, by_destination: [{ destination: EVIL, clicks: 1, unique_sessions: 1, top_source: EVIL }], sources: [{ source_placement: EVIL, clicks: 1 }] },
+  });
+  const safe = V.flowView(hostile) + V.storeView(hostile);
+  assert.ok(!safe.includes("<img"), "raw API markup reached the visitor/store panels");
+  assert.ok(safe.includes("&lt;img"), "hostile text should be rendered as text");
+});
+
 test("views: sort puts null last in both directions; paginate clamps; filter is case-insensitive", () => {
   const rows = [{ label: "B", page: "b", views: 5, cmp: { change: null } }, { label: "A", page: "a", views: 5, cmp: { change: 10 } }, { label: "C", page: "c", views: 9, cmp: { change: -5 } }];
   assert.deepEqual(V.sortPages(rows, "change", "desc").map(r => r.label), ["A", "C", "B"]);

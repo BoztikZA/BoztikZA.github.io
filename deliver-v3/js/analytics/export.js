@@ -56,6 +56,18 @@ export function buildCsv(model, { generatedAt = new Date() } = {}) {
   for (const pg of model.pages ?? []) L.push(row([pg.label, pg.page, pg.views, pg.share, pg.prev, pg.cmp?.change ?? null, pg.entrances, pg.exits, pg.sessionEvents]));
   L.push("");
 
+  if (model.flow) {
+    L.push(row(["VISITOR JOURNEYS"]));
+    L.push(row(["Journey", "Recorded visits"]));
+    for (const j of model.flow.journeys ?? []) {
+      if (j.path?.length > 1) L.push(row([j.path.join(" -> "), j.visits]));
+    }
+    L.push(row(["Page transitions"]));
+    L.push(row(["From", "To", "Recorded visits"]));
+    for (const t of model.flow.transitions ?? []) L.push(row([t.from, t.to, t.visits]));
+    L.push("");
+  }
+
   if (model.sources) {
     L.push(row(["TRAFFIC SOURCES"]));
     L.push(row(["Source", "Visits", "Share %"]));
@@ -66,9 +78,14 @@ export function buildCsv(model, { generatedAt = new Date() } = {}) {
 
   if (model.store) {
     L.push(row(["STORE CLICKS"]));
-    L.push(row(["Destination", "Clicks", "Sessions"]));
-    for (const d of model.store.by_destination ?? []) L.push(row([d.destination, d.clicks, d.unique_sessions]));
-    L.push(row(["Total", model.store.total, model.store.unique_sessions]));
+    L.push(row(["Destination", "Clicks", "Sessions", "Top placement"]));
+    for (const d of model.store.by_destination ?? []) L.push(row([d.destination, d.clicks, d.unique_sessions, d.top_source]));
+    L.push(row(["Total tracked links", model.store.total, model.store.unique_sessions, ""]));
+    L.push(row(["Outbound store clicks", model.store.outbound_total, "", ""]));
+    L.push(row(["Stores page views", model.store.store_page_views, "", ""]));
+    L.push(row(["Store product-card clicks", model.store.product_card_clicks, "", ""]));
+    L.push(row(["Placement", "Clicks"]));
+    for (const placement of model.store.sources ?? []) L.push(row([placement.source_placement, placement.clicks]));
     L.push("");
   }
 
@@ -97,7 +114,8 @@ export function buildFullReport(model, { generatedAt = new Date() } = {}) {
   line(); line("1. EXECUTIVE SUMMARY");
   line(`- Page views (counted page loads): ${n(w.total)} (not unique people).`);
   line(`- Most-viewed page: ${model.top ? `${model.top.label} — ${fmtInt(model.top.views)} views (${model.top.share ?? "—"}% of counted page views)` : "No page recorded"}.`);
-  line(`- Tracked store-link clicks: ${n(model.totals?.store_clicks)} (link activations, not purchases).`);
+  line(`- Tracked store-link activations: ${n(model.totals?.store_clicks)} (includes internal Boztik Stores links).`);
+  line(`- Outbound clicks to Redbubble, TeePublic and Ko-fi: ${n(model.store?.outbound_total)} (not purchases).`);
   line(`- Private Deliver views: ${d?.available ? fmtInt(d.totals.views) : "not available"} (separate counter; not website page views).`);
 
   line(); line("2. WEBSITE PAGE PERFORMANCE");
@@ -117,9 +135,35 @@ export function buildFullReport(model, { generatedAt = new Date() } = {}) {
   }
 
   line(); line("4. TRACKED STORE-LINK CLICKS");
-  line(`- Store-link clicks: ${n(model.totals?.store_clicks)}.`);
-  line("- These are recorded link activations, not completed purchases. A destination-level breakdown is not available in the current dashboard connection.");
-  line(); line("5. DELIVER ACTIVITY (SEPARATE SYSTEM)");
+  if (!s) line("- Store-click data is unavailable.");
+  else {
+    line(`- All tracked link activations: ${fmtInt(s.total)} (includes internal Boztik Stores navigation).`);
+    line(`- Outbound store clicks: ${fmtInt(s.outbound_total)}; sessions with a click: ${fmtInt(s.unique_sessions)}.`);
+    line(`- Stores page views: ${fmtInt(s.store_page_views)}; product-card clicks: ${fmtInt(s.product_card_clicks)}.`);
+    for (const row of s.by_destination ?? []) line(`- ${row.destination}: ${fmtInt(row.clicks)} clicks from ${fmtInt(row.unique_sessions)} sessions; top placement: ${row.top_source || "not recorded"}.`);
+    if (s.sources?.length) line("- Clicks by placement: " + s.sources.map(row => `${row.source_placement} ${fmtInt(row.clicks)}`).join("; ") + ".");
+  }
+  line("- Link activations are not completed purchases or revenue.");
+  
+  line(); line("5. VISITOR FLOW (anonymous recorded sessions)");
+  if (!f) line("- Visitor-flow data is unavailable.");
+  else {
+    line(`- Recorded visits: ${fmtInt(f.visits)}; multi-page visits: ${fmtInt(f.multi_page_visits)}; single-page visits: ${fmtInt(f.single_page_visits)}.`);
+    line(`- Session coverage: ${f.session_coverage_pct == null ? "not measured" : `${f.session_coverage_pct}%`} of counted page views.`);
+    const names = { homepage: "Home", stores: "Stores", deliver: "Deliver", services: "Services", portfolio: "Portfolio", toolkit: "Creative Toolkit", tools: "Tools", guides: "Guides", about: "About", support: "Support", contact: "Contact", spotlight: "Spotlight" };
+    const label = key => names[key] || key;
+    if (f.entries?.length) line("- Recorded entry pages: " + f.entries.slice(0, 8).map(row => `${label(row.page)} ${fmtInt(row.visits)}`).join("; ") + ".");
+    if (f.exits?.length) line("- Last page observed: " + f.exits.slice(0, 8).map(row => `${label(row.page)} ${fmtInt(row.visits)}`).join("; ") + ".");
+    if (f.journeys?.some(row => row.path?.length > 1)) {
+      line("- Most common multi-page journeys:");
+      f.journeys.filter(row => row.path?.length > 1).slice(0, 8).forEach(row => line(`  - ${row.path.map(label).join(" → ")}: ${fmtInt(row.visits)} visits.`));
+    } else line("- No multi-page journeys were recorded in this period.");
+    if (f.transitions?.length) line("- Common page transitions: " + f.transitions.slice(0, 10).map(row => `${label(row.from)} → ${label(row.to)} (${fmtInt(row.visits)})`).join("; ") + ".");
+    line("- A visit starts after 30 minutes without a recorded page event. “Last page observed” is not proof the visitor left the site. These patterns represent only the measured session sample.");
+    if (f.events_capped) line("- The Worker event safety cap was reached; flow results use a capped sample.");
+    if (f.session_data_since) line(`- Visitor-path collection began: ${f.session_data_since}.`);
+  }
+  line(); line("6. DELIVER ACTIVITY (SEPARATE SYSTEM)");
   if (!d?.available) line("- Deliver activity is unavailable for this period.");
   else {
     line(`- Views: ${fmtInt(d.totals.views)}; downloads: ${fmtInt(d.totals.downloads)}; shares: ${fmtInt(d.totals.shares)}; active deliveries: ${fmtInt(d.totals.active)}.`);
@@ -130,7 +174,7 @@ export function buildFullReport(model, { generatedAt = new Date() } = {}) {
     line("- Deliver views are private delivery-page or direct-image loads. They are not added to public website page views.");
   }
 
-  line(); line("6. TREND (like-for-like) — DAILY TRAFFIC & ACTIVITY");
+  line(); line("7. TREND (like-for-like) — DAILY TRAFFIC & ACTIVITY");
   if (!t?.buckets?.length) line("- Trend data is unavailable.");
   else {
     line(`- Bucket granularity: ${model.granularity === "hour" ? "hourly" : "daily"}.`);
@@ -147,12 +191,12 @@ export function buildFullReport(model, { generatedAt = new Date() } = {}) {
     line("- Null / not measured values are deliberately not treated as zero. The final in-progress bucket is included as partial data.");
   }
 
-  line(); line("7. WHAT STANDS OUT");
+  line(); line("8. WHAT STANDS OUT");
   const signals = buildSignals(model);
   if (!signals.length) line("- No pattern crossed the dashboard's reporting thresholds.");
   else signals.forEach(x => line(`- [${x.level.toUpperCase()}] ${x.title}: ${x.detail}`));
 
-  line(); line("8. DATA HEALTH & LIMITATIONS");
+  line(); line("9. DATA HEALTH & LIMITATIONS");
   if (model.limited) line("- Limited mode: the deployed Worker does not provide the selected reporting range; some sections may only show the fixed 30-day page counter.");
   if (f) line(`- Visitor-flow coverage: ${f.session_coverage_pct === null ? "not measured" : `${f.session_coverage_pct}%`}; this is a subset of page views, not every page load.`);
   if (model.website?.dataSince) line(`- Website page-view collection began: ${model.website.dataSince}.`);

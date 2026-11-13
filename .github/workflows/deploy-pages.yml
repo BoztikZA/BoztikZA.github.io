@@ -37,8 +37,83 @@ jobs:
             deliver.html guide-ai-vs-professional-editing.html guide-object-removal.html \
             guide-overedited-look.html guide-photo-restoration.html guides.html \
             guide-layers-and-masks.html guide-image-resolution-dpi.html guide-jpeg-png-tiff.html guide-scanning-old-photos.html \
+            guide-natural-portrait-retouching.html guide-faded-photo-colour-correction.html \
             image-inspector.html portfolio.html privacy.html services.html support.html \
             terms.html spotlight.html *.css CNAME robots.txt ads.txt sitemap.xml .nojekyll _site/
+
+      # Validate the exact folder that will be uploaded, not just files in the source tree.
+      - name: Validate staged Pages artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for file in index.html ads.txt robots.txt sitemap.xml; do
+            if [[ ! -s "_site/$file" ]]; then
+              echo "::error::Required public file is missing or empty: _site/$file"
+              exit 1
+            fi
+          done
+
+          expected_ads='google.com, pub-3739684241868984, DIRECT, f08c47fec0942fa0'
+          printf '%s\n' "$expected_ads" > "$RUNNER_TEMP/expected-ads.txt"
+          if ! cmp --silent "$RUNNER_TEMP/expected-ads.txt" _site/ads.txt; then
+            echo "::error::The staged ads.txt does not exactly match the expected publisher declaration."
+            echo "Expected:"
+            cat "$RUNNER_TEMP/expected-ads.txt"
+            echo "Staged:"
+            cat _site/ads.txt
+            exit 1
+          fi
+
+          if ! grep -Fq '<link rel="canonical" href="https://www.boztik.com/">' _site/index.html; then
+            echo "::error::The staged homepage is missing the expected www canonical URL."
+            exit 1
+          fi
+
+          if ! grep -Fq 'client=ca-pub-3739684241868984' _site/index.html; then
+            echo "::error::The staged homepage is missing the expected AdSense publisher loader."
+            exit 1
+          fi
+
+          if ! grep -Fq 'Sitemap: https://www.boztik.com/sitemap.xml' _site/robots.txt; then
+            echo "::error::The staged robots.txt is missing the expected sitemap URL."
+            exit 1
+          fi
+
+          # Google says ads.txt may be ignored if robots.txt blocks the ads.txt path
+          # or the relevant crawler. Test the staged policy, not just its text.
+          python3 - <<'PY'
+          from urllib.robotparser import RobotFileParser
+
+          parser = RobotFileParser()
+          parser.parse(open("_site/robots.txt", encoding="utf-8").read().splitlines())
+
+          checks = {
+              "Mediapartners-Google": [
+                  "https://www.boztik.com/ads.txt",
+                  "https://www.boztik.com/",
+              ],
+              "Google-Display-Ads-Bot": [
+                  "https://www.boztik.com/ads.txt",
+                  "https://www.boztik.com/",
+              ],
+              "AdsBot-Google": [
+                  "https://www.boztik.com/ads.txt",
+                  "https://www.boztik.com/",
+              ],
+          }
+
+          for user_agent, urls in checks.items():
+              for url in urls:
+                  if not parser.can_fetch(user_agent, url):
+                      raise SystemExit(
+                          f"::error::robots.txt blocks {user_agent} from {url}"
+                      )
+                  print(f"robots.txt allows {user_agent}: {url}")
+          PY
+
+          echo "Staged Pages artifact passed required-file, ads.txt, canonical, AdSense, sitemap and crawler-access checks."
+
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
         with:
@@ -46,3 +121,76 @@ jobs:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
+
+      # This is diagnostic only: a transient live-site failure is recorded in the
+      # Actions log but does not roll back or mark a successful deployment as failed.
+      - name: Smoke-test deployed homepage and ads.txt
+        if: success()
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          tmp_dir="$(mktemp -d)"
+          trap 'rm -rf "$tmp_dir"' EXIT
+
+          fetch_page() {
+            local url="$1"
+            local output="$2"
+            local expected_url="$3"
+            local metadata
+            local status effective_url content_type
+
+            metadata="$(curl --fail --silent --show-error --location \
+              --connect-timeout 10 --max-time 45 \
+              --retry 5 --retry-all-errors --retry-delay 5 \
+              --output "$output" \
+              --write-out '%{http_code}\t%{url_effective}\t%{content_type}' \
+              "$url")"
+
+            IFS=$'\t' read -r status effective_url content_type <<< "$metadata"
+            printf 'Requested: %s\nHTTP status: %s\nFinal URL: %s\nContent-Type: %s\n' \
+              "$url" "$status" "$effective_url" "$content_type"
+
+            [[ "$status" == "200" ]]
+            [[ "$effective_url" == "$expected_url" ]]
+          }
+
+          expected_ads="$RUNNER_TEMP/expected-live-ads.txt"
+          printf '%s\n' 'google.com, pub-3739684241868984, DIRECT, f08c47fec0942fa0' > "$expected_ads"
+
+          # Record the DNS answers seen by the GitHub runner. These are diagnostic;
+          # they help distinguish an HTTP/redirect problem from a DNS problem.
+          if command -v dig >/dev/null 2>&1; then
+            echo "DNS A records for boztik.com:"
+            dig +noall +answer boztik.com A || true
+            echo "DNS AAAA records for boztik.com:"
+            dig +noall +answer boztik.com AAAA || true
+            echo "DNS records for www.boztik.com:"
+            dig +noall +answer www.boztik.com A || true
+            dig +noall +answer www.boztik.com CNAME || true
+          fi
+
+          fetch_page 'https://www.boztik.com/' "$tmp_dir/homepage.html" 'https://www.boztik.com/'
+          grep -Fq '<link rel="canonical" href="https://www.boztik.com/">' "$tmp_dir/homepage.html"
+          grep -Fq 'client=ca-pub-3739684241868984' "$tmp_dir/homepage.html"
+
+          # Google documents that ads.txt must be reachable through both HTTP
+          # and HTTPS, starting at the root/apex domain. Test every host/scheme
+          # combination and require the final canonical URL and exact body.
+          for url in \
+            'http://boztik.com/ads.txt' \
+            'https://boztik.com/ads.txt' \
+            'http://www.boztik.com/ads.txt' \
+            'https://www.boztik.com/ads.txt'; do
+            safe_name="$(printf '%s' "$url" | tr ':/' '__')"
+            output="$tmp_dir/ads-$safe_name.txt"
+            fetch_page "$url" "$output" 'https://www.boztik.com/ads.txt'
+            cmp --silent "$expected_ads" "$output"
+          done
+
+          # Confirm the live crawler policy and sitemap are reachable too.
+          fetch_page 'https://www.boztik.com/robots.txt' "$tmp_dir/robots.txt" 'https://www.boztik.com/robots.txt'
+          fetch_page 'https://www.boztik.com/sitemap.xml' "$tmp_dir/sitemap.xml" 'https://www.boztik.com/sitemap.xml'
+
+          echo "Live homepage, all HTTP/HTTPS ads.txt entry points, robots.txt and sitemap checks passed."
