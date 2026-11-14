@@ -47,6 +47,10 @@ jobs:
         run: |
           node --input-type=module --check < deliver-v3/js/spotlight-manager.js
           node --input-type=module --check < spotlight/spotlight.js
+          node --input-type=module --check < spotlight/media.js
+          node --input-type=module --check < spotlight/showcase.js
+          node --input-type=module --check < spotlight/status/status.js
+          node --input-type=module --check < spotlight/analytics.js
           node --input-type=module --check < spotlight/profile.js
           node --input-type=module --check < spotlight/spotlight-home.js
           node --input-type=module --check < spotlight/submit/submit.js

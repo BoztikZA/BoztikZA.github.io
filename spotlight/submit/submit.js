@@ -113,6 +113,7 @@ form.addEventListener("submit", async event => {
     showPreviews();
     status.dataset.kind = "success";
     status.textContent = data.message || "Thank you. Your profile and images are queued for human review; nothing is published until approved.";
+    if (data.owner_token) showOwnerLink(data.owner_token, status.textContent);
   } catch (error) {
     status.dataset.kind = "error";
     status.textContent = error.message || "We couldn't submit your profile. Please try again.";
@@ -120,5 +121,22 @@ form.addEventListener("submit", async event => {
     button.disabled = false;
   }
 });
+
+const done = document.querySelector("#sp-submit-done");
+function showOwnerLink(token, message) {
+  const url = new URL("../status/", location.href).href + "#t=" + token;
+  try { localStorage.setItem("boztik-spotlight-owner", token); } catch { /* storage is a convenience only */ }
+  document.querySelector("#sp-done-message").textContent = message;
+  const field = document.querySelector("#sp-owner-url");
+  field.value = url;
+  document.querySelector("#sp-owner-open").href = url;
+  form.hidden = true;
+  done.hidden = false;
+  done.focus();
+  document.querySelector("#sp-owner-copy").addEventListener("click", async event => {
+    try { await navigator.clipboard.writeText(url); event.target.textContent = "Copied"; }
+    catch { field.select(); event.target.textContent = "Press Ctrl+C to copy"; }
+  });
+}
 
 window.addEventListener("pagehide", () => previewUrls.forEach(url => URL.revokeObjectURL(url)));

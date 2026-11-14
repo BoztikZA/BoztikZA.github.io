@@ -1,9 +1,15 @@
 import type { Env } from "../types";
 import { HttpError } from "../types";
-import { requireSession } from "../lib/auth";
+import { optionalSession, requireSession } from "../lib/auth";
 import { localDay } from "../lib/db";
 import { enqueueSpotlightEmail, processSpotlightEmailOutbox } from "../lib/spotlight-email";
+import { parseRange, profileAnalytics } from "../lib/spotlight-analytics";
+import { SPOTLIGHT_TERMS_VERSION, awaitingApplicant, hashOwnerToken, isOwnerToken, newOwnerToken, ownerDto, ownerStage } from "../lib/spotlight-owner";
 import { readImageDimensions } from "../lib/spotlight-image";
+import {
+  fetchSpotifyMetadata, normalizeSong, normalizeVideo, parseFeaturedVideo, parseSpotifyResource,
+  type FeaturedVideo, type SpotifyMedia,
+} from "../lib/spotlight-media";
 import { reserveUpload, claimUpload, commitUpload, getPendingUpload, holdStoredUploadReservation, releaseReservation, releaseStoredPending, markUncertain, reconcileStorage } from "../lib/storage";
 import { assertSameSiteOrigin, checkPublicRate, error, json, readJson, requireJson, segments, wrap } from "./util";
 
@@ -12,6 +18,16 @@ const SPOTLIGHT_TERM_SECONDS = 72 * 60 * 60;
 const ID = () => crypto.randomUUID().replace(/-/g, "").slice(0, 20);
 const now = () => Math.floor(Date.now() / 1000);
 const day = (env: Env) => localDay(env);
+const SOURCE_BUCKETS: ReadonlySet<string> = new Set(["direct","directory","featured","search","social","other"]);
+const CLICK_TARGETS: ReadonlySet<string> = new Set(["website","social","media","other"]);
+const BOT_AGENT = /bot|crawl|spider|slurp|headless|lighthouse|pagespeed|preview|curl|wget|python-requests|node-fetch|go-http-client|monitor|uptime/i;
+
+/** Why an analytics event must not be counted: an administrator previewing (valid session) or an automated client. */
+async function analyticsExclusion(request: Request, env: Env): Promise<"admin" | "bot" | null> {
+  if (BOT_AGENT.test(request.headers.get("User-Agent") || "")) return "bot";
+  if (request.headers.get("Authorization") && await optionalSession(request, env)) return "admin";
+  return null;
+}
 const clean = (v: unknown, max: number) => typeof v === "string" ? v.trim().replace(/\s+/g, " ").slice(0, max) : "";
 const cleanDescription = (v: unknown) => typeof v === "string"
   ? v.replace(/\r\n?/g, "\n").replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim().slice(0, 5000)
@@ -158,23 +174,23 @@ export async function checkSpotlightSubmissionRate(request: Request, env: Env): 
 function slugify(value: string): string {
   return value.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 48) || "profile";
 }
-function spotifyTrack(value: unknown): { id: string; url: string } | null {
-  if (typeof value !== "string" || !value.trim()) return null;
-  try {
-    const u = new URL(value.trim());
-    if (u.protocol !== "https:" || !["open.spotify.com", "www.open.spotify.com"].includes(u.hostname)) return null;
-    const match = u.pathname.match(/^\/track\/([A-Za-z0-9]{22})\/?$/);
-    const trackId = match?.[1];
-    return trackId ? { id: trackId, url: "https://open.spotify.com/track/" + trackId } : null;
-  } catch { return null; }
+/**
+ * Validates a pasted Spotify link (track, album, artist or playlist) and resolves its title and artwork from
+ * Spotify's public oEmbed endpoint. Empty input means "no song". Spotify outages degrade to an unverified link.
+ */
+async function resolveSongInput(value: unknown): Promise<SpotifyMedia | null> {
+  if (!value) return null;
+  const resource = parseSpotifyResource(value);
+  if (!resource) throw new HttpError(422, "invalid_spotify_link", "Use a public Spotify track, album, artist or playlist link.");
+  return fetchSpotifyMetadata(resource);
 }
-async function spotifyMetadata(track: { id: string; url: string }): Promise<{ id: string; url: string; title: string; artwork: string | null }> {
-  const response = await fetch("https://open.spotify.com/oembed?url=" + encodeURIComponent(track.url), { headers: { Accept: "application/json" } });
-  if (!response.ok) throw new HttpError(422, "spotify_unavailable", "Spotify could not retrieve that track. Check the song link and try again.");
-  const data = await response.json() as { title?: unknown; thumbnail_url?: unknown; provider_name?: unknown };
-  if (data.provider_name !== "Spotify" || typeof data.title !== "string") throw new HttpError(422, "spotify_invalid_track", "Please provide a public Spotify track link, not an artist or playlist link.");
-  const artwork = typeof data.thumbnail_url === "string" && data.thumbnail_url.startsWith("https://") ? data.thumbnail_url : null;
-  return { ...track, title: data.title.slice(0, 200), artwork };
+
+/** Validates a pasted YouTube or Twitch link. Empty input means "no video". */
+function resolveVideoInput(value: unknown): FeaturedVideo | null {
+  if (!value) return null;
+  const video = parseFeaturedVideo(value);
+  if (!video) throw new HttpError(422, "invalid_featured_video", "Use a public YouTube video or Twitch channel, VOD or clip URL.");
+  return video;
 }
 
 function publicImageUrl(profileId: string, position?: number): string {
@@ -200,12 +216,32 @@ async function spotlightGalleryByProfile(env: Env, profileIds: string[]): Promis
   return gallery;
 }
 
-function publicDto(row: any, gallery: any[] = []) {
+type DtoOptions = {
+  /** Moderator views (admin endpoints) may see media on profiles that are not published yet. */
+  moderator?: boolean;
+};
+
+/** Public song descriptor: the internal `verified` flag is for moderators only. */
+function publicSong(song: SpotifyMedia | null): Omit<SpotifyMedia, "verified"> | null {
+  if (!song) return null;
+  const { verified: _verified, ...rest } = song;
+  return rest;
+}
+
+/** Exported for tests: the second layer of defence behind the `status='published'` SQL filters. */
+export function publicDto(row: any, gallery: any[] = [], options: DtoOptions = {}) {
   const imageUrl = row.image_key && row.status === "published" ? publicImageUrl(row.id) : null;
+  // Media is only playable/visible once the profile has been approved and published. Admin views opt in.
+  const mediaVisible = options.moderator === true || row.status === "published";
+  const song = mediaVisible ? normalizeSong(row.song_metadata) : null;
+  const video = mediaVisible ? normalizeVideo(row.video_metadata) : null;
   return {
     id: row.id, slug: row.slug, display_name: row.display_name, tagline: row.tagline,
     description: row.description, category: row.category, website_url: row.website_url,
-    social_links: publicSocialLinks(row.social_links), song: row.song_metadata ? JSON.parse(row.song_metadata) : null, image_url: imageUrl,
+    social_links: publicSocialLinks(row.social_links),
+    song: options.moderator === true ? song : publicSong(song),
+    video,
+    image_url: imageUrl,
     images: row.status === "published" ? [
       ...(imageUrl ? [{ url: imageUrl, position: 0 }] : []),
       ...gallery.map(item => ({ url: publicImageUrl(row.id, Number(item.position)), position: Number(item.position) })),
@@ -254,7 +290,7 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
         bindings.push(timestamp, cursor.featured, timestamp, cursor.featured, cursor.publishedAt, cursor.publishedAt, cursor.id);
       }
       const rows = await env.DB.prepare(
-        `SELECT id,slug,display_name,tagline,description,category,website_url,social_links,song_metadata,image_key,image_size,image_content_type,status,featured_until,created_at,published_at
+        `SELECT id,slug,display_name,tagline,description,category,website_url,social_links,song_metadata,video_metadata,image_key,image_size,image_content_type,status,featured_until,created_at,published_at
            FROM spotlight_profiles
           WHERE ${clauses.join(" AND ")}
           ORDER BY CASE WHEN featured_until > ? THEN 0 ELSE 1 END,
@@ -352,7 +388,7 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
         b = {
           display_name: value("display_name"), tagline: value("tagline"), description: value("description"),
           category: value("category"), website_url: value("website_url"), contact_email: value("contact_email"),
-          song_url: value("song_url"), company_website: value("company_website"),
+          song_url: value("song_url"), video_url: value("video_url"), company_website: value("company_website"),
           consent: value("consent") === "on", social_links: socialLinks,
         };
         const primary = value("main_image");
@@ -374,9 +410,8 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
       const displayName = clean(b.display_name, 80), tagline = clean(b.tagline, 120);
       const description = cleanDescription(b.description), category = clean(b.category, 40);
       const email = clean(b.contact_email, 254).toLowerCase();
-      const songTrack = b.song_url ? spotifyTrack(b.song_url) : null;
-      if (b.song_url && !songTrack) throw new HttpError(422, "invalid_spotify_track", "Use a public Spotify track link.");
-      const song = songTrack ? await spotifyMetadata(songTrack) : null;
+      const song = await resolveSongInput(b.song_url);
+      const video = resolveVideoInput(b.video_url);
       const website = safeWebsiteUrl(b.website_url);
       if (displayName.length < 2 || tagline.length < 8 || description.length < 30) throw new HttpError(422, "invalid_profile", "Please provide a name, a clear tagline and a description of at least 30 characters.");
       if (!CATEGORIES.has(category)) throw new HttpError(422, "invalid_category", "Choose a valid category.");
@@ -396,16 +431,20 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
       }
       const id = ID(), timestamp = now();
       const slug = slugify(displayName) + "-" + id.slice(0, 5);
+      // Private owner link: the secret is returned once in this response; only its hash is stored.
+      const ownerToken = newOwnerToken();
+      const ownerTokenHash = await hashOwnerToken(ownerToken);
       const inserted = await env.DB.prepare(
         `INSERT INTO spotlight_profiles
-          (id,slug,display_name,tagline,description,category,contact_email,website_url,social_links,song_metadata,
-           status,application_status,review_expires_at,review_unread,created_at,updated_at)
-         SELECT ?,?,?,?,?,?,?,?,?,?,'pending','new',?,1,?,?
+          (id,slug,display_name,tagline,description,category,contact_email,website_url,social_links,song_metadata,video_metadata,
+           status,application_status,review_expires_at,review_unread,created_at,updated_at,
+           owner_token_hash,terms_version,terms_accepted_at)
+         SELECT ?,?,?,?,?,?,?,?,?,?,?,'pending','new',?,1,?,?,?,?,?
           WHERE NOT EXISTS (
             SELECT 1 FROM spotlight_profiles
              WHERE contact_email=? AND lower(display_name)=lower(?) AND status<>'archived' AND created_at>=?
           )`,
-      ).bind(id,slug,displayName,tagline,description,category,email,website,JSON.stringify(social),song ? JSON.stringify(song) : null,timestamp + SPOTLIGHT_TERM_SECONDS,timestamp,timestamp,email,displayName,timestamp - SPOTLIGHT_TERM_SECONDS).run();
+      ).bind(id,slug,displayName,tagline,description,category,email,website,JSON.stringify(social),song ? JSON.stringify(song) : null,video ? JSON.stringify(video) : null,timestamp + SPOTLIGHT_TERM_SECONDS,timestamp,timestamp,ownerTokenHash,SPOTLIGHT_TERMS_VERSION,timestamp,email,displayName,timestamp - SPOTLIGHT_TERM_SECONDS).run();
       if ((inserted.meta.changes || 0) === 0) {
         return json({
           ok: true,
@@ -413,6 +452,8 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
           message: "A submission with those details was received within the last 72 hours. You can submit again after the 72-hour Spotlight application window has passed.",
         });
       }
+      await env.DB.prepare("INSERT INTO spotlight_review_events(id,profile_id,actor,action,from_status,to_status,created_at) VALUES(?,?,?,?,?,?,?)")
+        .bind(ID(), id, "applicant", "submitted", "new", "new", timestamp).run();
       if (mainImage) {
         try {
           const requireImageUpload = async (response: Response) => {
@@ -455,6 +496,7 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
         ok: true,
         notification_sent: notificationSent,
         notification_queued: notificationQueued,
+        owner_token: ownerToken,
         message: notificationSent
           ? "Your profile has been received. The Boztik team has also been notified."
           : notificationQueued
@@ -462,20 +504,82 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
             : "Your profile has been safely received for review, but the email alert could not be queued. You do not need to submit it again."
       }, 201);
     }
+    if (request.method === "POST" && seg[0] === "owner" && (seg.length === 1 || (seg.length === 2 && (seg[1] === "respond" || seg[1] === "analytics")))) {
+      checkPublicRate(request, env, "spotlight-owner", seg.length === 1 ? 1 : 0.5);
+      assertSameSiteOrigin(request, env); requireJson(request);
+      const b = await readJson(request, 4096);
+      // Same response for a malformed and an unknown token, so tokens cannot be probed for validity.
+      if (!isOwnerToken(b.token)) return error("Application not found", 404);
+      const tokenHash = await hashOwnerToken(b.token);
+      const row = await env.DB.prepare("SELECT * FROM spotlight_profiles WHERE owner_token_hash=?").bind(tokenHash).first<any>();
+      if (!row) return error("Application not found", 404);
+      const t = now();
+      if (seg[1] === "analytics") {
+        // Scoped by construction: the profile is the one whose hashed token matched; no profile ID is read from the request.
+        if (ownerStage(row) !== "live" && !row.published_at) return json({ ok: true, analytics: null }, 200, { "Cache-Control": "no-store" });
+        return json({ ok: true, analytics: await profileAnalytics(env, row.id, parseRange(b.days)) }, 200, { "Cache-Control": "no-store" });
+      }
+      if (seg.length === 2) {
+        const reply = cleanDescription(b.message).slice(0, 1000);
+        if (reply.length < 5) throw new HttpError(422, "reply_required", "Write a short reply of at least 5 characters.");
+        if (row.application_status !== "under_review" || !awaitingApplicant(row)) throw new HttpError(409, "no_info_requested", "There is no open information request on this application.");
+        const result = await env.DB.batch([
+          env.DB.prepare("UPDATE spotlight_profiles SET info_response_note=?,info_responded_at=? WHERE id=? AND owner_token_hash=? AND application_status='under_review' AND info_requested_at>COALESCE(info_responded_at,0)").bind(reply, t, row.id, tokenHash),
+          env.DB.prepare("INSERT INTO spotlight_review_events(id,profile_id,actor,action,from_status,to_status,reason,created_at) SELECT ?,?,?,?,?,?,?,? WHERE changes()>0").bind(ID(), row.id, "applicant", "info_received", "under_review", "under_review", reply, t),
+        ]);
+        if ((result[0]?.meta.changes || 0) !== 1) throw new HttpError(409, "no_info_requested", "There is no open information request on this application.");
+        try {
+          await enqueueSpotlightEmail(env, row.id, "info_received", null, String(t));
+          await processSpotlightEmailOutbox(env, 1, row.id, "info_received");
+        } catch (emailError) { console.error("[spotlight] info reply notification failed", emailError); }
+      }
+      const fresh = await env.DB.prepare("SELECT * FROM spotlight_profiles WHERE id=?").bind(row.id).first<any>();
+      return json({ ok: true, application: ownerDto(fresh, t) }, 200, { "Cache-Control": "no-store" });
+    }
     if (request.method === "POST" && seg[0] === "event" && seg.length === 1) {
       checkPublicRate(request, env, "spotlight-event", 2);
       assertSameSiteOrigin(request, env); requireJson(request);
       const b = await readJson(request, 1024);
-      const eventId = clean(b.event_id, 64), profileId = clean(b.profile_id, 32), type = b.type;
+      const eventId = clean(b.event_id, 64), profileId = clean(b.profile_id, 32), type = String(b.type);
       const visitorId = clean(b.visitor_id, 64);
-      if (!/^[a-zA-Z0-9_-]{12,64}$/.test(eventId) || !/^[a-f0-9]{20}$/i.test(profileId) || !["view","click"].includes(String(type)) || (type === "view" && !/^[a-f0-9-]{36}$/i.test(visitorId))) throw new HttpError(422, "invalid_event", "Invalid analytics event.");
-      const profile = await env.DB.prepare("SELECT id FROM spotlight_profiles WHERE id=? AND status='published' AND (listing_expires_at IS NULL OR listing_expires_at>?)").bind(profileId,now()).first();
+      const target = clean(b.target, 12), source = clean(b.source, 12), playId = clean(b.play_id, 56);
+      const idOk = /^[a-zA-Z0-9_-]{12,64}$/.test(eventId) && /^[a-f0-9]{20}$/i.test(profileId);
+      const typeOk = ["view","click","player","complete"].includes(type)
+        && (type !== "view" || /^[a-f0-9-]{36}$/i.test(visitorId))
+        && (type !== "view" || !source || SOURCE_BUCKETS.has(source))
+        && (type !== "click" || !target || CLICK_TARGETS.has(target))
+        && ((type !== "player" && type !== "complete") || /^[a-zA-Z0-9_-]{12,56}$/.test(playId));
+      if (!idOk || !typeOk) throw new HttpError(422, "invalid_event", "Invalid analytics event.");
+      // Admin previews and automated clients are never counted (checked before any lookup or write).
+      if (await analyticsExclusion(request, env)) return json({ ok: true, counted: false });
+      const t = now();
+      // Player events only exist on the Featured stage, so they additionally require an active feature.
+      const profile = await env.DB.prepare(
+        "SELECT id FROM spotlight_profiles WHERE id=? AND status='published' AND (listing_expires_at IS NULL OR listing_expires_at>?)" + (type === "player" || type === "complete" ? " AND featured_until>?" : ""),
+      ).bind(...(type === "player" || type === "complete" ? [profileId,t,t] : [profileId,t])).first();
       if (!profile) return json({ ok: true, counted: false });
-      const d = day(env), t = now();
+      const d = day(env);
+      if (type === "player" || type === "complete") {
+        const column = type === "player" ? "player_interactions" : "completed_plays";
+        if (type === "complete") {
+          const started = await env.DB.prepare("SELECT 1 AS ok FROM spotlight_engagement_events WHERE event_id=? AND profile_id=? AND kind='player'").bind(playId,profileId).first();
+          if (!started) return json({ ok: true, counted: false });
+        }
+        const stored = await env.DB.prepare("INSERT OR IGNORE INTO spotlight_engagement_events(event_id,profile_id,kind,day,created_at) VALUES(?,?,?,?,?)")
+          .bind(type === "player" ? playId : playId + "-done", profileId, type, d, t).run();
+        const counted = (stored.meta.changes || 0) > 0;
+        if (counted) await env.DB.prepare(`INSERT INTO spotlight_daily_metrics(profile_id,day,${column}) VALUES(?,?,1) ON CONFLICT(profile_id,day) DO UPDATE SET ${column}=${column}+1`).bind(profileId,d).run();
+        return json({ ok: true, counted });
+      }
       const insert = await env.DB.prepare("INSERT OR IGNORE INTO spotlight_events(event_id,profile_id,event_type,day,created_at) VALUES(?,?,?,?,?)").bind(eventId,profileId,type,d,t).run();
       if ((insert.meta.changes || 0) > 0) {
         await env.DB.prepare(`INSERT INTO spotlight_daily_metrics(profile_id,day,${type === "view" ? "views" : "outbound_clicks"}) VALUES(?,?,1) ON CONFLICT(profile_id,day) DO UPDATE SET ${type === "view" ? "views" : "outbound_clicks"}=${type === "view" ? "views" : "outbound_clicks"}+1`).bind(profileId,d).run();
+        if (type === "click" && target && target !== "other") {
+          const column = target === "website" ? "website_clicks" : target === "social" ? "social_clicks" : "media_clicks";
+          await env.DB.prepare(`UPDATE spotlight_daily_metrics SET ${column}=${column}+1 WHERE profile_id=? AND day=?`).bind(profileId,d).run();
+        }
         if (type === "view") {
+          await env.DB.prepare("INSERT INTO spotlight_source_daily(profile_id,day,source,views) VALUES(?,?,?,1) ON CONFLICT(profile_id,day,source) DO UPDATE SET views=views+1").bind(profileId,d,source || "direct").run();
           const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(visitorId + ":" + d + ":" + env.AUTH_TOKEN_SALT));
           const visitorKey = Array.from(new Uint8Array(digest), x => x.toString(16).padStart(2, "0")).join("");
           const unique = await env.DB.prepare("INSERT OR IGNORE INTO spotlight_visitors(profile_id,day,visitor_key,created_at) VALUES(?,?,?,?)").bind(profileId,d,visitorKey,t).run();
@@ -490,6 +594,7 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
       const b = await readJson(request, 1024);
       const eventId = clean(b.event_id, 64), profileId = clean(b.profile_id, 32);
       if (!/^[a-zA-Z0-9_-]{12,64}$/.test(eventId) || !/^[a-f0-9]{20}$/i.test(profileId)) throw new HttpError(422, "invalid_event", "Invalid impression event.");
+      if (await analyticsExclusion(request, env)) return json({ok:true,counted:false});
       const d = day(env), t = now();
       const featured = await env.DB.prepare("SELECT id FROM spotlight_profiles WHERE id=? AND status='published' AND featured_until>? AND (listing_expires_at IS NULL OR listing_expires_at>?)").bind(profileId,t,t).first();
       if (!featured) return json({ok:true,counted:false});
@@ -512,9 +617,8 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       const description = cleanDescription(b.description), category = clean(b.category, 40);
       const email = clean(b.contact_email, 254).toLowerCase();
       const website = b.website_url ? safeWebsiteUrl(b.website_url) : null;
-      const songTrack = b.song_url ? spotifyTrack(b.song_url) : null;
-      if (b.song_url && !songTrack) throw new HttpError(422, "invalid_spotify_track", "Use a public Spotify track link.");
-      const song = songTrack ? await spotifyMetadata(songTrack) : null;
+      const song = await resolveSongInput(b.song_url);
+      const video = resolveVideoInput(b.video_url);
       if (displayName.length < 2 || tagline.length < 8 || description.length < 30) throw new HttpError(422, "invalid_profile", "Please provide a name, a clear tagline and a description of at least 30 characters.");
       if (!CATEGORIES.has(category)) throw new HttpError(422, "invalid_category", "Choose a valid category.");
       // Contact email is optional for admin-created profiles (the column is NOT NULL, so blank is stored as "").
@@ -533,10 +637,10 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       }
       const id = ID(), timestamp = now(), slug = slugify(displayName) + "-" + id.slice(0, 5);
       await env.DB.prepare(
-        "INSERT INTO spotlight_profiles (id,slug,display_name,tagline,description,category,contact_email,website_url,social_links,song_metadata,status,application_status,review_unread,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,'pending','approved',0,?,?)"
-      ).bind(id,slug,displayName,tagline,description,category,email,website,JSON.stringify(social),song ? JSON.stringify(song) : null,timestamp,timestamp).run();
+        "INSERT INTO spotlight_profiles (id,slug,display_name,tagline,description,category,contact_email,website_url,social_links,song_metadata,video_metadata,status,application_status,review_unread,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,'pending','approved',0,?,?)"
+      ).bind(id,slug,displayName,tagline,description,category,email,website,JSON.stringify(social),song ? JSON.stringify(song) : null,video ? JSON.stringify(video) : null,timestamp,timestamp).run();
       const row = await env.DB.prepare("SELECT * FROM spotlight_profiles WHERE id=?").bind(id).first<any>();
-      return json({ ok:true, profile:{...publicDto(row),contact_email:row.contact_email,status:row.status,application_status:row.application_status} }, 201);
+      return json({ ok:true, profile:{...publicDto(row, [], { moderator: true }),contact_email:row.contact_email,status:row.status,application_status:row.application_status} }, 201);
     }
     if (!seg.length && request.method === "GET") {
       const rows = await env.DB.prepare(
@@ -550,7 +654,7 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       ).first<any>();
       const gallery = await spotlightGalleryByProfile(env, (rows.results || []).map((row: any) => row.id));
       const profiles = (rows.results || []).map((r:any) => ({
-        ...publicDto(r, gallery.get(r.id)),
+        ...publicDto(r, gallery.get(r.id), { moderator: true }),
         contact_email:r.contact_email,
         status:r.status,
         application_status:r.application_status,
@@ -558,6 +662,14 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
         review_expires_at:r.review_expires_at,
         listing_expires_at:r.listing_expires_at,
         decline_reason:r.decline_reason,
+        terms_version:r.terms_version,
+        terms_accepted_at:r.terms_accepted_at,
+        placement_plan:r.placement_plan,
+        info_request_note:r.info_request_note,
+        info_requested_at:r.info_requested_at,
+        info_response_note:r.info_response_note,
+        info_responded_at:r.info_responded_at,
+        awaiting_applicant:awaitingApplicant(r) && r.application_status === "under_review",
         gallery_positions:(gallery.get(r.id) || []).map((image: any) => Number(image.position)),
         invalid_social_links: invalidSocialLinkKeys(r.social_links),
       }));
@@ -597,6 +709,12 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
         toStatus = "under_review";
         updateSql = "UPDATE spotlight_profiles SET application_status='under_review',review_unread=0,reviewed_at=COALESCE(reviewed_at,?) WHERE id=? AND application_status='new'";
         updateArgs = [timestamp,seg[1]];
+      } else if (action === "request_info" && ["new","under_review"].includes(fromStatus)) {
+        reason = cleanDescription(body.note).slice(0, 1000);
+        if (reason.length < 10) throw new HttpError(422, "info_note_required", "Say what you need from the applicant (at least 10 characters).");
+        toStatus = "under_review";
+        updateSql = "UPDATE spotlight_profiles SET application_status='under_review',review_unread=0,reviewed_at=COALESCE(reviewed_at,?),info_request_note=?,info_requested_at=MAX(?,COALESCE(info_responded_at,0)+1) WHERE id=? AND application_status IN ('new','under_review')";
+        updateArgs = [timestamp,reason,timestamp,seg[1]];
       } else if (action === "approve" && ["new","under_review"].includes(fromStatus)) {
         toStatus = "approved";
         updateSql = "UPDATE spotlight_profiles SET application_status='approved',review_unread=0,review_expires_at=?,reviewed_at=COALESCE(reviewed_at,?),decided_at=? WHERE id=? AND application_status IN ('new','under_review')";
@@ -619,7 +737,20 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       ];
       const result = await env.DB.batch(statements);
       if ((result[0]?.meta.changes || 0) !== 1) return error("Profile changed during review. Refresh and try again.", 409);
-      return json({ ok: true, application_status: toStatus, email_available: Boolean(old.contact_email) });
+      const emailKind = action === "request_info" ? "info_requested" : action === "approve" ? "approved" : null; // declines stay an administrator-written email draft (existing, tested behaviour)
+      let emailQueued = false;
+      if (emailKind && old.contact_email) {
+        try {
+          await enqueueSpotlightEmail(env, seg[1]!, emailKind, null, emailKind === "info_requested" ? String(timestamp) : "");
+          emailQueued = true;
+          await processSpotlightEmailOutbox(env, 1, seg[1]!, emailKind);
+        } catch (emailError) { console.error("[spotlight] applicant email could not be processed", emailError); }
+      }
+      return json({ ok: true, application_status: toStatus, email_available: Boolean(old.contact_email), email_queued: emailQueued });
+    }
+    if (seg.length === 3 && seg[0] === "profile" && seg[2] === "events" && request.method === "GET") {
+      const events = await env.DB.prepare("SELECT id,actor,action,from_status,to_status,reason,created_at FROM spotlight_review_events WHERE profile_id=? ORDER BY created_at DESC, rowid DESC LIMIT 100").bind(seg[1]).all<any>();
+      return json({ ok: true, events: events.results || [] }, 200, { "Cache-Control": "no-store" });
     }
     if (seg.length === 3 && seg[0] === "profile" && seg[2] === "image" && request.method === "PUT") return uploadSpotlightImage(request,env,seg[1]!);
     if (seg.length === 4 && seg[0] === "profile" && seg[2] === "gallery" && /^[1-4]$/.test(seg[3]!) && request.method === "PUT") return uploadSpotlightImage(request,env,seg[1]!,Number(seg[3]));
@@ -656,9 +787,8 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       const category = b.category === undefined ? old.category : clean(b.category, 40);
       const contactEmail = b.contact_email === undefined ? old.contact_email : clean(b.contact_email, 254).toLowerCase();
       const website = b.website_url === undefined ? old.website_url : (b.website_url ? safeWebsiteUrl(b.website_url) : null);
-      const songTrack = b.song_url === undefined ? (old.song_metadata ? spotifyTrack(JSON.parse(old.song_metadata).url) : null) : (b.song_url ? spotifyTrack(b.song_url) : null);
-      if (b.song_url && !songTrack) throw new HttpError(422, "invalid_spotify_track", "Use a public Spotify track link.");
-      const song = b.song_url === undefined ? (old.song_metadata ? JSON.parse(old.song_metadata) : null) : (songTrack ? await spotifyMetadata(songTrack) : null);
+      const song = b.song_url === undefined ? normalizeSong(old.song_metadata) : await resolveSongInput(b.song_url);
+      const video = b.video_url === undefined ? normalizeVideo(old.video_metadata) : resolveVideoInput(b.video_url);
       const social = b.social_links === undefined ? publicSocialLinks(old.social_links) : checkedSocialLinks(b.social_links);
       if (displayName.length < 2 || tagline.length < 8 || description.length < 30 || !CATEGORIES.has(category)) throw new HttpError(422, "invalid_profile", "Check the name, tagline, description and category.");
       if (b.contact_email !== undefined && contactEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail)) throw new HttpError(422, "invalid_email", "Enter a valid contact email, or leave the field blank.");
@@ -681,8 +811,8 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       const statements = [
         env.DB.prepare("UPDATE spotlight_profiles SET featured_until=NULL WHERE featured_until > ? AND id<>?").bind(updated,seg[1]),
         env.DB.prepare(
-          "UPDATE spotlight_profiles SET display_name=?,tagline=?,description=?,category=?,contact_email=?,website_url=?,social_links=?,song_metadata=?,status=?,application_status=?,review_expires_at=CASE WHEN ?='published' THEN NULL ELSE review_expires_at END,listing_expires_at=?,featured_until=?,updated_at=?,published_at=CASE WHEN ?='published' THEN COALESCE(published_at,?) ELSE published_at END WHERE id=?",
-        ).bind(displayName,tagline,description,category,contactEmail,website,JSON.stringify(social),song ? JSON.stringify(song) : null,status,nextApplicationStatus,status,listingExpiresAt,featured,updated,status,updated,seg[1])
+          "UPDATE spotlight_profiles SET display_name=?,tagline=?,description=?,category=?,contact_email=?,website_url=?,social_links=?,song_metadata=?,video_metadata=?,status=?,application_status=?,review_expires_at=CASE WHEN ?='published' THEN NULL ELSE review_expires_at END,listing_expires_at=?,featured_until=?,updated_at=?,published_at=CASE WHEN ?='published' THEN COALESCE(published_at,?) ELSE published_at END WHERE id=?",
+        ).bind(displayName,tagline,description,category,contactEmail,website,JSON.stringify(social),song ? JSON.stringify(song) : null,video ? JSON.stringify(video) : null,status,nextApplicationStatus,status,listingExpiresAt,featured,updated,status,updated,seg[1])
       ];
       if (status === "published" && old.status !== "published") {
         statements.push(env.DB.prepare(
@@ -694,7 +824,7 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       return json({
         ok:true,
         profile:{
-          ...publicDto(row),
+          ...publicDto(row, [], { moderator: true }),
           contact_email:row.contact_email,
           status:row.status,
           application_status:row.application_status,
@@ -733,9 +863,14 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       if (imageKeys.length) await reconcileSpotlightImageStorage(env, "spotlight_profile_deleted");
       return json({ ok:true });
     }
+    if (seg.length === 3 && seg[0] === "profile" && seg[2] === "analytics" && request.method === "GET") {
+      const exists = await env.DB.prepare("SELECT id FROM spotlight_profiles WHERE id=?").bind(seg[1]).first();
+      if (!exists) return error("Profile not found", 404);
+      return json({ ok: true, analytics: await profileAnalytics(env, seg[1]!, parseRange(new URL(request.url).searchParams.get("days"))) }, 200, { "Cache-Control": "no-store" });
+    }
     if (seg.length === 1 && seg[0] === "analytics" && request.method === "GET") {
       const rows = await env.DB.prepare(
-        "SELECT p.id,p.display_name,COALESCE(SUM(m.views),0) views,COALESCE(SUM(m.unique_views),0) unique_views,COALESCE(SUM(m.outbound_clicks),0) outbound_clicks,COALESCE(SUM(m.featured_impressions),0) featured_impressions FROM spotlight_profiles p LEFT JOIN spotlight_daily_metrics m ON m.profile_id=p.id GROUP BY p.id ORDER BY views DESC LIMIT 100"
+        "SELECT p.id,p.display_name,COALESCE(SUM(m.views),0) views,COALESCE(SUM(m.unique_views),0) unique_views,COALESCE(SUM(m.outbound_clicks),0) outbound_clicks,COALESCE(SUM(m.featured_impressions),0) featured_impressions,COALESCE(SUM(m.website_clicks),0) website_clicks,COALESCE(SUM(m.social_clicks),0) social_clicks,COALESCE(SUM(m.media_clicks),0) media_clicks,COALESCE(SUM(m.player_interactions),0) player_interactions,COALESCE(SUM(m.completed_plays),0) completed_plays FROM spotlight_profiles p LEFT JOIN spotlight_daily_metrics m ON m.profile_id=p.id GROUP BY p.id ORDER BY views DESC LIMIT 100"
       ).all<any>();
       return json({ ok:true, profiles:rows.results || [] });
     }

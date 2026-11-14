@@ -1,4 +1,7 @@
+import { classifySource, clickTarget, sendEvent } from "./analytics.js";
 import { socialLinksMarkup } from "./social-links.js";
+import { describeSong, describeVideo, mediaLinkCardMarkup } from "./media.js";
+import { linkRailMarkup } from "./showcase.js";
 
 const API = "https://deliver-api.boztik.com/api/public/spotlight";
 const visitorId = (() => {
@@ -30,17 +33,14 @@ function safeProfileImageUrl(value) {
     return "";
   }
 }
-const event = (profileId, type) => fetch(API + "/event", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    event_id: crypto.randomUUID().replace(/-/g, ""),
-    profile_id: profileId,
-    type,
-    visitor_id: visitorId
-  }),
-  keepalive: true
-}).catch(() => {});
+const sourceHint = new URLSearchParams(location.search).get("src") || "";
+const event = (profileId, type, extra = {}) => sendEvent("/event", {
+  profile_id: profileId,
+  type,
+  visitor_id: visitorId,
+  ...(type === "view" ? { source: classifySource(document.referrer, location.hostname, sourceHint) } : {}),
+  ...extra,
+});
 
 function setMeta(selector, attr, value, create) {
   let el = document.head.querySelector(selector);
@@ -67,16 +67,6 @@ function applySeo(profile, mainImage, websiteUrl) {
   script.textContent = JSON.stringify(ld);
 }
 
-function renderMusic(song) {
-  if (!song || typeof song.id !== "string" || !/^[A-Za-z0-9]{22}$/.test(song.id)) return "";
-  const url = "https://open.spotify.com/track/" + song.id;
-  return `<section class="sp-music-card" aria-label="Featured song">
-    <div class="sp-music-heading"><span class="sp-kicker">FEATURED SINGLE</span><strong>${esc(song.title)}</strong></div>
-    <iframe title="Listen to ${esc(song.title)} on Spotify" src="https://open.spotify.com/embed/track/${song.id}?utm_source=generator&amp;theme=0" width="100%" height="152" style="border:0;border-radius:12px" loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin"></iframe>
-    <a class="sp-music-more" href="${url}" target="_blank" rel="noopener noreferrer" data-outbound>Want to hear more? Explore their music on Spotify ↗</a>
-  </section>`;
-}
-
 function profileImages(profile) {
   const supplied = Array.isArray(profile.images) ? profile.images : [];
   const images = supplied
@@ -91,7 +81,7 @@ function profileImages(profile) {
 
 function renderGallery(images, name) {
   if (images.length < 2) return "";
-  return `<section class="sp-profile-gallery" aria-label="${esc(name)} image gallery">
+  return `<section class="sp-profile-gallery" id="gallery" aria-label="${esc(name)} image gallery">
     <div class="sp-profile-gallery-heading"><span class="sp-kicker">A CLOSER LOOK</span><p>More from ${esc(name)}.</p></div>
     <div class="sp-profile-gallery-stage"><img id="sp-gallery-active-image" src="${esc(images[0].url)}" alt="${esc(name)} — image 1 of ${images.length}" loading="lazy" decoding="async"></div>
     <div class="sp-profile-gallery-controls" role="group" aria-label="Choose a profile image">
@@ -196,7 +186,8 @@ async function load() {
     applySeo(profile, mainImage, websiteUrl);
     const name = profile.display_name;
     const host_ = websiteUrl ? new URL(websiteUrl).hostname.replace(/^www\./, "") : "";
-    const music = renderMusic(profile.song);
+    const music = mediaLinkCardMarkup(describeSong(profile.song));
+    const featuredVideo = mediaLinkCardMarkup(describeVideo(profile.video));
     const featuredLabel = profile.featured
       ? ` · FEATURED TODAY <span class="sp-countdown" data-countdown="${Number(profile.featured_until || 0)}">Ends in <time>--:--:--</time></span>`
       : "";
@@ -209,7 +200,7 @@ async function load() {
           <h1>${esc(name)}</h1>
           ${profile.tagline ? `<p class="sp-profile-tagline">${esc(profile.tagline)}</p>` : ""}
           <div class="sp-profile-badges"><span>✓ Listed on Boztik Spotlight</span><span>Reviewed by Boztik</span></div>
-          ${websiteUrl ? `<div class="sp-profile-hero-actions"><a class="sp-button sp-button-primary" href="${esc(websiteUrl)}" target="_blank" rel="noopener noreferrer" data-outbound>Visit ${esc(name)} <span aria-hidden="true">↗</span></a></div>` : ""}
+          ${linkRailMarkup(profile)}
         </div>
       </div>
       <dl class="sp-profile-facts">
@@ -228,6 +219,7 @@ async function load() {
         </div>
       </article>
       ${music}
+      ${featuredVideo}
       ${websiteUrl ? `<section class="sp-visit-band" aria-label="Visit ${esc(name)}"><div><strong>Like what you see?</strong><p>Go straight to ${esc(name)} to learn more, get in touch or buy.</p></div><a class="sp-button sp-button-primary" href="${esc(websiteUrl)}" target="_blank" rel="noopener noreferrer" data-outbound>Visit ${esc(host_)} <span aria-hidden="true">↗</span></a></section>` : ""}
       <section class="sp-share-panel" aria-label="Share this creator">
         <div><strong>Know someone who should discover this work?</strong><p>Share this Spotlight profile and help more people find them.</p></div>
@@ -258,7 +250,7 @@ async function load() {
       image.addEventListener("error", () => { image.hidden = true; }, { once: true });
     });
     host.querySelectorAll("[data-outbound]").forEach(link => {
-      link.addEventListener("click", () => event(profile.id, "click"));
+      link.addEventListener("click", () => event(profile.id, "click", { target: clickTarget(link) }));
     });
   } catch {
     host.innerHTML = '<div class="sp-empty"><h2>We couldn’t find that profile.</h2><p>It may have been removed or is no longer published.</p><a class="sp-button sp-button-primary" href="./">Return to Spotlight</a></div>';
