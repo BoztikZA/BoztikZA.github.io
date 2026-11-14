@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="../../styles-premium.css?v=20261106a">
   <link rel="stylesheet" href="../spotlight.css?v=12">
   <link rel="stylesheet" href="../submit/submit.css?v=7">
-  <link rel="stylesheet" href="status.css?v=2">
+  <link rel="stylesheet" href="status.css?v=4">
 </head>
 <body class="spotlight-body">
   <header class="sp-nav">
@@ -32,8 +32,21 @@
       </form>
       <p><a id="sp-status-public" class="sp-button" href="#" hidden>View your public profile</a></p>
     </section>
+    <section id="sp-perf" hidden aria-labelledby="sp-perf-title">
+      <h2 id="sp-perf-title">How your profile is performing</h2>
+      <div class="sp-perf-range" role="group" aria-label="Date range">
+        <button type="button" class="sp-button" data-days="7">7 days</button>
+        <button type="button" class="sp-button" data-days="30" aria-pressed="true">30 days</button>
+        <button type="button" class="sp-button" data-days="90">90 days</button>
+      </div>
+      <dl id="sp-perf-stats" class="sp-perf-stats"></dl>
+      <figure class="sp-perf-chart"><figcaption>Profile views per day</figcaption><div id="sp-perf-bars" class="sp-perf-bars" role="img"></div></figure>
+      <h3>Where visits came from</h3>
+      <ul id="sp-perf-sources" class="sp-perf-sources"></ul>
+      <p class="sp-perf-note">Numbers come from real visits to your public profile and the Featured page. Admin previews and automated traffic are excluded. Completed plays are only available for YouTube videos.</p>
+    </section>
     <p class="sp-status-help">Lost your link? Email <a href="mailto:boztiktech@gmail.com?subject=Spotlight%20application%20status">boztiktech@gmail.com</a> with your profile name.</p>
   </main>
-  <script type="module" src="./status.js?v=1"></script>
+  <script type="module" src="./status.js?v=2"></script>
 </body>
 </html>

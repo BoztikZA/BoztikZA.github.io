@@ -1,3 +1,4 @@
+import { classifySource, clickTarget, sendEvent } from "./analytics.js";
 import { socialLinksMarkup } from "./social-links.js";
 import { describeSong, describeVideo, mediaLinkCardMarkup } from "./media.js";
 import { linkRailMarkup } from "./showcase.js";
@@ -32,17 +33,14 @@ function safeProfileImageUrl(value) {
     return "";
   }
 }
-const event = (profileId, type) => fetch(API + "/event", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    event_id: crypto.randomUUID().replace(/-/g, ""),
-    profile_id: profileId,
-    type,
-    visitor_id: visitorId
-  }),
-  keepalive: true
-}).catch(() => {});
+const sourceHint = new URLSearchParams(location.search).get("src") || "";
+const event = (profileId, type, extra = {}) => sendEvent("/event", {
+  profile_id: profileId,
+  type,
+  visitor_id: visitorId,
+  ...(type === "view" ? { source: classifySource(document.referrer, location.hostname, sourceHint) } : {}),
+  ...extra,
+});
 
 function setMeta(selector, attr, value, create) {
   let el = document.head.querySelector(selector);
@@ -252,7 +250,7 @@ async function load() {
       image.addEventListener("error", () => { image.hidden = true; }, { once: true });
     });
     host.querySelectorAll("[data-outbound]").forEach(link => {
-      link.addEventListener("click", () => event(profile.id, "click"));
+      link.addEventListener("click", () => event(profile.id, "click", { target: clickTarget(link) }));
     });
   } catch {
     host.innerHTML = '<div class="sp-empty"><h2>We couldn’t find that profile.</h2><p>It may have been removed or is no longer published.</p><a class="sp-button sp-button-primary" href="./">Return to Spotlight</a></div>';

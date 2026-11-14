@@ -66,6 +66,54 @@ function render(app) {
   if (app.public_url) link.href = app.public_url;
 }
 
+const STAT_LABELS = [
+  ["featured_impressions", "Featured impressions", "Times you were on screen as a featured profile"],
+  ["views", "Profile views", "Visits to your profile page"],
+  ["link_clicks", "Link clicks", null],
+  ["player_interactions", "Player plays", "Visitors who pressed play on the Featured page"],
+  ["completed_plays", "Completed plays", "YouTube only"],
+];
+let perfToken = "", perfDays = 30;
+async function loadPerformance() {
+  const result = await call("/analytics", { token: perfToken, days: perfDays }).catch(() => null);
+  const panel = $("sp-perf");
+  if (!result || !result.ok || !result.data.analytics) { panel.hidden = true; return; }
+  const a = result.data.analytics;
+  panel.hidden = false;
+  panel.querySelectorAll("[data-days]").forEach(b => b.setAttribute("aria-pressed", String(Number(b.dataset.days) === a.range_days)));
+  const stats = $("sp-perf-stats");
+  stats.replaceChildren();
+  for (const [key, label, note] of STAT_LABELS) {
+    const box = document.createElement("div");
+    const dt = document.createElement("dt"); dt.textContent = label;
+    const dd = document.createElement("dd"); dd.textContent = Number(a.totals[key] || 0).toLocaleString();
+    const detail = key === "link_clicks"
+      ? `Website ${a.totals.website_clicks} · Social ${a.totals.social_clicks} · Media ${a.totals.media_clicks}`
+      : key === "views" ? `${a.totals.unique_views.toLocaleString()} unique visitor-days` : note;
+    if (detail) { const small = document.createElement("small"); small.textContent = detail; dd.append(small); }
+    box.append(dt, dd); stats.append(box);
+  }
+  const bars = $("sp-perf-bars");
+  const max = Math.max(1, ...a.series.map(d => d.views));
+  bars.replaceChildren(...a.series.map(day => {
+    const bar = document.createElement("i");
+    bar.style.height = Math.round((day.views / max) * 100) + "%";
+    bar.title = `${day.day}: ${day.views} view${day.views === 1 ? "" : "s"}`;
+    if (!day.views) bar.dataset.zero = "1";
+    return bar;
+  }));
+  bars.setAttribute("aria-label", `Profile views per day over the last ${a.range_days} days: ${a.totals.views} in total`);
+  const names = { direct: "Direct or unknown", directory: "Spotlight directory", featured: "Featured page", search: "Search engines", social: "Social platforms", other: "Other websites" };
+  $("sp-perf-sources").replaceChildren(...a.sources.filter(s => s.views > 0).map(s => {
+    const li = document.createElement("li");
+    const name = document.createElement("span"); name.textContent = names[s.source] || s.source;
+    const count = document.createElement("b"); count.textContent = s.views.toLocaleString();
+    li.append(name, count); return li;
+  }));
+  if (!$("sp-perf-sources").children.length) { const li = document.createElement("li"); li.textContent = "No visits in this period yet."; $("sp-perf-sources").append(li); }
+}
+document.querySelectorAll("#sp-perf [data-days]").forEach(button => button.addEventListener("click", () => { perfDays = Number(button.dataset.days); loadPerformance(); }));
+
 async function load() {
   const token = readToken();
   if (!token) { $("sp-status-state").textContent = "Open the private status link you saved when you applied."; return; }
@@ -73,6 +121,8 @@ async function load() {
   try { result = await call("", { token }); } catch { $("sp-status-state").textContent = "We could not reach the server. Check your connection and refresh."; return; }
   if (!result.ok) { $("sp-status-state").textContent = result.status === 404 ? "We could not find an application for this link. Check you copied the whole link." : (result.data.error || "Something went wrong. Please try again."); return; }
   render(result.data.application);
+  perfToken = token;
+  loadPerformance();
   $("sp-status-reply").addEventListener("submit", async event => {
     event.preventDefault();
     const out = $("sp-reply-status"), button = event.target.querySelector("button");

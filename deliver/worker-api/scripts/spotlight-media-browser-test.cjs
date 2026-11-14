@@ -92,7 +92,7 @@ async function check(name, fn) { try { await fn(); passed += 1; console.log("  o
     const frame = page.locator("iframe.sp-media-frame");
     await frame.waitFor();
     assert.equal(await page.locator("iframe").count(), 1);
-    assert.equal(await frame.getAttribute("src"), `https://www.youtube-nocookie.com/embed/${YT}?rel=0&playsinline=1&autoplay=1`);
+    assert.equal(await frame.getAttribute("src"), `https://www.youtube-nocookie.com/embed/${YT}?rel=0&playsinline=1&autoplay=1&enablejsapi=1&origin=${encodeURIComponent("https://127.0.0.1")}`);
     assert.equal(await frame.getAttribute("referrerpolicy"), "strict-origin-when-cross-origin");
     assert.ok((await frame.getAttribute("title")).length > 3);
     assert.ok((await frame.getAttribute("allow")).includes("fullscreen"));

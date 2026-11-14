@@ -1,9 +1,10 @@
 import type { Env } from "../types";
 import { HttpError } from "../types";
-import { requireSession } from "../lib/auth";
+import { optionalSession, requireSession } from "../lib/auth";
 import { localDay } from "../lib/db";
 import { enqueueSpotlightEmail, processSpotlightEmailOutbox } from "../lib/spotlight-email";
-import { SPOTLIGHT_TERMS_VERSION, awaitingApplicant, hashOwnerToken, isOwnerToken, newOwnerToken, ownerDto } from "../lib/spotlight-owner";
+import { parseRange, profileAnalytics } from "../lib/spotlight-analytics";
+import { SPOTLIGHT_TERMS_VERSION, awaitingApplicant, hashOwnerToken, isOwnerToken, newOwnerToken, ownerDto, ownerStage } from "../lib/spotlight-owner";
 import { readImageDimensions } from "../lib/spotlight-image";
 import {
   fetchSpotifyMetadata, normalizeSong, normalizeVideo, parseFeaturedVideo, parseSpotifyResource,
@@ -17,6 +18,16 @@ const SPOTLIGHT_TERM_SECONDS = 72 * 60 * 60;
 const ID = () => crypto.randomUUID().replace(/-/g, "").slice(0, 20);
 const now = () => Math.floor(Date.now() / 1000);
 const day = (env: Env) => localDay(env);
+const SOURCE_BUCKETS: ReadonlySet<string> = new Set(["direct","directory","featured","search","social","other"]);
+const CLICK_TARGETS: ReadonlySet<string> = new Set(["website","social","media","other"]);
+const BOT_AGENT = /bot|crawl|spider|slurp|headless|lighthouse|pagespeed|preview|curl|wget|python-requests|node-fetch|go-http-client|monitor|uptime/i;
+
+/** Why an analytics event must not be counted: an administrator previewing (valid session) or an automated client. */
+async function analyticsExclusion(request: Request, env: Env): Promise<"admin" | "bot" | null> {
+  if (BOT_AGENT.test(request.headers.get("User-Agent") || "")) return "bot";
+  if (request.headers.get("Authorization") && await optionalSession(request, env)) return "admin";
+  return null;
+}
 const clean = (v: unknown, max: number) => typeof v === "string" ? v.trim().replace(/\s+/g, " ").slice(0, max) : "";
 const cleanDescription = (v: unknown) => typeof v === "string"
   ? v.replace(/\r\n?/g, "\n").replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim().slice(0, 5000)
@@ -493,7 +504,7 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
             : "Your profile has been safely received for review, but the email alert could not be queued. You do not need to submit it again."
       }, 201);
     }
-    if (request.method === "POST" && seg[0] === "owner" && (seg.length === 1 || (seg.length === 2 && seg[1] === "respond"))) {
+    if (request.method === "POST" && seg[0] === "owner" && (seg.length === 1 || (seg.length === 2 && (seg[1] === "respond" || seg[1] === "analytics")))) {
       checkPublicRate(request, env, "spotlight-owner", seg.length === 1 ? 1 : 0.5);
       assertSameSiteOrigin(request, env); requireJson(request);
       const b = await readJson(request, 4096);
@@ -503,6 +514,11 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
       const row = await env.DB.prepare("SELECT * FROM spotlight_profiles WHERE owner_token_hash=?").bind(tokenHash).first<any>();
       if (!row) return error("Application not found", 404);
       const t = now();
+      if (seg[1] === "analytics") {
+        // Scoped by construction: the profile is the one whose hashed token matched; no profile ID is read from the request.
+        if (ownerStage(row) !== "live" && !row.published_at) return json({ ok: true, analytics: null }, 200, { "Cache-Control": "no-store" });
+        return json({ ok: true, analytics: await profileAnalytics(env, row.id, parseRange(b.days)) }, 200, { "Cache-Control": "no-store" });
+      }
       if (seg.length === 2) {
         const reply = cleanDescription(b.message).slice(0, 1000);
         if (reply.length < 5) throw new HttpError(422, "reply_required", "Write a short reply of at least 5 characters.");
@@ -524,16 +540,46 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
       checkPublicRate(request, env, "spotlight-event", 2);
       assertSameSiteOrigin(request, env); requireJson(request);
       const b = await readJson(request, 1024);
-      const eventId = clean(b.event_id, 64), profileId = clean(b.profile_id, 32), type = b.type;
+      const eventId = clean(b.event_id, 64), profileId = clean(b.profile_id, 32), type = String(b.type);
       const visitorId = clean(b.visitor_id, 64);
-      if (!/^[a-zA-Z0-9_-]{12,64}$/.test(eventId) || !/^[a-f0-9]{20}$/i.test(profileId) || !["view","click"].includes(String(type)) || (type === "view" && !/^[a-f0-9-]{36}$/i.test(visitorId))) throw new HttpError(422, "invalid_event", "Invalid analytics event.");
-      const profile = await env.DB.prepare("SELECT id FROM spotlight_profiles WHERE id=? AND status='published' AND (listing_expires_at IS NULL OR listing_expires_at>?)").bind(profileId,now()).first();
+      const target = clean(b.target, 12), source = clean(b.source, 12), playId = clean(b.play_id, 56);
+      const idOk = /^[a-zA-Z0-9_-]{12,64}$/.test(eventId) && /^[a-f0-9]{20}$/i.test(profileId);
+      const typeOk = ["view","click","player","complete"].includes(type)
+        && (type !== "view" || /^[a-f0-9-]{36}$/i.test(visitorId))
+        && (type !== "view" || !source || SOURCE_BUCKETS.has(source))
+        && (type !== "click" || !target || CLICK_TARGETS.has(target))
+        && ((type !== "player" && type !== "complete") || /^[a-zA-Z0-9_-]{12,56}$/.test(playId));
+      if (!idOk || !typeOk) throw new HttpError(422, "invalid_event", "Invalid analytics event.");
+      // Admin previews and automated clients are never counted (checked before any lookup or write).
+      if (await analyticsExclusion(request, env)) return json({ ok: true, counted: false });
+      const t = now();
+      // Player events only exist on the Featured stage, so they additionally require an active feature.
+      const profile = await env.DB.prepare(
+        "SELECT id FROM spotlight_profiles WHERE id=? AND status='published' AND (listing_expires_at IS NULL OR listing_expires_at>?)" + (type === "player" || type === "complete" ? " AND featured_until>?" : ""),
+      ).bind(...(type === "player" || type === "complete" ? [profileId,t,t] : [profileId,t])).first();
       if (!profile) return json({ ok: true, counted: false });
-      const d = day(env), t = now();
+      const d = day(env);
+      if (type === "player" || type === "complete") {
+        const column = type === "player" ? "player_interactions" : "completed_plays";
+        if (type === "complete") {
+          const started = await env.DB.prepare("SELECT 1 AS ok FROM spotlight_engagement_events WHERE event_id=? AND profile_id=? AND kind='player'").bind(playId,profileId).first();
+          if (!started) return json({ ok: true, counted: false });
+        }
+        const stored = await env.DB.prepare("INSERT OR IGNORE INTO spotlight_engagement_events(event_id,profile_id,kind,day,created_at) VALUES(?,?,?,?,?)")
+          .bind(type === "player" ? playId : playId + "-done", profileId, type, d, t).run();
+        const counted = (stored.meta.changes || 0) > 0;
+        if (counted) await env.DB.prepare(`INSERT INTO spotlight_daily_metrics(profile_id,day,${column}) VALUES(?,?,1) ON CONFLICT(profile_id,day) DO UPDATE SET ${column}=${column}+1`).bind(profileId,d).run();
+        return json({ ok: true, counted });
+      }
       const insert = await env.DB.prepare("INSERT OR IGNORE INTO spotlight_events(event_id,profile_id,event_type,day,created_at) VALUES(?,?,?,?,?)").bind(eventId,profileId,type,d,t).run();
       if ((insert.meta.changes || 0) > 0) {
         await env.DB.prepare(`INSERT INTO spotlight_daily_metrics(profile_id,day,${type === "view" ? "views" : "outbound_clicks"}) VALUES(?,?,1) ON CONFLICT(profile_id,day) DO UPDATE SET ${type === "view" ? "views" : "outbound_clicks"}=${type === "view" ? "views" : "outbound_clicks"}+1`).bind(profileId,d).run();
+        if (type === "click" && target && target !== "other") {
+          const column = target === "website" ? "website_clicks" : target === "social" ? "social_clicks" : "media_clicks";
+          await env.DB.prepare(`UPDATE spotlight_daily_metrics SET ${column}=${column}+1 WHERE profile_id=? AND day=?`).bind(profileId,d).run();
+        }
         if (type === "view") {
+          await env.DB.prepare("INSERT INTO spotlight_source_daily(profile_id,day,source,views) VALUES(?,?,?,1) ON CONFLICT(profile_id,day,source) DO UPDATE SET views=views+1").bind(profileId,d,source || "direct").run();
           const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(visitorId + ":" + d + ":" + env.AUTH_TOKEN_SALT));
           const visitorKey = Array.from(new Uint8Array(digest), x => x.toString(16).padStart(2, "0")).join("");
           const unique = await env.DB.prepare("INSERT OR IGNORE INTO spotlight_visitors(profile_id,day,visitor_key,created_at) VALUES(?,?,?,?)").bind(profileId,d,visitorKey,t).run();
@@ -548,6 +594,7 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
       const b = await readJson(request, 1024);
       const eventId = clean(b.event_id, 64), profileId = clean(b.profile_id, 32);
       if (!/^[a-zA-Z0-9_-]{12,64}$/.test(eventId) || !/^[a-f0-9]{20}$/i.test(profileId)) throw new HttpError(422, "invalid_event", "Invalid impression event.");
+      if (await analyticsExclusion(request, env)) return json({ok:true,counted:false});
       const d = day(env), t = now();
       const featured = await env.DB.prepare("SELECT id FROM spotlight_profiles WHERE id=? AND status='published' AND featured_until>? AND (listing_expires_at IS NULL OR listing_expires_at>?)").bind(profileId,t,t).first();
       if (!featured) return json({ok:true,counted:false});
@@ -816,9 +863,14 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       if (imageKeys.length) await reconcileSpotlightImageStorage(env, "spotlight_profile_deleted");
       return json({ ok:true });
     }
+    if (seg.length === 3 && seg[0] === "profile" && seg[2] === "analytics" && request.method === "GET") {
+      const exists = await env.DB.prepare("SELECT id FROM spotlight_profiles WHERE id=?").bind(seg[1]).first();
+      if (!exists) return error("Profile not found", 404);
+      return json({ ok: true, analytics: await profileAnalytics(env, seg[1]!, parseRange(new URL(request.url).searchParams.get("days"))) }, 200, { "Cache-Control": "no-store" });
+    }
     if (seg.length === 1 && seg[0] === "analytics" && request.method === "GET") {
       const rows = await env.DB.prepare(
-        "SELECT p.id,p.display_name,COALESCE(SUM(m.views),0) views,COALESCE(SUM(m.unique_views),0) unique_views,COALESCE(SUM(m.outbound_clicks),0) outbound_clicks,COALESCE(SUM(m.featured_impressions),0) featured_impressions FROM spotlight_profiles p LEFT JOIN spotlight_daily_metrics m ON m.profile_id=p.id GROUP BY p.id ORDER BY views DESC LIMIT 100"
+        "SELECT p.id,p.display_name,COALESCE(SUM(m.views),0) views,COALESCE(SUM(m.unique_views),0) unique_views,COALESCE(SUM(m.outbound_clicks),0) outbound_clicks,COALESCE(SUM(m.featured_impressions),0) featured_impressions,COALESCE(SUM(m.website_clicks),0) website_clicks,COALESCE(SUM(m.social_clicks),0) social_clicks,COALESCE(SUM(m.media_clicks),0) media_clicks,COALESCE(SUM(m.player_interactions),0) player_interactions,COALESCE(SUM(m.completed_plays),0) completed_plays FROM spotlight_profiles p LEFT JOIN spotlight_daily_metrics m ON m.profile_id=p.id GROUP BY p.id ORDER BY views DESC LIMIT 100"
       ).all<any>();
       return json({ ok:true, profiles:rows.results || [] });
     }

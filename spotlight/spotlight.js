@@ -1,11 +1,13 @@
 import { socialLinksMarkup } from "./social-links.js";
 import { mediaChipsMarkup, mountMediaPlayers } from "./media.js";
 import { featuredShowcaseMarkup, remainingFraction } from "./showcase.js";
+import { adminHeaders, trackFeaturedPlayer } from "./analytics.js";
 
 const API = "https://deliver-api.boztik.com/api/public/spotlight";
 const $ = selector => document.querySelector(selector);
 const grid = $("#sp-grid");
 const featuredShowcase = $("#sp-featured-showcase");
+trackFeaturedPlayer(featuredShowcase);
 const empty = $("#sp-empty");
 const count = $("#sp-count");
 const search = $("#sp-search");
@@ -97,7 +99,7 @@ function trackImpressions() {
     impressionsSent.add(profileId);
     fetch(API + "/impression", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...adminHeaders() },
       body: JSON.stringify({ event_id: crypto.randomUUID().replace(/-/g, ""), profile_id: profileId }),
       keepalive: true
     }).catch(() => {});

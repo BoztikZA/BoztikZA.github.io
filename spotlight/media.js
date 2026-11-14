@@ -116,7 +116,7 @@ export function currentHostname() {
 export function embedUrl(media, hostname = currentHostname()) {
   if (!media) return null;
   const parent = encodeURIComponent(hostname);
-  if (media.platform === "youtube") return `https://www.youtube-nocookie.com/embed/${media.id}?rel=0&playsinline=1&autoplay=1`;
+  if (media.platform === "youtube") return `https://www.youtube-nocookie.com/embed/${media.id}?rel=0&playsinline=1&autoplay=1&enablejsapi=1&origin=${encodeURIComponent("https://" + hostname)}`;
   if (media.platform === "spotify") return `https://open.spotify.com/embed/${media.type}/${media.id}?utm_source=generator&theme=0`;
   if (media.platform === "twitch") {
     if (!TWITCH_PARENT.test(hostname || "")) return null;

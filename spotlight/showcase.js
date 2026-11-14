@@ -93,7 +93,7 @@ export function featuredShowcaseMarkup(profile, { hostname, now } = {}) {
       <p class="sp-featured-description">${esc(profile.description || "Discover the person behind this independent business or creative project.")}</p>
       ${linkRailMarkup(profile)}
       ${portfolioStripMarkup(profile)}
-      <a class="sp-stage-profile" href="${esc(profileHref(profile))}">Read the full profile</a>
+      <a class="sp-stage-profile" href="${esc(profileHref(profile) + "&src=featured")}">Read the full profile</a>
     </div>
     ${media}
   </div>`;

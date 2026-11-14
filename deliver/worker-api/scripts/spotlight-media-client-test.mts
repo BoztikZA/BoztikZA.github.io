@@ -67,7 +67,7 @@ test("describeSong handles every Spotify type, legacy rows and artwork hosts", (
 });
 
 test("embed URLs: YouTube privacy mode, Spotify embed type, Twitch parent from the runtime hostname", () => {
-  assert.equal(embedUrl(describeVideo(yt), "www.boztik.com"), `https://www.youtube-nocookie.com/embed/${YT}?rel=0&playsinline=1&autoplay=1`);
+  assert.equal(embedUrl(describeVideo(yt), "www.boztik.com"), `https://www.youtube-nocookie.com/embed/${YT}?rel=0&playsinline=1&autoplay=1&enablejsapi=1&origin=https%3A%2F%2Fwww.boztik.com`);
   assert.equal(embedUrl(describeSong(album), ""), `https://open.spotify.com/embed/album/${SP}?utm_source=generator&theme=0`);
   assert.equal(embedUrl(describeVideo(twChannel), "www.boztik.com"), "https://player.twitch.tv/?channel=boztikza&parent=www.boztik.com&autoplay=true");
   assert.equal(embedUrl(describeVideo(twChannel), "preview-123.boztikza-github-io.pages.dev"), "https://player.twitch.tv/?channel=boztikza&parent=preview-123.boztikza-github-io.pages.dev&autoplay=true");
