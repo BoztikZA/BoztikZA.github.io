@@ -49,7 +49,7 @@ function card(profile) {
   return `<article class="sp-card" data-profile-id="${esc(profile.id)}" data-featured="${profile.featured ? "1" : "0"}">
     ${featured}
     <div class="sp-card-top">
-      <div class="sp-avatar" aria-hidden="true">${profile.image_url ? `<img src="${esc(profile.image_url)}" alt="" loading="lazy">` : esc(initials)}</div>
+      <div class="sp-avatar" aria-hidden="true">${profile.image_url ? `<img src="${esc(profile.image_url)}" alt="" loading="lazy" decoding="async">` : esc(initials)}</div>
       <div><h3 class="sp-card-name">${esc(profile.display_name)}</h3><span class="sp-card-category">${esc(label(profile.category))}</span></div>
     </div>
     ${profile.tagline ? `<h3 class="sp-card-offer">${esc(profile.tagline)}</h3>` : ""}

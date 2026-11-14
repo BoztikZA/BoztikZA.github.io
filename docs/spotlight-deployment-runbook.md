@@ -21,7 +21,7 @@ npm run db:migrate:local                      # applies every migration to a scr
 npx wrangler d1 migrations list boztik-deliver --remote   # what production still needs
 ```
 
-Expected: production is at `0018_spotlight_lifecycle.sql`; pending are `0019_spotlight_video.sql` and `0020_spotlight_applications.sql` (later phases may add more; apply all that are listed).
+Expected: production is at `0018_spotlight_lifecycle.sql`; pending are `0019_spotlight_video.sql` and `0020_spotlight_applications.sql` and `0021_spotlight_analytics.sql` (apply all that are listed).
 If production is ahead of or different from this, stop and investigate before continuing.
 
 ## 1. Apply the remote D1 migration
@@ -29,7 +29,7 @@ If production is ahead of or different from this, stop and investigate before co
 `0019` only adds a nullable `video_metadata` column. `0020` adds nullable/defaulted columns to `spotlight_profiles`
 (owner link hash, terms, information-request fields, `placement_plan`) and rebuilds only two leaf tables
 (`spotlight_review_events`, `spotlight_email_outbox`), copying every row. The parent table is never rebuilt, so no
-foreign-key cascade can delete data. Before applying, record the row counts of those two tables and compare afterwards.
+foreign-key cascade can delete data. `0021` is purely additive: five new columns on `spotlight_daily_metrics` and two new tables (`spotlight_engagement_events`, `spotlight_source_daily`); nothing is rebuilt. Before applying, record the row counts of those two tables and compare afterwards.
 Existing Spotlight rows and the live Worker keep working while it is applied.
 
 ```bash
