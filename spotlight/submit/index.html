@@ -17,7 +17,7 @@
   <meta name="twitter:image" content="https://www.boztik.com/images/boztik-og.png">
   <link rel="stylesheet" href="../../styles-premium.css?v=20261106a">
   <link rel="stylesheet" href="../spotlight.css?v=12">
-  <link rel="stylesheet" href="submit.css?v=6">
+  <link rel="stylesheet" href="submit.css?v=7">
 </head>
 <body class="spotlight-body">
   <header class="sp-nav">
@@ -43,6 +43,16 @@
           <h2 id="sp-submit-title">Tell us about you.</h2>
           <p>Fields marked required are needed for review. Your images and information are stored securely; approved profiles are published manually and remain listed for 72 hours.</p>
         </div>
+        <section id="sp-submit-done" class="sp-submit-done" hidden tabindex="-1" aria-labelledby="sp-done-title">
+          <h2 id="sp-done-title">Application received.</h2>
+          <p id="sp-done-message"></p>
+          <div class="sp-owner-link">
+            <strong>Save your private status link</strong>
+            <p>This link lets you check progress and reply if we need more information. It is shown only once and anyone with it can view your application status, so keep it private.</p>
+            <input id="sp-owner-url" readonly aria-label="Private status link">
+            <div class="sp-owner-actions"><button type="button" class="sp-button sp-button-primary" id="sp-owner-copy">Copy link</button><a class="sp-button" id="sp-owner-open" href="../status/">Open status page</a></div>
+          </div>
+        </section>
         <form id="sp-submit-form" enctype="multipart/form-data" novalidate>
           <div class="sp-form-row">
             <label>Business or creator name <span aria-hidden="true">*</span><input name="display_name" maxlength="80" minlength="2" autocomplete="organization" required></label>
@@ -65,8 +75,8 @@
           </fieldset>
           <fieldset class="sp-media-fields">
             <legend>Featured media <small>Optional</small></legend>
-            <p>Show visitors something you've created. You may submit one Spotify track and one YouTube video or Twitch stream, VOD or clip. Only add content you own or are authorised to share.</p>
-            <label>Spotify track URL<input name="song_url" type="url" inputmode="url" placeholder="https://open.spotify.com/track/..."><small>Use a public individual track link, not an artist or playlist link.</small></label>
+            <p>Show visitors something you've created. You may submit one Spotify link and one YouTube video or Twitch stream, VOD or clip. Only add content you own or are authorised to share.</p>
+            <label>Spotify link<input name="song_url" type="url" inputmode="url" placeholder="https://open.spotify.com/track/..."><small>A public Spotify track, album, artist or playlist link. Uploading audio files directly is not available yet.</small></label>
             <label>Featured YouTube or Twitch URL<input name="video_url" type="url" inputmode="url" placeholder="https://youtu.be/... or https://www.twitch.tv/..."><small>Supported: YouTube videos and Twitch channels, recorded videos (VODs) and clips. One video feature per profile.</small></label>
             <div class="sp-media-review-note"><strong>Every video is reviewed before publication.</strong><span>Submitting a link does not guarantee it will appear on Boztik. We will check that it is relevant, appropriate, works when embedded and meets our quality standards. You can be asked to provide another link or your video may be declined. Nothing is published until Boztik approves your application.</span></div>
           </fieldset>
@@ -94,6 +104,6 @@
       </section>
     </div>
   </main>
-  <script type="module" src="./submit.js?v=7"></script>
+  <script type="module" src="./submit.js?v=8"></script>
 </body>
 </html>

@@ -117,6 +117,7 @@ function render() {
           ? `<small>Decision deadline: ${p.review_expires_at ? new Date(p.review_expires_at * 1000).toLocaleString() : "Not set"}</small>` : ""}
         ${p.status === "published" && p.listing_expires_at ? `<small>Listing expires: ${new Date(p.listing_expires_at * 1000).toLocaleString()}</small>` : ""}
         ${p.decline_reason ? `<small>Decline reason: ${esc(p.decline_reason)}</small>` : ""}
+        ${p.awaiting_applicant ? `<small><strong>Waiting for applicant reply</strong></small>` : p.info_response_note && p.application_status === "under_review" ? `<small><strong>Applicant replied — ready to review</strong></small>` : ""}
         ${p.invalid_social_links?.length ? `<small class="sp-admin-link-warning">Review invalid ${esc(p.invalid_social_links.join(", "))} link(s) before publishing.</small>` : ""}
         <p>${esc(p.tagline)}</p>
       </div>
@@ -334,8 +335,17 @@ reviewModal.innerHTML = `
         <button type="button" class="cc-btn sp-decline" data-review-confirm-decline>Confirm decline</button>
       </div>
     </div>
+    <div id="sp-review-info-panel" class="sp-review-decline-panel" hidden>
+      <label for="sp-review-info-note">What do you need from the applicant? (at least 10 characters; they will see this and be emailed)</label>
+      <textarea id="sp-review-info-note" rows="4" maxlength="1000" placeholder="e.g. Please link a portfolio or confirm the website is yours."></textarea>
+      <div class="sp-review-actions">
+        <button type="button" class="cc-btn" data-review-cancel-info>Back</button>
+        <button type="button" class="cc-btn sp-approve" data-review-confirm-info>Send request</button>
+      </div>
+    </div>
     <div id="sp-review-actions" class="sp-review-actions">
       <button type="button" class="cc-btn" data-review-close>Close</button>
+      <button type="button" class="cc-btn" data-review-info>Request information</button>
       <button type="button" class="cc-btn sp-approve" data-review-approve>Approve application</button>
       <button type="button" class="cc-btn sp-decline" data-review-decline>Decline</button>
     </div>
@@ -346,6 +356,7 @@ const reviewContent = reviewModal.querySelector("#sp-review-content");
 const reviewStatus = reviewModal.querySelector("#sp-review-status");
 const reviewDeclinePanel = reviewModal.querySelector("#sp-review-decline-panel");
 const reviewActionsPanel = reviewModal.querySelector("#sp-review-actions");
+const reviewInfoPanel = reviewModal.querySelector("#sp-review-info-panel");
 let activeReviewProfile = null;
 let reviewObjectUrls = [];
 function closeReviewModal() {
@@ -358,12 +369,41 @@ function reviewLink(label, url) {
   if (!url) return "";
   return `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label)} ↗</a>`;
 }
+const EVENT_LABELS = { submitted: "Application submitted", mark_read: "Marked as read", start_review: "Review started", request_info: "Information requested", info_received: "Applicant replied", approve: "Approved", decline: "Declined", publish: "Published", expire: "Expired" };
+/** Terms acceptance and the information-request exchange. All values are escaped. */
+function applicantDialogue(profile) {
+  const terms = profile.terms_accepted_at
+    ? `Accepted terms version ${esc(profile.terms_version || "?")} on ${esc(new Date(profile.terms_accepted_at * 1000).toLocaleString())}`
+    : "No terms record (created by an administrator or before terms were recorded)";
+  let exchange = "";
+  if (profile.info_request_note) {
+    exchange = `<p><strong>You asked</strong> (${esc(new Date(profile.info_requested_at * 1000).toLocaleString())}):</p><p class="sp-review-description">${esc(profile.info_request_note)}</p>` +
+      (profile.awaiting_applicant ? "<p><strong>Waiting for the applicant to reply.</strong></p>"
+        : profile.info_response_note ? `<p><strong>Applicant replied</strong> (${esc(new Date(profile.info_responded_at * 1000).toLocaleString())}):</p><p class="sp-review-description">${esc(profile.info_response_note)}</p>` : "");
+  }
+  return `<section><h4>Applicant communication</h4><p>${terms}</p>${exchange || "<p>No information has been requested.</p>"}</section>`;
+}
+async function loadReviewEvents(id) {
+  const target = reviewContent.querySelector("#sp-review-events");
+  try {
+    const data = await api("/api/admin/spotlight/profile/" + encodeURIComponent(id) + "/events");
+    const events = (data.events || []).slice().reverse();
+    target.replaceChildren(...(events.length ? events : [{ action: "", created_at: 0 }]).map(event => {
+      const li = document.createElement("li");
+      li.textContent = event.action
+        ? new Date(event.created_at * 1000).toLocaleString() + " · " + (EVENT_LABELS[event.action] || event.action) + " · " + event.actor + (event.action === "request_info" || event.action === "decline" ? " · " + (event.reason || "") : "")
+        : "No events recorded.";
+      return li;
+    }));
+  } catch { target.textContent = "Audit log unavailable."; }
+}
 async function openReviewModal(profile) {
   activeReviewProfile = profile;
   reviewModal.hidden = false;
   reviewContent.innerHTML = "<p>Loading private application details…</p>";
   reviewStatus.textContent = "";
   reviewDeclinePanel.hidden = true;
+  reviewInfoPanel.hidden = true;
   reviewActionsPanel.hidden = false;
   reviewObjectUrls.forEach(url => URL.revokeObjectURL(url));
   reviewObjectUrls = [];
@@ -406,7 +446,10 @@ async function openReviewModal(profile) {
     <section><h4>About the applicant</h4><p class="sp-review-description">${esc(profile.description || "No description supplied.")}</p></section>
     <section><h4>Website and social profiles</h4><div class="sp-review-links">${socials || "<span>No social links supplied.</span>"}${song}</div></section>
     ${videoPreview}
-    <section><h4>Showcase images</h4><div id="sp-review-gallery" class="sp-review-gallery"><span>Loading showcase images…</span></div></section>`;
+    ${applicantDialogue(profile)}
+    <section><h4>Showcase images</h4><div id="sp-review-gallery" class="sp-review-gallery"><span>Loading showcase images…</span></div></section>
+    <section><h4>Audit log</h4><ol id="sp-review-events" class="sp-review-events"><li>Loading…</li></ol></section>`;
+  loadReviewEvents(profile.id);
   const loadPrivateImage = async (path, alt, target) => {
     try {
       const response = await fetch(config.apiBaseUrl + path, { headers: authHeaders() });
@@ -433,16 +476,38 @@ async function openReviewModal(profile) {
   }
   reviewModal.querySelector("[data-review-approve]").hidden = !["new","under_review"].includes(profile.application_status);
   reviewModal.querySelector("[data-review-decline]").hidden = !["new","under_review"].includes(profile.application_status);
+  reviewModal.querySelector("[data-review-info]").hidden = !["new","under_review"].includes(profile.application_status);
   reviewModal.querySelector(".sp-review-card").focus?.();
 }
 reviewModal.addEventListener("click", async event => {
-  const target = event.target.closest("[data-review-close],[data-review-approve],[data-review-decline],[data-review-cancel-decline],[data-review-confirm-decline]");
+  const target = event.target.closest("[data-review-close],[data-review-approve],[data-review-decline],[data-review-cancel-decline],[data-review-confirm-decline],[data-review-info],[data-review-cancel-info],[data-review-confirm-info]");
   if (!target) return;
   if (target.hasAttribute("data-review-close")) { closeReviewModal(); return; }
   if (!activeReviewProfile) return;
   if (target.hasAttribute("data-review-decline")) {
     reviewDeclinePanel.hidden = false; reviewActionsPanel.hidden = true;
     reviewModal.querySelector("#sp-review-decline-reason").focus(); return;
+  }
+  if (target.hasAttribute("data-review-info")) {
+    reviewInfoPanel.hidden = false; reviewActionsPanel.hidden = true;
+    reviewModal.querySelector("#sp-review-info-note").focus(); return;
+  }
+  if (target.hasAttribute("data-review-cancel-info")) {
+    reviewInfoPanel.hidden = true; reviewActionsPanel.hidden = false; return;
+  }
+  if (target.hasAttribute("data-review-confirm-info")) {
+    const note = reviewModal.querySelector("#sp-review-info-note").value.trim();
+    if (note.length < 10) { reviewStatus.textContent = "Please say what you need (at least 10 characters)."; return; }
+    target.disabled = true;
+    try {
+      const result = await api("/api/admin/spotlight/profile/" + encodeURIComponent(activeReviewProfile.id) + "/review", {
+        method: "PATCH", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "request_info", note })
+      });
+      closeReviewModal(); await load();
+      feedback.textContent = result.email_queued ? "Information requested. The applicant has been emailed and can reply from their private status link." : "Information requested. No contact email is on file, so the applicant can only see this on their status link.";
+    } catch (error) { reviewStatus.textContent = error.message; } finally { target.disabled = false; }
+    return;
   }
   if (target.hasAttribute("data-review-cancel-decline")) {
     reviewDeclinePanel.hidden = true; reviewActionsPanel.hidden = false; return;

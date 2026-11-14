@@ -1,0 +1,13 @@
+.sp-status-wrap{width:min(720px,calc(100% - 32px));margin:0 auto;padding:clamp(28px,6vw,64px) 0}
+.sp-status-wrap h1{margin:0 0 8px}
+.sp-status-headline{font-size:1.15rem;font-weight:700;color:#f1f6f1}
+.sp-status-steps{list-style:none;display:grid;gap:8px;margin:20px 0;padding:0}
+.sp-status-steps li{display:flex;gap:12px;align-items:center;padding:12px 14px;border:1px solid rgba(255,255,255,.1);border-radius:10px;color:#93a097}
+.sp-status-steps li[data-state="done"]{color:#dfeae1;border-color:rgba(142,255,61,.3)}
+.sp-status-steps li[data-state="current"]{color:#f6faf6;border-color:var(--sp-green,#8eff3d);background:rgba(142,255,61,.07);font-weight:700}
+.sp-status-steps li[data-state="problem"]{color:#ffd9d2;border-color:#ff8a75}
+.sp-info-note{margin:12px 0;padding:14px;border-left:3px solid var(--sp-green,#8eff3d);background:rgba(255,255,255,.04);border-radius:6px;white-space:pre-wrap}
+.sp-status-wrap textarea{width:100%;box-sizing:border-box}
+.sp-status-help{margin-top:32px;color:#93a097;font-size:.85rem}
+.sp-status-wrap [hidden]{display:none!important}
+#sp-status-card{padding:0;margin:0;max-width:none}
