@@ -209,11 +209,11 @@ jobs:
 
           # Exercise the public read-only APIs used by those pages. The public
           # Spotlight DTO must never leak moderator/application fields.
-          curl --fail --silent --show-error --connect-timeout 10 --max-time 30 \\
-            'https://deliver-api.boztik.com/api/public/spotlight?limit=1' \\
+          curl --fail --silent --show-error --connect-timeout 10 --max-time 30 \
+            'https://deliver-api.boztik.com/api/public/spotlight?limit=1' \
             --output "$tmp_dir/spotlight-api.json"
-          curl --fail --silent --show-error --connect-timeout 10 --max-time 30 \\
-            'https://deliver-api.boztik.com/api/public/promotions' \\
+          curl --fail --silent --show-error --connect-timeout 10 --max-time 30 \
+            'https://deliver-api.boztik.com/api/public/promotions' \
             --output "$tmp_dir/promotions-api.json"
           python3 - "$tmp_dir/spotlight-api.json" "$tmp_dir/promotions-api.json" <<'PY'
           import json
