@@ -80,6 +80,45 @@ const api = async (path, init = {}) => {
   return data;
 };
 
+/* Queue filters (client-side over the already-loaded profiles; nothing is hidden from the data, only from view). */
+const QUEUE_FILTERS = [
+  ["all", "All"],
+  ["action", "Needs action"],
+  ["waiting", "Waiting on applicant"],
+  ["approved", "Approved, not live"],
+  ["live", "Live"],
+  ["closed", "Declined, expired or archived"],
+];
+let queueFilter = "all";
+const isLive = p => p.status === "published" && (!p.listing_expires_at || p.listing_expires_at * 1000 > Date.now());
+function matchesQueueFilter(p, filter = queueFilter) {
+  switch (filter) {
+    case "action": return (p.application_status === "new" || (p.application_status === "under_review" && !p.awaiting_applicant));
+    case "waiting": return Boolean(p.awaiting_applicant);
+    case "approved": return p.application_status === "approved" && p.status !== "published";
+    case "live": return isLive(p);
+    case "closed": return ["declined", "expired"].includes(p.application_status) || p.status === "archived";
+    default: return true;
+  }
+}
+const filterBar = document.createElement("div");
+filterBar.className = "sp-queue-filters";
+filterBar.setAttribute("role", "group");
+filterBar.setAttribute("aria-label", "Filter submissions");
+list.before(filterBar);
+filterBar.addEventListener("click", event => {
+  const button = event.target.closest("button[data-filter]");
+  if (!button) return;
+  queueFilter = button.dataset.filter;
+  render();
+});
+function renderFilterBar() {
+  filterBar.innerHTML = QUEUE_FILTERS.map(([key, label]) => {
+    const count = profiles.filter(p => matchesQueueFilter(p, key)).length;
+    return `<button type="button" class="cc-btn" data-filter="${key}" aria-pressed="${key === queueFilter}">${esc(label)} <b>${count}</b></button>`;
+  }).join("");
+}
+
 function render() {
   const pending = profiles.filter(p => ["new", "under_review"].includes(p.application_status));
   const published = profiles.filter(p => p.status === "published" && (!p.listing_expires_at || p.listing_expires_at * 1000 > Date.now()));
@@ -107,11 +146,13 @@ function render() {
     if (p.application_status === "published" && p.status === "archived") return `<button class="cc-btn" data-action="publish" data-id="${esc(p.id)}">Republish</button>`;
     return "";
   };
-  list.innerHTML = profiles.length ? profiles.map(p => `
+  renderFilterBar();
+  const visible = profiles.filter(p => matchesQueueFilter(p));
+  list.innerHTML = visible.length ? visible.map(p => `
     <article class="sp-admin-row">
       <div class="sp-admin-main">
         <strong>${esc(p.display_name)}</strong>
-        <span>${esc(p.category.replace(/-/g, " "))} · ${esc(p.application_status || p.status)} · ${new Date(p.created_at * 1000).toLocaleDateString()}</span>
+        <span>${esc(p.category.replace(/-/g, " "))} · ${esc(p.application_status || p.status)} · ${new Date(p.created_at * 1000).toLocaleDateString()}${p.placement_plan && p.placement_plan !== "free" ? ` · <b class="sp-plan-badge">${esc(p.placement_plan)}</b>` : ""}</span>
         <small>${esc(p.contact_email || "")}</small>
         ${p.application_status === "new" || p.application_status === "under_review" || p.application_status === "approved"
           ? `<small>Decision deadline: ${p.review_expires_at ? new Date(p.review_expires_at * 1000).toLocaleString() : "Not set"}</small>` : ""}
@@ -124,11 +165,12 @@ function render() {
       <div class="sp-admin-actions">
         <button class="cc-btn" data-action="review" data-id="${esc(p.id)}">Review</button>
         <button class="cc-btn" data-action="edit" data-id="${esc(p.id)}">Edit profile</button>
+        ${p.status === "published" || p.completed_plays !== undefined ? `<button class="cc-btn" data-action="stats" data-id="${esc(p.id)}">Analytics</button>` : ""}
         ${reviewActions(p)}
         ${p.status === "published" && (!p.listing_expires_at || p.listing_expires_at * 1000 > Date.now()) ? (p.featured ? `<button class="cc-btn" data-action="unfeature" data-id="${esc(p.id)}">Remove feature</button>` : `<button class="cc-btn" data-action="feature" data-id="${esc(p.id)}">Feature 24h</button>`) : ""}
         <button class="cc-btn sp-delete" data-action="delete" data-id="${esc(p.id)}">Delete</button>
       </div>
-    </article>`).join("") : "<p class='cc-muted'>No submissions yet. New entries will appear here for review.</p>";
+    </article>`).join("") : profiles.length ? "<p class='cc-muted'>Nothing matches this filter.</p>" : "<p class='cc-muted'>No submissions yet. New entries will appear here for review.</p>";
 }
 
 let spotlightLoadInProgress = false;
@@ -172,6 +214,8 @@ async function load({ silent = false } = {}) {
         <span>${Number(p.unique_views || 0).toLocaleString()} daily unique visitors</span>
         <span>${Number(p.outbound_clicks || 0).toLocaleString()} outbound clicks</span>
         <span>${Number(p.featured_impressions || 0).toLocaleString()} featured impressions</span>
+        <span>${Number(p.website_clicks || 0).toLocaleString()} website · ${Number(p.social_clicks || 0).toLocaleString()} social · ${Number(p.media_clicks || 0).toLocaleString()} media clicks</span>
+        <span>${Number(p.player_interactions || 0).toLocaleString()} plays · ${Number(p.completed_plays || 0).toLocaleString()} completed (YouTube)</span>
       </div>`).join("") : "<p class='cc-muted'>Engagement will appear when visitors start exploring profiles.</p>";
     const updatedAt = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
     feedback.textContent = analyticsUnavailable
@@ -549,12 +593,65 @@ reviewModal.addEventListener("click", async event => {
   }
 });
 
+/* Per-profile analytics (real aggregates from the Worker; admin previews and bots are already excluded server-side). */
+const statsModal = document.createElement("div");
+statsModal.className = "sp-review-modal";
+statsModal.hidden = true;
+statsModal.innerHTML = `
+  <div class="sp-review-backdrop" data-stats-close></div>
+  <section class="sp-review-card" role="dialog" aria-modal="true" aria-labelledby="sp-stats-title">
+    <button type="button" class="sp-review-close" data-stats-close aria-label="Close analytics">×</button>
+    <span class="cc-eyebrow">Profile analytics</span>
+    <h2 id="sp-stats-title">Analytics</h2>
+    <div class="sp-queue-filters" role="group" aria-label="Date range">
+      <button type="button" class="cc-btn" data-stats-days="7">7 days</button>
+      <button type="button" class="cc-btn" data-stats-days="30">30 days</button>
+      <button type="button" class="cc-btn" data-stats-days="90">90 days</button>
+    </div>
+    <div id="sp-stats-body" class="sp-review-content" aria-live="polite">Loading…</div>
+  </section>`;
+document.body.append(statsModal);
+let statsProfileId = "";
+async function loadStats(days) {
+  const body = statsModal.querySelector("#sp-stats-body");
+  statsModal.querySelectorAll("[data-stats-days]").forEach(b => b.setAttribute("aria-pressed", String(Number(b.dataset.statsDays) === days)));
+  body.textContent = "Loading…";
+  try {
+    const data = await api("/api/admin/spotlight/profile/" + encodeURIComponent(statsProfileId) + "/analytics?days=" + days);
+    const a = data.analytics, t = a.totals;
+    const max = Math.max(1, ...a.series.map(d => d.views));
+    const names = { direct: "Direct or unknown", directory: "Spotlight directory", featured: "Featured page", search: "Search engines", social: "Social platforms", other: "Other websites" };
+    body.innerHTML = `
+      <dl class="sp-review-facts">
+        <div><dt>Featured impressions</dt><dd>${Number(t.featured_impressions).toLocaleString()}</dd></div>
+        <div><dt>Profile views (${Number(t.unique_views).toLocaleString()} unique visitor-days)</dt><dd>${Number(t.views).toLocaleString()}</dd></div>
+        <div><dt>Link clicks: website / social / media</dt><dd>${Number(t.link_clicks).toLocaleString()} (${t.website_clicks} / ${t.social_clicks} / ${t.media_clicks})</dd></div>
+        <div><dt>Player plays · completed (YouTube only)</dt><dd>${Number(t.player_interactions).toLocaleString()} · ${Number(t.completed_plays).toLocaleString()}</dd></div>
+      </dl>
+      <section><h4>Views per day, ${esc(a.from)} to ${esc(a.to)}</h4>
+        <div class="sp-stats-bars" role="img" aria-label="Profile views per day: ${Number(t.views)} in total">${a.series.map(d => `<i style="height:${Math.round(d.views / max * 100)}%" title="${esc(d.day)}: ${d.views}"></i>`).join("")}</div></section>
+      <section><h4>Where visits came from</h4><div class="sp-review-links">${a.sources.filter(x => x.views).map(x => `<span>${esc(names[x.source] || x.source)}: <b>${Number(x.views).toLocaleString()}</b></span>`).join("") || "<span>No visits in this period.</span>"}</div></section>`;
+  } catch (error) { body.textContent = "Analytics unavailable: " + error.message; }
+}
+statsModal.addEventListener("click", event => {
+  if (event.target.closest("[data-stats-close]")) { statsModal.hidden = true; return; }
+  const button = event.target.closest("[data-stats-days]");
+  if (button) loadStats(Number(button.dataset.statsDays));
+});
+
 list.addEventListener("click", async event => {
   const button = event.target.closest("button[data-action]");
   if (!button) return;
   const { action, id } = button.dataset;
   const profile = profiles.find(item => item.id === id);
   if (!profile) return;
+  if (action === "stats") {
+    statsProfileId = profile.id;
+    statsModal.querySelector("#sp-stats-title").textContent = profile.display_name + " — analytics";
+    statsModal.hidden = false;
+    loadStats(30);
+    return;
+  }
   if (action === "edit") { openEditor(profile); return; }
   if (action === "review") { openReviewModal(profile); return; }
   if (action === "delete" && !confirm("Permanently delete this profile and its analytics? This cannot be undone.")) return;
