@@ -200,12 +200,14 @@ jobs:
           grep -Fq 'FREE BUSINESS DIRECTORY' "$tmp_dir/spotlight.html"
           grep -Fq 'id="sp-grid"' "$tmp_dir/spotlight.html"
           grep -Fq 'spotlight.js?v=16' "$tmp_dir/spotlight.html"
+          fetch_page 'https://www.boztik.com/spotlight/spotlight.js?v=16' "$tmp_dir/spotlight.js" 'https://www.boztik.com/spotlight/spotlight.js?v=16'
 
           fetch_page 'https://www.boztik.com/stores.html' "$tmp_dir/stores.html" 'https://www.boztik.com/stores.html'
           grep -Fq 'Boztik Stores | Original Designs & Wallpapers' "$tmp_dir/stores.html"
           grep -Fq 'Know where your order is handled.' "$tmp_dir/stores.html"
           grep -Fq 'id="store-promotion-grid"' "$tmp_dir/stores.html"
           grep -Fq 'js/stores.js' "$tmp_dir/stores.html"
+          fetch_page 'https://www.boztik.com/js/stores.js' "$tmp_dir/stores.js" 'https://www.boztik.com/js/stores.js'
 
           # Exercise the public read-only APIs used by those pages. The public
           # Spotlight DTO must never leak moderator/application fields.
@@ -240,8 +242,10 @@ jobs:
               raise SystemExit("Public promotions API did not return an items array.")
           for item in promotions["items"]:
               if not all(isinstance(item.get(key), str) and item[key].strip()
-                         for key in ("title", "store", "description", "destination_url")):
+                         for key in ("title", "store", "cta_label", "destination_url", "image_url")):
                   raise SystemExit("A public promotion is missing required display or destination data.")
+              if not isinstance(item.get("description"), str):
+                  raise SystemExit("A public promotion has an invalid description field.")
           print(f"Public promotions API OK: {len(promotions['items'])} published item(s).")
           PY
 
