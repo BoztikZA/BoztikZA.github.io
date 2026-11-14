@@ -3,6 +3,7 @@ import { HttpError } from "../types";
 import { requireSession } from "../lib/auth";
 import { localDay } from "../lib/db";
 import { enqueueSpotlightEmail, processSpotlightEmailOutbox } from "../lib/spotlight-email";
+import { SPOTLIGHT_TERMS_VERSION, awaitingApplicant, hashOwnerToken, isOwnerToken, newOwnerToken, ownerDto } from "../lib/spotlight-owner";
 import { readImageDimensions } from "../lib/spotlight-image";
 import {
   fetchSpotifyMetadata, normalizeSong, normalizeVideo, parseFeaturedVideo, parseSpotifyResource,
@@ -419,16 +420,20 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
       }
       const id = ID(), timestamp = now();
       const slug = slugify(displayName) + "-" + id.slice(0, 5);
+      // Private owner link: the secret is returned once in this response; only its hash is stored.
+      const ownerToken = newOwnerToken();
+      const ownerTokenHash = await hashOwnerToken(ownerToken);
       const inserted = await env.DB.prepare(
         `INSERT INTO spotlight_profiles
           (id,slug,display_name,tagline,description,category,contact_email,website_url,social_links,song_metadata,video_metadata,
-           status,application_status,review_expires_at,review_unread,created_at,updated_at)
-         SELECT ?,?,?,?,?,?,?,?,?,?,?,'pending','new',?,1,?,?
+           status,application_status,review_expires_at,review_unread,created_at,updated_at,
+           owner_token_hash,terms_version,terms_accepted_at)
+         SELECT ?,?,?,?,?,?,?,?,?,?,?,'pending','new',?,1,?,?,?,?,?
           WHERE NOT EXISTS (
             SELECT 1 FROM spotlight_profiles
              WHERE contact_email=? AND lower(display_name)=lower(?) AND status<>'archived' AND created_at>=?
           )`,
-      ).bind(id,slug,displayName,tagline,description,category,email,website,JSON.stringify(social),song ? JSON.stringify(song) : null,video ? JSON.stringify(video) : null,timestamp + SPOTLIGHT_TERM_SECONDS,timestamp,timestamp,email,displayName,timestamp - SPOTLIGHT_TERM_SECONDS).run();
+      ).bind(id,slug,displayName,tagline,description,category,email,website,JSON.stringify(social),song ? JSON.stringify(song) : null,video ? JSON.stringify(video) : null,timestamp + SPOTLIGHT_TERM_SECONDS,timestamp,timestamp,ownerTokenHash,SPOTLIGHT_TERMS_VERSION,timestamp,email,displayName,timestamp - SPOTLIGHT_TERM_SECONDS).run();
       if ((inserted.meta.changes || 0) === 0) {
         return json({
           ok: true,
@@ -436,6 +441,8 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
           message: "A submission with those details was received within the last 72 hours. You can submit again after the 72-hour Spotlight application window has passed.",
         });
       }
+      await env.DB.prepare("INSERT INTO spotlight_review_events(id,profile_id,actor,action,from_status,to_status,created_at) VALUES(?,?,?,?,?,?,?)")
+        .bind(ID(), id, "applicant", "submitted", "new", "new", timestamp).run();
       if (mainImage) {
         try {
           const requireImageUpload = async (response: Response) => {
@@ -478,12 +485,40 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
         ok: true,
         notification_sent: notificationSent,
         notification_queued: notificationQueued,
+        owner_token: ownerToken,
         message: notificationSent
           ? "Your profile has been received. The Boztik team has also been notified."
           : notificationQueued
             ? "Your profile has been safely received for review. The email alert is queued for retry; you do not need to submit it again."
             : "Your profile has been safely received for review, but the email alert could not be queued. You do not need to submit it again."
       }, 201);
+    }
+    if (request.method === "POST" && seg[0] === "owner" && (seg.length === 1 || (seg.length === 2 && seg[1] === "respond"))) {
+      checkPublicRate(request, env, "spotlight-owner", seg.length === 1 ? 1 : 0.5);
+      assertSameSiteOrigin(request, env); requireJson(request);
+      const b = await readJson(request, 4096);
+      // Same response for a malformed and an unknown token, so tokens cannot be probed for validity.
+      if (!isOwnerToken(b.token)) return error("Application not found", 404);
+      const tokenHash = await hashOwnerToken(b.token);
+      const row = await env.DB.prepare("SELECT * FROM spotlight_profiles WHERE owner_token_hash=?").bind(tokenHash).first<any>();
+      if (!row) return error("Application not found", 404);
+      const t = now();
+      if (seg.length === 2) {
+        const reply = cleanDescription(b.message).slice(0, 1000);
+        if (reply.length < 5) throw new HttpError(422, "reply_required", "Write a short reply of at least 5 characters.");
+        if (row.application_status !== "under_review" || !awaitingApplicant(row)) throw new HttpError(409, "no_info_requested", "There is no open information request on this application.");
+        const result = await env.DB.batch([
+          env.DB.prepare("UPDATE spotlight_profiles SET info_response_note=?,info_responded_at=? WHERE id=? AND owner_token_hash=? AND application_status='under_review' AND info_requested_at>COALESCE(info_responded_at,0)").bind(reply, t, row.id, tokenHash),
+          env.DB.prepare("INSERT INTO spotlight_review_events(id,profile_id,actor,action,from_status,to_status,reason,created_at) SELECT ?,?,?,?,?,?,?,? WHERE changes()>0").bind(ID(), row.id, "applicant", "info_received", "under_review", "under_review", reply, t),
+        ]);
+        if ((result[0]?.meta.changes || 0) !== 1) throw new HttpError(409, "no_info_requested", "There is no open information request on this application.");
+        try {
+          await enqueueSpotlightEmail(env, row.id, "info_received", null, String(t));
+          await processSpotlightEmailOutbox(env, 1, row.id, "info_received");
+        } catch (emailError) { console.error("[spotlight] info reply notification failed", emailError); }
+      }
+      const fresh = await env.DB.prepare("SELECT * FROM spotlight_profiles WHERE id=?").bind(row.id).first<any>();
+      return json({ ok: true, application: ownerDto(fresh, t) }, 200, { "Cache-Control": "no-store" });
     }
     if (request.method === "POST" && seg[0] === "event" && seg.length === 1) {
       checkPublicRate(request, env, "spotlight-event", 2);
@@ -580,6 +615,14 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
         review_expires_at:r.review_expires_at,
         listing_expires_at:r.listing_expires_at,
         decline_reason:r.decline_reason,
+        terms_version:r.terms_version,
+        terms_accepted_at:r.terms_accepted_at,
+        placement_plan:r.placement_plan,
+        info_request_note:r.info_request_note,
+        info_requested_at:r.info_requested_at,
+        info_response_note:r.info_response_note,
+        info_responded_at:r.info_responded_at,
+        awaiting_applicant:awaitingApplicant(r) && r.application_status === "under_review",
         gallery_positions:(gallery.get(r.id) || []).map((image: any) => Number(image.position)),
         invalid_social_links: invalidSocialLinkKeys(r.social_links),
       }));
@@ -619,6 +662,12 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
         toStatus = "under_review";
         updateSql = "UPDATE spotlight_profiles SET application_status='under_review',review_unread=0,reviewed_at=COALESCE(reviewed_at,?) WHERE id=? AND application_status='new'";
         updateArgs = [timestamp,seg[1]];
+      } else if (action === "request_info" && ["new","under_review"].includes(fromStatus)) {
+        reason = cleanDescription(body.note).slice(0, 1000);
+        if (reason.length < 10) throw new HttpError(422, "info_note_required", "Say what you need from the applicant (at least 10 characters).");
+        toStatus = "under_review";
+        updateSql = "UPDATE spotlight_profiles SET application_status='under_review',review_unread=0,reviewed_at=COALESCE(reviewed_at,?),info_request_note=?,info_requested_at=MAX(?,COALESCE(info_responded_at,0)+1) WHERE id=? AND application_status IN ('new','under_review')";
+        updateArgs = [timestamp,reason,timestamp,seg[1]];
       } else if (action === "approve" && ["new","under_review"].includes(fromStatus)) {
         toStatus = "approved";
         updateSql = "UPDATE spotlight_profiles SET application_status='approved',review_unread=0,review_expires_at=?,reviewed_at=COALESCE(reviewed_at,?),decided_at=? WHERE id=? AND application_status IN ('new','under_review')";
@@ -641,7 +690,20 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       ];
       const result = await env.DB.batch(statements);
       if ((result[0]?.meta.changes || 0) !== 1) return error("Profile changed during review. Refresh and try again.", 409);
-      return json({ ok: true, application_status: toStatus, email_available: Boolean(old.contact_email) });
+      const emailKind = action === "request_info" ? "info_requested" : action === "approve" ? "approved" : null; // declines stay an administrator-written email draft (existing, tested behaviour)
+      let emailQueued = false;
+      if (emailKind && old.contact_email) {
+        try {
+          await enqueueSpotlightEmail(env, seg[1]!, emailKind, null, emailKind === "info_requested" ? String(timestamp) : "");
+          emailQueued = true;
+          await processSpotlightEmailOutbox(env, 1, seg[1]!, emailKind);
+        } catch (emailError) { console.error("[spotlight] applicant email could not be processed", emailError); }
+      }
+      return json({ ok: true, application_status: toStatus, email_available: Boolean(old.contact_email), email_queued: emailQueued });
+    }
+    if (seg.length === 3 && seg[0] === "profile" && seg[2] === "events" && request.method === "GET") {
+      const events = await env.DB.prepare("SELECT id,actor,action,from_status,to_status,reason,created_at FROM spotlight_review_events WHERE profile_id=? ORDER BY created_at DESC, rowid DESC LIMIT 100").bind(seg[1]).all<any>();
+      return json({ ok: true, events: events.results || [] }, 200, { "Cache-Control": "no-store" });
     }
     if (seg.length === 3 && seg[0] === "profile" && seg[2] === "image" && request.method === "PUT") return uploadSpotlightImage(request,env,seg[1]!);
     if (seg.length === 4 && seg[0] === "profile" && seg[2] === "gallery" && /^[1-4]$/.test(seg[3]!) && request.method === "PUT") return uploadSpotlightImage(request,env,seg[1]!,Number(seg[3]));
