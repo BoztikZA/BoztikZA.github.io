@@ -109,6 +109,7 @@ jobs:
           if missing:
               raise SystemExit("::error::AdSense code coverage failed:\\n" + "\\n".join(missing))
           print(f"AdSense loader present on all {len(urls)} sitemap URL(s).")
+          PY
 
           if ! grep -Fq 'Sitemap: https://www.boztik.com/sitemap.xml' _site/robots.txt; then
             echo "::error::The staged robots.txt is missing the expected sitemap URL."
