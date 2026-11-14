@@ -195,3 +195,74 @@
   .sp-card,.sp-button,.sp-rail-site,.sp-rail-social,.sp-portfolio-item img { transition:none!important; animation:none!important; }
   .sp-card:hover,.sp-button:hover { transform:none!important; }
 }
+
+
+/* Crawlable directory context: useful editorial content remains in the initial HTML,
+   independently of the live profile API and its client-side filters. */
+.sp-directory-context {
+  margin: clamp(42px,6vw,76px) 0 10px;
+  padding: clamp(24px,4vw,42px);
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 18px;
+  background: linear-gradient(145deg,rgba(18,28,23,.78),rgba(10,16,17,.82));
+}
+.sp-directory-context-intro { max-width: 760px; }
+.sp-directory-context-intro h2 {
+  margin: 10px 0 14px;
+  color: #f1f6f1;
+  font: 800 clamp(1.65rem,3.2vw,2.45rem)/1.12 "Plus Jakarta Sans",Inter,sans-serif;
+  letter-spacing: -.045em;
+}
+.sp-directory-context-intro>p:last-child,
+.sp-directory-context-grid p,
+.sp-directory-context-note p {
+  color: #aebbb2;
+  font-size: .88rem;
+  line-height: 1.8;
+}
+.sp-directory-context-grid {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 14px;
+  margin-top: 26px;
+}
+.sp-directory-context-grid article {
+  padding: 18px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 11px;
+  background: rgba(255,255,255,.025);
+}
+.sp-directory-context-grid h3 {
+  margin: 0 0 8px;
+  color: #e8f2e8;
+  font: 750 .98rem/1.35 "Plus Jakarta Sans",Inter,sans-serif;
+}
+.sp-directory-context-grid p { margin: 0; font-size: .8rem; }
+.sp-directory-context-note {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+.sp-directory-context-note p { margin: 0; max-width: 760px; font-size: .78rem; }
+.sp-directory-context-note strong { color: #e4eee5; }
+.sp-directory-context-note a {
+  flex: none;
+  color: var(--sp-green);
+  font-size: .8rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+.sp-directory-context-note a:hover { text-decoration: underline; }
+@media(max-width:760px) {
+  .sp-directory-context-grid { grid-template-columns: 1fr; }
+  .sp-directory-context-note { align-items: flex-start; flex-direction: column; }
+}
+@media(max-width:600px) {
+  .sp-directory-context { padding: 20px; border-radius: 14px; }
+  .sp-directory-context-grid { gap: 10px; margin-top: 18px; }
+  .sp-directory-context-grid article { padding: 15px; }
+}
