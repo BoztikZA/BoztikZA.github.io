@@ -1,5 +1,6 @@
 import { socialLinksMarkup } from "./social-links.js";
 import { describeSong, describeVideo, mediaLinkCardMarkup } from "./media.js";
+import { linkRailMarkup } from "./showcase.js";
 
 const API = "https://deliver-api.boztik.com/api/public/spotlight";
 const visitorId = (() => {
@@ -82,7 +83,7 @@ function profileImages(profile) {
 
 function renderGallery(images, name) {
   if (images.length < 2) return "";
-  return `<section class="sp-profile-gallery" aria-label="${esc(name)} image gallery">
+  return `<section class="sp-profile-gallery" id="gallery" aria-label="${esc(name)} image gallery">
     <div class="sp-profile-gallery-heading"><span class="sp-kicker">A CLOSER LOOK</span><p>More from ${esc(name)}.</p></div>
     <div class="sp-profile-gallery-stage"><img id="sp-gallery-active-image" src="${esc(images[0].url)}" alt="${esc(name)} — image 1 of ${images.length}" loading="lazy" decoding="async"></div>
     <div class="sp-profile-gallery-controls" role="group" aria-label="Choose a profile image">
@@ -201,7 +202,7 @@ async function load() {
           <h1>${esc(name)}</h1>
           ${profile.tagline ? `<p class="sp-profile-tagline">${esc(profile.tagline)}</p>` : ""}
           <div class="sp-profile-badges"><span>✓ Listed on Boztik Spotlight</span><span>Reviewed by Boztik</span></div>
-          ${websiteUrl ? `<div class="sp-profile-hero-actions"><a class="sp-button sp-button-primary" href="${esc(websiteUrl)}" target="_blank" rel="noopener noreferrer" data-outbound>Visit ${esc(name)} <span aria-hidden="true">↗</span></a></div>` : ""}
+          ${linkRailMarkup(profile)}
         </div>
       </div>
       <dl class="sp-profile-facts">

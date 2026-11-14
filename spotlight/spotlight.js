@@ -1,5 +1,6 @@
 import { socialLinksMarkup } from "./social-links.js";
-import { featuredPlayersMarkup, mediaChipsMarkup, mountMediaPlayers } from "./media.js";
+import { mediaChipsMarkup, mountMediaPlayers } from "./media.js";
+import { featuredShowcaseMarkup, remainingFraction } from "./showcase.js";
 
 const API = "https://deliver-api.boztik.com/api/public/spotlight";
 const $ = selector => document.querySelector(selector);
@@ -31,19 +32,7 @@ const label = value => String(value || "").replace(/-/g, " ").replace(/\b\w/g, c
 
 function renderFeaturedShowcase(profile) {
   if (!profile) { featuredShowcase.hidden = true; featuredShowcase.innerHTML = ""; return; }
-  const initials = profile.display_name.split(/\s+/).slice(0, 2).map(part => part[0]).join("").toUpperCase();
-  const image = typeof profile.image_url === "string" && /^https:\/\/deliver-api\.boztik\.com\/api\/public\/spotlight\/image\//.test(profile.image_url)
-    ? `<img src="${esc(profile.image_url)}" alt="${esc(profile.display_name)}" loading="eager" decoding="async">` : esc(initials);
-  const media = featuredPlayersMarkup(profile);
-  const featuredUntil = Number(profile.featured_until || 0);
-  featuredShowcase.innerHTML = `<div class="sp-featured-shell">
-    <div class="sp-featured-copy"><p class="sp-kicker"><span></span> BOZTIK SPOTLIGHT · FEATURED TODAY</p>
-      <div class="sp-featured-person"><div class="sp-featured-avatar">${image}</div><div><span class="sp-featured-category">${esc(label(profile.category))}</span><h2>${esc(profile.display_name)}</h2></div></div>
-      ${profile.tagline ? `<h3>${esc(profile.tagline)}</h3>` : ""}
-      <p class="sp-featured-description">${esc(profile.description || "Discover the person behind this independent business or creative project.")}</p>
-      <div class="sp-featured-actions"><a class="sp-button sp-button-primary" href="profile.html?slug=${encodeURIComponent(profile.slug)}">Meet ${esc(profile.display_name)} <span>↗</span></a><span class="sp-featured-countdown" data-countdown="${featuredUntil}">Featured for <time>--:--:--</time></span></div>
-    </div>${media ? media : `<div class="sp-featured-art" aria-hidden="true"><span>✳</span><small>INDEPENDENT WORK. REAL PEOPLE.</small></div>`}
-  </div>`;
+  featuredShowcase.innerHTML = featuredShowcaseMarkup(profile);
   featuredShowcase.hidden = false;
   mountMediaPlayers(featuredShowcase);
 }
@@ -78,6 +67,7 @@ function updateCountdowns() {
   document.querySelectorAll("[data-countdown]").forEach(element => {
     const remaining = Math.max(0, Number(element.dataset.countdown || 0) - timestamp);
     const time = element.querySelector("time");
+    element.closest(".sp-featured-shell")?.style.setProperty("--sp-remaining", remainingFraction(element.dataset.countdown, timestamp).toFixed(4));
     if (time) {
       const hours = Math.floor(remaining / 3600);
       const minutes = Math.floor((remaining % 3600) / 60);

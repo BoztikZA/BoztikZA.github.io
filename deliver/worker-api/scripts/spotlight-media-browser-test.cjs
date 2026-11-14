@@ -162,6 +162,42 @@ async function check(name, fn) { try { await fn(); passed += 1; console.log("  o
     await context.close();
   });
 
+
+  await check("featured stage shows website + socials, a draining bar and portfolio links; still no player before click", async () => {
+    const full = profile({ video, song, website_url: "https://creator.example", social_links: { instagram: "https://instagram.com/c" },
+      image_url: "https://deliver-api.boztik.com/api/public/spotlight/image/x/0",
+      images: [0, 1, 2].map(i => ({ url: "https://deliver-api.boztik.com/api/public/spotlight/image/x/" + i, position: i })) });
+    const { page, context } = await openPage("/spotlight/", [full]);
+    await page.waitForSelector(".sp-link-rail");
+    assert.equal(await page.locator(".sp-rail-site").getAttribute("href"), "https://creator.example/");
+    assert.equal(await page.locator("iframe").count(), 0);
+    assert.equal(await page.locator(".sp-portfolio-item").count(), 2);
+    const remaining = await page.locator(".sp-featured-shell").evaluate(el => Number(el.style.getPropertyValue("--sp-remaining")));
+    assert.ok(remaining > 0 && remaining <= 1, "bar fraction: " + remaining);
+    await context.close();
+  });
+
+  await check("reduced motion: the entrance animation and hover transforms are disabled", async () => {
+    const context = await browser.newContext({ viewport: { width: 1200, height: 900 }, reducedMotion: "reduce" });
+    const page = await context.newPage();
+    await page.route("**/*", route => { const u = route.request().url(); if (u.startsWith(base)) return route.continue();
+      if (u.startsWith("https://deliver-api.boztik.com/api/public/spotlight") && !/impression/.test(u)) return route.fulfill({ json: { profiles: [profile({ video })], next_cursor: null } });
+      return route.abort(); });
+    await page.goto(base + "/spotlight/", { waitUntil: "domcontentloaded" });
+    await page.waitForSelector(".sp-stage-portrait");
+    assert.equal(await page.locator(".sp-stage-portrait").evaluate(el => getComputedStyle(el).animationName), "none");
+    await context.close();
+  });
+
+  await check("profile page hero has the link rail and still no iframe", async () => {
+    const full = profile({ video, song, website_url: "https://creator.example", social_links: { instagram: "https://instagram.com/c" } });
+    const { page, context } = await openPage("/spotlight/profile.html?slug=featured-one", [full]);
+    await page.waitForSelector(".sp-profile-hero .sp-link-rail");
+    assert.equal(await page.locator("iframe").count(), 0);
+    assert.equal(await page.locator(".sp-profile-hero .sp-rail-site").getAttribute("href"), "https://creator.example/");
+    await context.close();
+  });
+
   await check("narrow phone width: showcase has no horizontal overflow", async () => {
     const context = await browser.newContext({ viewport: { width: 360, height: 800 } });
     const page = await context.newPage();

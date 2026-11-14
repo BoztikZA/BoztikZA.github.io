@@ -8,6 +8,9 @@ import {
   describeSong, describeVideo, embedUrl, featuredPlayersMarkup, mediaChipsMarkup, mediaLinkCardMarkup, profileMedia,
   spotifyEmbedHeight, thumbMarkup,
 } from "../../../spotlight/media.js";
+import {
+  featuredShowcaseMarkup, initials, linkRailMarkup, portfolioStripMarkup, remainingFraction, safeImage, safeWebsite,
+} from "../../../spotlight/showcase.js";
 
 let passed = 0;
 function test(name: string, fn: () => void): void {
@@ -150,6 +153,70 @@ test("all profile text is escaped in every markup path", () => {
     assert.ok(!/<script>alert|<img src=x onerror/i.test(html), "payload must not appear unescaped");
     assert.ok(!/"><img src=x|"><script>/.test(html), "payload must not break out of an attribute");
   }
+});
+
+
+// ---------------------------------------------------------------------------------------------------------------
+// Presentation layer (spotlight/showcase.js)
+// ---------------------------------------------------------------------------------------------------------------
+const IMG = "https://deliver-api.boztik.com/api/public/spotlight/image/";
+const rich = {
+  id: "a".repeat(20), slug: "ana sound", display_name: "Ana Mokoena", tagline: "Producer", description: "Makes records.", category: "small-business",
+  website_url: "https://www.anamokoena.example/path", social_links: { instagram: "https://instagram.com/ana", youtube: "https://youtube.com/@ana" },
+  video: yt, song: album, image_url: IMG + "x/0", images: [0, 1, 2, 3, 4, 5, 6].map(i => ({ url: IMG + "x/" + i, position: i })),
+  featured_until: 1_000_000 + 43200,
+};
+
+test("safeWebsite / safeImage accept only https websites and the Spotlight image endpoint", () => {
+  assert.equal(safeWebsite("https://example.com/a"), "https://example.com/a");
+  for (const bad of ["http://example.com", "javascript:alert(1)", "https://u:p@example.com", "//example.com", "", null, 5, "x".repeat(600)]) assert.equal(safeWebsite(bad), "", String(bad));
+  assert.equal(safeImage(IMG + "x/0"), IMG + "x/0");
+  for (const bad of ["https://evil.example/api/public/spotlight/image/x", "http://deliver-api.boztik.com/api/public/spotlight/image/x", "https://deliver-api.boztik.com/other", "data:image/png;base64,AAAA", null]) assert.equal(safeImage(bad), "", String(bad));
+});
+
+test("remainingFraction drains from 1 to 0 across the 24-hour window and never leaves 0..1", () => {
+  assert.equal(remainingFraction(1_086_400, 1_000_000), 1);
+  assert.equal(remainingFraction(1_043_200, 1_000_000), 0.5);
+  assert.equal(remainingFraction(1_000_000, 1_000_000), 0);
+  assert.equal(remainingFraction(900_000, 1_000_000), 0);
+  assert.equal(remainingFraction(9_999_999, 1_000_000), 1);
+  assert.equal(remainingFraction(null, 1_000_000), 0);
+});
+
+test("link rail: website first (primary), then socials; links out only, never a player", () => {
+  const html = linkRailMarkup(rich);
+  assert.ok(html.indexOf("sp-rail-site") < html.indexOf("sp-rail-socials"));
+  assert.ok(html.includes('href="https://www.anamokoena.example/path"') && html.includes("Visit anamokoena.example"));
+  assert.ok(html.includes('rel="noopener noreferrer"') && html.includes('target="_blank"'));
+  assert.ok(!/<iframe/i.test(html) && !PROVIDER_PLAYERS.test(html));
+  assert.equal(linkRailMarkup({ display_name: "None" }), "");
+  assert.ok(!linkRailMarkup({ ...rich, website_url: "javascript:alert(1)", social_links: {} }).includes("javascript:"));
+});
+
+test("portfolio strip: skips the portrait, caps at 4 with a +N overflow, links to the profile gallery", () => {
+  const html = portfolioStripMarkup(rich);
+  assert.equal((html.match(/sp-portfolio-item"/g) || []).length, 4);
+  assert.ok(!html.includes(IMG + "x/0"), "portrait is not repeated");
+  assert.ok(html.includes("+2") && html.includes("profile.html?slug=ana%20sound#gallery"));
+  assert.equal(portfolioStripMarkup({ ...rich, images: [{ url: IMG + "x/0" }] }), "", "single image means no strip");
+  assert.ok(!portfolioStripMarkup({ ...rich, images: [{ url: IMG + "x/0" }, { url: "https://evil.example/a.png" }] }).includes("evil.example"));
+  assert.equal(initials("ana mokoena lee"), "AM"); assert.equal(initials(""), "?");
+});
+
+test("featured stage: name, tagline, links, portfolio, countdown bar, plan hooks, and click-to-load media only", () => {
+  const html = featuredShowcaseMarkup(rich, { hostname: "www.boztik.com", now: 1_000_000 });
+  for (const part of ["Ana Mokoena", "Producer", "Small Business", "sp-link-rail", "sp-portfolio", "sp-stage-bar", "--sp-remaining:0.5000", 'data-placement="featured"', 'data-plan="free"', "Read the full profile"]) assert.ok(html.includes(part), part);
+  assert.ok(html.includes('data-countdown="1043200"'), "countdown hook for the existing timer");
+  assert.ok(!/<iframe/i.test(html), "no iframe before the visitor presses play");
+  assert.equal((html.match(/data-media-play/g) || []).length, 2);
+  assert.ok(html.includes(`--sp-art:url('${IMG}x/0')`));
+  assert.equal(featuredShowcaseMarkup(null), "");
+});
+
+test("featured stage: no image falls back to initials; hostile text is escaped", () => {
+  const html = featuredShowcaseMarkup({ ...rich, image_url: null, images: [], display_name: '"><script>alert(1)</script>', tagline: "<img src=x onerror=1>" }, { hostname: "www.boztik.com" });
+  assert.ok(html.includes("sp-stage-initials"));
+  assert.ok(!/<script>alert|<img src=x onerror/.test(html));
 });
 
 console.log(`\nspotlight-media-client: ${passed} tests passed`);

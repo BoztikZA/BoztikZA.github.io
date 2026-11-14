@@ -1,0 +1,84 @@
+/* Spotlight showcase, link rail, portfolio strip and card interactions. Additive: loaded after spotlight.css,
+   profile.css and media.css, and scoped so it only restyles the featured stage, rails and cards. */
+
+/* ---------- Featured stage ---------- */
+.sp-featured-shell{grid-template-columns:minmax(250px,.72fr) minmax(0,1.28fr);align-items:start;gap:clamp(24px,4vw,56px);position:relative}
+.sp-featured-shell>.sp-featured-media{grid-column:1/-1;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));align-items:start;gap:clamp(18px,3vw,32px);padding-top:clamp(20px,3vw,32px);border-top:1px solid rgba(255,255,255,.08)}
+.sp-stage-portrait{position:relative;margin:0;aspect-ratio:4/5;overflow:hidden;border:1px solid rgba(142,255,61,.32);border-radius:20px;background:#0a1011;box-shadow:0 24px 60px -18px rgba(0,0,0,.65),0 0 0 1px rgba(255,255,255,.03) inset;isolation:isolate}
+.sp-stage-blur{position:absolute;inset:-12%;z-index:-1;background:var(--sp-art) center/cover;filter:blur(28px) saturate(1.25) brightness(.55);transform:scale(1.05)}
+.sp-stage-portrait img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:clamp(10px,2.5vw,22px) clamp(10px,2.5vw,22px) 62px}
+.sp-stage-initials{position:absolute;inset:0 0 56px;display:grid;place-items:center;color:var(--sp-green);font:800 clamp(3.5rem,9vw,6rem)/1 "Plus Jakarta Sans",Inter,sans-serif;letter-spacing:-.05em;background:radial-gradient(circle at 30% 20%,rgba(142,255,61,.16),transparent 60%)}
+.sp-stage-time{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:14px 16px 17px;background:linear-gradient(to top,rgba(5,8,9,.92),rgba(5,8,9,.55) 70%,transparent);font-size:.74rem;color:#c9d4cc}
+.sp-stage-time span{font-weight:700;color:#f1f6f1}
+.sp-stage-time time{font-variant-numeric:tabular-nums;color:var(--sp-green);font-weight:700}
+.sp-stage-bar{position:absolute;left:16px;right:16px;bottom:9px;height:3px;border-radius:2px;background:rgba(255,255,255,.14);overflow:hidden}
+.sp-stage-bar:after{content:"";position:absolute;inset:0;background:var(--sp-green);transform-origin:left;transform:scaleX(var(--sp-remaining,1));transition:transform 1s linear}
+.sp-featured-copy{display:flex;flex-direction:column;align-items:flex-start;gap:0}
+.sp-stage-category{margin:0 0 12px;color:var(--sp-green);font-size:.82rem;font-weight:700;letter-spacing:.02em}
+.sp-featured-copy h2{margin:0;color:#f6faf6;font:800 clamp(2.3rem,5.4vw,4.1rem)/1 "Plus Jakarta Sans",Inter,sans-serif;letter-spacing:-.045em;overflow-wrap:anywhere;text-wrap:balance}
+.sp-featured-copy h3{margin:16px 0 0;max-width:34ch;color:#dfeae1;font:600 clamp(1.05rem,2vw,1.3rem)/1.4 "Plus Jakarta Sans",Inter,sans-serif;text-wrap:balance}
+.sp-featured-copy .sp-featured-description{margin:16px 0 0;max-width:62ch;color:#aebbb2;font-size:.95rem;line-height:1.75;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:7;overflow:hidden}
+.sp-stage-profile{margin-top:20px;color:#dfeae1;font-size:.84rem;font-weight:650;text-decoration:underline;text-decoration-color:rgba(142,255,61,.5);text-underline-offset:4px;text-decoration-thickness:1.5px}
+.sp-stage-profile:hover,.sp-stage-profile:focus-visible{color:var(--sp-green);text-decoration-color:var(--sp-green)}
+
+/* ---------- Link rail: the creator's own website and social profiles (links out only) ---------- */
+.sp-link-rail{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:24px}
+.sp-rail-site{display:inline-flex;align-items:center;gap:10px;min-height:46px;padding:0 20px;border-radius:9px;background:var(--sp-green);color:#0d1608;font:800 .9rem Inter,system-ui,sans-serif;text-decoration:none;transition:transform .18s,box-shadow .18s}
+.sp-rail-site b{font-size:.95em;transition:transform .18s}
+.sp-rail-site:hover{box-shadow:0 10px 28px -8px rgba(142,255,61,.55)}
+.sp-rail-site:hover b{transform:translate(2px,-2px)}
+.sp-rail-site:focus-visible,.sp-rail-social:focus-visible,.sp-portfolio-item:focus-visible{outline:3px solid rgba(142,255,61,.6);outline-offset:3px}
+.sp-rail-socials{display:inline-flex;flex-wrap:wrap;gap:8px}
+.sp-rail-social{display:grid;place-items:center;width:44px;height:44px;border:1px solid rgba(255,255,255,.16);border-radius:50%;background:rgba(255,255,255,.04);color:#e6efe8;transition:border-color .18s,color .18s,background .18s,transform .18s}
+.sp-rail-social svg{width:18px;height:18px}
+.sp-rail-social:hover{border-color:var(--sp-green);color:var(--sp-green);background:rgba(142,255,61,.08)}
+
+/* ---------- Portfolio strip ---------- */
+.sp-portfolio{margin-top:24px;width:100%}
+.sp-portfolio p{margin:0 0 10px;color:#93a097;font-size:.8rem;font-weight:650}
+.sp-portfolio-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;max-width:460px}
+.sp-portfolio-item{position:relative;display:block;aspect-ratio:1;overflow:hidden;border:1px solid rgba(255,255,255,.12);border-radius:11px;background:#0a1011}
+.sp-portfolio-item img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s}
+.sp-portfolio-item:hover img{transform:scale(1.07)}
+.sp-portfolio-more{position:absolute;inset:0;display:grid;place-items:center;background:rgba(5,8,9,.66);color:#fff;font:800 1rem Inter,sans-serif}
+
+/* ---------- Profile page hero ---------- */
+.sp-profile-hero [data-countdown]{white-space:nowrap}
+.sp-media-link-card{gap:18px}
+.sp-media-link-card>div{flex:1 1 auto}
+.sp-profile-hero-body .sp-link-rail{margin-top:20px}
+.sp-profile-hero{position:relative}
+
+/* ---------- Directory cards ---------- */
+.sp-card{transition:transform .25s,border-color .25s,box-shadow .25s}
+.sp-card[data-featured="1"]{border-color:rgba(142,255,61,.4);box-shadow:0 0 0 1px rgba(142,255,61,.12),0 18px 44px -22px rgba(142,255,61,.35)}
+.sp-card:focus-within{border-color:rgba(142,255,61,.5)}
+@media(hover:hover){.sp-card:hover{transform:translateY(-3px);border-color:rgba(142,255,61,.38);box-shadow:0 18px 40px -20px rgba(0,0,0,.7)}.sp-card:hover .sp-avatar{border-color:rgba(142,255,61,.5)}}
+
+/* ---------- Layout ---------- */
+@media(max-width:800px){
+  .sp-featured-shell{grid-template-columns:1fr}
+  .sp-stage-portrait{aspect-ratio:1;max-width:420px}
+  .sp-portfolio-strip{max-width:none}
+}
+@media(max-width:600px){
+  .sp-rail-site{width:100%;justify-content:center}
+  .sp-featured-copy h2{font-size:clamp(2rem,10vw,2.6rem)}
+}
+
+/* ---------- One orchestrated entrance for the featured stage (not for scroll, not for cards) ---------- */
+@media(prefers-reduced-motion:no-preference){
+  .sp-featured-shell .sp-stage-portrait{animation:sp-stage-reveal .9s cubic-bezier(.2,.75,.2,1) both}
+  .sp-featured-shell .sp-featured-copy>*{animation:sp-stage-in .6s cubic-bezier(.2,.75,.2,1) both}
+  .sp-featured-shell .sp-featured-copy>:nth-child(1){animation-delay:.15s}
+  .sp-featured-shell .sp-featured-copy>:nth-child(2){animation-delay:.22s}
+  .sp-featured-shell .sp-featured-copy>:nth-child(3){animation-delay:.3s}
+  .sp-featured-shell .sp-featured-copy>:nth-child(4){animation-delay:.38s}
+  .sp-featured-shell .sp-featured-copy>:nth-child(n+5){animation-delay:.46s}
+  @keyframes sp-stage-reveal{from{clip-path:inset(0 0 100% 0 round 20px);opacity:.4}to{clip-path:inset(0 0 0 0 round 20px);opacity:1}}
+  @keyframes sp-stage-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+}
+@media(prefers-reduced-motion:reduce){
+  .sp-card,.sp-rail-site,.sp-rail-site b,.sp-rail-social,.sp-portfolio-item img,.sp-stage-bar:after{transition:none}
+  .sp-card:hover{transform:none}
+}
