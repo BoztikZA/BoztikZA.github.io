@@ -21,20 +21,26 @@ npm run db:migrate:local                      # applies every migration to a scr
 npx wrangler d1 migrations list boztik-deliver --remote   # what production still needs
 ```
 
-Expected: production is at `0018_spotlight_lifecycle.sql`; pending is `0019_spotlight_video.sql`.
+Expected: production is at `0018_spotlight_lifecycle.sql`; pending are `0019_spotlight_video.sql` and `0020_spotlight_applications.sql` (later phases may add more; apply all that are listed).
 If production is ahead of or different from this, stop and investigate before continuing.
 
 ## 1. Apply the remote D1 migration
 
-`0019` only adds a nullable `video_metadata` column (additive, no rebuild, no data rewrite), so existing Spotlight
-rows and the live Worker keep working while it is applied.
+`0019` only adds a nullable `video_metadata` column. `0020` adds nullable/defaulted columns to `spotlight_profiles`
+(owner link hash, terms, information-request fields, `placement_plan`) and rebuilds only two leaf tables
+(`spotlight_review_events`, `spotlight_email_outbox`), copying every row. The parent table is never rebuilt, so no
+foreign-key cascade can delete data. Before applying, record the row counts of those two tables and compare afterwards.
+Existing Spotlight rows and the live Worker keep working while it is applied.
 
 ```bash
 npm run db:migrate:remote
 npx wrangler d1 execute boztik-deliver --remote --command \
   "SELECT name FROM pragma_table_info('spotlight_profiles') WHERE name='video_metadata'"
 npx wrangler d1 execute boztik-deliver --remote --command "SELECT COUNT(*) AS profiles FROM spotlight_profiles"
+npx wrangler d1 execute boztik-deliver --remote --command \
+  "SELECT (SELECT COUNT(*) FROM spotlight_review_events) AS events, (SELECT COUNT(*) FROM spotlight_email_outbox) AS outbox, (SELECT COUNT(*) FROM pragma_table_info('spotlight_profiles') WHERE name='owner_token_hash') AS owner_col"
 ```
+Run the two-table count query once BEFORE migrating too; `events` and `outbox` must be unchanged, `owner_col` must be 1.
 
 Verify: the column is listed and the profile count matches what you saw before. **If this fails, stop.**
 Do not deploy the Worker.
