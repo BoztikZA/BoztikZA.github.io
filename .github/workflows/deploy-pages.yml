@@ -75,6 +75,41 @@ jobs:
             exit 1
           fi
 
+          # Every public URL in the sitemap must carry the AdSense loader so
+          # Auto ads can be configured consistently from the AdSense account.
+          python3 - <<'PY'
+          import os
+          import xml.etree.ElementTree as ET
+          from urllib.parse import unquote, urlparse
+
+          sitemap = ET.parse("_site/sitemap.xml").getroot()
+          ns = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+          urls = [node.text for node in sitemap.findall(".//sm:loc", ns)]
+          if not urls:
+              raise SystemExit("::error::The sitemap contains no page URLs.")
+
+          missing = []
+          for url in urls:
+              parsed = urlparse(url)
+              if parsed.netloc not in {"www.boztik.com", "boztik.com"}:
+                  continue
+              path = unquote(parsed.path or "/")
+              if path.endswith("/"):
+                  path += "index.html"
+              elif not os.path.splitext(path)[1]:
+                  path += "/index.html"
+              file_path = os.path.join("_site", path.lstrip("/"))
+              if not os.path.isfile(file_path):
+                  missing.append(f"{url} (missing staged file: {file_path})")
+                  continue
+              with open(file_path, encoding="utf-8") as handle:
+                  html = handle.read()
+              if "pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3739684241868984" not in html:
+                  missing.append(f"{url} (missing AdSense loader)")
+          if missing:
+              raise SystemExit("::error::AdSense code coverage failed:\\n" + "\\n".join(missing))
+          print(f"AdSense loader present on all {len(urls)} sitemap URL(s).")
+
           if ! grep -Fq 'Sitemap: https://www.boztik.com/sitemap.xml' _site/robots.txt; then
             echo "::error::The staged robots.txt is missing the expected sitemap URL."
             exit 1
