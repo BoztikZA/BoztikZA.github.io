@@ -135,11 +135,10 @@ function render() {
   if (overviewCount) overviewCount.textContent = published.length.toLocaleString();
 
   const reviewActions = p => {
-    if (p.application_status === "new") return `
-      ${p.review_unread ? `<button class="cc-btn" data-action="mark-read" data-id="${esc(p.id)}">Mark read</button>` : ""}
-      <button class="cc-btn sp-review" data-action="review" data-id="${esc(p.id)}">Review application</button>`;
-    if (p.application_status === "under_review") return `
-      <button class="cc-btn sp-review" data-action="review" data-id="${esc(p.id)}">Review application</button>`;
+    if (p.application_status === "new") return p.review_unread
+      ? `<button class="cc-btn" data-action="mark-read" data-id="${esc(p.id)}">Mark read</button>`
+      : "";
+    // The primary Review application action is rendered once in the row below.
     if (p.application_status === "approved" && p.status !== "published") return `<button class="cc-btn sp-approve" data-action="publish" data-id="${esc(p.id)}">Publish</button>`;
     if (p.status === "published" && p.listing_expires_at && p.listing_expires_at * 1000 <= Date.now()) return "<small>Expired listing · cleanup pending</small>";
     if (p.status === "published") return `<button class="cc-btn" data-action="archive" data-id="${esc(p.id)}">Archive</button>`;
@@ -158,7 +157,7 @@ function render() {
           ? `<small>Decision deadline: ${p.review_expires_at ? new Date(p.review_expires_at * 1000).toLocaleString() : "Not set"}</small>` : ""}
         ${p.status === "published" && p.listing_expires_at ? `<small>Listing expires: ${new Date(p.listing_expires_at * 1000).toLocaleString()}</small>` : ""}
         ${p.decline_reason ? `<small>Decline reason: ${esc(p.decline_reason)}</small>` : ""}
-        ${p.awaiting_applicant ? `<small><strong>Waiting for applicant reply</strong></small>` : p.info_response_note && p.application_status === "under_review" ? `<small><strong>Applicant replied — ready to review</strong></small>` : ""}
+        ${p.awaiting_applicant ? `<small><span class="sp-admin-status-badge is-waiting">Waiting for applicant reply</span></small>` : p.info_response_note && p.application_status === "under_review" ? `<small><span class="sp-admin-status-badge is-replied">Applicant replied · ready to review</span></small>` : ""}
         ${p.invalid_social_links?.length ? `<small class="sp-admin-link-warning">Review invalid ${esc(p.invalid_social_links.join(", "))} link(s) before publishing.</small>` : ""}
         <p>${esc(p.tagline)}</p>
       </div>
@@ -439,7 +438,7 @@ function applicantDialogue(profile) {
   let exchange = "";
   if (profile.info_request_note) {
     exchange = `<p><strong>You asked</strong> (${esc(new Date(profile.info_requested_at * 1000).toLocaleString())}):</p><p class="sp-review-description">${esc(profile.info_request_note)}</p>` +
-      (profile.awaiting_applicant ? "<p><strong>Waiting for the applicant to reply.</strong></p>"
+      (profile.awaiting_applicant ? "<p><span class="sp-admin-status-badge is-waiting">Waiting for applicant reply</span></p>"
         : profile.info_response_note ? `<p><strong>Applicant replied</strong> (${esc(new Date(profile.info_responded_at * 1000).toLocaleString())}):</p><p class="sp-review-description">${esc(profile.info_response_note)}</p>` : "");
   }
   return `<section><h4>Applicant communication</h4><p>${terms}</p>${exchange || "<p>No information has been requested.</p>"}</section>`;

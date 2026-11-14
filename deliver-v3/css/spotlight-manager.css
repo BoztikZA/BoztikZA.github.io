@@ -59,6 +59,21 @@
 .sp-stats-bars{display:flex;align-items:flex-end;gap:2px;height:110px;padding:8px;border:1px solid var(--cc-line,rgba(255,255,255,.15));border-radius:10px}
 .sp-stats-bars i{flex:1 1 0;min-width:1px;min-height:2px;background:var(--cc-accent,#8eff3d);opacity:.85;border-radius:2px 2px 0 0}
 
+/* Spotlight review and analytics modal refinement */
+.sp-review-card{width:min(860px,100%);padding:24px}
+.sp-review-card>h2{margin-bottom:16px}
+.sp-review-content{gap:14px}
+.sp-review-content>section{min-width:0;margin:0;padding:14px 16px;border:1px solid var(--cc-line,rgba(255,255,255,.15));border-radius:12px;background:rgba(255,255,255,.018)}
+.sp-review-content>section h4{margin:0 0 8px}
+.sp-review-content>section p{margin-top:0}
+.sp-review-content>section p+p{margin-top:8px}
+.sp-review-content>.sp-review-facts{gap:10px}
+.sp-stats-bars{height:136px;gap:3px;padding:12px}
+.sp-admin-status-badge{display:inline-flex;align-items:center;width:max-content;max-width:100%;padding:4px 9px;border:1px solid rgba(255,255,255,.16);border-radius:999px;font-size:.66rem;font-weight:700;line-height:1.25;letter-spacing:.01em}
+.sp-admin-status-badge.is-waiting{border-color:rgba(255,196,92,.35);background:rgba(255,196,92,.08);color:#ffd28a}
+.sp-admin-status-badge.is-replied{border-color:rgba(142,255,61,.35);background:rgba(142,255,61,.08);color:var(--cc-accent,#8eff3d)}
+@media(max-width:600px){.sp-review-card{padding:16px}.sp-review-content{gap:10px}.sp-review-content>section{padding:12px}}
+
 /* Spotlight review accessibility and decision guidance */
 .sp-review-modal button:focus-visible,.sp-review-modal a:focus-visible,.sp-review-modal textarea:focus-visible{outline:2px solid var(--cc-accent,#8eff3d);outline-offset:3px}
 .sp-review-note{margin:0;color:var(--cc-muted);font-size:.8rem;line-height:1.55}
