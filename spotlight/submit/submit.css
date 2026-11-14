@@ -40,3 +40,16 @@
 .sp-email-submit-note{box-shadow:inset 3px 0 0 rgba(142,255,61,.55)}
 .sp-email-submit-button{box-shadow:0 8px 24px rgba(142,255,61,.12)}
 .sp-email-submit-button:hover{box-shadow:0 10px 30px rgba(142,255,61,.2)}
+
+.sp-media-fields{display:grid;gap:14px}
+.sp-media-review-note{display:grid;gap:6px;padding:15px 16px;border:1px solid rgba(142,255,61,.25);border-radius:9px;background:rgba(142,255,61,.055);line-height:1.65}
+.sp-media-review-note strong{color:#c7f6a9;font-size:.78rem}
+.sp-media-review-note span{color:#aebbb2;font-size:.72rem;font-weight:400}
+
+.sp-submit-done{padding:clamp(18px,3vw,28px);border:1px solid rgba(142,255,61,.35);border-radius:16px;background:rgba(142,255,61,.05)}
+.sp-submit-done h2{margin:0 0 8px}
+.sp-owner-link{margin-top:18px;padding-top:18px;border-top:1px solid rgba(255,255,255,.1)}
+.sp-owner-link p{color:#aebbb2;font-size:.9rem;line-height:1.6}
+.sp-owner-link input{width:100%;box-sizing:border-box;padding:12px;border:1px solid rgba(255,255,255,.18);border-radius:8px;background:#0a1011;color:#e6efe8;font:.8rem ui-monospace,monospace}
+.sp-owner-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.sp-form-panel [hidden]{display:none!important}

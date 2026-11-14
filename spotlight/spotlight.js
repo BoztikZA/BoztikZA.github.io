@@ -1,8 +1,13 @@
 import { socialLinksMarkup } from "./social-links.js";
+import { mediaChipsMarkup, mountMediaPlayers } from "./media.js";
+import { featuredShowcaseMarkup, remainingFraction } from "./showcase.js";
+import { adminHeaders, trackFeaturedPlayer } from "./analytics.js";
 
 const API = "https://deliver-api.boztik.com/api/public/spotlight";
 const $ = selector => document.querySelector(selector);
 const grid = $("#sp-grid");
+const featuredShowcase = $("#sp-featured-showcase");
+trackFeaturedPlayer(featuredShowcase);
 const empty = $("#sp-empty");
 const count = $("#sp-count");
 const search = $("#sp-search");
@@ -27,6 +32,13 @@ const esc = value => String(value ?? "").replace(/[&<>"']/g, char => ({
 }[char]));
 const label = value => String(value || "").replace(/-/g, " ").replace(/\b\w/g, char => char.toUpperCase());
 
+function renderFeaturedShowcase(profile) {
+  if (!profile) { featuredShowcase.hidden = true; featuredShowcase.innerHTML = ""; return; }
+  featuredShowcase.innerHTML = featuredShowcaseMarkup(profile);
+  featuredShowcase.hidden = false;
+  mountMediaPlayers(featuredShowcase);
+}
+
 function card(profile) {
   const initials = profile.display_name.split(/\s+/).slice(0, 2).map(part => part[0]).join("").toUpperCase();
   const platformIcons = socialLinksMarkup(profile.social_links, profile.display_name, "sp-social-link");
@@ -42,6 +54,7 @@ function card(profile) {
     </div>
     ${profile.tagline ? `<h3 class="sp-card-offer">${esc(profile.tagline)}</h3>` : ""}
     <p>${esc(profile.description)}</p>
+    ${mediaChipsMarkup(profile)}
     <div class="sp-card-foot">
       ${platformIcons ? `<span class="sp-card-platforms" aria-label="Social profiles">${platformIcons}</span>` : ""}
       <a class="sp-card-link" href="profile.html?slug=${encodeURIComponent(profile.slug)}">See what they offer ↗</a>
@@ -56,6 +69,7 @@ function updateCountdowns() {
   document.querySelectorAll("[data-countdown]").forEach(element => {
     const remaining = Math.max(0, Number(element.dataset.countdown || 0) - timestamp);
     const time = element.querySelector("time");
+    element.closest(".sp-featured-shell")?.style.setProperty("--sp-remaining", remainingFraction(element.dataset.countdown, timestamp).toFixed(4));
     if (time) {
       const hours = Math.floor(remaining / 3600);
       const minutes = Math.floor((remaining % 3600) / 60);
@@ -67,6 +81,10 @@ function updateCountdowns() {
       if (profileCard) {
         profileCard.dataset.featured = "0";
         profileCard.querySelector(".sp-featured")?.remove();
+      }
+      if (element.closest("#sp-featured-showcase")) {
+        const showcase = element.closest("#sp-featured-showcase");
+        if (showcase) { showcase.hidden = true; showcase.innerHTML = ""; }
       }
       element.remove();
     }
@@ -81,7 +99,7 @@ function trackImpressions() {
     impressionsSent.add(profileId);
     fetch(API + "/impression", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...adminHeaders() },
       body: JSON.stringify({ event_id: crypto.randomUUID().replace(/-/g, ""), profile_id: profileId }),
       keepalive: true
     }).catch(() => {});
@@ -101,6 +119,9 @@ function trackImpressions() {
 }
 
 function render() {
+  const showFeatured = category === "all" && !search.value.trim();
+  const featuredProfile = showFeatured ? profiles.find(profile => profile.featured) : null;
+  renderFeaturedShowcase(featuredProfile);
   grid.innerHTML = profiles.map(card).join("");
   grid.hidden = profiles.length === 0;
   empty.hidden = profiles.length > 0 || !loaded || lastFailedReset;

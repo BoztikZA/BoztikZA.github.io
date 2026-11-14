@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>Application status — Boztik Spotlight</title>
+  <link rel="stylesheet" href="../../styles-premium.css?v=20261106a">
+  <link rel="stylesheet" href="../spotlight.css?v=12">
+  <link rel="stylesheet" href="../submit/submit.css?v=7">
+  <link rel="stylesheet" href="status.css?v=4">
+</head>
+<body class="spotlight-body">
+  <header class="sp-nav">
+    <a href="../../index.html" class="sp-brand" aria-label="Boztik Business Spotlight home"><span class="sp-brand-emblem" aria-hidden="true"><img src="../../images/spotlight-mark.svg" width="46" height="46" alt=""></span><span class="sp-brand-wordmark"><span>BOZTIK</span><b>BUSINESS SPOTLIGHT</b></span></a>
+    <nav><a href="../">Explore directory</a></nav>
+  </header>
+  <main class="sp-status-wrap">
+    <h1>Your application</h1>
+    <p id="sp-status-state" role="status" aria-live="polite">Loading…</p>
+    <section id="sp-status-card" hidden>
+      <h2 id="sp-status-name"></h2>
+      <p id="sp-status-headline" class="sp-status-headline"></p>
+      <ol id="sp-status-steps" class="sp-status-steps"></ol>
+      <p id="sp-status-detail"></p>
+      <form id="sp-status-reply" hidden>
+        <div class="sp-info-note"><strong>What we need from you</strong><p id="sp-info-note"></p></div>
+        <label>Your reply<textarea name="message" rows="5" minlength="5" maxlength="1000" required></textarea><small>Up to 1,000 characters. Do not include passwords.</small></label>
+        <button class="sp-button sp-button-primary" type="submit">Send reply</button>
+        <p id="sp-reply-status" role="status" aria-live="polite"></p>
+      </form>
+      <p><a id="sp-status-public" class="sp-button" href="#" hidden>View your public profile</a></p>
+    </section>
+    <section id="sp-perf" hidden aria-labelledby="sp-perf-title">
+      <h2 id="sp-perf-title">How your profile is performing</h2>
+      <div class="sp-perf-range" role="group" aria-label="Date range">
+        <button type="button" class="sp-button" data-days="7">7 days</button>
+        <button type="button" class="sp-button" data-days="30" aria-pressed="true">30 days</button>
+        <button type="button" class="sp-button" data-days="90">90 days</button>
+      </div>
+      <dl id="sp-perf-stats" class="sp-perf-stats"></dl>
+      <figure class="sp-perf-chart"><figcaption>Profile views per day</figcaption><div id="sp-perf-bars" class="sp-perf-bars" role="img"></div></figure>
+      <h3>Where visits came from</h3>
+      <ul id="sp-perf-sources" class="sp-perf-sources"></ul>
+      <p class="sp-perf-note">Numbers come from real visits to your public profile and the Featured page. Admin previews and automated traffic are excluded. Completed plays are only available for YouTube videos.</p>
+    </section>
+    <p class="sp-status-help">Lost your link? Email <a href="mailto:boztiktech@gmail.com?subject=Spotlight%20application%20status">boztiktech@gmail.com</a> with your profile name.</p>
+  </main>
+  <script type="module" src="./status.js?v=2"></script>
+</body>
+</html>

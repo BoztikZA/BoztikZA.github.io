@@ -1,0 +1,44 @@
+/* Spotlight media: artwork chips, outbound link cards, and click-to-load players (featured showcase only).
+   Additive: loaded after spotlight.css / profile.css. Uses the page's existing --sp-* tokens. */
+
+/* Artwork thumbnail (cards and profile pages: never a player) */
+.sp-media-thumb,.sp-media-chip-thumb,.sp-media-facade-art{position:relative;display:grid;place-items:center;overflow:hidden;background:#0c1412;color:var(--sp-green,#8eff3d)}
+.sp-media-thumb img,.sp-media-chip-thumb img,.sp-media-facade-art img{width:100%;height:100%;object-fit:cover;display:block}
+.sp-media-thumb-placeholder{background:radial-gradient(circle at 30% 20%,rgba(142,255,61,.16),transparent 62%),#0c1412}
+.sp-media-thumb[data-platform="twitch"].sp-media-thumb-placeholder,.sp-media-chip-thumb[data-platform="twitch"].sp-media-thumb-placeholder,.sp-media-facade-art[data-platform="twitch"].sp-media-thumb-placeholder{background:radial-gradient(circle at 30% 20%,rgba(145,70,255,.35),transparent 65%),#120d1c;color:#c9a6ff}
+.sp-media-thumb{flex:none;width:112px;aspect-ratio:16/9;border:1px solid rgba(255,255,255,.1);border-radius:9px;font-size:1.5rem}
+.sp-media-thumb[data-platform="spotify"]{width:84px;aspect-ratio:1}
+.sp-media-chip-thumb{flex:none;width:34px;height:24px;border-radius:4px;font-size:.7rem}
+.sp-media-chip-thumb[data-platform="spotify"]{width:24px}
+.sp-card-media-link{max-width:100%}
+.sp-card-media-link span:not(.sp-media-chip-thumb){min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sp-media-link-card .sp-media-thumb{margin-right:-4px}
+@media(max-width:600px){.sp-media-link-card .sp-media-thumb{width:100%;max-width:240px;margin:0}.sp-media-link-card .sp-media-thumb[data-platform="spotify"]{width:96px}}
+
+/* Click-to-load player (featured showcase) */
+.sp-media-player{display:grid;gap:0;min-width:0}
+.sp-media-stage{position:relative;aspect-ratio:16/9;overflow:hidden;border:1px solid rgba(255,255,255,.12);border-radius:11px;background:#050809;box-shadow:0 14px 36px rgba(0,0,0,.3)}
+.sp-media-player[data-short="1"] .sp-media-stage{aspect-ratio:9/16;width:min(100%,300px);max-height:min(560px,75vh);margin-inline:auto}
+.sp-media-player[data-media-platform="twitch"] .sp-media-stage{min-height:300px}
+.sp-media-frame{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000}
+.sp-media-play{position:absolute;inset:0;display:block;width:100%;height:100%;margin:0;padding:0;border:0;background:transparent;color:#fff;font:inherit;cursor:pointer;text-align:left}
+.sp-media-facade-art{position:absolute;inset:0;width:100%;height:100%;border-radius:0;font-size:3rem;transition:filter .2s}
+.sp-media-play:hover .sp-media-facade-art{filter:brightness(1.12)}
+.sp-media-play:focus-visible{outline:3px solid var(--sp-green,#8eff3d);outline-offset:-3px}
+.sp-media-play-badge{position:absolute;left:50%;top:50%;width:62px;height:62px;margin:-31px 0 0 -31px;border-radius:50%;background:rgba(8,11,13,.78);border:2px solid var(--sp-green,#8eff3d);box-shadow:0 0 28px rgba(142,255,61,.3)}
+.sp-media-play-badge:before{content:"";position:absolute;left:25px;top:19px;border-style:solid;border-width:11px 0 11px 18px;border-color:transparent transparent transparent var(--sp-green,#8eff3d)}
+.sp-media-play-text{position:absolute;left:12px;bottom:10px;padding:4px 9px;border-radius:5px;background:rgba(8,11,13,.82);font-size:.7rem;font-weight:750;letter-spacing:.04em}
+/* Spotify: compact card until clicked, then it grows to the player's real height (track 152px, others 352px) */
+.sp-media-player[data-media-platform="spotify"] .sp-media-stage{aspect-ratio:auto;height:152px;border-radius:12px}
+.sp-media-player[data-media-platform="spotify"]:not([data-state="idle"]) .sp-media-stage{height:var(--sp-embed-h,152px)}
+.sp-media-player[data-media-platform="spotify"] .sp-media-play{display:flex;align-items:center;gap:14px;padding-right:16px}
+.sp-media-player[data-media-platform="spotify"] .sp-media-facade-art{position:static;flex:none;width:152px;max-width:40%;height:100%;font-size:2.4rem}
+.sp-media-player[data-media-platform="spotify"] .sp-media-play-text{position:static;flex:1;min-width:0;padding:0;background:none;font-size:.85rem}
+.sp-media-player[data-media-platform="spotify"] .sp-media-play-badge{position:relative;flex:none;left:auto;top:auto;order:3;width:48px;height:48px;margin:0}
+.sp-media-player[data-media-platform="spotify"] .sp-media-play-badge:before{left:19px;top:14px;border-width:9px 0 9px 14px}
+.sp-media-status{min-height:0;margin:8px 0 0;color:#e9d28a;font-size:.74rem;line-height:1.5}
+.sp-media-status:empty{display:none}
+.sp-media-fallback{margin:9px 0 0;color:#829087;font-size:.7rem}
+.sp-media-fallback a{color:var(--sp-green,#8eff3d);font-weight:750;text-decoration:none}
+.sp-media-fallback a:hover,.sp-media-fallback a:focus-visible{text-decoration:underline}
+@media(prefers-reduced-motion:reduce){.sp-media-facade-art{transition:none}}

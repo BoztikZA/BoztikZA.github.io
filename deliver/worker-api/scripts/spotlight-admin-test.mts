@@ -43,9 +43,9 @@ class AdminDb {
   async run(sql: string, args: unknown[]) {
     if (sql.startsWith("INSERT INTO spotlight_profiles")) {
       if (this.failInserts) throw new Error("D1 unavailable");
-      const [id, slug, display_name, tagline, description, category, contact_email, website_url, social_links, song_metadata, created_at, updated_at] = args as any[];
+      const [id, slug, display_name, tagline, description, category, contact_email, website_url, social_links, song_metadata, video_metadata, created_at, updated_at] = args as any[];
       this.profiles.set(id, {
-        id, slug, display_name, tagline, description, category, contact_email, website_url, social_links, song_metadata,
+        id, slug, display_name, tagline, description, category, contact_email, website_url, social_links, song_metadata, video_metadata,
         status: "pending", application_status: "approved", review_unread: 0, featured_until: null, image_key: null, created_at, updated_at, published_at: null,
       });
       return { meta: { changes: 1 } };
@@ -70,9 +70,9 @@ class AdminDb {
     let previousChanges = 0;
     return statements.map(statement => {
       if (statement.sql.startsWith("UPDATE spotlight_profiles SET display_name=?")) {
-        const [display_name, tagline, description, category, contact_email, website_url, social_links, song_metadata, status, application_status, , listing_expires_at, featured_until, updated_at, , , id] = statement.args as any[];
+        const [display_name, tagline, description, category, contact_email, website_url, social_links, song_metadata, video_metadata, status, application_status, , listing_expires_at, featured_until, updated_at, , , id] = statement.args as any[];
         const row = this.profiles.get(id);
-        Object.assign(row, { display_name, tagline, description, category, contact_email, website_url, social_links, song_metadata, status, application_status, listing_expires_at, featured_until, updated_at });
+        Object.assign(row, { display_name, tagline, description, category, contact_email, website_url, social_links, song_metadata, video_metadata, status, application_status, listing_expires_at, featured_until, updated_at });
         previousChanges = 1;
         return { meta: { changes: previousChanges } };
       }

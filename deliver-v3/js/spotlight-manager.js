@@ -80,6 +80,45 @@ const api = async (path, init = {}) => {
   return data;
 };
 
+/* Queue filters (client-side over the already-loaded profiles; nothing is hidden from the data, only from view). */
+const QUEUE_FILTERS = [
+  ["all", "All"],
+  ["action", "Needs action"],
+  ["waiting", "Waiting on applicant"],
+  ["approved", "Approved, not live"],
+  ["live", "Live"],
+  ["closed", "Declined, expired or archived"],
+];
+let queueFilter = "all";
+const isLive = p => p.status === "published" && (!p.listing_expires_at || p.listing_expires_at * 1000 > Date.now());
+function matchesQueueFilter(p, filter = queueFilter) {
+  switch (filter) {
+    case "action": return (p.application_status === "new" || (p.application_status === "under_review" && !p.awaiting_applicant));
+    case "waiting": return Boolean(p.awaiting_applicant);
+    case "approved": return p.application_status === "approved" && p.status !== "published";
+    case "live": return isLive(p);
+    case "closed": return ["declined", "expired"].includes(p.application_status) || p.status === "archived";
+    default: return true;
+  }
+}
+const filterBar = document.createElement("div");
+filterBar.className = "sp-queue-filters";
+filterBar.setAttribute("role", "group");
+filterBar.setAttribute("aria-label", "Filter submissions");
+list.before(filterBar);
+filterBar.addEventListener("click", event => {
+  const button = event.target.closest("button[data-filter]");
+  if (!button) return;
+  queueFilter = button.dataset.filter;
+  render();
+});
+function renderFilterBar() {
+  filterBar.innerHTML = QUEUE_FILTERS.map(([key, label]) => {
+    const count = profiles.filter(p => matchesQueueFilter(p, key)).length;
+    return `<button type="button" class="cc-btn" data-filter="${key}" aria-pressed="${key === queueFilter}">${esc(label)} <b>${count}</b></button>`;
+  }).join("");
+}
+
 function render() {
   const pending = profiles.filter(p => ["new", "under_review"].includes(p.application_status));
   const published = profiles.filter(p => p.status === "published" && (!p.listing_expires_at || p.listing_expires_at * 1000 > Date.now()));
@@ -107,27 +146,31 @@ function render() {
     if (p.application_status === "published" && p.status === "archived") return `<button class="cc-btn" data-action="publish" data-id="${esc(p.id)}">Republish</button>`;
     return "";
   };
-  list.innerHTML = profiles.length ? profiles.map(p => `
+  renderFilterBar();
+  const visible = profiles.filter(p => matchesQueueFilter(p));
+  list.innerHTML = visible.length ? visible.map(p => `
     <article class="sp-admin-row">
       <div class="sp-admin-main">
         <strong>${esc(p.display_name)}</strong>
-        <span>${esc(p.category.replace(/-/g, " "))} · ${esc(p.application_status || p.status)} · ${new Date(p.created_at * 1000).toLocaleDateString()}</span>
+        <span>${esc(p.category.replace(/-/g, " "))} · ${esc(p.application_status || p.status)} · ${new Date(p.created_at * 1000).toLocaleDateString()}${p.placement_plan && p.placement_plan !== "free" ? ` · <b class="sp-plan-badge">${esc(p.placement_plan)}</b>` : ""}</span>
         <small>${esc(p.contact_email || "")}</small>
         ${p.application_status === "new" || p.application_status === "under_review" || p.application_status === "approved"
           ? `<small>Decision deadline: ${p.review_expires_at ? new Date(p.review_expires_at * 1000).toLocaleString() : "Not set"}</small>` : ""}
         ${p.status === "published" && p.listing_expires_at ? `<small>Listing expires: ${new Date(p.listing_expires_at * 1000).toLocaleString()}</small>` : ""}
         ${p.decline_reason ? `<small>Decline reason: ${esc(p.decline_reason)}</small>` : ""}
+        ${p.awaiting_applicant ? `<small><strong>Waiting for applicant reply</strong></small>` : p.info_response_note && p.application_status === "under_review" ? `<small><strong>Applicant replied — ready to review</strong></small>` : ""}
         ${p.invalid_social_links?.length ? `<small class="sp-admin-link-warning">Review invalid ${esc(p.invalid_social_links.join(", "))} link(s) before publishing.</small>` : ""}
         <p>${esc(p.tagline)}</p>
       </div>
       <div class="sp-admin-actions">
         <button class="cc-btn" data-action="review" data-id="${esc(p.id)}">Review</button>
         <button class="cc-btn" data-action="edit" data-id="${esc(p.id)}">Edit profile</button>
+        ${p.status === "published" || p.completed_plays !== undefined ? `<button class="cc-btn" data-action="stats" data-id="${esc(p.id)}">Analytics</button>` : ""}
         ${reviewActions(p)}
         ${p.status === "published" && (!p.listing_expires_at || p.listing_expires_at * 1000 > Date.now()) ? (p.featured ? `<button class="cc-btn" data-action="unfeature" data-id="${esc(p.id)}">Remove feature</button>` : `<button class="cc-btn" data-action="feature" data-id="${esc(p.id)}">Feature 24h</button>`) : ""}
         <button class="cc-btn sp-delete" data-action="delete" data-id="${esc(p.id)}">Delete</button>
       </div>
-    </article>`).join("") : "<p class='cc-muted'>No submissions yet. New entries will appear here for review.</p>";
+    </article>`).join("") : profiles.length ? "<p class='cc-muted'>Nothing matches this filter.</p>" : "<p class='cc-muted'>No submissions yet. New entries will appear here for review.</p>";
 }
 
 let spotlightLoadInProgress = false;
@@ -171,6 +214,8 @@ async function load({ silent = false } = {}) {
         <span>${Number(p.unique_views || 0).toLocaleString()} daily unique visitors</span>
         <span>${Number(p.outbound_clicks || 0).toLocaleString()} outbound clicks</span>
         <span>${Number(p.featured_impressions || 0).toLocaleString()} featured impressions</span>
+        <span>${Number(p.website_clicks || 0).toLocaleString()} website · ${Number(p.social_clicks || 0).toLocaleString()} social · ${Number(p.media_clicks || 0).toLocaleString()} media clicks</span>
+        <span>${Number(p.player_interactions || 0).toLocaleString()} plays · ${Number(p.completed_plays || 0).toLocaleString()} completed (YouTube)</span>
       </div>`).join("") : "<p class='cc-muted'>Engagement will appear when visitors start exploring profiles.</p>";
     const updatedAt = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
     feedback.textContent = analyticsUnavailable
@@ -222,6 +267,7 @@ function openEditor(profile) {
   editForm.elements.website_url.value = profile.website_url || "";
   editForm.elements.contact_email.value = profile.contact_email || "";
   editForm.elements.song_url.value = profile.song?.url || "";
+  editForm.elements.video_url.value = profile.video?.url || "";
   $("sp-profile-feature").checked = Boolean(profile.featured);
   clearFormStatus();
   applyPublishGate(profile.id, publishState(profile));
@@ -333,8 +379,17 @@ reviewModal.innerHTML = `
         <button type="button" class="cc-btn sp-decline" data-review-confirm-decline>Confirm decline</button>
       </div>
     </div>
+    <div id="sp-review-info-panel" class="sp-review-decline-panel" hidden>
+      <label for="sp-review-info-note">What do you need from the applicant? (at least 10 characters; they will see this and be emailed)</label>
+      <textarea id="sp-review-info-note" rows="4" maxlength="1000" placeholder="e.g. Please link a portfolio or confirm the website is yours."></textarea>
+      <div class="sp-review-actions">
+        <button type="button" class="cc-btn" data-review-cancel-info>Back</button>
+        <button type="button" class="cc-btn sp-approve" data-review-confirm-info>Send request</button>
+      </div>
+    </div>
     <div id="sp-review-actions" class="sp-review-actions">
       <button type="button" class="cc-btn" data-review-close>Close</button>
+      <button type="button" class="cc-btn" data-review-info>Request information</button>
       <button type="button" class="cc-btn sp-approve" data-review-approve>Approve application</button>
       <button type="button" class="cc-btn sp-decline" data-review-decline>Decline</button>
     </div>
@@ -345,6 +400,7 @@ const reviewContent = reviewModal.querySelector("#sp-review-content");
 const reviewStatus = reviewModal.querySelector("#sp-review-status");
 const reviewDeclinePanel = reviewModal.querySelector("#sp-review-decline-panel");
 const reviewActionsPanel = reviewModal.querySelector("#sp-review-actions");
+const reviewInfoPanel = reviewModal.querySelector("#sp-review-info-panel");
 let activeReviewProfile = null;
 let reviewObjectUrls = [];
 function closeReviewModal() {
@@ -357,12 +413,41 @@ function reviewLink(label, url) {
   if (!url) return "";
   return `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label)} ↗</a>`;
 }
+const EVENT_LABELS = { submitted: "Application submitted", mark_read: "Marked as read", start_review: "Review started", request_info: "Information requested", info_received: "Applicant replied", approve: "Approved", decline: "Declined", publish: "Published", expire: "Expired" };
+/** Terms acceptance and the information-request exchange. All values are escaped. */
+function applicantDialogue(profile) {
+  const terms = profile.terms_accepted_at
+    ? `Accepted terms version ${esc(profile.terms_version || "?")} on ${esc(new Date(profile.terms_accepted_at * 1000).toLocaleString())}`
+    : "No terms record (created by an administrator or before terms were recorded)";
+  let exchange = "";
+  if (profile.info_request_note) {
+    exchange = `<p><strong>You asked</strong> (${esc(new Date(profile.info_requested_at * 1000).toLocaleString())}):</p><p class="sp-review-description">${esc(profile.info_request_note)}</p>` +
+      (profile.awaiting_applicant ? "<p><strong>Waiting for the applicant to reply.</strong></p>"
+        : profile.info_response_note ? `<p><strong>Applicant replied</strong> (${esc(new Date(profile.info_responded_at * 1000).toLocaleString())}):</p><p class="sp-review-description">${esc(profile.info_response_note)}</p>` : "");
+  }
+  return `<section><h4>Applicant communication</h4><p>${terms}</p>${exchange || "<p>No information has been requested.</p>"}</section>`;
+}
+async function loadReviewEvents(id) {
+  const target = reviewContent.querySelector("#sp-review-events");
+  try {
+    const data = await api("/api/admin/spotlight/profile/" + encodeURIComponent(id) + "/events");
+    const events = (data.events || []).slice().reverse();
+    target.replaceChildren(...(events.length ? events : [{ action: "", created_at: 0 }]).map(event => {
+      const li = document.createElement("li");
+      li.textContent = event.action
+        ? new Date(event.created_at * 1000).toLocaleString() + " · " + (EVENT_LABELS[event.action] || event.action) + " · " + event.actor + (event.action === "request_info" || event.action === "decline" ? " · " + (event.reason || "") : "")
+        : "No events recorded.";
+      return li;
+    }));
+  } catch { target.textContent = "Audit log unavailable."; }
+}
 async function openReviewModal(profile) {
   activeReviewProfile = profile;
   reviewModal.hidden = false;
   reviewContent.innerHTML = "<p>Loading private application details…</p>";
   reviewStatus.textContent = "";
   reviewDeclinePanel.hidden = true;
+  reviewInfoPanel.hidden = true;
   reviewActionsPanel.hidden = false;
   reviewObjectUrls.forEach(url => URL.revokeObjectURL(url));
   reviewObjectUrls = [];
@@ -380,7 +465,19 @@ async function openReviewModal(profile) {
     }
   }
   const socials = Object.entries(profile.social_links || {}).map(([key, value]) => reviewLink(key, value)).join("");
-  const song = profile.song?.url ? reviewLink("Spotify track: " + (profile.song.title || "Open track"), profile.song.url) : "";
+  const song = profile.song?.url ? reviewLink("Spotify " + (profile.song.type || "track") + (profile.song.verified === false ? " (unverified: Spotify was unreachable)" : "") + ": " + (profile.song.title || "Open link"), profile.song.url) : "";
+  let videoEmbed = "";
+  const video = profile.video;
+  if (video?.platform === "youtube" && video.kind === "video" && /^[A-Za-z0-9_-]{11}$/.test(video.id || "")) {
+    videoEmbed = "https://www.youtube-nocookie.com/embed/" + video.id + "?controls=1&rel=0";
+  } else if (video?.platform === "twitch" && video.kind === "channel" && /^[a-z0-9_]{3,25}$/.test(video.id || "")) {
+    videoEmbed = "https://player.twitch.tv/?channel=" + encodeURIComponent(video.id) + "&parent=www.boztik.com&autoplay=false";
+  } else if (video?.platform === "twitch" && video.kind === "video" && /^\d{5,20}$/.test(video.id || "")) {
+    videoEmbed = "https://player.twitch.tv/?video=v" + video.id + "&parent=www.boztik.com&autoplay=false";
+  } else if (video?.platform === "twitch" && video.kind === "clip" && /^[A-Za-z0-9_-]{5,80}$/.test(video.id || "")) {
+    videoEmbed = "https://clips.twitch.tv/embed?clip=" + encodeURIComponent(video.id) + "&parent=www.boztik.com";
+  }
+  const videoPreview = videoEmbed ? `<section><h4>Applicant's featured video · ${esc(video.platform.toUpperCase())}</h4><div class="sp-review-video"><iframe title="Private review preview of applicant video" src="${esc(videoEmbed)}" loading="lazy" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div><p>Review the actual content, audio, quality and suitability before approving this application. Player controls are provided by the platform.</p>${reviewLink("Open original video", video.url)}</section>` : (video?.url ? `<section><h4>Featured video link</h4>${reviewLink("Open submitted video", video.url)}<p>The submitted link could not be embedded. Check it manually before making a decision.</p></section>` : "");
   reviewContent.innerHTML = `
     <div class="sp-review-identity">
       <div class="sp-review-avatar" id="sp-review-avatar">Loading image…</div>
@@ -392,7 +489,11 @@ async function openReviewModal(profile) {
     </dl>
     <section><h4>About the applicant</h4><p class="sp-review-description">${esc(profile.description || "No description supplied.")}</p></section>
     <section><h4>Website and social profiles</h4><div class="sp-review-links">${socials || "<span>No social links supplied.</span>"}${song}</div></section>
-    <section><h4>Showcase images</h4><div id="sp-review-gallery" class="sp-review-gallery"><span>Loading showcase images…</span></div></section>`;
+    ${videoPreview}
+    ${applicantDialogue(profile)}
+    <section><h4>Showcase images</h4><div id="sp-review-gallery" class="sp-review-gallery"><span>Loading showcase images…</span></div></section>
+    <section><h4>Audit log</h4><ol id="sp-review-events" class="sp-review-events"><li>Loading…</li></ol></section>`;
+  loadReviewEvents(profile.id);
   const loadPrivateImage = async (path, alt, target) => {
     try {
       const response = await fetch(config.apiBaseUrl + path, { headers: authHeaders() });
@@ -419,16 +520,38 @@ async function openReviewModal(profile) {
   }
   reviewModal.querySelector("[data-review-approve]").hidden = !["new","under_review"].includes(profile.application_status);
   reviewModal.querySelector("[data-review-decline]").hidden = !["new","under_review"].includes(profile.application_status);
+  reviewModal.querySelector("[data-review-info]").hidden = !["new","under_review"].includes(profile.application_status);
   reviewModal.querySelector(".sp-review-card").focus?.();
 }
 reviewModal.addEventListener("click", async event => {
-  const target = event.target.closest("[data-review-close],[data-review-approve],[data-review-decline],[data-review-cancel-decline],[data-review-confirm-decline]");
+  const target = event.target.closest("[data-review-close],[data-review-approve],[data-review-decline],[data-review-cancel-decline],[data-review-confirm-decline],[data-review-info],[data-review-cancel-info],[data-review-confirm-info]");
   if (!target) return;
   if (target.hasAttribute("data-review-close")) { closeReviewModal(); return; }
   if (!activeReviewProfile) return;
   if (target.hasAttribute("data-review-decline")) {
     reviewDeclinePanel.hidden = false; reviewActionsPanel.hidden = true;
     reviewModal.querySelector("#sp-review-decline-reason").focus(); return;
+  }
+  if (target.hasAttribute("data-review-info")) {
+    reviewInfoPanel.hidden = false; reviewActionsPanel.hidden = true;
+    reviewModal.querySelector("#sp-review-info-note").focus(); return;
+  }
+  if (target.hasAttribute("data-review-cancel-info")) {
+    reviewInfoPanel.hidden = true; reviewActionsPanel.hidden = false; return;
+  }
+  if (target.hasAttribute("data-review-confirm-info")) {
+    const note = reviewModal.querySelector("#sp-review-info-note").value.trim();
+    if (note.length < 10) { reviewStatus.textContent = "Please say what you need (at least 10 characters)."; return; }
+    target.disabled = true;
+    try {
+      const result = await api("/api/admin/spotlight/profile/" + encodeURIComponent(activeReviewProfile.id) + "/review", {
+        method: "PATCH", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "request_info", note })
+      });
+      closeReviewModal(); await load();
+      feedback.textContent = result.email_queued ? "Information requested. The applicant has been emailed and can reply from their private status link." : "Information requested. No contact email is on file, so the applicant can only see this on their status link.";
+    } catch (error) { reviewStatus.textContent = error.message; } finally { target.disabled = false; }
+    return;
   }
   if (target.hasAttribute("data-review-cancel-decline")) {
     reviewDeclinePanel.hidden = true; reviewActionsPanel.hidden = false; return;
@@ -470,12 +593,65 @@ reviewModal.addEventListener("click", async event => {
   }
 });
 
+/* Per-profile analytics (real aggregates from the Worker; admin previews and bots are already excluded server-side). */
+const statsModal = document.createElement("div");
+statsModal.className = "sp-review-modal";
+statsModal.hidden = true;
+statsModal.innerHTML = `
+  <div class="sp-review-backdrop" data-stats-close></div>
+  <section class="sp-review-card" role="dialog" aria-modal="true" aria-labelledby="sp-stats-title">
+    <button type="button" class="sp-review-close" data-stats-close aria-label="Close analytics">×</button>
+    <span class="cc-eyebrow">Profile analytics</span>
+    <h2 id="sp-stats-title">Analytics</h2>
+    <div class="sp-queue-filters" role="group" aria-label="Date range">
+      <button type="button" class="cc-btn" data-stats-days="7">7 days</button>
+      <button type="button" class="cc-btn" data-stats-days="30">30 days</button>
+      <button type="button" class="cc-btn" data-stats-days="90">90 days</button>
+    </div>
+    <div id="sp-stats-body" class="sp-review-content" aria-live="polite">Loading…</div>
+  </section>`;
+document.body.append(statsModal);
+let statsProfileId = "";
+async function loadStats(days) {
+  const body = statsModal.querySelector("#sp-stats-body");
+  statsModal.querySelectorAll("[data-stats-days]").forEach(b => b.setAttribute("aria-pressed", String(Number(b.dataset.statsDays) === days)));
+  body.textContent = "Loading…";
+  try {
+    const data = await api("/api/admin/spotlight/profile/" + encodeURIComponent(statsProfileId) + "/analytics?days=" + days);
+    const a = data.analytics, t = a.totals;
+    const max = Math.max(1, ...a.series.map(d => d.views));
+    const names = { direct: "Direct or unknown", directory: "Spotlight directory", featured: "Featured page", search: "Search engines", social: "Social platforms", other: "Other websites" };
+    body.innerHTML = `
+      <dl class="sp-review-facts">
+        <div><dt>Featured impressions</dt><dd>${Number(t.featured_impressions).toLocaleString()}</dd></div>
+        <div><dt>Profile views (${Number(t.unique_views).toLocaleString()} unique visitor-days)</dt><dd>${Number(t.views).toLocaleString()}</dd></div>
+        <div><dt>Link clicks: website / social / media</dt><dd>${Number(t.link_clicks).toLocaleString()} (${t.website_clicks} / ${t.social_clicks} / ${t.media_clicks})</dd></div>
+        <div><dt>Player plays · completed (YouTube only)</dt><dd>${Number(t.player_interactions).toLocaleString()} · ${Number(t.completed_plays).toLocaleString()}</dd></div>
+      </dl>
+      <section><h4>Views per day, ${esc(a.from)} to ${esc(a.to)}</h4>
+        <div class="sp-stats-bars" role="img" aria-label="Profile views per day: ${Number(t.views)} in total">${a.series.map(d => `<i style="height:${Math.round(d.views / max * 100)}%" title="${esc(d.day)}: ${d.views}"></i>`).join("")}</div></section>
+      <section><h4>Where visits came from</h4><div class="sp-review-links">${a.sources.filter(x => x.views).map(x => `<span>${esc(names[x.source] || x.source)}: <b>${Number(x.views).toLocaleString()}</b></span>`).join("") || "<span>No visits in this period.</span>"}</div></section>`;
+  } catch (error) { body.textContent = "Analytics unavailable: " + error.message; }
+}
+statsModal.addEventListener("click", event => {
+  if (event.target.closest("[data-stats-close]")) { statsModal.hidden = true; return; }
+  const button = event.target.closest("[data-stats-days]");
+  if (button) loadStats(Number(button.dataset.statsDays));
+});
+
 list.addEventListener("click", async event => {
   const button = event.target.closest("button[data-action]");
   if (!button) return;
   const { action, id } = button.dataset;
   const profile = profiles.find(item => item.id === id);
   if (!profile) return;
+  if (action === "stats") {
+    statsProfileId = profile.id;
+    statsModal.querySelector("#sp-stats-title").textContent = profile.display_name + " — analytics";
+    statsModal.hidden = false;
+    loadStats(30);
+    return;
+  }
   if (action === "edit") { openEditor(profile); return; }
   if (action === "review") { openReviewModal(profile); return; }
   if (action === "delete" && !confirm("Permanently delete this profile and its analytics? This cannot be undone.")) return;
@@ -582,6 +758,7 @@ editForm.addEventListener("submit", async event => {
   }
   const body = {
     song_url: form.get("song_url"),
+    video_url: form.get("video_url"),
     display_name: form.get("display_name"),
     tagline: form.get("tagline"),
     description: form.get("description"),
