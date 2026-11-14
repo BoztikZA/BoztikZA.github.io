@@ -1,5 +1,4 @@
 import { classifySource, clickTarget, sendEvent } from "./analytics.js";
-import { socialLinksMarkup } from "./social-links.js";
 import { describeSong, describeVideo, mediaLinkCardMarkup } from "./media.js";
 import { linkRailMarkup } from "./showcase.js";
 
@@ -182,7 +181,6 @@ async function load() {
       const url = new URL(profile.website_url);
       if (url.protocol === "https:" && !url.username && !url.password) websiteUrl = url.href;
     } catch {}
-    const socialLinks = socialLinksMarkup(profile.social_links, profile.display_name, "sp-profile-social-link", true);
     applySeo(profile, mainImage, websiteUrl);
     const name = profile.display_name;
     const host_ = websiteUrl ? new URL(websiteUrl).hostname.replace(/^www\./, "") : "";
@@ -205,7 +203,6 @@ async function load() {
       </div>
       <dl class="sp-profile-facts">
         <div><dt>Category</dt><dd>${esc(label(profile.category))}</dd></div>
-        ${host_ ? `<div><dt>Website</dt><dd>${esc(host_)}</dd></div>` : ""}
         <div><dt>Listing</dt><dd>Boztik Spotlight</dd></div>
       </dl>
       ${renderGallery(images, profile.display_name)}
@@ -213,10 +210,6 @@ async function load() {
         <p class="sp-kicker">WHAT THEY OFFER</p>
         <h2>About ${esc(name)}</h2>
         <p>${esc(profile.description || profile.tagline || "")}</p>
-        <div class="sp-profile-links">
-          ${websiteUrl ? `<a href="${esc(websiteUrl)}" target="_blank" rel="noopener noreferrer" data-outbound><span>Website</span><b>↗</b></a>` : ""}
-          ${socialLinks}
-        </div>
       </article>
       ${music}
       ${featuredVideo}

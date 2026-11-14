@@ -106,7 +106,7 @@ import { socialLinksMarkup } from "./social-links.js";
         <div class="hm-spotlight-card-content">
           <span class="hm-spotlight-category">${escapeHtml(category)}</span>
           <h3><a href="${profilePath}">${escapeHtml(name)}</a></h3>
-          ${profile.tagline ? `<p class="hm-spotlight-offer-label">What they offer</p><p class="hm-spotlight-tagline">${escapeHtml(profile.tagline)}</p>` : ""}
+          ${profile.tagline ? `<p class="hm-spotlight-tagline">${escapeHtml(profile.tagline)}</p>` : ""}
           <p class="hm-spotlight-description">${escapeHtml(profile.description)}</p>
           ${socialLinks ? `<div class="hm-spotlight-socials" aria-label="Social profiles">${socialLinks}</div>` : ""}
           <div class="hm-spotlight-actions">
