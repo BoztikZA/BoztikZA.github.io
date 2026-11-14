@@ -372,6 +372,7 @@ reviewModal.innerHTML = `
     <h2 id="sp-review-title">Review application</h2>
     <div id="sp-review-content" class="sp-review-content">Loading application…</div>
     <div id="sp-review-decline-panel" class="sp-review-decline-panel" hidden>
+      <p class="sp-review-note">If an email address is available, confirming opens a pre-filled email draft for you to review and send. If no email is available, the application and its images are deleted after confirmation.</p>
       <label for="sp-review-decline-reason">Reason for declining (at least 10 characters)</label>
       <textarea id="sp-review-decline-reason" rows="4" maxlength="1000" placeholder="Explain why the application cannot be approved."></textarea>
       <div class="sp-review-actions">
@@ -404,14 +405,21 @@ const reviewInfoPanel = reviewModal.querySelector("#sp-review-info-panel");
 let activeReviewProfile = null;
 let reviewObjectUrls = [];
 let reviewOpener = null;
+let reviewOpenerProfileId = "";
 function closeReviewModal() {
   reviewModal.hidden = true;
   reviewObjectUrls.forEach(url => URL.revokeObjectURL(url));
   reviewObjectUrls = [];
   activeReviewProfile = null;
-  const opener = reviewOpener;
+  const opener = reviewOpener?.isConnected
+    ? reviewOpener
+    : reviewOpenerProfileId
+      ? list.querySelector(`button[data-action="review"][data-id="${CSS.escape(reviewOpenerProfileId)}"]`)
+      : null;
   reviewOpener = null;
+  reviewOpenerProfileId = "";
   if (opener?.isConnected) opener.focus();
+  else list.focus?.();
 }
 function reviewLink(label, url) {
   if (!url) return "";
@@ -447,6 +455,7 @@ async function loadReviewEvents(id) {
 }
 async function openReviewModal(profile) {
   reviewOpener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  reviewOpenerProfileId = profile.id;
   activeReviewProfile = profile;
   reviewModal.hidden = false;
   reviewContent.innerHTML = "<p>Loading private application details…</p>";
