@@ -421,6 +421,11 @@ function closeReviewModal() {
   if (opener?.isConnected) opener.focus();
   else list.focus?.();
 }
+function focusReviewRow(profileId) {
+  const button = list.querySelector(`button[data-action="review"][data-id="${CSS.escape(profileId)}"]`);
+  if (button) button.focus();
+  else { list.setAttribute("tabindex", "-1"); list.focus(); }
+}
 function reviewLink(label, url) {
   if (!url) return "";
   return `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label)} ↗</a>`;
@@ -572,6 +577,7 @@ reviewModal.addEventListener("click", async event => {
     reviewInfoPanel.hidden = true; reviewActionsPanel.hidden = false; return;
   }
   if (target.hasAttribute("data-review-confirm-info")) {
+    const reviewedProfileId = activeReviewProfile.id;
     const note = reviewModal.querySelector("#sp-review-info-note").value.trim();
     if (note.length < 10) { reviewStatus.textContent = "Please say what you need (at least 10 characters)."; return; }
     target.disabled = true;
@@ -580,7 +586,7 @@ reviewModal.addEventListener("click", async event => {
         method: "PATCH", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "request_info", note })
       });
-      closeReviewModal(); await load();
+      closeReviewModal(); await load(); focusReviewRow(reviewedProfileId);
       feedback.textContent = result.email_queued ? "Information requested. The applicant has been emailed and can reply from their private status link." : "Information requested. No contact email is on file, so the applicant can only see this on their status link.";
     } catch (error) { reviewStatus.textContent = error.message; } finally { target.disabled = false; }
     return;
@@ -596,7 +602,7 @@ reviewModal.addEventListener("click", async event => {
         method: "PATCH", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "approve" })
       });
-      closeReviewModal(); await load();
+      closeReviewModal(); await load(); focusReviewRow(profile.id);
       feedback.textContent = "Application approved. Publish it separately within 72 hours.";
     } catch (error) { reviewStatus.textContent = error.message; target.disabled = false; }
     return;
@@ -614,11 +620,11 @@ reviewModal.addEventListener("click", async event => {
         const subject = "Update on your Boztik Spotlight application";
         const body = `Hello ${profile.display_name},\n\nThank you for applying for Boztik Spotlight. Unfortunately, we are unable to approve your application at this time.\n\nReason: ${reason}\n\nYou are welcome to review your submission and contact us if you have questions.\n\nThe Boztik team\nhttps://www.boztik.com/`;
         window.location.href = "mailto:" + encodeURIComponent(profile.contact_email) + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
-        closeReviewModal(); await load();
+        closeReviewModal(); await load(); focusReviewRow(profile.id);
         feedback.textContent = "Application declined. Your email app should open with the applicant’s address and your reason ready to review and send.";
       } else {
         await api("/api/admin/spotlight/profile/" + encodeURIComponent(profile.id), { method: "DELETE" });
-        closeReviewModal(); await load();
+        closeReviewModal(); await load(); focusReviewRow(profile.id);
         feedback.textContent = "Application declined. No email was supplied, so the profile and all its images were permanently deleted.";
       }
     } catch (error) { reviewStatus.textContent = error.message; target.disabled = false; }
