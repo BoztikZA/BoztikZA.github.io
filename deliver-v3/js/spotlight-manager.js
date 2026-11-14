@@ -163,7 +163,7 @@ function render() {
         <p>${esc(p.tagline)}</p>
       </div>
       <div class="sp-admin-actions">
-        <button class="cc-btn" data-action="review" data-id="${esc(p.id)}">Review</button>
+        <button class="cc-btn" data-action="review" data-id="${esc(p.id)}">${["new","under_review","approved"].includes(p.application_status) ? "Review application" : "View details"}</button>
         <button class="cc-btn" data-action="edit" data-id="${esc(p.id)}">Edit profile</button>
         ${p.status === "published" || p.completed_plays !== undefined ? `<button class="cc-btn" data-action="stats" data-id="${esc(p.id)}">Analytics</button>` : ""}
         ${reviewActions(p)}
@@ -366,7 +366,7 @@ reviewModal.className = "sp-review-modal";
 reviewModal.hidden = true;
 reviewModal.innerHTML = `
   <div class="sp-review-backdrop" data-review-close></div>
-  <section class="sp-review-card" role="dialog" aria-modal="true" aria-labelledby="sp-review-title">
+  <section class="sp-review-card" role="dialog" aria-modal="true" aria-labelledby="sp-review-title" tabindex="-1">
     <button type="button" class="sp-review-close" data-review-close aria-label="Close review">×</button>
     <span class="cc-eyebrow">Private application review</span>
     <h2 id="sp-review-title">Review application</h2>
@@ -391,7 +391,7 @@ reviewModal.innerHTML = `
       <button type="button" class="cc-btn" data-review-close>Close</button>
       <button type="button" class="cc-btn" data-review-info>Request information</button>
       <button type="button" class="cc-btn sp-approve" data-review-approve>Approve application</button>
-      <button type="button" class="cc-btn sp-decline" data-review-decline>Decline</button>
+      <button type="button" class="cc-btn sp-decline" data-review-decline>Decline application</button>
     </div>
     <p id="sp-review-status" role="status" aria-live="polite"></p>
   </section>`;
@@ -403,11 +403,15 @@ const reviewActionsPanel = reviewModal.querySelector("#sp-review-actions");
 const reviewInfoPanel = reviewModal.querySelector("#sp-review-info-panel");
 let activeReviewProfile = null;
 let reviewObjectUrls = [];
+let reviewOpener = null;
 function closeReviewModal() {
   reviewModal.hidden = true;
   reviewObjectUrls.forEach(url => URL.revokeObjectURL(url));
   reviewObjectUrls = [];
   activeReviewProfile = null;
+  const opener = reviewOpener;
+  reviewOpener = null;
+  if (opener?.isConnected) opener.focus();
 }
 function reviewLink(label, url) {
   if (!url) return "";
@@ -442,6 +446,7 @@ async function loadReviewEvents(id) {
   } catch { target.textContent = "Audit log unavailable."; }
 }
 async function openReviewModal(profile) {
+  reviewOpener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   activeReviewProfile = profile;
   reviewModal.hidden = false;
   reviewContent.innerHTML = "<p>Loading private application details…</p>";
@@ -521,8 +526,26 @@ async function openReviewModal(profile) {
   reviewModal.querySelector("[data-review-approve]").hidden = !["new","under_review"].includes(profile.application_status);
   reviewModal.querySelector("[data-review-decline]").hidden = !["new","under_review"].includes(profile.application_status);
   reviewModal.querySelector("[data-review-info]").hidden = !["new","under_review"].includes(profile.application_status);
-  reviewModal.querySelector(".sp-review-card").focus?.();
+  reviewModal.querySelector(".sp-review-close")?.focus();
 }
+reviewModal.addEventListener("keydown", event => {
+  if (event.key === "Escape") {
+    event.preventDefault();
+    closeReviewModal();
+    return;
+  }
+  if (event.key !== "Tab") return;
+  const focusable = [...reviewModal.querySelectorAll('button:not([disabled]):not([hidden]), a[href], textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])')]
+    .filter(element => element.getClientRects().length);
+  if (!focusable.length) { event.preventDefault(); reviewModal.querySelector(".sp-review-card")?.focus(); return; }
+  const first = focusable[0], last = focusable[focusable.length - 1];
+  if (event.shiftKey && (document.activeElement === first || !reviewModal.contains(document.activeElement))) {
+    event.preventDefault(); last.focus();
+  } else if (!event.shiftKey && (document.activeElement === last || !reviewModal.contains(document.activeElement))) {
+    event.preventDefault(); first.focus();
+  }
+});
+
 reviewModal.addEventListener("click", async event => {
   const target = event.target.closest("[data-review-close],[data-review-approve],[data-review-decline],[data-review-cancel-decline],[data-review-confirm-decline],[data-review-info],[data-review-cancel-info],[data-review-confirm-info]");
   if (!target) return;
