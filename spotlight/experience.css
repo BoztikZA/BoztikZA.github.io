@@ -15,9 +15,12 @@
     linear-gradient(118deg, #0b1112 0%, #0b1011 52%, #101b15 100%);
 }
 .sp-hero:after {
-  position:absolute; inset:0; content:""; pointer-events:none; opacity:.28;
-  background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
-  background-size:58px 58px;
+  position:absolute; z-index:1; inset:0; content:""; pointer-events:none; opacity:.28;
+  background-image:
+    radial-gradient(ellipse at 82% 78%,rgba(142,255,61,.18),transparent 34%),
+    linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:auto,58px 58px,58px 58px;
   mask-image:linear-gradient(90deg,transparent 18%,#000 100%);
 }
 .sp-hero .sp-wrap { max-width:1160px; padding-top:76px; padding-bottom:76px; }
