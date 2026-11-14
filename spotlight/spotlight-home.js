@@ -261,43 +261,34 @@ import { socialLinksMarkup } from "./social-links.js";
     });
   }
 
-  function previewMarkup(kicker, heading, copy, primary, secondary) {
-    return `
-      <div class="hm-spotlight-empty bz-spot-preview">
-        <div class="bz-spot-preview__card" aria-hidden="true">
-          <span class="bz-spot-preview__tag">Example listing</span>
-          <span class="bz-spot-preview__mark">YB</span>
-          <strong>Your Business Name</strong>
-          <small>One clear line about what you offer</small>
-          <span class="bz-spot-preview__btn">Visit your website ↗</span>
-        </div>
+  function showEmptyState() {
+    host.innerHTML = `
+      <div class="hm-spotlight-empty">
         <div class="bz-spot-preview__copy">
-          <span class="hm-spotlight-category">${kicker}</span>
-          <h3>${heading}</h3>
-          <p>${copy}</p>
-          <div class="hm-spotlight-empty-actions">${primary}${secondary}</div>
+          <span class="hm-spotlight-category">BOZTIK BUSINESS SPOTLIGHT</span>
+          <h3>No active featured profiles right now.</h3>
+          <p>Browse approved directory listings or submit your own profile for review. Featured placements appear here when an approved feature is active.</p>
+          <div class="hm-spotlight-empty-actions">
+            <a class="hm-spotlight-profile-link" href="spotlight/">Browse the directory <span aria-hidden="true">↗</span></a>
+            <a class="hm-spotlight-website-link" href="spotlight/submit/">Apply to be listed</a>
+          </div>
         </div>
       </div>`;
   }
 
-  function showEmptyState() {
-    host.innerHTML = previewMarkup(
-      "FEATURED BUSINESS SPOTLIGHT",
-      "Your business could be today's feature.",
-      "Share your logo, what you offer and your website, and be featured on the Boztik homepage with a direct link for new customers.",
-      '<a class="hm-spotlight-profile-link" href="spotlight/submit/">Apply for a feature <span aria-hidden="true">↗</span></a>',
-      '<a class="hm-spotlight-website-link" href="spotlight/">Browse the directory</a>'
-    );
-  }
-
   function showUnavailableState() {
-    host.innerHTML = previewMarkup(
-      "BOZTIK SPOTLIGHT",
-      "Today's feature is loading slowly.",
-      "Browse the full directory of featured businesses, or apply to have your own business featured.",
-      '<a class="hm-spotlight-profile-link" href="spotlight/">Open the directory <span aria-hidden="true">↗</span></a>',
-      '<a class="hm-spotlight-website-link" href="spotlight/submit/">Apply for a feature</a>'
-    );
+    host.innerHTML = `
+      <div class="hm-spotlight-empty">
+        <div class="bz-spot-preview__copy">
+          <span class="hm-spotlight-category">BOZTIK BUSINESS SPOTLIGHT</span>
+          <h3>Featured profiles are temporarily unavailable.</h3>
+          <p>The directory remains available. Visit Spotlight to browse published profiles and learn how to submit your own.</p>
+          <div class="hm-spotlight-empty-actions">
+            <a class="hm-spotlight-profile-link" href="spotlight/">Open the directory <span aria-hidden="true">↗</span></a>
+            <a class="hm-spotlight-website-link" href="spotlight/submit/">Apply to be listed</a>
+          </div>
+        </div>
+      </div>`;
   }
 
   fetch(API + "?limit=3", { headers: { Accept: "application/json" } })
