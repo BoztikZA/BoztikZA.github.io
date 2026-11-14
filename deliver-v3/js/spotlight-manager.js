@@ -438,7 +438,7 @@ function applicantDialogue(profile) {
   let exchange = "";
   if (profile.info_request_note) {
     exchange = `<p><strong>You asked</strong> (${esc(new Date(profile.info_requested_at * 1000).toLocaleString())}):</p><p class="sp-review-description">${esc(profile.info_request_note)}</p>` +
-      (profile.awaiting_applicant ? "<p><span class="sp-admin-status-badge is-waiting">Waiting for applicant reply</span></p>"
+      (profile.awaiting_applicant ? `<p><span class="sp-admin-status-badge is-waiting">Waiting for applicant reply</span></p>`
         : profile.info_response_note ? `<p><strong>Applicant replied</strong> (${esc(new Date(profile.info_responded_at * 1000).toLocaleString())}):</p><p class="sp-review-description">${esc(profile.info_response_note)}</p>` : "");
   }
   return `<section><h4>Applicant communication</h4><p>${terms}</p>${exchange || "<p>No information has been requested.</p>"}</section>`;
