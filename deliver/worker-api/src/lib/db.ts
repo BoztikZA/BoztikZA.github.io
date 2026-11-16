@@ -167,7 +167,12 @@ export async function listDeliveriesForAdmin(env: Env, f: DeliveryFilter): Promi
   for (let i = 0; i < ids.length; i += ID_CHUNK_SIZE) {
     idChunks.push(ids.slice(i, i + ID_CHUNK_SIZE));
   }
-  const [filePages, monthlyPages] = await Promise.all([
+  // Delivery rows are the critical part of this endpoint. File metadata and
+  // monthly aggregates enrich the list, but a failure in either secondary
+  // lookup must not turn the entire delivery list into an HTTP 500. Keep the
+  // list usable and log which enrichment failed so the underlying issue can
+  // be diagnosed without hiding it from Worker logs.
+  const [fileResult, monthlyResult] = await Promise.allSettled([
     Promise.all(idChunks.map((chunk) => {
       const placeholders = chunk.map(() => "?").join(",");
       return env.DB.prepare(`SELECT * FROM delivery_files WHERE delivery_id IN (${placeholders}) ORDER BY rowid ASC`)
@@ -179,14 +184,27 @@ export async function listDeliveriesForAdmin(env: Env, f: DeliveryFilter): Promi
         .bind(localMonth(env), ...chunk).all<{ delivery_id: string; views: number; downloads: number }>();
     })),
   ]);
+
   const filesBy = new Map<string, DeliveryFileRow[]>();
-  for (const page of filePages) {
-    for (const file of page.results) {
-      const arr = filesBy.get(file.delivery_id);
-      if (arr) arr.push(file); else filesBy.set(file.delivery_id, [file]);
+  if (fileResult.status === "fulfilled") {
+    for (const page of fileResult.value) {
+      for (const file of page.results) {
+        const arr = filesBy.get(file.delivery_id);
+        if (arr) arr.push(file); else filesBy.set(file.delivery_id, [file]);
+      }
     }
+  } else {
+    console.error("[deliveries:list] File metadata lookup failed; returning delivery rows without file details.", fileResult.reason);
   }
-  const monthlyBy = new Map(monthlyPages.flatMap((page) => page.results).map((m) => [m.delivery_id, m]));
+
+  const monthlyBy = new Map<string, { delivery_id: string; views: number; downloads: number }>();
+  if (monthlyResult.status === "fulfilled") {
+    for (const page of monthlyResult.value) {
+      for (const metric of page.results) monthlyBy.set(metric.delivery_id, metric);
+    }
+  } else {
+    console.error("[deliveries:list] Monthly analytics lookup failed; returning delivery rows without monthly aggregates.", monthlyResult.reason);
+  }
   return {
     items: rows.map((r) => toAdminDelivery(r, filesBy.get(r.id) ?? [], monthlyBy.get(r.id))),
     total: count?.n ?? 0,
