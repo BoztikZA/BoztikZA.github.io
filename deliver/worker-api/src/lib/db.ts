@@ -155,19 +155,38 @@ export async function listDeliveriesForAdmin(env: Env, f: DeliveryFilter): Promi
   const rows = page.results;
   if (rows.length === 0) return { items: [], total: count?.n ?? 0 };
 
-  const ph = rows.map(() => "?").join(",");
   const ids = rows.map((r) => r.id);
-  const [files, monthly] = await Promise.all([
-    env.DB.prepare(`SELECT * FROM delivery_files WHERE delivery_id IN (${ph}) ORDER BY rowid ASC`).bind(...ids).all<DeliveryFileRow>(),
-    env.DB.prepare(`SELECT delivery_id, views, downloads FROM delivery_analytics WHERE month = ? AND delivery_id IN (${ph})`)
-      .bind(localMonth(env), ...ids).all<{ delivery_id: string; views: number; downloads: number }>(),
+
+  // D1 allows at most 100 bound parameters per statement. The admin page can
+  // request 200 deliveries, so binding every id into either related-data query
+  // exceeds that limit once the page contains more than 100 records. Fetch the
+  // related rows in bounded chunks; this is read-only and keeps the same result
+  // shape and ordering without changing any delivery or file records.
+  const ID_CHUNK_SIZE = 90; // monthly query uses one additional parameter for the month
+  const idChunks: string[][] = [];
+  for (let i = 0; i < ids.length; i += ID_CHUNK_SIZE) {
+    idChunks.push(ids.slice(i, i + ID_CHUNK_SIZE));
+  }
+  const [filePages, monthlyPages] = await Promise.all([
+    Promise.all(idChunks.map((chunk) => {
+      const placeholders = chunk.map(() => "?").join(",");
+      return env.DB.prepare(`SELECT * FROM delivery_files WHERE delivery_id IN (${placeholders}) ORDER BY rowid ASC`)
+        .bind(...chunk).all<DeliveryFileRow>();
+    })),
+    Promise.all(idChunks.map((chunk) => {
+      const placeholders = chunk.map(() => "?").join(",");
+      return env.DB.prepare(`SELECT delivery_id, views, downloads FROM delivery_analytics WHERE month = ? AND delivery_id IN (${placeholders})`)
+        .bind(localMonth(env), ...chunk).all<{ delivery_id: string; views: number; downloads: number }>();
+    })),
   ]);
   const filesBy = new Map<string, DeliveryFileRow[]>();
-  for (const file of files.results) {
-    const arr = filesBy.get(file.delivery_id);
-    if (arr) arr.push(file); else filesBy.set(file.delivery_id, [file]);
+  for (const page of filePages) {
+    for (const file of page.results) {
+      const arr = filesBy.get(file.delivery_id);
+      if (arr) arr.push(file); else filesBy.set(file.delivery_id, [file]);
+    }
   }
-  const monthlyBy = new Map(monthly.results.map((m) => [m.delivery_id, m]));
+  const monthlyBy = new Map(monthlyPages.flatMap((page) => page.results).map((m) => [m.delivery_id, m]));
   return {
     items: rows.map((r) => toAdminDelivery(r, filesBy.get(r.id) ?? [], monthlyBy.get(r.id))),
     total: count?.n ?? 0,
