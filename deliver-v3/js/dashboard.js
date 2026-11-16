@@ -15,7 +15,7 @@ import {
   cleanExpiredDeliveries,
   reconcileStorage,
   DELIVERY_SOURCES
-} from "./api.js";
+} from "./api.js?v=deliver-list-2";
 import { config } from "./config.js";
 import {
   escapeHtml,
