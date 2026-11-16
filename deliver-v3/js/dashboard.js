@@ -2170,8 +2170,12 @@ async function loadDeliveries() {
     deliveries = await listDeliveries();
   } catch (error) {
     console.error("[Boztik Deliver] listDeliveries failed:", error);
-    showToast("Could not load deliveries.", "error");
-    deliveries = [];
+    // Keep the last successfully loaded list; a failed refresh must never
+    // make existing client deliveries appear deleted or replace them with an empty state.
+    const message = error?.message || "Could not load deliveries.";
+    const status = Number(error?.status);
+    showToast(status ? `${message} (HTTP ${status})` : message, "error");
+    return;
   }
 
   renderOverview();
