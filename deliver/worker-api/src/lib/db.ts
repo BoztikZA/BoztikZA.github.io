@@ -155,19 +155,40 @@ export async function listDeliveriesForAdmin(env: Env, f: DeliveryFilter): Promi
   const rows = page.results;
   if (rows.length === 0) return { items: [], total: count?.n ?? 0 };
 
-  const ph = rows.map(() => "?").join(",");
-  const ids = rows.map((r) => r.id);
-  const [files, monthly] = await Promise.all([
-    env.DB.prepare(`SELECT * FROM delivery_files WHERE delivery_id IN (${ph}) ORDER BY rowid ASC`).bind(...ids).all<DeliveryFileRow>(),
-    env.DB.prepare(`SELECT delivery_id, views, downloads FROM delivery_analytics WHERE month = ? AND delivery_id IN (${ph})`)
-      .bind(localMonth(env), ...ids).all<{ delivery_id: string; views: number; downloads: number }>(),
+  // Reuse the exact filtered/paginated delivery selection as a SQL subquery
+  // for enrichment. This avoids expanding up to 200 delivery IDs into IN (...)
+  // bind lists (D1's bound-variable ceiling is 100), while ensuring file and
+  // monthly metrics are scoped to precisely the same page and sort order.
+  // The subquery only adds the filter + limit/offset binds, so parameter count
+  // stays small regardless of how many deliveries are on the page.
+  const pageIdsSql = `SELECT d.id FROM deliveries d ${whereSql} ORDER BY ${orderCol} ${dir}, d.id ASC LIMIT ? OFFSET ?`;
+
+  // Delivery rows are the critical part of this endpoint. File metadata and
+  // monthly aggregates enrich the list, but a failure in either secondary
+  // lookup must not turn the entire delivery list into an HTTP 500.
+  const [fileResult, monthlyResult] = await Promise.allSettled([
+    env.DB.prepare(`SELECT * FROM delivery_files WHERE delivery_id IN (${pageIdsSql}) ORDER BY rowid ASC`)
+      .bind(...binds, limit, offset).all<DeliveryFileRow>(),
+    env.DB.prepare(`SELECT delivery_id, views, downloads FROM delivery_analytics WHERE month = ? AND delivery_id IN (${pageIdsSql})`)
+      .bind(localMonth(env), ...binds, limit, offset).all<{ delivery_id: string; views: number; downloads: number }>(),
   ]);
+
   const filesBy = new Map<string, DeliveryFileRow[]>();
-  for (const file of files.results) {
-    const arr = filesBy.get(file.delivery_id);
-    if (arr) arr.push(file); else filesBy.set(file.delivery_id, [file]);
+  if (fileResult.status === "fulfilled") {
+    for (const file of fileResult.value.results) {
+      const arr = filesBy.get(file.delivery_id);
+      if (arr) arr.push(file); else filesBy.set(file.delivery_id, [file]);
+    }
+  } else {
+    console.error("[deliveries:list] File metadata lookup failed; returning delivery rows without file details.", fileResult.reason);
   }
-  const monthlyBy = new Map(monthly.results.map((m) => [m.delivery_id, m]));
+
+  const monthlyBy = new Map<string, { delivery_id: string; views: number; downloads: number }>();
+  if (monthlyResult.status === "fulfilled") {
+    for (const metric of monthlyResult.value.results) monthlyBy.set(metric.delivery_id, metric);
+  } else {
+    console.error("[deliveries:list] Monthly analytics lookup failed; returning delivery rows without monthly aggregates.", monthlyResult.reason);
+  }
   return {
     items: rows.map((r) => toAdminDelivery(r, filesBy.get(r.id) ?? [], monthlyBy.get(r.id))),
     total: count?.n ?? 0,

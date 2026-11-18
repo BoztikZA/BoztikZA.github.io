@@ -75,6 +75,42 @@ jobs:
             exit 1
           fi
 
+          # Every public URL in the sitemap must carry the AdSense loader so
+          # Auto ads can be configured consistently from the AdSense account.
+          python3 - <<'PY'
+          import os
+          import xml.etree.ElementTree as ET
+          from urllib.parse import unquote, urlparse
+
+          sitemap = ET.parse("_site/sitemap.xml").getroot()
+          ns = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+          urls = [node.text for node in sitemap.findall(".//sm:loc", ns)]
+          if not urls:
+              raise SystemExit("::error::The sitemap contains no page URLs.")
+
+          missing = []
+          for url in urls:
+              parsed = urlparse(url)
+              if parsed.netloc not in {"www.boztik.com", "boztik.com"}:
+                  continue
+              path = unquote(parsed.path or "/")
+              if path.endswith("/"):
+                  path += "index.html"
+              elif not os.path.splitext(path)[1]:
+                  path += "/index.html"
+              file_path = os.path.join("_site", path.lstrip("/"))
+              if not os.path.isfile(file_path):
+                  missing.append(f"{url} (missing staged file: {file_path})")
+                  continue
+              with open(file_path, encoding="utf-8") as handle:
+                  html = handle.read()
+              if "pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3739684241868984" not in html:
+                  missing.append(f"{url} (missing AdSense loader)")
+          if missing:
+              raise SystemExit("::error::AdSense code coverage failed:\\n" + "\\n".join(missing))
+          print(f"AdSense loader present on all {len(urls)} sitemap URL(s).")
+          PY
+
           if ! grep -Fq 'Sitemap: https://www.boztik.com/sitemap.xml' _site/robots.txt; then
             echo "::error::The staged robots.txt is missing the expected sitemap URL."
             exit 1
@@ -193,4 +229,60 @@ jobs:
           fetch_page 'https://www.boztik.com/robots.txt' "$tmp_dir/robots.txt" 'https://www.boztik.com/robots.txt'
           fetch_page 'https://www.boztik.com/sitemap.xml' "$tmp_dir/sitemap.xml" 'https://www.boztik.com/sitemap.xml'
 
-          echo "Live homepage, all HTTP/HTTPS ads.txt entry points, robots.txt and sitemap checks passed."
+          # Verify the two API-backed public discovery pages were actually published,
+          # not merely that the homepage and AdSense files are reachable.
+          fetch_page 'https://www.boztik.com/spotlight/' "$tmp_dir/spotlight.html" 'https://www.boztik.com/spotlight/'
+          grep -Fq 'Boztik Spotlight — Free Business Directory for Independents' "$tmp_dir/spotlight.html"
+          grep -Fq 'FREE BUSINESS DIRECTORY' "$tmp_dir/spotlight.html"
+          grep -Fq 'id="sp-grid"' "$tmp_dir/spotlight.html"
+          grep -Fq 'spotlight.js?v=16' "$tmp_dir/spotlight.html"
+          fetch_page 'https://www.boztik.com/spotlight/spotlight.js?v=16' "$tmp_dir/spotlight.js" 'https://www.boztik.com/spotlight/spotlight.js?v=16'
+
+          fetch_page 'https://www.boztik.com/stores.html' "$tmp_dir/stores.html" 'https://www.boztik.com/stores.html'
+          grep -Fq 'Boztik Stores | Original Designs & Wallpapers' "$tmp_dir/stores.html"
+          grep -Fq 'Know where your order is handled.' "$tmp_dir/stores.html"
+          grep -Fq 'id="store-promotion-grid"' "$tmp_dir/stores.html"
+          grep -Fq 'js/stores.js' "$tmp_dir/stores.html"
+          fetch_page 'https://www.boztik.com/js/stores.js' "$tmp_dir/stores.js" 'https://www.boztik.com/js/stores.js'
+
+          # Exercise the public read-only APIs used by those pages. The public
+          # Spotlight DTO must never leak moderator/application fields.
+          curl --fail --silent --show-error --connect-timeout 10 --max-time 30 \
+            'https://deliver-api.boztik.com/api/public/spotlight?limit=1' \
+            --output "$tmp_dir/spotlight-api.json"
+          curl --fail --silent --show-error --connect-timeout 10 --max-time 30 \
+            'https://deliver-api.boztik.com/api/public/promotions' \
+            --output "$tmp_dir/promotions-api.json"
+          python3 - "$tmp_dir/spotlight-api.json" "$tmp_dir/promotions-api.json" <<'PY'
+          import json
+          import sys
+
+          with open(sys.argv[1], encoding="utf-8") as handle:
+              spotlight = json.load(handle)
+          if not isinstance(spotlight, dict) or not isinstance(spotlight.get("profiles"), list):
+              raise SystemExit("Spotlight public API did not return a profiles array.")
+
+          forbidden = {
+              "status", "contact_email", "review_events", "review_notes",
+              "owner_token_hash", "owner_email", "application_token",
+          }
+          for profile in spotlight["profiles"]:
+              leaked = forbidden.intersection(profile)
+              if leaked:
+                  raise SystemExit("Spotlight public API exposed private fields: " + ", ".join(sorted(leaked)))
+          print(f"Spotlight public API OK: {len(spotlight['profiles'])} profile(s) in sample; no private fields.")
+
+          with open(sys.argv[2], encoding="utf-8") as handle:
+              promotions = json.load(handle)
+          if not isinstance(promotions, dict) or not isinstance(promotions.get("items"), list):
+              raise SystemExit("Public promotions API did not return an items array.")
+          for item in promotions["items"]:
+              if not all(isinstance(item.get(key), str) and item[key].strip()
+                         for key in ("title", "store", "cta_label", "destination_url", "image_url")):
+                  raise SystemExit("A public promotion is missing required display or destination data.")
+              if not isinstance(item.get("description"), str):
+                  raise SystemExit("A public promotion has an invalid description field.")
+          print(f"Public promotions API OK: {len(promotions['items'])} published item(s).")
+          PY
+
+          echo "Live homepage, AdSense entry points, crawler files, Spotlight, Stores and public discovery APIs passed."

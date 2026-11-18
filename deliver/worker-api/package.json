@@ -12,6 +12,7 @@
     "hash-password": "node scripts/hash-password.mjs",
     "test:e2e": "node scripts/e2e.mjs",
     "test:unit": "node scripts/milestone-test.mts",
+    "test:delivery-list": "tsx scripts/delivery-list-params-test.mts",
     "test:retention": "node scripts/page-view-retention-test.mts",
     "test:traffic-source": "node scripts/traffic-source-test.mts",
     "test:analytics": "node scripts/analytics-pipeline-test.mts",
@@ -21,7 +22,7 @@
     "test:spotlight-email": "tsx scripts/spotlight-email-test.mts",
     "test:spotlight-form": "node scripts/spotlight-form-test.mjs",
     "test:spotlight-media": "tsx scripts/spotlight-media-test.mts && tsx scripts/spotlight-media-routes-test.mts && tsx scripts/spotlight-media-client-test.mts",
-    "test": "npm run test:unit && npm run test:retention && npm run test:traffic-source && npm run test:analytics && npm run test:client && npm run test:spotlight && npm run test:spotlight-admin && npm run test:spotlight-email && npm run test:spotlight-form && npm run test:spotlight-media && npm run test:spotlight-owner && npm run test:spotlight-analytics && npm run test:spotlight-seo",
+    "test": "npm run test:unit && npm run test:delivery-list && npm run test:retention && npm run test:traffic-source && npm run test:analytics && npm run test:client && npm run test:spotlight && npm run test:spotlight-admin && npm run test:spotlight-email && npm run test:spotlight-form && npm run test:spotlight-media && npm run test:spotlight-owner && npm run test:spotlight-analytics && npm run test:spotlight-seo",
     "test:spotlight-owner": "tsx scripts/spotlight-owner-test.mts",
     "test:spotlight-analytics": "tsx scripts/spotlight-analytics-test.mts && tsx scripts/spotlight-analytics-client-test.mts",
     "test:spotlight-seo": "tsx scripts/spotlight-seo-test.mts"
