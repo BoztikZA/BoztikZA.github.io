@@ -29,6 +29,7 @@ import { createDeliveryReactionController } from "./animations/reactions.js";
 import { applyDeliveryTheme } from "./animations/theme.js";
 import { initShare } from "./share.js?v=spotlight-client-init-1";
 import { initSpotlightInvitation } from "./spotlight-invitation.js?v=spotlight-site-wide-3";
+import { initServicePopup } from "../../js/service-popup.js?v=20261119a";
 
 
 /* =========================================================
@@ -150,12 +151,6 @@ const els = {
     $("deliver-private-requests"),
 
 
-  supportModal:
-    $("deliver-support-modal"),
-
-  supportModalClose:
-    $("deliver-support-modal-close"),
-
   supportTop:
     $("deliver-support-compact-top"),
 
@@ -197,7 +192,6 @@ function applyPhotoshopBattlesPresentation() {
   hide(els.supportDetails);
   hide(els.expiredSupport);
   hide(els.support);
-  hide(els.supportModal);
   hide(els.privateRequests);
   // Keep the footer visible on every delivery type; the support column
   // remains hidden below, preserving the non-commercial support treatment.
@@ -205,140 +199,6 @@ function applyPhotoshopBattlesPresentation() {
 
   document.body.classList.add("is-photoshop-battles");
 }
-
-
-/* =========================================================
-   SUPPORT / TIP POPUP
-========================================================= */
-
-const SUPPORT_POPUP_STORAGE_KEY =
-  "boztik-deliver-support-shown";
-
-
-function hasSeenSupportPopup() {
-
-  try {
-
-    return (
-      localStorage.getItem(
-        SUPPORT_POPUP_STORAGE_KEY
-      ) === "1"
-    );
-
-  } catch {
-
-    /*
-      If storage is unavailable, treat the popup
-      as already seen.
-
-      The download must never be affected by
-      localStorage problems.
-    */
-
-    return true;
-
-  }
-
-}
-
-
-function markSupportPopupSeen() {
-
-  try {
-
-    localStorage.setItem(
-      SUPPORT_POPUP_STORAGE_KEY,
-      "1"
-    );
-
-  } catch {
-
-    /*
-      Non-critical.
-    */
-
-  }
-
-}
-
-
-function showSupportPopup() {
-
-  const modal =
-    els.supportModal;
-
-
-  if (
-    !modal ||
-    typeof modal.showModal !== "function" ||
-    modal.open
-  ) {
-
-    return;
-
-  }
-
-
-  modal.showModal();
-
-}
-
-
-function wireSupportPopup() {
-
-  const modal =
-    els.supportModal;
-
-
-  if (!modal) {
-
-    return;
-
-  }
-
-
-  if (
-    els.supportModalClose
-  ) {
-
-    els.supportModalClose.addEventListener(
-      "click",
-      () => {
-
-        modal.close();
-
-      }
-    );
-
-  }
-
-
-  /*
-    Clicking outside the support card closes
-    the dialog.
-  */
-
-  modal.addEventListener(
-    "click",
-    event => {
-
-      if (
-        event.target === modal
-      ) {
-
-        modal.close();
-
-      }
-
-    }
-  );
-
-}
-
-
-wireSupportPopup();
-
-// Tip links are now available in the persistent support card; no duplicate post-download prompt.
 
 
 /* =========================================================
@@ -4229,6 +4089,16 @@ async function init() {
 
     if (isPhotoshopBattlesDelivery) {
       applyPhotoshopBattlesPresentation();
+    }
+
+    // Show the shared services invitation only after a normal delivery is
+    // usable. Admin previews and the intentionally support-free
+    // PhotoshopBattles presentation remain undisturbed.
+    if (!isAdminPreview && !isPhotoshopBattlesDelivery) {
+      initServicePopup({
+        delay: 700,
+        servicesUrl: "../services.html"
+      });
     }
 
     /*
