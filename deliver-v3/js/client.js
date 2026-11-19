@@ -28,8 +28,7 @@ import {
 import { createDeliveryReactionController } from "./animations/reactions.js";
 import { applyDeliveryTheme } from "./animations/theme.js";
 import { initShare } from "./share.js?v=spotlight-client-init-1";
-import { initSpotlightInvitation } from "./spotlight-invitation.js?v=spotlight-site-wide-3";
-import { initServicePopup } from "../../js/service-popup.js?v=20261119a";
+import { initSpotlightInvitation } from "./spotlight-invitation.js?v=spotlight-site-wide-5";
 
 
 /* =========================================================
@@ -4089,16 +4088,6 @@ async function init() {
 
     if (isPhotoshopBattlesDelivery) {
       applyPhotoshopBattlesPresentation();
-    }
-
-    // Show the shared services invitation only after a normal delivery is
-    // usable. Admin previews and the intentionally support-free
-    // PhotoshopBattles presentation remain undisturbed.
-    if (!isAdminPreview && !isPhotoshopBattlesDelivery) {
-      initServicePopup({
-        delay: 700,
-        servicesUrl: "../services.html"
-      });
     }
 
     /*
