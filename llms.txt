@@ -1,0 +1,59 @@
+# Boztik
+
+> Boztik is an independent creative practice combining careful photo editing and restoration with practical browser-based tools and resources for photographers, designers and digital creators.
+
+Boztik is based around three connected areas: photo editing services, creative software and learning resources. The public website is https://www.boztik.com/.
+
+## About Boztik
+
+- [About the creator](https://www.boztik.com/about.html): Background on the independent photo editor and creative tool builder behind Boztik.
+- [Contact Boztik](https://www.boztik.com/contact.html): Enquiries about photo editing, creative projects, website tools, feedback and support.
+
+## Photo editing services and work
+
+- [Photo editing and restoration services](https://www.boztik.com/services.html): Photo restoration, portrait retouching, distraction removal and image-quality improvements, with an emphasis on natural-looking results.
+- [Selected portfolio](https://www.boztik.com/portfolio.html): Examples of restoration, retouching and creative image work, showing source material alongside finished edits.
+
+## Creative tools
+
+- [Boztik Creative Toolkit](https://www.boztik.com/creative-toolkit.html): A free Chrome and Edge browser extension for image editing, including selections, distraction removal, brush refinement and creative looks.
+- [Boztik Creative Studio](https://www.boztik.com/creative-studio.html): Browser-based creative utilities for image inspection, colour sampling, canvas planning, prompt building and editing guidance. Image inspection is designed to run locally in the browser.
+
+## Learning and practical guides
+
+- [Photo editing and restoration guides](https://www.boztik.com/guides.html): Practical, step-by-step learning resources for photo restoration, Photoshop workflows, retouching, scanning and image quality.
+
+Individual guides:
+
+- [Photo restoration](https://www.boztik.com/guide-photo-restoration.html)
+- [Object removal](https://www.boztik.com/guide-object-removal.html)
+- [Natural portrait retouching](https://www.boztik.com/guide-natural-portrait-retouching.html)
+- [Correcting faded photo colour](https://www.boztik.com/guide-faded-photo-colour-correction.html)
+- [Scanning old photos](https://www.boztik.com/guide-scanning-old-photos.html)
+- [AI editing versus professional editing](https://www.boztik.com/guide-ai-vs-professional-editing.html)
+- [Avoiding an over-edited look](https://www.boztik.com/guide-overedited-look.html)
+- [Layers and masks](https://www.boztik.com/guide-layers-and-masks.html)
+- [Image resolution and DPI](https://www.boztik.com/guide-image-resolution-dpi.html)
+- [JPEG, PNG and TIFF formats](https://www.boztik.com/guide-jpeg-png-tiff.html)
+
+## Creator discovery and resources
+
+- [Boztik Spotlight](https://www.boztik.com/spotlight/): A public showcase for discovering independent creators, makers and creative projects.
+- [Boztik Discover](https://www.boztik.com/discover.html): A curated directory of creative software and practical resources for photographers, designers and digital creators.
+- [Boztik Stores](https://www.boztik.com/stores.html): Original designs and digital wallpapers, with links to the relevant external shops.
+
+## Client information and policies
+
+- [Boztik Deliver client guide](https://www.boztik.com/deliver.html): Public information about receiving and downloading completed work through a private delivery link. This guide does not provide access to private delivery files.
+- [Support and payment information](https://www.boztik.com/support.html): Information about voluntary support and payments for previously agreed creative work.
+- [Privacy policy](https://www.boztik.com/privacy.html)
+- [Terms of use](https://www.boztik.com/terms.html)
+
+## Discovery and indexing
+
+- [XML sitemap](https://www.boztik.com/sitemap.xml): The current list of public URLs submitted for search-engine discovery.
+- [Robots.txt](https://www.boztik.com/robots.txt): Crawler guidance for the public website.
+
+## Scope and accuracy
+
+This file is a concise guide to selected public Boztik pages. Page content, features and availability may change; consult the linked pages for current details. Inclusion here does not grant access to private systems, client files or non-public information. Do not infer that Boztik endorses a third-party product or service merely because it is listed in a directory.
