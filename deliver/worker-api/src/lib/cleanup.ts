@@ -18,6 +18,7 @@ import {
   releaseStoredPending,
 } from "./storage";
 import { processSpotlightEmailOutbox } from "./spotlight-email";
+import { FEATURED_OPEN_ENDED_UNTIL } from "./spotlight-featured";
 
 const nowSec = () => Math.floor(Date.now() / 1000);
 
@@ -284,7 +285,8 @@ export async function cleanupSpotlightExpiry(env: Env, max = 25): Promise<Spotli
        FROM spotlight_profiles
       WHERE (application_status IN ('new','under_review','approved','declined','expired')
              AND review_expires_at IS NOT NULL AND review_expires_at<=?)
-         OR (status='published' AND listing_expires_at IS NOT NULL AND listing_expires_at<=?)
+         OR (status='published' AND listing_expires_at IS NOT NULL AND listing_expires_at<=?
+             AND COALESCE(featured_until,0)<${FEATURED_OPEN_ENDED_UNTIL})
       ORDER BY COALESCE(review_expires_at,listing_expires_at)
       LIMIT ?`,
   ).bind(timestamp, timestamp, max).all<{ id: string; application_status: string; status: string }>();

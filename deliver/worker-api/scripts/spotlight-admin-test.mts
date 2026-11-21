@@ -316,8 +316,10 @@ console.log("Application review is separate from publishing and tracks unread, a
   assert.equal(row.application_status, "approved");
   assert.ok(row.review_expires_at > Math.floor(Date.now() / 1000));
 
+  // Publishing starts the 72-hour listing term. (Featuring is a separate, explicit action: a featured profile is
+  // exempt from the term while it holds the open-ended placement - see spotlight-featured-test.mts.)
   const publish = await handleSpotlightAdmin(
-    adminRequest("PATCH", { status: "published", featured: true }),
+    adminRequest("PATCH", { status: "published" }),
     "profile/" + row.id,
     env,
   );
