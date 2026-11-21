@@ -1,6 +1,7 @@
 import { config } from "./config.js";
 import { authHeaders, getSession, onAuthChange } from "./auth.js";
 import { prepareSpotlightImage } from "../../spotlight/image-processing.js";
+import { createFeaturedPanel } from "./spotlight-featured-panel.js?v=1";
 import { spotlightProfileSaveRequest, normaliseWebsiteUrl, validateSpotlightDraft, publishGateState, describeSaveError } from "./spotlight-profile-request.mjs?v=2";
 
 const $ = id => document.getElementById(id);
@@ -83,6 +84,10 @@ const api = async (path, init = {}) => {
 /* Queue filters (client-side over the already-loaded profiles; nothing is hidden from the data, only from view). */
 const QUEUE_FILTERS = [
   ["all", "All"],
+  ["pending", "Pending review"],
+  ["community", "Approved community"],
+  ["featured", "Currently featured"],
+  ["rejected", "Rejected"],
   ["action", "Needs action"],
   ["waiting", "Waiting on applicant"],
   ["approved", "Approved, not live"],
@@ -93,6 +98,10 @@ let queueFilter = "all";
 const isLive = p => p.status === "published" && (!p.listing_expires_at || p.listing_expires_at * 1000 > Date.now());
 function matchesQueueFilter(p, filter = queueFilter) {
   switch (filter) {
+    case "pending": return ["new", "under_review"].includes(p.application_status);
+    case "community": return isLive(p) && !p.featured;
+    case "featured": return isLive(p) && Boolean(p.featured);
+    case "rejected": return p.application_status === "declined";
     case "action": return (p.application_status === "new" || (p.application_status === "under_review" && !p.awaiting_applicant));
     case "waiting": return Boolean(p.awaiting_applicant);
     case "approved": return p.application_status === "approved" && p.status !== "published";
@@ -112,6 +121,15 @@ filterBar.addEventListener("click", event => {
   queueFilter = button.dataset.filter;
   render();
 });
+// Homepage featured-creator panel: the only place the main featured creator is changed (preview + confirm).
+const featuredPanel = createFeaturedPanel({
+  api,
+  getProfiles: () => profiles,
+  reload: () => load({ silent: true }),
+  notify: message => { feedback.textContent = message; },
+  anchor: list.closest(".cc-card"),
+});
+featuredPanel.panel.addEventListener("spotlight-filter", event => { queueFilter = event.detail; render(); list.scrollIntoView({ behavior: "smooth", block: "start" }); });
 function renderFilterBar() {
   filterBar.innerHTML = QUEUE_FILTERS.map(([key, label]) => {
     const count = profiles.filter(p => matchesQueueFilter(p, key)).length;
@@ -146,6 +164,7 @@ function render() {
     return "";
   };
   renderFilterBar();
+  featuredPanel.render();
   const visible = profiles.filter(p => matchesQueueFilter(p));
   list.innerHTML = visible.length ? visible.map(p => `
     <article class="sp-admin-row">
@@ -166,7 +185,7 @@ function render() {
         <button class="cc-btn" data-action="edit" data-id="${esc(p.id)}">Edit profile</button>
         ${p.status === "published" || p.completed_plays !== undefined ? `<button class="cc-btn" data-action="stats" data-id="${esc(p.id)}">Analytics</button>` : ""}
         ${reviewActions(p)}
-        ${p.status === "published" && (!p.listing_expires_at || p.listing_expires_at * 1000 > Date.now()) ? (p.featured ? `<button class="cc-btn" data-action="unfeature" data-id="${esc(p.id)}">Remove feature</button>` : `<button class="cc-btn" data-action="feature" data-id="${esc(p.id)}">Feature 24h</button>`) : ""}
+        ${p.status === "published" && (!p.listing_expires_at || p.listing_expires_at * 1000 > Date.now()) ? (p.featured ? `<button class="cc-btn" data-action="unfeature" data-id="${esc(p.id)}">Remove feature</button>` : `<button class="cc-btn" data-action="feature" data-id="${esc(p.id)}">Preview &amp; feature…</button>`) : ""}
         <button class="cc-btn sp-delete" data-action="delete" data-id="${esc(p.id)}">Delete</button>
       </div>
     </article>`).join("") : profiles.length ? "<p class='cc-muted'>Nothing matches this filter.</p>" : "<p class='cc-muted'>No submissions yet. New entries will appear here for review.</p>";
@@ -689,6 +708,8 @@ list.addEventListener("click", async event => {
     loadStats(30);
     return;
   }
+  if (action === "feature") { featuredPanel.open(id, button); return; }
+  if (action === "unfeature") { featuredPanel.remove(id); return; }
   if (action === "edit") { openEditor(profile); return; }
   if (action === "review") { openReviewModal(profile); return; }
   if (action === "delete" && !confirm("Permanently delete this profile and its analytics? This cannot be undone.")) return;
@@ -723,8 +744,6 @@ list.addEventListener("click", async event => {
     else if (action === "approve") feedback.textContent = "Application approved. Publish it separately within 72 hours.";
     else if (action === "mark-read") feedback.textContent = "Application marked as read.";
     else if (action === "publish") feedback.textContent = "✓ Profile is live on the Boztik Spotlight directory for 72 hours.";
-    else if (action === "feature") feedback.textContent = "✓ Homepage feature is active for 24 hours.";
-    else if (action === "unfeature") feedback.textContent = "Homepage feature removed.";
   } catch (error) {
     feedback.textContent = error.message;
     button.disabled = false;
@@ -745,15 +764,14 @@ $("sp-admin-publish").addEventListener("click", async () => {
     const result = await api("/api/admin/spotlight/profile/" + encodeURIComponent(id), {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "published", featured: $("sp-profile-feature").checked })
+      // Publishing never changes who is featured; use the Main featured creator panel for that.
+      body: JSON.stringify({ status: "published" })
     });
     if (result?.profile?.status !== "published") throw new Error("The server did not confirm that the profile is live. Refresh and check its status.");
     await load();
     const publishedProfile = profiles.find(item => item.id === id);
     if (publishedProfile) updatePublicationEmail(publishedProfile);
-    showFormStatus("success", $("sp-profile-feature").checked
-      ? "✓ " + name + " is live on Boztik and featured on the homepage for 24 hours."
-      : "✓ " + name + " is now live on the Boztik Spotlight directory.");
+    showFormStatus("success", "✓ " + name + " is now live in the Boztik Spotlight directory. The homepage featured creator was not changed.");
     button.textContent = "Apply live settings";
   } catch (error) {
     showFormStatus("error", "Could not publish: " + describeSaveError(error));
