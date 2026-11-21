@@ -1,0 +1,216 @@
+/* ==========================================================================
+   Boztik Spotlight: homepage "Featured creator" + "Discover More Creators".
+   Loaded after spotlight-premium.css. Additive: nothing in the earlier files is changed.
+   Brand: dark surfaces, #8eff3d accent, subtle borders, restrained glow.
+   ========================================================================== */
+
+/* ---------- Stack: one hero, then the discovery strip ---------- */
+.hm-spotlight-grid.hm-spotlight-grid--stacked {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(36px, 5vw, 56px);
+}
+.hm-spotlight-grid--stacked > .hm-spotlight-card--hero { grid-column: auto; width: 100%; }
+
+/* Hero: editorial, with the creator's own artwork blurred into the backdrop. */
+.hm-spotlight-card--hero { position: relative; isolation: isolate; overflow: hidden; }
+.hm-spotlight-card--hero .hm-spotlight-media { overflow: hidden; }
+.hm-spotlight-card--hero .hm-spotlight-media::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  z-index: 0;
+  background: var(--hm-art) center / cover no-repeat;
+  filter: blur(46px) saturate(1.25) brightness(.55);
+  opacity: .55;
+  pointer-events: none;
+}
+.hm-spotlight-card--hero .hm-spotlight-image-link { position: relative; z-index: 1; }
+.hm-spotlight-card--hero .hm-spotlight-gallery-controls { z-index: 2; }
+.hm-spotlight-card--hero .hm-spotlight-image { background: transparent; }
+.hm-spotlight-card--hero .hm-spotlight-card-content h3 {
+  font: 800 clamp(1.7rem, 3.2vw, 2.55rem)/1.08 "Plus Jakarta Sans", Inter, sans-serif;
+  letter-spacing: -.035em;
+  margin: 10px 0 12px;
+}
+.hm-spotlight-card--hero .hm-spotlight-card-content h3 a { color: #f6fff4; text-decoration: none; }
+.hm-spotlight-card--hero .hm-spotlight-card-content h3 a:hover { color: #b5ff8b; }
+.hm-spotlight-card--hero .hm-spotlight-tagline { font-size: 1.04rem; color: #e9f2e6; }
+.hm-spotlight-card--hero .hm-spotlight-description { -webkit-line-clamp: 5; line-clamp: 5; }
+@media (prefers-reduced-motion: no-preference) {
+  .hm-spotlight-card--hero { animation: hm-hero-in .6s cubic-bezier(.2,.7,.2,1) both; }
+  @keyframes hm-hero-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+}
+
+/* "No featured creator right now" placeholder keeps the hero's footprint calm. */
+.hm-spotlight-empty--featured { min-height: 0; }
+
+/* ---------- Discover More Creators ---------- */
+.hm-discover {
+  /* Size to the column, never to the scrolling track's content width. */
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+.hm-discover-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px 28px;
+  margin-bottom: 16px;
+}
+.hm-discover-head h3 {
+  margin: 0 0 6px;
+  color: #f6fff4;
+  font: 800 clamp(1.25rem, 2.2vw, 1.6rem)/1.15 "Plus Jakarta Sans", Inter, sans-serif;
+  letter-spacing: -.025em;
+}
+.hm-discover-head p { margin: 0; max-width: 560px; color: #a5b1aa; font-size: .88rem; line-height: 1.65; }
+.hm-discover-controls { display: flex; flex: none; align-items: center; gap: 8px; }
+.hm-discover-arrow {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 50%;
+  background: rgba(255,255,255,.03);
+  color: #dfeedb;
+  font: 700 1rem/1 Inter, sans-serif;
+  cursor: pointer;
+  transition: border-color .2s, background .2s, opacity .2s;
+}
+.hm-discover-arrow:hover:not(:disabled) { border-color: rgba(142,255,61,.55); background: rgba(142,255,61,.09); color: #b5ff8b; }
+.hm-discover-arrow:disabled { opacity: .3; cursor: default; }
+.hm-discover-arrow:focus-visible,
+.hm-discover-all:focus-visible,
+.hm-discover-link:focus-visible,
+.hm-discover-name a:focus-visible,
+.hm-discover-track:focus-visible { outline: 3px solid rgba(142,255,61,.72); outline-offset: 3px; }
+.hm-discover-all {
+  margin-left: 6px;
+  color: #b5ff8b;
+  font: 700 .78rem/1 Inter, sans-serif;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.hm-discover-all:hover { text-decoration: underline; text-underline-offset: 4px; }
+
+/* The strip: native horizontal scroll with snap (touch, trackpad, wheel and keyboard all work). */
+.hm-discover-viewport { position: relative; }
+.hm-discover-viewport::before,
+.hm-discover-viewport::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 14px;
+  z-index: 2;
+  width: 38px;
+  pointer-events: none;
+  transition: opacity .25s;
+}
+.hm-discover-viewport::before { left: 0; background: linear-gradient(90deg, #0a1011, transparent); }
+.hm-discover-viewport::after { right: 0; background: linear-gradient(270deg, #0a1011, transparent); }
+.hm-discover-viewport.is-start::before,
+.hm-discover-viewport.is-end::after { opacity: 0; }
+.hm-discover-track {
+  display: flex;
+  gap: 12px;
+  margin: 0;
+  padding: 2px 2px 14px;
+  list-style: none;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: 2px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(142,255,61,.35) transparent;
+}
+.hm-discover-track::-webkit-scrollbar { height: 6px; }
+.hm-discover-track::-webkit-scrollbar-thumb { background: rgba(142,255,61,.3); border-radius: 999px; }
+@media (prefers-reduced-motion: no-preference) { .hm-discover-track { scroll-behavior: smooth; } }
+.hm-discover-item { flex: 0 0 auto; width: clamp(250px, 26vw, 292px); scroll-snap-align: start; }
+
+/* Compact card: roughly a quarter of the hero's height. */
+.hm-discover-card {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  gap: 14px;
+  min-height: 108px;
+  padding: 14px;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 12px;
+  background: linear-gradient(145deg, #141c19, #0d1314);
+  transition: border-color .2s, transform .2s;
+}
+.hm-discover-card:hover { border-color: rgba(142,255,61,.38); transform: translateY(-2px); }
+@media (prefers-reduced-motion: reduce) { .hm-discover-card:hover { transform: none; } }
+.hm-discover-thumb {
+  display: grid;
+  flex: none;
+  width: 68px;
+  height: 68px;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 10px;
+  background: radial-gradient(circle at 50% 40%, rgba(142,255,61,.14), transparent 70%), #101815;
+}
+.hm-discover-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.hm-discover-initials {
+  color: #b5ff8b;
+  font: 800 1.15rem/1 "Plus Jakarta Sans", Inter, sans-serif;
+  letter-spacing: .04em;
+}
+.hm-discover-body { display: flex; min-width: 0; flex: 1; flex-direction: column; gap: 3px; }
+.hm-discover-category {
+  color: #9eea76;
+  font: 800 .6rem/1.2 Inter, sans-serif;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+.hm-discover-name { margin: 0; font: 700 .98rem/1.25 "Plus Jakarta Sans", Inter, sans-serif; overflow-wrap: anywhere; }
+.hm-discover-name a { color: #f3f7f3; text-decoration: none; }
+.hm-discover-name a:hover { color: #b5ff8b; }
+.hm-discover-blurb {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: #a5b1aa;
+  font-size: .76rem;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+.hm-discover-link {
+  margin-top: 4px;
+  color: #b5ff8b;
+  font: 700 .72rem/1.2 Inter, sans-serif;
+  text-decoration: none;
+  opacity: .85;
+}
+.hm-discover-link:hover { opacity: 1; text-decoration: underline; text-underline-offset: 3px; }
+.hm-discover-card--cta { border-style: dashed; background: rgba(255,255,255,.02); }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  .hm-discover-item { width: clamp(240px, 42vw, 280px); }
+}
+@media (max-width: 680px) {
+  .hm-discover-head { flex-direction: column; align-items: flex-start; }
+  /* Touch devices scroll by swiping; the arrow buttons are redundant there. */
+  .hm-discover-arrow { display: none; }
+  .hm-discover-all { margin-left: 0; }
+  .hm-discover-item { width: min(78vw, 280px); }
+  .hm-discover-viewport::before,
+  .hm-discover-viewport::after { width: 22px; }
+}
+@media (hover: none) { .hm-discover-arrow { display: none; } }

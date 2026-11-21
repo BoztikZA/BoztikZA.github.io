@@ -1,66 +1,19 @@
-import { socialLinksMarkup } from "./social-links.js";
+import {
+  API_BASE as API, heroCardMarkup, discoverSectionMarkup, noFeaturedMarkup, profileImageUrls, initials,
+} from "./home-cards.js";
 
+/**
+ * Homepage Spotlight.
+ *  - The main featured creator is ONLY a profile an administrator explicitly featured (profile.featured === true).
+ *  - Every other approved, published profile appears in the compact "Discover More Creators" strip.
+ *  - Pending, declined and unpublished applications are never returned by the public API, so they can never appear.
+ */
 (() => {
   const host = document.getElementById("hm-spotlight-grid");
   if (!host) return;
 
-  const API = "https://deliver-api.boztik.com/api/public/spotlight";
   let countdownInterval = null;
-
-  const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, char => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-  }[char]));
-
-  const label = value => String(value || "")
-    .replace(/-/g, " ")
-    .replace(/\b\w/g, char => char.toUpperCase());
-
-  function initials(name) {
-    return String(name || "")
-      .trim()
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map(part => part[0])
-      .join("")
-      .toUpperCase() || "B";
-  }
-
-  function safeProfileImageUrl(value) {
-    if (typeof value !== "string" || value.length > 2048) return "";
-    try {
-      const url = new URL(value);
-      if (url.protocol !== "https:"
-        || url.hostname !== "deliver-api.boztik.com"
-        || !url.pathname.startsWith("/api/public/spotlight/image/")) return "";
-      return url.href;
-    } catch {
-      return "";
-    }
-  }
-
-  function safeWebsiteUrl(value) {
-    if (typeof value !== "string" || value.length > 2048) return "";
-    try {
-      const url = new URL(value);
-      if (url.protocol !== "https:" || url.username || url.password) return "";
-      return url.href;
-    } catch {
-      return "";
-    }
-  }
-
-  function profileImageUrls(profile) {
-    const images = Array.isArray(profile.images) ? profile.images
-      .map(image => ({ position: Number(image?.position), url: safeProfileImageUrl(image?.url) }))
-      .filter(image => image.url)
-      .sort((a, b) => a.position - b.position) : [];
-    if (!images.some(image => image.position === 0)) {
-      const primary = safeProfileImageUrl(profile.image_url);
-      if (primary) images.unshift({ position: 0, url: primary });
-    }
-    return [...new Map(images.map(image => [image.url, image])).values()].map(image => image.url);
-  }
+  const DISCOVER_LIMIT = 24;
 
   function trackFeaturedImpression(card) {
     if (!card || card.dataset.impressionSent) return;
@@ -68,67 +21,9 @@ import { socialLinksMarkup } from "./social-links.js";
     fetch(API + "/impression", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        event_id: crypto.randomUUID().replace(/-/g, ""),
-        profile_id: card.dataset.profileId
-      }),
+      body: JSON.stringify({ event_id: crypto.randomUUID().replace(/-/g, ""), profile_id: card.dataset.profileId }),
       keepalive: true
     }).catch(() => {});
-  }
-
-  function cardMarkup(profile) {
-    const name = String(profile.display_name || "").trim();
-    const profilePath = "spotlight/profile.html?slug=" + encodeURIComponent(profile.slug);
-    const featuredUntil = Number(profile.featured_until) || 0;
-    const featured = profile.featured === true && featuredUntil > Math.floor(Date.now() / 1000);
-    const category = label(profile.category) || "Spotlight profile";
-    const imageUrls = profileImageUrls(profile);
-    const imageUrl = imageUrls[0] || "";
-    const websiteUrl = safeWebsiteUrl(profile.website_url);
-    const shareUrl = API + "/share/" + encodeURIComponent(profile.slug);
-    const socialLinks = socialLinksMarkup(profile.social_links, name, "hm-spotlight-social-link");
-    const image = imageUrl
-      ? `<img class="is-active" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(name)} logo or profile photograph" width="640" height="420" loading="lazy" decoding="async" data-layer="0"><img alt="" width="640" height="420" loading="lazy" decoding="async" data-layer="1" aria-hidden="true">`
-      : `<span class="hm-spotlight-image-fallback" role="img" aria-label="Initials for ${escapeHtml(name)}">${escapeHtml(initials(name))}</span><span class="hm-spotlight-image-note">${escapeHtml(category)}</span>`;
-
-    return `
-      <article class="hm-spotlight-card" data-profile-id="${escapeHtml(profile.id)}" data-featured="${featured ? "1" : "0"}">
-        <div class="hm-spotlight-media" data-image-count="${imageUrls.length}">
-          <a class="hm-spotlight-image-link" href="${profilePath}" aria-label="View ${escapeHtml(name)}'s Boztik Spotlight profile">
-            <div class="hm-spotlight-image">
-              ${image}
-              ${featured ? `<span class="hm-spotlight-featured-label"><span aria-hidden="true">★</span> Today's feature</span><span class="bz-spot-seal"><span class="bz-spot-seal__tick" aria-hidden="true">✓</span> Hand-reviewed</span>` : ""}
-            </div>
-          </a>
-          ${imageUrls.length > 1 ? `<div class="hm-spotlight-gallery-controls" role="group" aria-label="${escapeHtml(name)} image gallery">${imageUrls.map((_, index) => `<button type="button" data-gallery-index="${index}" aria-label="Show image ${index + 1} of ${imageUrls.length}" aria-pressed="${index === 0}" class="${index === 0 ? "is-active" : ""}"></button>`).join("")}</div>` : ""}
-        </div>
-        ${featured ? `<p class="hm-spotlight-countdown" data-countdown="${featuredUntil}">Featured for <time>--:--:--</time> more</p>` : ""}
-        <div class="hm-spotlight-card-content">
-          <span class="hm-spotlight-category">${escapeHtml(category)}</span>
-          <h3><a href="${profilePath}">${escapeHtml(name)}</a></h3>
-          ${profile.tagline ? `<p class="hm-spotlight-tagline">${escapeHtml(profile.tagline)}</p>` : ""}
-          <p class="hm-spotlight-description">${escapeHtml(profile.description)}</p>
-          ${socialLinks ? `<div class="hm-spotlight-socials" aria-label="Social profiles">${socialLinks}</div>` : ""}
-          <div class="hm-spotlight-actions">
-            <a class="hm-spotlight-profile-link" href="${profilePath}">See what ${escapeHtml(name)} offers <span aria-hidden="true">↗</span></a>
-            ${websiteUrl ? `<a class="hm-spotlight-website-link" href="${escapeHtml(websiteUrl)}" target="_blank" rel="noopener noreferrer" data-outbound>${featured ? "Visit " + escapeHtml(name) : "Visit website"} <span aria-hidden="true">↗</span></a>` : ""}
-            <button class="hm-spotlight-share" type="button" data-share-url="${escapeHtml(shareUrl)}" data-share-title="${escapeHtml(name)}">Share profile</button>
-          </div>
-          <span class="hm-spotlight-share-status" role="status" aria-live="polite"></span>
-        </div>
-      </article>`;
-  }
-
-  function openSlotMarkup(span) {
-    return `
-      <article class="hm-spotlight-card hm-spotlight-slot" data-span="${span}">
-        <div class="hm-spotlight-card-content">
-          <span class="hm-spotlight-category">OPEN FEATURE SLOT</span>
-          <h3>Your business could be here</h3>
-          <p class="hm-spotlight-description">Get a Boztik profile with your logo, a clear description of what you sell or provide, and a direct link for customers to find you.</p>
-          <div class="hm-spotlight-actions"><a class="hm-spotlight-profile-link" href="spotlight/submit/">Apply for a feature <span aria-hidden="true">↗</span></a></div>
-        </div>
-      </article>`;
   }
 
   function updateCountdowns() {
@@ -137,21 +32,11 @@ import { socialLinksMarkup } from "./social-links.js";
       const left = Math.max(0, Number(element.dataset.countdown || 0) - now);
       const time = element.querySelector("time");
       if (time) {
-        const hours = Math.floor(left / 3600);
-        const minutes = Math.floor(left % 3600 / 60);
-        const seconds = left % 60;
-        time.textContent = [hours, minutes, seconds].map(value => String(value).padStart(2, "0")).join(":");
+        time.textContent = [Math.floor(left / 3600), Math.floor(left % 3600 / 60), left % 60]
+          .map(value => String(value).padStart(2, "0")).join(":");
       }
-      if (!left) {
-        const card = element.closest(".hm-spotlight-card");
-        if (card) {
-          card.dataset.featured = "0";
-          card.querySelector(".hm-spotlight-featured-label")?.remove();
-        }
-        element.remove();
-      }
+      if (!left) element.remove();
     });
-
     if (!host.querySelector("[data-countdown]") && countdownInterval !== null) {
       window.clearInterval(countdownInterval);
       countdownInterval = null;
@@ -161,17 +46,10 @@ import { socialLinksMarkup } from "./social-links.js";
   function trackFeaturedImpressions() {
     const cards = host.querySelectorAll('[data-featured="1"]');
     if (!cards.length) return;
-    if (!("IntersectionObserver" in window)) {
-      cards.forEach(trackFeaturedImpression);
-      return;
-    }
-
+    if (!("IntersectionObserver" in window)) { cards.forEach(trackFeaturedImpression); return; }
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          trackFeaturedImpression(entry.target);
-          observer.unobserve(entry.target);
-        }
+        if (entry.isIntersecting) { trackFeaturedImpression(entry.target); observer.unobserve(entry.target); }
       });
     }, { threshold: 0.4 });
     cards.forEach(card => observer.observe(card));
@@ -209,11 +87,8 @@ import { socialLinksMarkup } from "./social-links.js";
       const controls = [...card.querySelectorAll("[data-gallery-index]")];
       const layers = [...card.querySelectorAll("[data-layer]")];
       if (urls.length < 2 || layers.length !== 2) return;
-      let activeIndex = 0;
-      let activeLayer = 0;
-      let paused = false;
+      let activeIndex = 0, activeLayer = 0, paused = false, isLoading = false;
       let imageFailed = media.dataset.galleryError === "1";
-      let isLoading = false;
       const select = index => {
         if (index === activeIndex || !urls[index] || isLoading) return;
         isLoading = true;
@@ -250,15 +125,37 @@ import { socialLinksMarkup } from "./social-links.js";
       media.addEventListener("pointerenter", () => { paused = true; });
       media.addEventListener("pointerleave", () => { paused = false; });
       media.addEventListener("focusin", () => { paused = true; });
-      media.addEventListener("focusout", event => {
-        if (!media.contains(event.relatedTarget)) paused = false;
-      });
+      media.addEventListener("focusout", event => { if (!media.contains(event.relatedTarget)) paused = false; });
       if (!reducedMotion) {
-        window.setInterval(() => {
-          if (!paused && !imageFailed) select((activeIndex + 1) % urls.length);
-        }, 4500);
+        window.setInterval(() => { if (!paused && !imageFailed) select((activeIndex + 1) % urls.length); }, 4500);
       }
     });
+  }
+
+  /** Arrow buttons + edge state for the horizontal strip. Native scrolling (touch, wheel, keyboard) stays untouched. */
+  function bindDiscoverStrip() {
+    const viewport = host.querySelector(".hm-discover-viewport");
+    const track = host.querySelector(".hm-discover-track");
+    if (!viewport || !track) return;
+    const prev = host.querySelector('[data-discover-dir="-1"]');
+    const next = host.querySelector('[data-discover-dir="1"]');
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const sync = () => {
+      const max = track.scrollWidth - track.clientWidth - 2;
+      const atStart = track.scrollLeft <= 2;
+      const atEnd = track.scrollLeft >= max;
+      viewport.classList.toggle("is-start", atStart);
+      viewport.classList.toggle("is-end", atEnd);
+      if (prev) prev.disabled = atStart;
+      if (next) next.disabled = atEnd;
+    };
+    [prev, next].forEach(button => button?.addEventListener("click", () => {
+      const step = Math.max(240, Math.round(track.clientWidth * 0.8)) * Number(button.dataset.discoverDir);
+      track.scrollBy({ left: step, behavior: reducedMotion ? "auto" : "smooth" });
+    }));
+    track.addEventListener("scroll", () => window.requestAnimationFrame(sync), { passive: true });
+    window.addEventListener("resize", sync, { passive: true });
+    sync();
   }
 
   function showEmptyState() {
@@ -267,7 +164,7 @@ import { socialLinksMarkup } from "./social-links.js";
         <div class="bz-spot-preview__copy">
           <span class="hm-spotlight-category">BOZTIK BUSINESS SPOTLIGHT</span>
           <h3>No active featured profiles right now.</h3>
-          <p>Browse approved directory listings or submit your own profile for review. Featured placements appear here when an approved feature is active.</p>
+          <p>Browse approved directory listings or submit your own profile for review. A featured creator appears here when one has been selected.</p>
           <div class="hm-spotlight-empty-actions">
             <a class="hm-spotlight-profile-link" href="spotlight/">Browse the directory <span aria-hidden="true">↗</span></a>
             <a class="hm-spotlight-website-link" href="spotlight/submit/">Apply to be listed</a>
@@ -291,25 +188,27 @@ import { socialLinksMarkup } from "./social-links.js";
       </div>`;
   }
 
-  fetch(API + "?limit=3", { headers: { Accept: "application/json" } })
+  fetch(API + "?limit=" + DISCOVER_LIMIT, { headers: { Accept: "application/json" } })
     .then(response => {
       if (!response.ok) throw new Error("Spotlight is temporarily unavailable.");
       return response.json();
     })
     .then(data => {
       if (!data || !Array.isArray(data.profiles)) throw new Error("Spotlight returned an invalid profile list.");
-      const profiles = data.profiles
-        .filter(profile => profile && typeof profile === "object"
-          && typeof profile.display_name === "string" && profile.display_name.trim()
-          && typeof profile.slug === "string" && profile.slug)
-        .slice(0, 3);
+      const nowSeconds = Math.floor(Date.now() / 1000);
+      const valid = data.profiles.filter(profile => profile && typeof profile === "object"
+        && typeof profile.display_name === "string" && profile.display_name.trim()
+        && typeof profile.slug === "string" && profile.slug);
+      // Only an explicitly featured, still-active profile takes the main position. Nobody is promoted automatically.
+      const featured = valid.find(profile => profile.featured === true && Number(profile.featured_until) > nowSeconds) || null;
+      const others = valid.filter(profile => profile !== featured);
 
-      if (!profiles.length) {
-        showEmptyState();
-        return;
-      }
+      if (!featured && !others.length) { showEmptyState(); return; }
 
-      host.innerHTML = profiles.map(cardMarkup).join("") + (profiles.length < 3 ? openSlotMarkup(3 - profiles.length) : "");
+      host.innerHTML = (featured ? heroCardMarkup(featured) : noFeaturedMarkup())
+        + discoverSectionMarkup(others);
+      host.classList.add("hm-spotlight-grid--stacked");
+
       host.querySelectorAll(".hm-spotlight-image [data-layer='0']").forEach(image => {
         image.addEventListener("error", () => {
           const fallback = document.createElement("span");
@@ -322,14 +221,22 @@ import { socialLinksMarkup } from "./social-links.js";
           image.closest(".hm-spotlight-image").replaceChildren(fallback);
         }, { once: true });
       });
+      host.querySelectorAll(".hm-discover-thumb img").forEach(image => {
+        image.addEventListener("error", () => {
+          const fallback = document.createElement("span");
+          fallback.className = "hm-discover-initials";
+          fallback.setAttribute("aria-hidden", "true");
+          fallback.textContent = initials(image.closest(".hm-discover-card")?.querySelector(".hm-discover-name")?.textContent);
+          image.replaceWith(fallback);
+        }, { once: true });
+      });
 
       bindShareButtons();
-      bindImageGalleries(profiles);
+      bindImageGalleries(featured ? [featured] : []);
+      bindDiscoverStrip();
       trackFeaturedImpressions();
       updateCountdowns();
-      if (host.querySelector("[data-countdown]")) {
-        countdownInterval = window.setInterval(updateCountdowns, 1000);
-      }
+      if (host.querySelector("[data-countdown]")) countdownInterval = window.setInterval(updateCountdowns, 1000);
     })
     .catch(error => {
       console.error("[spotlight-home] Unable to load published profiles.", error);
