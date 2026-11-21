@@ -32,6 +32,9 @@ export function safeImage(value) {
   } catch { return ""; }
 }
 
+/** The main featured placement is open-ended (no end time) unless it predates that change. */
+export const isOpenEnded = profile => profile?.featured_open_ended === true;
+
 /** 1 at the start of the featured window, 0 when it ends. */
 export function remainingFraction(featuredUntil, nowSeconds = Math.floor(Date.now() / 1000)) {
   const remaining = Number(featuredUntil || 0) - nowSeconds;
@@ -72,7 +75,9 @@ function portraitMarkup(profile) {
   const name = esc(profile?.display_name || "");
   return `<figure class="sp-stage-portrait"${image ? ` style="--sp-art:url('${esc(image)}')"` : ""}>
     ${image ? `<span class="sp-stage-blur" aria-hidden="true"></span><img src="${esc(image)}" alt="${name}" loading="eager" decoding="async">` : `<span class="sp-stage-initials" aria-hidden="true">${esc(initials(profile?.display_name))}</span>`}
-    <figcaption class="sp-stage-time" data-countdown="${Number(profile?.featured_until || 0)}"><span>Featured today</span><time>--:--:--</time><i class="sp-stage-bar" aria-hidden="true"></i></figcaption>
+    ${isOpenEnded(profile)
+      ? `<figcaption class="sp-stage-time sp-stage-time--open"><span>Featured creator</span></figcaption>`
+      : `<figcaption class="sp-stage-time" data-countdown="${Number(profile?.featured_until || 0)}"><span>Featured today</span><time>--:--:--</time><i class="sp-stage-bar" aria-hidden="true"></i></figcaption>`}
   </figure>`;
 }
 
@@ -84,7 +89,7 @@ export function featuredShowcaseMarkup(profile, { hostname, now } = {}) {
   if (!profile) return "";
   const name = esc(profile.display_name);
   const media = featuredPlayersMarkup(profile, hostname === undefined ? undefined : { hostname });
-  return `<div class="sp-featured-shell" data-placement="featured" data-plan="free" data-profile-id="${esc(profile.id)}" style="--sp-remaining:${remainingFraction(profile.featured_until, now).toFixed(4)}">
+  return `<div class="sp-featured-shell" data-placement="featured" data-plan="free" data-profile-id="${esc(profile.id)}" style="--sp-remaining:${isOpenEnded(profile) ? "1.0000" : remainingFraction(profile.featured_until, now).toFixed(4)}">
     ${portraitMarkup(profile)}
     <div class="sp-featured-copy">
       <p class="sp-stage-category">${esc(labelize(profile.category))}</p>

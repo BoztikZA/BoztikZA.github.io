@@ -43,7 +43,9 @@ function card(profile) {
   const initials = profile.display_name.split(/\s+/).slice(0, 2).map(part => part[0]).join("").toUpperCase();
   const platformIcons = socialLinksMarkup(profile.social_links, profile.display_name, "sp-social-link");
   const featured = profile.featured
-    ? `<span class="sp-featured">FEATURED TODAY</span><span class="sp-countdown" data-countdown="${Number(profile.featured_until || 0)}">Ends in <time>--:--:--</time></span>`
+    ? (profile.featured_open_ended === true
+      ? `<span class="sp-featured">FEATURED CREATOR</span>`
+      : `<span class="sp-featured">FEATURED TODAY</span><span class="sp-countdown" data-countdown="${Number(profile.featured_until || 0)}">Ends in <time>--:--:--</time></span>`)
     : Date.now() / 1000 - profile.created_at < 604800 ? '<span class="sp-new">JUST ADDED</span>' : "";
 
   return `<article class="sp-card" data-profile-id="${esc(profile.id)}" data-featured="${profile.featured ? "1" : "0"}">

@@ -188,9 +188,9 @@ async function load() {
     const host_ = websiteUrl ? new URL(websiteUrl).hostname.replace(/^www\./, "") : "";
     const music = mediaLinkCardMarkup(describeSong(profile.song));
     const featuredVideo = mediaLinkCardMarkup(describeVideo(profile.video));
-    const featuredLabel = profile.featured
-      ? ` · FEATURED TODAY <span class="sp-countdown" data-countdown="${Number(profile.featured_until || 0)}">Ends in <time>--:--:--</time></span>`
-      : "";
+    const featuredLabel = !profile.featured ? ""
+      : profile.featured_open_ended === true ? " · FEATURED CREATOR"
+      : ` · FEATURED TODAY <span class="sp-countdown" data-countdown="${Number(profile.featured_until || 0)}">Ends in <time>--:--:--</time></span>`;
 
     host.innerHTML = `
       <div class="sp-profile-hero">

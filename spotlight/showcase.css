@@ -82,3 +82,4 @@
   .sp-card,.sp-rail-site,.sp-rail-site b,.sp-rail-social,.sp-portfolio-item img,.sp-stage-bar:after{transition:none}
   .sp-card:hover{transform:none}
 }
+.sp-stage-time--open{justify-content:flex-start}.sp-stage-time--open span{letter-spacing:.14em;text-transform:uppercase;font-size:.68rem;color:var(--sp-green)}
