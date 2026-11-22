@@ -652,8 +652,8 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
         throw new HttpError(409, "listing_expired", "This listing has expired and cannot be republished or featured.");
       }
       const current = await env.DB.prepare(
-        "SELECT id,display_name FROM spotlight_profiles WHERE status='published' AND featured_until>? ORDER BY featured_until DESC, updated_at DESC LIMIT 1",
-      ).bind(timestamp).first<any>();
+        "SELECT id,display_name FROM spotlight_profiles WHERE status='published' AND featured_until>? AND (listing_expires_at IS NULL OR listing_expires_at>?) ORDER BY featured_until DESC, updated_at DESC LIMIT 1",
+      ).bind(timestamp,timestamp).first<any>();
       if ((current?.id ?? null) !== expectedCurrent) {
         throw new HttpError(409, "featured_changed", "The featured creator changed since you opened this screen. Refresh and review before replacing.");
       }
