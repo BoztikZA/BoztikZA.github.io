@@ -611,9 +611,8 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
       if (placement !== "manual" && placement !== "rotation") {
         throw new HttpError(422, "invalid_impression_placement", "The featured placement type is invalid.");
       }
-      const featured = placement === "rotation"
-        ? await env.DB.prepare("SELECT id FROM spotlight_profiles WHERE id=? AND status='published' AND (featured_until IS NULL OR featured_until<=?) AND (listing_expires_at IS NULL OR listing_expires_at>?)").bind(profileId,t,t).first()
-        : await env.DB.prepare("SELECT id FROM spotlight_profiles WHERE id=? AND status='published' AND featured_until>? AND (listing_expires_at IS NULL OR listing_expires_at>?)").bind(profileId,t,t).first();
+      // Both scheduled rotation and Command Centre overrides occupy the same active 24-hour feature slot.
+      const featured = await env.DB.prepare("SELECT id FROM spotlight_profiles WHERE id=? AND status='published' AND featured_until>? AND (listing_expires_at IS NULL OR listing_expires_at>?)").bind(profileId,t,t).first();
       if (!featured) return json({ok:true,counted:false});
       const insert = await env.DB.prepare("INSERT OR IGNORE INTO spotlight_impressions(event_id,profile_id,day,created_at) VALUES(?,?,?,?)").bind(eventId,profileId,d,t).run();
       if ((insert.meta.changes || 0) > 0) await env.DB.prepare("INSERT INTO spotlight_daily_metrics(profile_id,day,featured_impressions) VALUES(?,?,1) ON CONFLICT(profile_id,day) DO UPDATE SET featured_impressions=featured_impressions+1").bind(profileId,d).run();
