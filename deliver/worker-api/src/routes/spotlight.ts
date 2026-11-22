@@ -15,7 +15,9 @@ import { reserveUpload, claimUpload, commitUpload, getPendingUpload, holdStoredU
 import { assertSameSiteOrigin, checkPublicRate, error, json, readJson, requireJson, segments, wrap } from "./util";
 
 const CATEGORIES = new Set(["small-business","youtube","twitch","gaming","photography","design","music","creator","freelance","other"]);
-const SPOTLIGHT_TERM_SECONDS = 72 * 60 * 60;
+const SPOTLIGHT_TERM_SECONDS = 30 * 24 * 60 * 60;
+const SPOTLIGHT_REVIEW_WINDOW_SECONDS = 72 * 60 * 60;
+const SPOTLIGHT_DUPLICATE_WINDOW_SECONDS = 72 * 60 * 60;
 const ID = () => crypto.randomUUID().replace(/-/g, "").slice(0, 20);
 const now = () => Math.floor(Date.now() / 1000);
 const day = (env: Env) => localDay(env);
@@ -457,7 +459,7 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
             SELECT 1 FROM spotlight_profiles
              WHERE contact_email=? AND lower(display_name)=lower(?) AND status<>'archived' AND created_at>=?
           )`,
-      ).bind(id,slug,displayName,tagline,description,category,email,website,JSON.stringify(social),song ? JSON.stringify(song) : null,video ? JSON.stringify(video) : null,timestamp + SPOTLIGHT_TERM_SECONDS,timestamp,timestamp,ownerTokenHash,SPOTLIGHT_TERMS_VERSION,timestamp,email,displayName,timestamp - SPOTLIGHT_TERM_SECONDS).run();
+      ).bind(id,slug,displayName,tagline,description,category,email,website,JSON.stringify(social),song ? JSON.stringify(song) : null,video ? JSON.stringify(video) : null,timestamp + SPOTLIGHT_REVIEW_WINDOW_SECONDS,timestamp,timestamp,ownerTokenHash,SPOTLIGHT_TERMS_VERSION,timestamp,email,displayName,timestamp - SPOTLIGHT_DUPLICATE_WINDOW_SECONDS).run();
       if ((inserted.meta.changes || 0) === 0) {
         return json({
           ok: true,
@@ -765,7 +767,7 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       } else if (action === "approve" && ["new","under_review"].includes(fromStatus)) {
         toStatus = "approved";
         updateSql = "UPDATE spotlight_profiles SET application_status='approved',review_unread=0,review_expires_at=?,reviewed_at=COALESCE(reviewed_at,?),decided_at=? WHERE id=? AND application_status IN ('new','under_review')";
-        updateArgs = [timestamp + SPOTLIGHT_TERM_SECONDS,timestamp,timestamp,seg[1]];
+        updateArgs = [timestamp + SPOTLIGHT_REVIEW_WINDOW_SECONDS,timestamp,timestamp,seg[1]];
       } else if (action === "decline" && ["new","under_review"].includes(fromStatus)) {
         reason = cleanDescription(body.reason).slice(0, 1000);
         if (reason.length < 10) throw new HttpError(422, "decline_reason_required", "Provide a clear decline reason of at least 10 characters.");
