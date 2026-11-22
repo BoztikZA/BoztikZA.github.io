@@ -1,9 +1,14 @@
 import type { Env } from "./types";
 import { rotateSpotlightFeature, runMaintenance } from "./lib/cleanup";
 
-/** Cron entrypoint (every 10 minutes): expiry and page-view event cleanup,
- *  abandoned-upload and orphan sweeps, storage reconciliation, housekeeping. */
-export async function scheduled(env: Env): Promise<void> {
+/** The minute cron rotates Spotlight; the 10-minute cron runs heavier maintenance. */
+export async function scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
+  if (event.cron === "* * * * *" && new Date(event.scheduledTime).getUTCMinutes() % 10 !== 0) {
+    ctx.waitUntil(rotateSpotlightFeature(env).then(rotation => {
+      if (rotation.rotated) console.log("spotlight featured rotation",JSON.stringify(rotation));
+    }).catch(error => console.error("spotlight featured rotation failed",error)));
+    return;
+  }
   const report = await runMaintenance(env);
   try { const rotation = await rotateSpotlightFeature(env); if (rotation.rotated) console.log("spotlight featured rotation",JSON.stringify(rotation)); }
   catch (error) { console.error("spotlight featured rotation failed",error); }
