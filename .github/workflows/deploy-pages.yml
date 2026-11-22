@@ -214,10 +214,10 @@ jobs:
           # Explicitly test the homepage host redirects, not only the www destination.
           # This is important because AdSense may initially request the apex hostname
           # even when the preferred canonical hostname is www.
-          for url in \\
-            'http://boztik.com/' \\
-            'https://boztik.com/' \\
-            'http://www.boztik.com/' \\
+          for url in \
+            'http://boztik.com/' \
+            'https://boztik.com/' \
+            'http://www.boztik.com/' \
             'https://www.boztik.com/'; do
             safe_name="$(printf '%s' "$url" | tr ':/' '__')"
             output="$tmp_dir/home-$safe_name.html"
@@ -230,18 +230,18 @@ jobs:
           # advertising crawler identities. These checks establish HTTP reachability
           # and response content; they do not impersonate Google's network or prove
           # that Google's production crawler can reach the origin.
-          for user_agent in \\
-            'Mediapartners-Google' \\
-            'Google-Display-Ads-Bot' \\
+          for user_agent in \
+            'Mediapartners-Google' \
+            'Google-Display-Ads-Bot' \
             'AdsBot-Google'; do
             echo "Crawler user-agent smoke test: $user_agent"
             for path in '/' '/ads.txt'; do
-              code="$(curl --silent --show-error --location \\
-                --connect-timeout 10 --max-time 45 \\
-                --retry 3 --retry-all-errors --retry-delay 3 \\
-                --user-agent "$user_agent" \\
-                --output "$tmp_dir/crawler-response.txt" \\
-                --write-out '%{http_code}' \\
+              code="$(curl --silent --show-error --location \
+                --connect-timeout 10 --max-time 45 \
+                --retry 3 --retry-all-errors --retry-delay 3 \
+                --user-agent "$user_agent" \
+                --output "$tmp_dir/crawler-response.txt" \
+                --write-out '%{http_code}' \
                 "https://boztik.com$path")"
               [[ "$code" == "200" ]]
               if [[ "$path" == "/ads.txt" ]]; then
@@ -258,9 +258,9 @@ jobs:
           # unavailable on a runner, so these are diagnostic and never fail deploy.
           for family in 4 6; do
             echo "IPv$family homepage connectivity:"
-            if curl "-$family" --silent --show-error --location \\
-              --connect-timeout 8 --max-time 20 \\
-              --output /dev/null --write-out 'HTTP %{http_code} via %{remote_ip}\n' \\
+            if curl "-$family" --silent --show-error --location \
+              --connect-timeout 8 --max-time 20 \
+              --output /dev/null --write-out 'HTTP %{http_code} via %{remote_ip}\n' \
               'https://boztik.com/'; then
               :
             else
