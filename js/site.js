@@ -37,7 +37,7 @@
 
       const plan = [
         'index.html', 'services.html', 'portfolio.html', 'guides.html', 'stores.html',
-        { label: 'Tools', items: ['creative-toolkit.html', 'creative-studio.html', 'deliver.html', 'spotlight/', 'discover.html'] },
+        { label: 'Tools', items: ['creative-toolkit.html', 'creative-studio.html', 'deliver.html', 'spotlight/'] },
         { label: 'More', items: ['support.html', 'about.html'] },
         'contact.html'
       ];
