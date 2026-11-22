@@ -16,12 +16,10 @@
   }
 
   /*
-   * Grouped desktop navigation (progressive enhancement).
-   * The full flat link list stays in the HTML, so without JavaScript nothing changes.
-   * With JavaScript the 13 links are regrouped into: Home, Services, Portfolio,
-   * Guides, Stores, Tools menu, More menu and a Contact button. The same <a>
-   * elements are moved (not cloned), so aria-current and other pages' scripts
-   * keep working. On phones the groups are flattened back into the original list.
+   * Grouped desktop navigation.
+   * The complete navigation remains in the HTML as a no-JavaScript fallback.
+   * Desktop groups keep related destinations together; on phones the links
+   * flatten into the same accessible list.
    */
   if (nav && links && !links.querySelector('.nav-group')) {
     try {
@@ -36,9 +34,13 @@
       };
 
       const plan = [
-        'index.html', 'services.html', 'portfolio.html', 'guides.html', 'stores.html',
-        { label: 'Tools', items: ['creative-toolkit.html', 'creative-studio.html', 'deliver.html', 'spotlight/'] },
-        { label: 'More', items: ['support.html', 'about.html'] },
+        'index.html',
+        { label: 'Photo work', items: ['services.html', 'portfolio.html', 'deliver.html'] },
+        { label: 'Creative tools', items: ['creative-toolkit.html', 'creative-studio.html'] },
+        'guides.html',
+        'spotlight/',
+        'stores.html',
+        { label: 'More', items: ['about.html', 'support.html'] },
         'contact.html'
       ];
 
