@@ -38,8 +38,8 @@ async function analyticsExclusion(request: Request, env: Env): Promise<"admin" |
  */
 function retireFeaturedStatement(env: Env, timestamp: number, exceptId: string): D1PreparedStatement {
   return env.DB.prepare(
-    "UPDATE spotlight_profiles SET listing_expires_at=CASE WHEN featured_until>=? THEN ? ELSE listing_expires_at END,featured_until=NULL,updated_at=? WHERE featured_until>? AND id<>?",
-  ).bind(FEATURED_OPEN_ENDED_UNTIL, timestamp + SPOTLIGHT_TERM_SECONDS, timestamp, timestamp, exceptId);
+    "UPDATE spotlight_profiles SET listing_expires_at=?,featured_until=NULL,updated_at=? WHERE featured_until>? AND id<>?",
+  ).bind(timestamp + SPOTLIGHT_TERM_SECONDS, timestamp, timestamp, exceptId);
 }
 const clean = (v: unknown, max: number) => typeof v === "string" ? v.trim().replace(/\s+/g, " ").slice(0, max) : "";
 const cleanDescription = (v: unknown) => typeof v === "string"
@@ -857,18 +857,18 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       // Featured state only changes when this request says so explicitly (featured: true | false) or the profile is
       // unpublished. Saving, editing, approving or publishing a profile leaves the current featured creator alone.
       const featured = status !== "published" ? null : b.featured === true ? FEATURED_OPEN_ENDED_UNTIL : b.featured === false ? null : old.featured_until;
-      const wasOpenEndedFeature = Number(old.featured_until || 0) >= FEATURED_OPEN_ENDED_UNTIL;
+      const wasFeatured = Number(old.featured_until || 0) > updated;
       const isOpenEndedFeature = Number(featured || 0) >= FEATURED_OPEN_ENDED_UNTIL;
       if (status === "published" && old.status === "published" && old.listing_expires_at
         && Number(old.listing_expires_at) <= updated && (b.status === "published" || b.featured === true)) {
         throw new HttpError(409, "listing_expired", "This listing has expired and cannot be republished or featured.");
       }
       const nextApplicationStatus = status === "published" ? "published" : applicationStatus;
-      // The open-ended featured placement is exempt from the 72-hour listing term while it lasts; a creator who
-      // leaves it gets a fresh term so they stay in the directory instead of being swept the moment they step down.
+      // Any active featured placement is exempt from listing expiry while it lasts; a creator who steps down
+      // receives a fresh 30-day directory term instead of being swept immediately.
       const listingExpiresAt = status !== "published" ? null
         : isOpenEndedFeature ? null
-        : wasOpenEndedFeature && old.status === "published" ? updated + SPOTLIGHT_TERM_SECONDS
+        : wasFeatured && old.status === "published" ? updated + SPOTLIGHT_TERM_SECONDS
         : old.status === "published" ? old.listing_expires_at
         : updated + SPOTLIGHT_TERM_SECONDS;
       const statements: D1PreparedStatement[] = [];
