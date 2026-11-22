@@ -39,7 +39,6 @@ Individual guides:
 ## Creator discovery and resources
 
 - [Boztik Spotlight](https://www.boztik.com/spotlight/): A public showcase for discovering independent creators, makers and creative projects.
-- [Boztik Discover](https://www.boztik.com/discover.html): A curated directory of creative software and practical resources for photographers, designers and digital creators.
 - [Boztik Stores](https://www.boztik.com/stores.html): Original designs and digital wallpapers, with links to the relevant external shops.
 
 ## Client information and policies
