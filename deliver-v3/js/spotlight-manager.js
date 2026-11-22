@@ -76,6 +76,7 @@ const api = async (path, init = {}) => {
   if (!response.ok) {
     const failure = new Error(data.error || "Spotlight request failed.");
     failure.status = response.status;
+    failure.code = data.code || "";
     throw failure;
   }
   return data;
