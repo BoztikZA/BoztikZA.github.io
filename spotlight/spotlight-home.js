@@ -165,7 +165,7 @@ import {
         <div class="bz-spot-preview__copy">
           <span class="hm-spotlight-category">BOZTIK BUSINESS SPOTLIGHT</span>
           <h3>No active featured profiles right now.</h3>
-          <p>Browse approved directory listings or submit your own profile for review. A featured creator appears here when one has been selected.</p>
+          <p>Browse approved directory listings or submit your own profile for review. A featured creator appears here when an eligible published listing is available.</p>
           <div class="hm-spotlight-empty-actions">
             <a class="hm-spotlight-profile-link" href="spotlight/">Browse the directory <span aria-hidden="true">↗</span></a>
             <a class="hm-spotlight-website-link" href="spotlight/submit/">Apply to be listed</a>
