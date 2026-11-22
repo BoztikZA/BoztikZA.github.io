@@ -252,7 +252,7 @@ import {
 
       // The server owns the 24-hour rotation schedule. Do not rotate on a visitor-side timer:
       // that would make the featured profile change every few seconds and bypass Command Centre choices.
-      renderProfiles(featured, valid.filter(profile => profile !== featured), featured.featured ? "rotation" : "fallback");
+      renderProfiles(featured, valid.filter(profile => profile !== featured), featured.featured ? "rotation" : "manual");
     })
     .catch(error => {
       console.error("[spotlight-home] Unable to load published profiles.", error);
