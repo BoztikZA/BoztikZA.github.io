@@ -285,7 +285,7 @@ export async function cleanupSpotlightExpiry(env: Env, max = 25): Promise<Spotli
       WHERE (application_status IN ('new','under_review','approved','declined','expired')
              AND review_expires_at IS NOT NULL AND review_expires_at<=?)
          OR (status='published' AND listing_expires_at IS NOT NULL AND listing_expires_at<=?
-             AND COALESCE(featured_until,0)<4102444800)
+             )
       ORDER BY COALESCE(review_expires_at,listing_expires_at)
       LIMIT ?`,
   ).bind(timestamp, timestamp, max).all<{ id: string; application_status: string; status: string }>();
