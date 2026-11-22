@@ -713,6 +713,7 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
         contact_email:r.contact_email,
         status:r.status,
         application_status:r.application_status,
+        updated_at:r.updated_at,
         review_unread:Boolean(r.review_unread),
         review_expires_at:r.review_expires_at,
         listing_expires_at:r.listing_expires_at,
