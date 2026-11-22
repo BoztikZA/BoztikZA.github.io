@@ -313,10 +313,10 @@ website and social links, and images become publicly visible in the directory.
 <p>
 New applications awaiting a decision and approved profiles have a 72-hour review window. Once published, a listing remains available in the public directory for 30 days. At expiry, the profile and its images are permanently deleted through scheduled cleanup, and the creator may apply again. If an object cannot be deleted, its
 database reference is retained for reconciliation rather than being treated
-as successfully deleted. Submission and moderation records, including review
-decisions and any decline reason, may remain in the database after a listing
-or its images expire; there is currently no fixed deletion period for those
-records. Contact Boztik to request access, correction or removal where
+as successfully deleted. When the 30-day listing expires, the profile, its moderation history and its
+profile-linked analytics are deleted from D1 along with its images. If an image
+cannot be deleted from storage, the profile record is retained temporarily so
+cleanup can retry safely. Contact Boztik to request access, correction or removal where
 applicable.
 </p>
 <p>
@@ -737,13 +737,11 @@ is not specified here.
 <p>
 For Boztik Spotlight, application details and moderation history are held in
 the Cloudflare D1 database, while uploaded profile images are held in the
-private Cloudflare R2 bucket. Published listings expire after 30 days, and
-the scheduled cleanup process removes their expired image objects and
-releases the associated storage. A failed object deletion is kept visible to
-the storage reconciliation process and is not treated as completed. Profile,
-application and moderation records (including review decisions and decline
-reasons) may remain after listing expiry or image removal; no fixed retention
-period is currently specified for those records. You may contact Boztik to
+private Cloudflare R2 bucket. Published listings expire after 30 days. The
+scheduled cleanup process deletes the image objects first, then permanently
+deletes the profile and its linked moderation history and engagement records
+from D1. A failed object deletion leaves the expired profile record in place
+for a safe retry; it is not treated as completed. You may contact Boztik to
 request correction or removal, subject to applicable legal, security and
 record-keeping requirements.
 </p>
