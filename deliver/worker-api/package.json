@@ -26,7 +26,7 @@
     "test:spotlight-owner": "tsx scripts/spotlight-owner-test.mts",
     "test:spotlight-analytics": "tsx scripts/spotlight-analytics-test.mts && tsx scripts/spotlight-analytics-client-test.mts",
     "test:spotlight-seo": "tsx scripts/spotlight-seo-test.mts",
-    "test:spotlight-featured": "tsx scripts/spotlight-featured-test.mts"
+    "test:spotlight-featured": "tsx scripts/spotlight-rotation-test.mts"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260901.0",
