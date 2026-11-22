@@ -260,7 +260,7 @@ jobs:
             echo "IPv$family homepage connectivity:"
             if curl "-$family" --silent --show-error --location \\
               --connect-timeout 8 --max-time 20 \\
-              --output /dev/null --write-out 'HTTP %{http_code} via %{remote_ip}\\n' \\
+              --output /dev/null --write-out 'HTTP %{http_code} via %{remote_ip}\n' \\
               'https://boztik.com/'; then
               :
             else
