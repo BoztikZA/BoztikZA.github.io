@@ -123,6 +123,15 @@ const afterPublish = await publicProfiles();
 assert.ok(afterPublish.some(p => p.display_name === "Bravo Media" && p.featured === false), "Bravo is now in the community directory, not featured");
 const bravoTerm = Number(row(bravo).listing_expires_at) - nowSec();
 assert.ok(bravoTerm > TERM - 30 && bravoTerm <= TERM, `a newly published listing receives 30 days (got ${bravoTerm}s)`);
+const automaticImpression = await pub("POST", "impression", {
+  event_id: "rotation-impression-0001", profile_id: bravo, placement: "rotation",
+}, "203.0.113.80");
+assert.equal(automaticImpression.status, 200);
+assert.equal(automaticImpression.body.counted, true, "automatic homepage rotation impressions count for published non-featured profiles");
+const manualImpression = await pub("POST", "impression", {
+  event_id: "manual-impression-0001", profile_id: bravo,
+}, "203.0.113.81");
+assert.equal(manualImpression.body.counted, false, "manual featured impressions still require an explicitly featured profile");
 
 console.log("Scenario 3. Explicitly featuring another creator replaces the previous one, who stays in the directory");
 assert.equal((await featureExplicit(bravo, null)).status, 409, "a stale screen (expects no featured creator) cannot replace the current one");
