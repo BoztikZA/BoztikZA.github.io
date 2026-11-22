@@ -179,7 +179,8 @@ assert.ok(Number(row(bravo).listing_expires_at) > nowSec(), "the creator who ste
 assert.equal((await publish(bravo)).status, 200, "re-saving a non-featured creator does not disturb the featured one");
 assert.deepEqual(await featuredNames(), ["Alpha Studio"]);
 
-console.log("Removing the feature is explicit and leaves the creator in the directory");
+console.log("Removing a legacy time-limited feature gives the creator a fresh 30-day directory term");
+db.raw.prepare("UPDATE spotlight_profiles SET featured_until=?,listing_expires_at=? WHERE id=?").run(nowSec() + 3600, nowSec() + 3600, alpha);
 assert.equal((await admin("PATCH", `profile/${alpha}`, { featured: false })).status, 200);
 assert.deepEqual(await featuredNames(), []);
 assert.ok((await directoryNames()).includes("Alpha Studio"));
