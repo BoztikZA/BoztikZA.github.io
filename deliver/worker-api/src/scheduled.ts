@@ -1,10 +1,12 @@
 import type { Env } from "./types";
-import { runMaintenance } from "./lib/cleanup";
+import { rotateSpotlightFeature, runMaintenance } from "./lib/cleanup";
 
 /** Cron entrypoint (every 10 minutes): expiry and page-view event cleanup,
  *  abandoned-upload and orphan sweeps, storage reconciliation, housekeeping. */
 export async function scheduled(env: Env): Promise<void> {
   const report = await runMaintenance(env);
+  try { const rotation = await rotateSpotlightFeature(env); if (rotation.rotated) console.log("spotlight featured rotation",JSON.stringify(rotation)); }
+  catch (error) { console.error("spotlight featured rotation failed",error); }
   // Keep idempotency records bounded; daily aggregate metrics remain for reporting.
   const cutoff = Math.floor(Date.now() / 1000) - 90 * 24 * 60 * 60;
   const submissionLimitCutoff = Math.floor(Date.now() / 1000) - 24 * 60 * 60;
