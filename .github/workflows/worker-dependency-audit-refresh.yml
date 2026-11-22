@@ -1,0 +1,52 @@
+name: Refresh Worker dependency lockfile
+
+on:
+  push:
+    branches:
+      - spotlight-24h-rotation-30d-lifecycle
+    paths:
+      - .github/workflows/worker-dependency-audit-refresh.yml
+
+permissions:
+  contents: write
+
+jobs:
+  refresh-and-verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: deliver/worker-api
+    steps:
+      - name: Check out PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: spotlight-24h-rotation-30d-lifecycle
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: deliver/worker-api/package-lock.json
+      - name: Apply compatible security updates to lockfile
+        run: npm audit fix --package-lock-only
+      - name: Install exactly from updated lockfile
+        run: npm ci
+      - name: Confirm dependency audit is clean
+        run: npm audit --audit-level=moderate
+      - name: Type-check Worker
+        run: npm run typecheck
+      - name: Run full Worker test suite
+        run: npm test
+      - name: Commit verified lockfile update
+        working-directory: .
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- deliver/worker-api/package-lock.json; then
+            echo "No lockfile changes were required."
+          else
+            git add deliver/worker-api/package-lock.json
+            git commit -m "Fix vulnerable Worker toolchain dependencies"
+            git push origin HEAD:spotlight-24h-rotation-30d-lifecycle
+          fi
