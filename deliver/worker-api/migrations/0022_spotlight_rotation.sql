@@ -14,7 +14,8 @@ UPDATE spotlight_profiles
    AND id<>(SELECT id FROM spotlight_profiles
              WHERE status='published' AND featured_until>unixepoch()
              ORDER BY featured_until DESC,updated_at DESC LIMIT 1);
-UPDATE spotlight_profiles SET listing_expires_at=COALESCE(published_at,created_at)+2592000
+-- Existing open-ended featured listings receive a full 30-day term from rollout.
+UPDATE spotlight_profiles SET listing_expires_at=unixepoch()+2592000
  WHERE status='published' AND listing_expires_at IS NULL;
 INSERT OR IGNORE INTO spotlight_rotation_state(id,last_profile_id,next_rotation_at,updated_at)
 SELECT 1,id,featured_until,unixepoch() FROM spotlight_profiles
