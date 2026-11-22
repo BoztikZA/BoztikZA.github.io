@@ -112,6 +112,8 @@ assert.equal(row(alpha).featured_until, FEATURED_OPEN_ENDED_UNTIL);
 console.log("Scenario 2. Approving a new creator makes them eligible, but does not feature them");
 assert.equal((await review(bravo, "approve")).status, 200);
 assert.equal(row(bravo).application_status, "approved");
+const bravoReviewTerm = Number(row(bravo).review_expires_at) - nowSec();
+assert.ok(bravoReviewTerm > REVIEW_TERM - 30 && bravoReviewTerm <= REVIEW_TERM, `approved applications retain a 72h publish window (got ${bravoReviewTerm}s)`);
 assert.equal(row(bravo).featured_until, null, "approval must never promote a creator to the featured slot");
 assert.deepEqual(await featuredNames(), ["Alpha Studio"], "approving must not change the featured creator");
 assert.equal((await directoryNames()).includes("Bravo Media"), false, "an approved-but-unpublished creator is not public yet");
