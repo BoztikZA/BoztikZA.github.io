@@ -5,9 +5,13 @@ CREATE TABLE IF NOT EXISTS spotlight_rotation_state (
   next_rotation_at INTEGER,
   updated_at INTEGER NOT NULL
 );
-UPDATE spotlight_profiles SET featured_until=unixepoch()+86400
- WHERE status='published' AND featured_until>=4102444800;
--- Normalise any overlapping legacy placements to the most recently updated active feature.
+-- Normalize active legacy features to a fresh 24-hour window, keeping only the
+-- most recently updated active featured profile if old data contains overlaps.
+UPDATE spotlight_profiles
+   SET featured_until=unixepoch()+86400
+ WHERE id=(SELECT id FROM spotlight_profiles
+            WHERE status='published' AND featured_until>unixepoch()
+            ORDER BY featured_until DESC,updated_at DESC LIMIT 1);
 UPDATE spotlight_profiles
    SET featured_until=NULL
  WHERE status='published' AND featured_until>unixepoch()
