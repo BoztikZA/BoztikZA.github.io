@@ -29,7 +29,7 @@ If production is ahead of or different from this, stop and investigate before co
 `0019` only adds a nullable `video_metadata` column. `0020` adds nullable/defaulted columns to `spotlight_profiles`
 (owner link hash, terms, information-request fields, `placement_plan`) and rebuilds only two leaf tables
 (`spotlight_review_events`, `spotlight_email_outbox`), copying every row. The parent table is never rebuilt, so no
-foreign-key cascade can delete data. `0021` is purely additive: five new columns on `spotlight_daily_metrics` and two new tables (`spotlight_engagement_events`, `spotlight_source_daily`); nothing is rebuilt. `0022` adds a singleton rotation-state table, converts any legacy open-ended feature to a 24-hour window and backfills the original 30-day expiry for published profiles that previously had no expiry. It does not rebuild existing tables. Expired published profiles are permanently deleted only after their R2 images are successfully removed.
+foreign-key cascade can delete data. `0021` is purely additive: five new columns on `spotlight_daily_metrics` and two new tables (`spotlight_engagement_events`, `spotlight_source_daily`); nothing is rebuilt. `0022` adds a singleton rotation-state table, converts any legacy open-ended feature to a 24-hour window and grants previously open-ended published listings a fresh 30-day term from rollout. Existing listings that already have an expiry keep that original deadline. It does not rebuild existing tables. Expired published profiles are permanently deleted only after their R2 images are successfully removed.
 
 ```bash
 npm run db:migrate:remote
