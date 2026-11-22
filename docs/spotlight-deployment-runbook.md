@@ -21,7 +21,7 @@ npm run db:migrate:local                      # applies every migration to a scr
 npx wrangler d1 migrations list boztik-deliver --remote   # what production still needs
 ```
 
-Expected: production is at `0021_spotlight_analytics.sql`; `0022_spotlight_rotation.sql` is the new pending migration. If production is behind, apply every pending migration in order. If production is ahead of or different from this, stop and investigate before continuing.
+Do not assume the production migration level. Read the remote list first. If production is at `0021_spotlight_analytics.sql`, `0022_spotlight_rotation.sql` is pending; if it is behind, apply every pending migration in order. If production is ahead of or differs from the repository history, stop and investigate before continuing.
 If production is ahead of or different from this, stop and investigate before continuing.
 
 ## 1. Apply the remote D1 migration
