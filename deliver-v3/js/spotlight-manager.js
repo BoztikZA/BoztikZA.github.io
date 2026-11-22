@@ -743,7 +743,7 @@ list.addEventListener("click", async event => {
     else if (action === "start-review") feedback.textContent = "Application marked as under review.";
     else if (action === "approve") feedback.textContent = "Application approved. Publish it separately within 72 hours.";
     else if (action === "mark-read") feedback.textContent = "Application marked as read.";
-    else if (action === "publish") feedback.textContent = "✓ Profile is live on the Boztik Spotlight directory for 72 hours.";
+    else if (action === "publish") feedback.textContent = "✓ Profile is live on the Boztik Spotlight directory for 30 days.";
   } catch (error) {
     feedback.textContent = error.message;
     button.disabled = false;
