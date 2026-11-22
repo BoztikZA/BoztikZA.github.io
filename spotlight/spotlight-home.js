@@ -204,7 +204,7 @@ import {
 
   function renderProfiles(featured, others, mode) {
     const previousScroll = host.querySelector(".hm-discover-track")?.scrollLeft || 0;
-    galleryIntervals.forEach(window.clearInterval);
+    galleryIntervals.forEach(intervalId => window.clearInterval(intervalId));
     galleryIntervals = [];
     if (countdownInterval !== null) {
       window.clearInterval(countdownInterval);
