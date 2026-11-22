@@ -311,7 +311,7 @@ If a profile is approved and published, the selected profile information,
 website and social links, and images become publicly visible in the directory.
 </p>
 <p>
-New applications awaiting a decision and approved profiles have a 72-hour review window. Once published, a listing remains available in the public directory for 72 hours. Expired Spotlight images are removed through the scheduled storage-cleanup process. If an object cannot be deleted, its
+New applications awaiting a decision and approved profiles have a 72-hour review window. Once published, a listing remains available in the public directory for 30 days. Expired Spotlight images are removed through the scheduled storage-cleanup process. If an object cannot be deleted, its
 database reference is retained for reconciliation rather than being treated
 as successfully deleted. Submission and moderation records, including review
 decisions and any decline reason, may remain in the database after a listing
@@ -737,7 +737,7 @@ is not specified here.
 <p>
 For Boztik Spotlight, application details and moderation history are held in
 the Cloudflare D1 database, while uploaded profile images are held in the
-private Cloudflare R2 bucket. Published listings expire after 72 hours, and
+private Cloudflare R2 bucket. Published listings expire after 30 days, and
 the scheduled cleanup process removes their expired image objects and
 releases the associated storage. A failed object deletion is kept visible to
 the storage reconciliation process and is not treated as completed. Profile,
