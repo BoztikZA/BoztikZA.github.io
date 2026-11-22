@@ -21,7 +21,7 @@ npm run db:migrate:local                      # applies every migration to a scr
 npx wrangler d1 migrations list boztik-deliver --remote   # what production still needs
 ```
 
-Expected: production is at `0018_spotlight_lifecycle.sql`; pending are `0019_spotlight_video.sql` and `0020_spotlight_applications.sql` and `0021_spotlight_analytics.sql` (apply all that are listed).
+Do not assume the production migration level. Read the remote list first. If production is at `0021_spotlight_analytics.sql`, `0022_spotlight_rotation.sql` is pending; if it is behind, apply every pending migration in order. If production is ahead of or differs from the repository history, stop and investigate before continuing.
 If production is ahead of or different from this, stop and investigate before continuing.
 
 ## 1. Apply the remote D1 migration
@@ -29,8 +29,7 @@ If production is ahead of or different from this, stop and investigate before co
 `0019` only adds a nullable `video_metadata` column. `0020` adds nullable/defaulted columns to `spotlight_profiles`
 (owner link hash, terms, information-request fields, `placement_plan`) and rebuilds only two leaf tables
 (`spotlight_review_events`, `spotlight_email_outbox`), copying every row. The parent table is never rebuilt, so no
-foreign-key cascade can delete data. `0021` is purely additive: five new columns on `spotlight_daily_metrics` and two new tables (`spotlight_engagement_events`, `spotlight_source_daily`); nothing is rebuilt. Before applying, record the row counts of those two tables and compare afterwards.
-Existing Spotlight rows and the live Worker keep working while it is applied.
+foreign-key cascade can delete data. `0021` is purely additive: five new columns on `spotlight_daily_metrics` and two new tables (`spotlight_engagement_events`, `spotlight_source_daily`); nothing is rebuilt. `0022` adds a singleton rotation-state table, normalizes the current active feature to a fresh 24-hour window (clearing overlapping legacy feature flags) and grants previously open-ended published listings a fresh 30-day term from rollout. Existing listings that already have an expiry keep that original deadline. It does not rebuild existing tables. Expired published profiles are permanently deleted only after their R2 images are successfully removed.
 
 ```bash
 npm run db:migrate:remote

@@ -4,8 +4,8 @@ import {
 
 /**
  * Homepage Spotlight.
- *  - An administrator-selected featured creator stays pinned until changed.
- *  - When no manual feature is selected, published profiles rotate through the main homepage placement.
+ *  - The Worker selects one homepage featured creator for each 24-hour window.
+ *  - The Command Centre can replace that creator at any time.
  *  - Pending, declined and unpublished applications are never returned by the public API, so they can never appear.
  */
 (() => {
@@ -14,10 +14,6 @@ import {
 
   let countdownInterval = null;
   let galleryIntervals = [];
-  let rotationInterval = null;
-  let rotationPaused = false;
-  let rotationProfiles = [];
-  let rotationIndex = 0;
   const DISCOVER_LIMIT = 50;
 
   function trackFeaturedImpression(card) {
@@ -169,7 +165,7 @@ import {
         <div class="bz-spot-preview__copy">
           <span class="hm-spotlight-category">BOZTIK BUSINESS SPOTLIGHT</span>
           <h3>No active featured profiles right now.</h3>
-          <p>Browse approved directory listings or submit your own profile for review. A featured creator appears here when one has been selected.</p>
+          <p>Browse approved directory listings or submit your own profile for review. A featured creator appears here when an eligible published listing is available.</p>
           <div class="hm-spotlight-empty-actions">
             <a class="hm-spotlight-profile-link" href="spotlight/">Browse the directory <span aria-hidden="true">↗</span></a>
             <a class="hm-spotlight-website-link" href="spotlight/submit/">Apply to be listed</a>
@@ -191,15 +187,6 @@ import {
           </div>
         </div>
       </div>`;
-  }
-
-  function bindRotationPause() {
-    host.addEventListener("pointerenter", () => { rotationPaused = true; });
-    host.addEventListener("pointerleave", () => { rotationPaused = false; });
-    host.addEventListener("focusin", () => { rotationPaused = true; });
-    host.addEventListener("focusout", event => {
-      if (!host.contains(event.relatedTarget)) rotationPaused = false;
-    });
   }
 
   function renderProfiles(featured, others, mode) {
@@ -248,8 +235,6 @@ import {
     if (host.querySelector("[data-countdown]")) countdownInterval = window.setInterval(updateCountdowns, 1000);
   }
 
-  bindRotationPause();
-
   fetch(API + "?limit=" + DISCOVER_LIMIT, { headers: { Accept: "application/json" } })
     .then(response => {
       if (!response.ok) throw new Error("Spotlight is temporarily unavailable.");
@@ -261,37 +246,13 @@ import {
       const valid = data.profiles.filter(profile => profile && typeof profile === "object"
         && typeof profile.display_name === "string" && profile.display_name.trim()
         && typeof profile.slug === "string" && profile.slug);
-      const manualFeatured = valid.find(profile => profile.featured === true && Number(profile.featured_until) > nowSeconds) || null;
+      const featured = valid.find(profile => profile.featured === true && Number(profile.featured_until) > nowSeconds) || valid[0] || null;
 
-      if (manualFeatured) {
-        rotationProfiles = [];
-        if (rotationInterval !== null) window.clearInterval(rotationInterval);
-        rotationInterval = null;
-        renderProfiles(manualFeatured, valid.filter(profile => profile !== manualFeatured), "manual");
-        return;
-      }
+      if (!featured) { showEmptyState(); return; }
 
-      if (!valid.length) { showEmptyState(); return; }
-
-      // All eligible profiles share the slot in a predictable sequence. The time-based starting point
-      // means visitors arriving at different times see different creators without server-side state.
-      rotationProfiles = valid;
-      const rotationPeriodMs = 15000;
-      rotationIndex = Math.floor(Date.now() / rotationPeriodMs) % rotationProfiles.length;
-      const showRotatingProfile = () => {
-        const active = rotationProfiles[rotationIndex];
-        renderProfiles(active, rotationProfiles.filter(profile => profile !== active), "rotation");
-      };
-      showRotatingProfile();
-
-      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      if (rotationProfiles.length > 1 && !reducedMotion) {
-        rotationInterval = window.setInterval(() => {
-          if (rotationPaused || document.hidden) return;
-          rotationIndex = (rotationIndex + 1) % rotationProfiles.length;
-          showRotatingProfile();
-        }, rotationPeriodMs);
-      }
+      // The server owns the 24-hour rotation schedule. Do not rotate on a visitor-side timer:
+      // that would make the featured profile change every few seconds and bypass Command Centre choices.
+      renderProfiles(featured, valid.filter(profile => profile !== featured), featured.featured ? "rotation" : "manual");
     })
     .catch(error => {
       console.error("[spotlight-home] Unable to load published profiles.", error);

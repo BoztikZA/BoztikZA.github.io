@@ -6,7 +6,6 @@ import { enqueueSpotlightEmail, processSpotlightEmailOutbox } from "../lib/spotl
 import { parseRange, profileAnalytics } from "../lib/spotlight-analytics";
 import { SPOTLIGHT_TERMS_VERSION, awaitingApplicant, hashOwnerToken, isOwnerToken, newOwnerToken, ownerDto, ownerStage } from "../lib/spotlight-owner";
 import { readImageDimensions } from "../lib/spotlight-image";
-import { FEATURED_OPEN_ENDED_UNTIL } from "../lib/spotlight-featured";
 import {
   fetchSpotifyMetadata, normalizeSong, normalizeVideo, parseFeaturedVideo, parseSpotifyResource,
   type FeaturedVideo, type SpotifyMedia,
@@ -32,14 +31,12 @@ async function analyticsExclusion(request: Request, env: Env): Promise<"admin" |
   return null;
 }
 /**
- * Moves every OTHER currently featured profile out of the featured slot. It never unpublishes or edits them:
- * they stay in the approved directory, and one that held the open-ended placement gets a fresh listing term.
- * Run it only as part of an explicit "feature this profile" batch, never on a plain save, edit or review.
+ * Moves every OTHER currently featured profile out of the featured slot without extending its 30-day listing term.
  */
 function retireFeaturedStatement(env: Env, timestamp: number, exceptId: string): D1PreparedStatement {
   return env.DB.prepare(
-    "UPDATE spotlight_profiles SET listing_expires_at=?,featured_until=NULL,updated_at=? WHERE featured_until>? AND id<>?",
-  ).bind(timestamp + SPOTLIGHT_TERM_SECONDS, timestamp, timestamp, exceptId);
+    "UPDATE spotlight_profiles SET featured_until=NULL,updated_at=? WHERE featured_until>? AND id<>?",
+  ).bind(timestamp, timestamp, exceptId);
 }
 const clean = (v: unknown, max: number) => typeof v === "string" ? v.trim().replace(/\s+/g, " ").slice(0, max) : "";
 const cleanDescription = (v: unknown) => typeof v === "string"
@@ -260,8 +257,7 @@ export function publicDto(row: any, gallery: any[] = [], options: DtoOptions = {
       ...gallery.map(item => ({ url: publicImageUrl(row.id, Number(item.position)), position: Number(item.position) })),
     ] : [],
     featured: Number(row.featured_until || 0) > now(), featured_until: Number(row.featured_until || 0) > now() ? row.featured_until : null,
-    // Additive: true when the placement has no countdown (stays until an administrator changes it).
-    featured_open_ended: Number(row.featured_until || 0) >= FEATURED_OPEN_ENDED_UNTIL,
+    featured_open_ended: false,
     created_at: row.created_at,
   };
 }
@@ -615,9 +611,8 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
       if (placement !== "manual" && placement !== "rotation") {
         throw new HttpError(422, "invalid_impression_placement", "The featured placement type is invalid.");
       }
-      const featured = placement === "rotation"
-        ? await env.DB.prepare("SELECT id FROM spotlight_profiles WHERE id=? AND status='published' AND (featured_until IS NULL OR featured_until<=?) AND (listing_expires_at IS NULL OR listing_expires_at>?)").bind(profileId,t,t).first()
-        : await env.DB.prepare("SELECT id FROM spotlight_profiles WHERE id=? AND status='published' AND featured_until>? AND (listing_expires_at IS NULL OR listing_expires_at>?)").bind(profileId,t,t).first();
+      // Both scheduled rotation and Command Centre overrides occupy the same active 24-hour feature slot.
+      const featured = await env.DB.prepare("SELECT id FROM spotlight_profiles WHERE id=? AND status='published' AND featured_until>? AND (listing_expires_at IS NULL OR listing_expires_at>?)").bind(profileId,t,t).first();
       if (!featured) return json({ok:true,counted:false});
       const insert = await env.DB.prepare("INSERT OR IGNORE INTO spotlight_impressions(event_id,profile_id,day,created_at) VALUES(?,?,?,?)").bind(eventId,profileId,d,t).run();
       if ((insert.meta.changes || 0) > 0) await env.DB.prepare("INSERT INTO spotlight_daily_metrics(profile_id,day,featured_impressions) VALUES(?,?,1) ON CONFLICT(profile_id,day) DO UPDATE SET featured_impressions=featured_impressions+1").bind(profileId,d).run();
@@ -660,8 +655,9 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       await env.DB.batch([
         retireFeaturedStatement(env, timestamp, profileId),
         env.DB.prepare(
-          "UPDATE spotlight_profiles SET featured_until=?,listing_expires_at=NULL,updated_at=? WHERE id=? AND status='published'",
-        ).bind(FEATURED_OPEN_ENDED_UNTIL, timestamp, profileId),
+          "UPDATE spotlight_profiles SET featured_until=?,updated_at=? WHERE id=? AND status='published' AND listing_expires_at>?",
+        ).bind(timestamp + 86400, timestamp, profileId, timestamp),
+        env.DB.prepare("UPDATE spotlight_rotation_state SET last_profile_id=?,next_rotation_at=?,updated_at=? WHERE id=1").bind(profileId,timestamp + 86400,timestamp),
       ]);
       return json({ ok: true, featured_id: profileId, replaced_id: current && current.id !== profileId ? current.id : null }, 200, { "Cache-Control": "no-store" });
     }
@@ -856,25 +852,23 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       const updated = now();
       // Featured state only changes when this request says so explicitly (featured: true | false) or the profile is
       // unpublished. Saving, editing, approving or publishing a profile leaves the current featured creator alone.
-      const featured = status !== "published" ? null : b.featured === true ? FEATURED_OPEN_ENDED_UNTIL : b.featured === false ? null : old.featured_until;
-      const wasFeatured = Number(old.featured_until || 0) > updated;
-      const isOpenEndedFeature = Number(featured || 0) >= FEATURED_OPEN_ENDED_UNTIL;
+      const featured = status !== "published" ? null : b.featured === true ? updated + 86400 : b.featured === false ? null : old.featured_until;
       if (status === "published" && old.status === "published" && old.listing_expires_at
         && Number(old.listing_expires_at) <= updated && (b.status === "published" || b.featured === true)) {
         throw new HttpError(409, "listing_expired", "This listing has expired and cannot be republished or featured.");
       }
       const nextApplicationStatus = status === "published" ? "published" : applicationStatus;
-      // Any active featured placement is exempt from listing expiry while it lasts; a creator who steps down
-      // receives a fresh 30-day directory term instead of being swept immediately.
+      // Feature rotation never changes the original 30-day listing expiry.
       const listingExpiresAt = status !== "published" ? null
-        : isOpenEndedFeature ? null
-        : wasFeatured && old.status === "published" ? updated + SPOTLIGHT_TERM_SECONDS
         : old.status === "published" ? old.listing_expires_at
         : updated + SPOTLIGHT_TERM_SECONDS;
       const statements: D1PreparedStatement[] = [];
       // Promoting this profile is the ONLY thing that retires the previous featured creator (same atomic batch).
       // The previous creator stays published; they are only moved out of the featured slot.
-      if (b.featured === true) statements.push(retireFeaturedStatement(env, updated, seg[1]!));
+      if (b.featured === true) {
+        statements.push(retireFeaturedStatement(env, updated, seg[1]!));
+        statements.push(env.DB.prepare("UPDATE spotlight_rotation_state SET last_profile_id=?,next_rotation_at=?,updated_at=? WHERE id=1").bind(seg[1],updated + 86400,updated));
+      }
       statements.push(
         env.DB.prepare(
           "UPDATE spotlight_profiles SET display_name=?,tagline=?,description=?,category=?,contact_email=?,website_url=?,social_links=?,song_metadata=?,video_metadata=?,status=?,application_status=?,review_expires_at=CASE WHEN ?='published' THEN NULL ELSE review_expires_at END,listing_expires_at=?,featured_until=?,updated_at=?,published_at=CASE WHEN ?='published' THEN COALESCE(published_at,?) ELSE published_at END WHERE id=?",

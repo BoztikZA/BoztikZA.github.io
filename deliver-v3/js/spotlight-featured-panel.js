@@ -88,7 +88,7 @@ export function createFeaturedPanel({ api, getProfiles, reload, notify, anchor }
         ${current ? `
           <div class="sp-featured-thumb">${thumb ? `<img src="${esc(thumb)}" alt="" width="72" height="72">` : esc((current.display_name || "?").slice(0, 2).toUpperCase())}</div>
           <div class="sp-featured-meta"><span class="cc-eyebrow">Currently featured on the homepage</span><strong>${esc(current.display_name)}</strong>
-            <small>${esc(categoryLabel(current.category))} · stays featured until you change it</small></div>
+            <small>${esc(categoryLabel(current.category))} · rotates every 24 hours (you can change it anytime)</small></div>
           <div class="sp-featured-actions">
             <button type="button" class="cc-btn" data-featured-preview="${esc(current.id)}">View placement</button>
             <button type="button" class="cc-btn" data-featured-remove="${esc(current.id)}">Remove from featured</button>
@@ -104,7 +104,7 @@ export function createFeaturedPanel({ api, getProfiles, reload, notify, anchor }
           </select>
           <button type="button" class="cc-btn sp-approve" id="sp-featured-go" disabled>Preview &amp; feature…</button>
         </div>
-        <small>Only approved creators with a live listing can be featured. Approve and publish an application first.</small>
+        <small>Only approved creators with a live 30-day listing can be featured. The homepage rotates every 24 hours; you can override it here at any time.</small>
       </div>`;
   }
 

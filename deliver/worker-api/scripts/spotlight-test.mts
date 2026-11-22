@@ -219,6 +219,14 @@ class FakeD1 {
       Object.assign(profile, { image_key: key, image_size: size, image_content_type: contentType, updated_at: updatedAt });
       return 1;
     }
+    if (sql.startsWith("DELETE FROM spotlight_profiles WHERE id=? AND status='published'")) {
+      const profile = this.profiles.get(String(args[0]));
+      if (!profile || profile.status !== "published" || Number(profile.listing_expires_at) > Number(args[1])) return 0;
+      this.profiles.delete(String(args[0]));
+      for (const [key, image] of this.gallery) if (String(image.profile_id) === String(args[0])) this.gallery.delete(key);
+      this.reviewEvents = this.reviewEvents.filter(event => String(event[1]) !== String(args[0]));
+      return 1;
+    }
     if (sql.includes("SET status='archived',application_status=")) {
       const [applicationStatus, reviewExpiry, updatedAt, id, expectedApplicationStatus, expectedStatus] = args;
       const profile = this.profiles.get(String(id));
@@ -960,13 +968,11 @@ console.log("Expired listings are hidden, their images are removed, and shared s
   assert.equal((await publicList.json() as any).profiles.some((profile: any) => profile.id === id), false);
   const report = await cleanupSpotlightExpiry(env as never);
   assert.deepEqual(report, { expired: 1, failed: 0, removed_images: 2 });
-  assert.equal(db.profiles.get(id).application_status, "expired");
-  assert.equal(db.profiles.get(id).status, "archived");
-  assert.equal(db.profiles.get(id).image_key, null);
+  assert.equal(db.profiles.has(id), false, "an expired published profile is permanently deleted");
   assert.equal(db.gallery.size, 0);
   assert.equal(bucket.bytes(), 0);
   assert.equal(db.storage.total_bytes, 0);
-  assert.equal(db.reviewEvents.length, 1);
+  assert.equal(db.reviewEvents.length, 0, "dependent review history is deleted with the profile");
 }
 
 console.log("Failed expiry deletion retains image references and retries without releasing storage early");

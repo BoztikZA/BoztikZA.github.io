@@ -1,7 +1,7 @@
 import { config } from "./config.js";
 import { authHeaders, getSession, onAuthChange } from "./auth.js";
 import { prepareSpotlightImage } from "../../spotlight/image-processing.js";
-import { createFeaturedPanel } from "./spotlight-featured-panel.js?v=1";
+import { createFeaturedPanel } from "./spotlight-featured-panel.js?v=2";
 import { spotlightProfileSaveRequest, normaliseWebsiteUrl, validateSpotlightDraft, publishGateState, describeSaveError } from "./spotlight-profile-request.mjs?v=2";
 
 const $ = id => document.getElementById(id);

@@ -18,7 +18,6 @@ import {
   releaseStoredPending,
 } from "./storage";
 import { processSpotlightEmailOutbox } from "./spotlight-email";
-import { FEATURED_OPEN_ENDED_UNTIL } from "./spotlight-featured";
 
 const nowSec = () => Math.floor(Date.now() / 1000);
 
@@ -285,8 +284,7 @@ export async function cleanupSpotlightExpiry(env: Env, max = 25): Promise<Spotli
        FROM spotlight_profiles
       WHERE (application_status IN ('new','under_review','approved','declined','expired')
              AND review_expires_at IS NOT NULL AND review_expires_at<=?)
-         OR (status='published' AND listing_expires_at IS NOT NULL AND listing_expires_at<=?
-             AND COALESCE(featured_until,0)<${FEATURED_OPEN_ENDED_UNTIL})
+         OR (status='published' AND listing_expires_at IS NOT NULL AND listing_expires_at<=?)
       ORDER BY COALESCE(review_expires_at,listing_expires_at)
       LIMIT ?`,
   ).bind(timestamp, timestamp, max).all<{ id: string; application_status: string; status: string }>();
@@ -303,6 +301,21 @@ export async function cleanupSpotlightExpiry(env: Env, max = 25): Promise<Spotli
     const listingDue = current.status === "published"
       && current.listing_expires_at !== null && Number(current.listing_expires_at) <= nowSec();
     if (!reviewDue && !listingDue) continue;
+
+    // Published listings expire permanently: delete R2 images first, then the D1 profile.
+    // If any object deletion fails, keep the row and retry on the next cron run.
+    if (listingDue && current.status === "published") {
+      const gallery = await env.DB.prepare("SELECT image_key FROM spotlight_gallery_images WHERE profile_id=?").bind(profile.id).all<{ image_key: string }>();
+      const keys = [current.image_key, ...(gallery.results || []).map(image => image.image_key)].filter((key): key is string => Boolean(key));
+      let failedDelete = false;
+      for (const key of keys) { try { await deleteObject(env,key); report.removed_images += 1; storageReconcileNeeded = true; } catch (e) { console.error("[spotlight] expired listing image delete failed",profile.id,e); failedDelete = true; } }
+      if (failedDelete) { report.failed += 1; await markUncertain(env,"spotlight_expiry_image_delete_failed"); continue; }
+      const deleted = await env.DB.prepare("DELETE FROM spotlight_profiles WHERE id=? AND status='published' AND listing_expires_at<=?").bind(profile.id,nowSec()).run();
+      if ((deleted.meta.changes || 0) !== 1) { report.failed += 1; if (keys.length) await markUncertain(env,"spotlight_expiry_profile_delete_conflict"); continue; }
+      report.expired += 1;
+      if (keys.length) await markUncertain(env,"spotlight_expiry_images_removed");
+      continue;
+    }
 
     const nextApplicationStatus = current.application_status === "declined" ? "declined" : "expired";
     if (current.status !== "archived" || current.application_status !== nextApplicationStatus) {
@@ -390,6 +403,25 @@ export async function cleanupSpotlightExpiry(env: Env, max = 25): Promise<Spotli
   return report;
 }
 
+
+/** Persisted round-robin homepage rotation, advanced by the Worker cron. */
+export async function rotateSpotlightFeature(env: Env): Promise<{rotated:boolean;featured_id:string|null;previous_id:string|null;next_rotation_at:number|null}> {
+  const t=nowSec();
+  const state=await env.DB.prepare("SELECT last_profile_id,next_rotation_at FROM spotlight_rotation_state WHERE id=1").first<any>();
+  const current=await env.DB.prepare("SELECT id,featured_until FROM spotlight_profiles WHERE status='published' AND featured_until>? AND listing_expires_at>? ORDER BY featured_until DESC LIMIT 1").bind(t,t).first<any>();
+  if(current && Number(state?.next_rotation_at || current.featured_until)>t) return {rotated:false,featured_id:current.id,previous_id:null,next_rotation_at:Number(state?.next_rotation_at || current.featured_until)};
+  await env.DB.prepare("UPDATE spotlight_profiles SET featured_until=NULL WHERE featured_until IS NOT NULL").run();
+  const last=state?.last_profile_id ? await env.DB.prepare("SELECT COALESCE(published_at,created_at) AS sort_at,id FROM spotlight_profiles WHERE id=?").bind(state.last_profile_id).first<any>() : null;
+  const base="SELECT id FROM spotlight_profiles WHERE status='published' AND application_status IN ('approved','published') AND listing_expires_at>?";
+  let next=last ? await env.DB.prepare(base+" AND (COALESCE(published_at,created_at)>? OR (COALESCE(published_at,created_at)=? AND id>?)) ORDER BY COALESCE(published_at,created_at),id LIMIT 1").bind(t,last.sort_at,last.sort_at,last.id).first<any>() : null;
+  if(!next) next=await env.DB.prepare(base+" ORDER BY COALESCE(published_at,created_at),id LIMIT 1").bind(t).first<any>();
+  if(!next){ await env.DB.prepare("UPDATE spotlight_rotation_state SET last_profile_id=NULL,next_rotation_at=NULL,updated_at=? WHERE id=1").bind(t).run(); return {rotated:false,featured_id:null,previous_id:current?.id || null,next_rotation_at:null}; }
+  const end=t+86400;
+  await env.DB.batch([env.DB.prepare("UPDATE spotlight_profiles SET featured_until=?,updated_at=? WHERE id=? AND status='published' AND listing_expires_at>?").bind(end,t,next.id,t),env.DB.prepare("UPDATE spotlight_rotation_state SET last_profile_id=?,next_rotation_at=?,updated_at=? WHERE id=1").bind(next.id,end,t)]);
+  const confirmed=await env.DB.prepare("SELECT id FROM spotlight_profiles WHERE id=? AND featured_until=?").bind(next.id,end).first<any>();
+  if(!confirmed) throw new Error("Spotlight rotation candidate changed before feature assignment.");
+  return {rotated:true,featured_id:next.id,previous_id:current?.id || null,next_rotation_at:end};
+}
 export async function housekeeping(env: Env): Promise<void> {
   const now = nowSec();
   const cutoffHour = new Date(Date.now() - 8 * 86400_000).toISOString().slice(0, 13);
