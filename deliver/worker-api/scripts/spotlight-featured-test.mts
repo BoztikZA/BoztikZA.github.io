@@ -13,7 +13,8 @@ import { FEATURED_OPEN_ENDED_UNTIL } from "../src/lib/spotlight-featured.ts";
 
 const SALT = "featured-test-salt";
 const TOKEN = "featured-test-token";
-const TERM = 72 * 60 * 60;
+const TERM = 30 * 24 * 60 * 60;
+const REVIEW_TERM = 72 * 60 * 60;
 const nowSec = () => Math.floor(Date.now() / 1000);
 
 // ---- minimal D1 adapter over node:sqlite -------------------------------------------------------------------------
@@ -71,7 +72,10 @@ const apply = async (name: string) => {
     website_url: "https://example.com", contact_email: "", social_links: {},
   }, `203.0.113.${ipCounter++}`);
   assert.equal(result.status, 201, `application for ${name} should be accepted: ${JSON.stringify(result.body)}`);
-  return (db.raw.prepare("SELECT id FROM spotlight_profiles WHERE display_name=?").get(name) as any).id as string;
+  const id = (db.raw.prepare("SELECT id FROM spotlight_profiles WHERE display_name=?").get(name) as any).id as string;
+  const reviewTerm = Number(row(id).review_expires_at) - nowSec();
+  assert.ok(reviewTerm > REVIEW_TERM - 30 && reviewTerm <= REVIEW_TERM, `new applications retain a 72h review window (got ${reviewTerm}s)`);
+  return id;
 };
 const row = (id: string) => db.raw.prepare("SELECT * FROM spotlight_profiles WHERE id=?").get(id) as any;
 const publicProfiles = async () => (await pub("GET", "")).body.profiles as any[];
@@ -88,7 +92,7 @@ assert.equal((await review(alpha, "approve")).status, 200);
 assert.equal((await publish(alpha, { featured: true })).status, 200);
 assert.deepEqual(await featuredNames(), ["Alpha Studio"]);
 assert.equal(row(alpha).featured_until, FEATURED_OPEN_ENDED_UNTIL, "the main featured placement is open-ended (no 24h timer)");
-assert.equal(row(alpha).listing_expires_at, null, "the open-ended featured creator is exempt from the 72h listing term");
+assert.equal(row(alpha).listing_expires_at, null, "the open-ended featured creator is exempt from the 30-day listing term");
 assert.equal((await publicProfiles())[0].featured_open_ended, true);
 
 console.log("Scenario 1. A new application is submitted, then reviewed: the featured creator stays");
@@ -108,6 +112,8 @@ assert.equal(row(alpha).featured_until, FEATURED_OPEN_ENDED_UNTIL);
 console.log("Scenario 2. Approving a new creator makes them eligible, but does not feature them");
 assert.equal((await review(bravo, "approve")).status, 200);
 assert.equal(row(bravo).application_status, "approved");
+const bravoReviewTerm = Number(row(bravo).review_expires_at) - nowSec();
+assert.ok(bravoReviewTerm > REVIEW_TERM - 30 && bravoReviewTerm <= REVIEW_TERM, `approved applications retain a 72h publish window (got ${bravoReviewTerm}s)`);
 assert.equal(row(bravo).featured_until, null, "approval must never promote a creator to the featured slot");
 assert.deepEqual(await featuredNames(), ["Alpha Studio"], "approving must not change the featured creator");
 assert.equal((await directoryNames()).includes("Bravo Media"), false, "an approved-but-unpublished creator is not public yet");
@@ -115,6 +121,17 @@ assert.equal((await publish(bravo)).status, 200);
 assert.deepEqual(await featuredNames(), ["Alpha Studio"], "publishing a creator to the directory must not change the featured creator");
 const afterPublish = await publicProfiles();
 assert.ok(afterPublish.some(p => p.display_name === "Bravo Media" && p.featured === false), "Bravo is now in the community directory, not featured");
+const bravoTerm = Number(row(bravo).listing_expires_at) - nowSec();
+assert.ok(bravoTerm > TERM - 30 && bravoTerm <= TERM, `a newly published listing receives 30 days (got ${bravoTerm}s)`);
+const automaticImpression = await pub("POST", "impression", {
+  event_id: "rotation-impression-0001", profile_id: bravo, placement: "rotation",
+}, "203.0.113.80");
+assert.equal(automaticImpression.status, 200);
+assert.equal(automaticImpression.body.counted, true, "automatic homepage rotation impressions count for published non-featured profiles");
+const manualImpression = await pub("POST", "impression", {
+  event_id: "manual-impression-0001", profile_id: bravo,
+}, "203.0.113.81");
+assert.equal(manualImpression.body.counted, false, "manual featured impressions still require an explicitly featured profile");
 
 console.log("Scenario 3. Explicitly featuring another creator replaces the previous one, who stays in the directory");
 assert.equal((await featureExplicit(bravo, null)).status, 409, "a stale screen (expects no featured creator) cannot replace the current one");
@@ -130,7 +147,7 @@ assert.equal(row(alpha).featured_until, null);
 assert.equal(row(alpha).status, "published", "the previous featured creator is not unpublished");
 assert.ok((await directoryNames()).includes("Alpha Studio"), "the previous featured creator stays in the community directory");
 const alphaTerm = Number(row(alpha).listing_expires_at) - nowSec();
-assert.ok(alphaTerm > TERM - 30 && alphaTerm <= TERM, `the previous creator gets a fresh 72h term (got ${alphaTerm}s)`);
+assert.ok(alphaTerm > TERM - 30 && alphaTerm <= TERM, `the previous creator gets a fresh 30-day term (got ${alphaTerm}s)`);
 assert.equal((await featureExplicit(bravo, bravo)).status, 200, "re-confirming the current featured creator is allowed and idempotent");
 assert.deepEqual(await featuredNames(), ["Bravo Media"]);
 
@@ -162,7 +179,8 @@ assert.ok(Number(row(bravo).listing_expires_at) > nowSec(), "the creator who ste
 assert.equal((await publish(bravo)).status, 200, "re-saving a non-featured creator does not disturb the featured one");
 assert.deepEqual(await featuredNames(), ["Alpha Studio"]);
 
-console.log("Removing the feature is explicit and leaves the creator in the directory");
+console.log("Removing a legacy time-limited feature gives the creator a fresh 30-day directory term");
+db.raw.prepare("UPDATE spotlight_profiles SET featured_until=?,listing_expires_at=? WHERE id=?").run(nowSec() + 3600, nowSec() + 3600, alpha);
 assert.equal((await admin("PATCH", `profile/${alpha}`, { featured: false })).status, 200);
 assert.deepEqual(await featuredNames(), []);
 assert.ok((await directoryNames()).includes("Alpha Studio"));
@@ -175,7 +193,7 @@ assert.deepEqual(await featuredNames(), []);
 assert.equal(row(bravo).featured_until, null);
 assert.ok((await directoryNames()).includes("Alpha Studio"));
 
-console.log("The 72h sweep never expires the open-ended featured creator, but still expires ordinary listings");
+console.log("The expiry sweep never expires the open-ended featured creator, but still expires ordinary listings after their 30-day term");
 assert.equal((await publish(bravo)).status, 200);
 assert.equal((await featureExplicit(bravo, null)).status, 200);
 db.raw.prepare("UPDATE spotlight_profiles SET listing_expires_at=? WHERE id=?").run(nowSec() - 10, alpha);

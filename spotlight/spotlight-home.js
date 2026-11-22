@@ -1,11 +1,11 @@
 import {
-  API_BASE as API, heroCardMarkup, discoverSectionMarkup, noFeaturedMarkup, profileImageUrls, initials,
+  API_BASE as API, heroCardMarkup, discoverSectionMarkup, profileImageUrls, initials,
 } from "./home-cards.js";
 
 /**
  * Homepage Spotlight.
- *  - The main featured creator is ONLY a profile an administrator explicitly featured (profile.featured === true).
- *  - Every other approved, published profile appears in the compact "Discover More Creators" strip.
+ *  - An administrator-selected featured creator stays pinned until changed.
+ *  - When no manual feature is selected, published profiles rotate through the main homepage placement.
  *  - Pending, declined and unpublished applications are never returned by the public API, so they can never appear.
  */
 (() => {
@@ -13,7 +13,12 @@ import {
   if (!host) return;
 
   let countdownInterval = null;
-  const DISCOVER_LIMIT = 24;
+  let galleryIntervals = [];
+  let rotationInterval = null;
+  let rotationPaused = false;
+  let rotationProfiles = [];
+  let rotationIndex = 0;
+  const DISCOVER_LIMIT = 50;
 
   function trackFeaturedImpression(card) {
     if (!card || card.dataset.impressionSent) return;
@@ -21,7 +26,7 @@ import {
     fetch(API + "/impression", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ event_id: crypto.randomUUID().replace(/-/g, ""), profile_id: card.dataset.profileId }),
+      body: JSON.stringify({ event_id: crypto.randomUUID().replace(/-/g, ""), profile_id: card.dataset.profileId, placement: card.dataset.featuredMode || "manual" }),
       keepalive: true
     }).catch(() => {});
   }
@@ -127,7 +132,7 @@ import {
       media.addEventListener("focusin", () => { paused = true; });
       media.addEventListener("focusout", event => { if (!media.contains(event.relatedTarget)) paused = false; });
       if (!reducedMotion) {
-        window.setInterval(() => { if (!paused && !imageFailed) select((activeIndex + 1) % urls.length); }, 4500);
+        galleryIntervals.push(window.setInterval(() => { if (!paused && !imageFailed) select((activeIndex + 1) % urls.length); }, 4500));
       }
     });
   }
@@ -188,6 +193,63 @@ import {
       </div>`;
   }
 
+  function bindRotationPause() {
+    host.addEventListener("pointerenter", () => { rotationPaused = true; });
+    host.addEventListener("pointerleave", () => { rotationPaused = false; });
+    host.addEventListener("focusin", () => { rotationPaused = true; });
+    host.addEventListener("focusout", event => {
+      if (!host.contains(event.relatedTarget)) rotationPaused = false;
+    });
+  }
+
+  function renderProfiles(featured, others, mode) {
+    const previousScroll = host.querySelector(".hm-discover-track")?.scrollLeft || 0;
+    galleryIntervals.forEach(intervalId => window.clearInterval(intervalId));
+    galleryIntervals = [];
+    if (countdownInterval !== null) {
+      window.clearInterval(countdownInterval);
+      countdownInterval = null;
+    }
+
+    host.innerHTML = heroCardMarkup(featured) + discoverSectionMarkup(others);
+    host.classList.add("hm-spotlight-grid--stacked");
+    const hero = host.querySelector('[data-featured="1"]');
+    if (hero) hero.dataset.featuredMode = mode;
+
+    host.querySelectorAll(".hm-spotlight-image [data-layer='0']").forEach(image => {
+      image.addEventListener("error", () => {
+        const fallback = document.createElement("span");
+        fallback.className = "hm-spotlight-image-fallback";
+        fallback.setAttribute("role", "img");
+        fallback.setAttribute("aria-label", "Initials for " + image.alt.split(" logo or profile photograph")[0]);
+        fallback.textContent = initials(image.alt);
+        image.closest(".hm-spotlight-media").dataset.galleryError = "1";
+        image.closest(".hm-spotlight-media").querySelector(".hm-spotlight-gallery-controls")?.remove();
+        image.closest(".hm-spotlight-image").replaceChildren(fallback);
+      }, { once: true });
+    });
+    host.querySelectorAll(".hm-discover-thumb img").forEach(image => {
+      image.addEventListener("error", () => {
+        const fallback = document.createElement("span");
+        fallback.className = "hm-discover-initials";
+        fallback.setAttribute("aria-hidden", "true");
+        fallback.textContent = initials(image.closest(".hm-discover-card")?.querySelector(".hm-discover-name")?.textContent);
+        image.replaceWith(fallback);
+      }, { once: true });
+    });
+
+    bindShareButtons();
+    bindImageGalleries([featured]);
+    bindDiscoverStrip();
+    const newTrack = host.querySelector(".hm-discover-track");
+    if (newTrack && previousScroll) newTrack.scrollLeft = previousScroll;
+    trackFeaturedImpressions();
+    updateCountdowns();
+    if (host.querySelector("[data-countdown]")) countdownInterval = window.setInterval(updateCountdowns, 1000);
+  }
+
+  bindRotationPause();
+
   fetch(API + "?limit=" + DISCOVER_LIMIT, { headers: { Accept: "application/json" } })
     .then(response => {
       if (!response.ok) throw new Error("Spotlight is temporarily unavailable.");
@@ -199,44 +261,37 @@ import {
       const valid = data.profiles.filter(profile => profile && typeof profile === "object"
         && typeof profile.display_name === "string" && profile.display_name.trim()
         && typeof profile.slug === "string" && profile.slug);
-      // Only an explicitly featured, still-active profile takes the main position. Nobody is promoted automatically.
-      const featured = valid.find(profile => profile.featured === true && Number(profile.featured_until) > nowSeconds) || null;
-      const others = valid.filter(profile => profile !== featured);
+      const manualFeatured = valid.find(profile => profile.featured === true && Number(profile.featured_until) > nowSeconds) || null;
 
-      if (!featured && !others.length) { showEmptyState(); return; }
+      if (manualFeatured) {
+        rotationProfiles = [];
+        if (rotationInterval !== null) window.clearInterval(rotationInterval);
+        rotationInterval = null;
+        renderProfiles(manualFeatured, valid.filter(profile => profile !== manualFeatured), "manual");
+        return;
+      }
 
-      host.innerHTML = (featured ? heroCardMarkup(featured) : noFeaturedMarkup())
-        + discoverSectionMarkup(others);
-      host.classList.add("hm-spotlight-grid--stacked");
+      if (!valid.length) { showEmptyState(); return; }
 
-      host.querySelectorAll(".hm-spotlight-image [data-layer='0']").forEach(image => {
-        image.addEventListener("error", () => {
-          const fallback = document.createElement("span");
-          fallback.className = "hm-spotlight-image-fallback";
-          fallback.setAttribute("role", "img");
-          fallback.setAttribute("aria-label", "Initials for " + image.alt.split(" logo or profile photograph")[0]);
-          fallback.textContent = initials(image.alt);
-          image.closest(".hm-spotlight-media").dataset.galleryError = "1";
-          image.closest(".hm-spotlight-media").querySelector(".hm-spotlight-gallery-controls")?.remove();
-          image.closest(".hm-spotlight-image").replaceChildren(fallback);
-        }, { once: true });
-      });
-      host.querySelectorAll(".hm-discover-thumb img").forEach(image => {
-        image.addEventListener("error", () => {
-          const fallback = document.createElement("span");
-          fallback.className = "hm-discover-initials";
-          fallback.setAttribute("aria-hidden", "true");
-          fallback.textContent = initials(image.closest(".hm-discover-card")?.querySelector(".hm-discover-name")?.textContent);
-          image.replaceWith(fallback);
-        }, { once: true });
-      });
+      // All eligible profiles share the slot in a predictable sequence. The time-based starting point
+      // means visitors arriving at different times see different creators without server-side state.
+      rotationProfiles = valid;
+      const rotationPeriodMs = 15000;
+      rotationIndex = Math.floor(Date.now() / rotationPeriodMs) % rotationProfiles.length;
+      const showRotatingProfile = () => {
+        const active = rotationProfiles[rotationIndex];
+        renderProfiles(active, rotationProfiles.filter(profile => profile !== active), "rotation");
+      };
+      showRotatingProfile();
 
-      bindShareButtons();
-      bindImageGalleries(featured ? [featured] : []);
-      bindDiscoverStrip();
-      trackFeaturedImpressions();
-      updateCountdowns();
-      if (host.querySelector("[data-countdown]")) countdownInterval = window.setInterval(updateCountdowns, 1000);
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (rotationProfiles.length > 1 && !reducedMotion) {
+        rotationInterval = window.setInterval(() => {
+          if (rotationPaused || document.hidden) return;
+          rotationIndex = (rotationIndex + 1) % rotationProfiles.length;
+          showRotatingProfile();
+        }, rotationPeriodMs);
+      }
     })
     .catch(error => {
       console.error("[spotlight-home] Unable to load published profiles.", error);

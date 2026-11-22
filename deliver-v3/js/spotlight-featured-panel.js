@@ -56,7 +56,9 @@ export function createFeaturedPanel({ api, getProfiles, reload, notify, anchor }
   let pending = null; // { target, current }
 
   const live = () => getProfiles().filter(isLiveProfile);
-  const currentFeatured = () => live().find(p => p.featured) || null;
+  const currentFeatured = () => live().filter(p => p.featured)
+    .sort((a, b) => Number(b.featured_until || 0) - Number(a.featured_until || 0)
+      || Number(b.updated_at || 0) - Number(a.updated_at || 0))[0] || null;
 
   function counts() {
     const all = getProfiles();
@@ -162,7 +164,7 @@ export function createFeaturedPanel({ api, getProfiles, reload, notify, anchor }
       await reload();
       notify("✓ " + target.display_name + " is now the main featured creator on the homepage." + (current ? " " + current.display_name + " remains published in the directory." : ""));
     } catch (failure) {
-      if (failure.status === 409) {
+      if (failure.code === "featured_changed") {
         error.textContent = failure.message + " The list has been refreshed; close this window and try again.";
         await reload();
       } else {

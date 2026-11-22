@@ -15,7 +15,9 @@ import { reserveUpload, claimUpload, commitUpload, getPendingUpload, holdStoredU
 import { assertSameSiteOrigin, checkPublicRate, error, json, readJson, requireJson, segments, wrap } from "./util";
 
 const CATEGORIES = new Set(["small-business","youtube","twitch","gaming","photography","design","music","creator","freelance","other"]);
-const SPOTLIGHT_TERM_SECONDS = 72 * 60 * 60;
+const SPOTLIGHT_TERM_SECONDS = 30 * 24 * 60 * 60;
+const SPOTLIGHT_REVIEW_WINDOW_SECONDS = 72 * 60 * 60;
+const SPOTLIGHT_DUPLICATE_WINDOW_SECONDS = 72 * 60 * 60;
 const ID = () => crypto.randomUUID().replace(/-/g, "").slice(0, 20);
 const now = () => Math.floor(Date.now() / 1000);
 const day = (env: Env) => localDay(env);
@@ -36,8 +38,8 @@ async function analyticsExclusion(request: Request, env: Env): Promise<"admin" |
  */
 function retireFeaturedStatement(env: Env, timestamp: number, exceptId: string): D1PreparedStatement {
   return env.DB.prepare(
-    "UPDATE spotlight_profiles SET listing_expires_at=CASE WHEN featured_until>=? THEN ? ELSE listing_expires_at END,featured_until=NULL,updated_at=? WHERE featured_until>? AND id<>?",
-  ).bind(FEATURED_OPEN_ENDED_UNTIL, timestamp + SPOTLIGHT_TERM_SECONDS, timestamp, timestamp, exceptId);
+    "UPDATE spotlight_profiles SET listing_expires_at=?,featured_until=NULL,updated_at=? WHERE featured_until>? AND id<>?",
+  ).bind(timestamp + SPOTLIGHT_TERM_SECONDS, timestamp, timestamp, exceptId);
 }
 const clean = (v: unknown, max: number) => typeof v === "string" ? v.trim().replace(/\s+/g, " ").slice(0, max) : "";
 const cleanDescription = (v: unknown) => typeof v === "string"
@@ -457,7 +459,7 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
             SELECT 1 FROM spotlight_profiles
              WHERE contact_email=? AND lower(display_name)=lower(?) AND status<>'archived' AND created_at>=?
           )`,
-      ).bind(id,slug,displayName,tagline,description,category,email,website,JSON.stringify(social),song ? JSON.stringify(song) : null,video ? JSON.stringify(video) : null,timestamp + SPOTLIGHT_TERM_SECONDS,timestamp,timestamp,ownerTokenHash,SPOTLIGHT_TERMS_VERSION,timestamp,email,displayName,timestamp - SPOTLIGHT_TERM_SECONDS).run();
+      ).bind(id,slug,displayName,tagline,description,category,email,website,JSON.stringify(social),song ? JSON.stringify(song) : null,video ? JSON.stringify(video) : null,timestamp + SPOTLIGHT_REVIEW_WINDOW_SECONDS,timestamp,timestamp,ownerTokenHash,SPOTLIGHT_TERMS_VERSION,timestamp,email,displayName,timestamp - SPOTLIGHT_DUPLICATE_WINDOW_SECONDS).run();
       if ((inserted.meta.changes || 0) === 0) {
         return json({
           ok: true,
@@ -609,7 +611,13 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
       if (!/^[a-zA-Z0-9_-]{12,64}$/.test(eventId) || !/^[a-f0-9]{20}$/i.test(profileId)) throw new HttpError(422, "invalid_event", "Invalid impression event.");
       if (await analyticsExclusion(request, env)) return json({ok:true,counted:false});
       const d = day(env), t = now();
-      const featured = await env.DB.prepare("SELECT id FROM spotlight_profiles WHERE id=? AND status='published' AND featured_until>? AND (listing_expires_at IS NULL OR listing_expires_at>?)").bind(profileId,t,t).first();
+      const placement = b.placement === undefined ? "manual" : clean(b.placement, 16);
+      if (placement !== "manual" && placement !== "rotation") {
+        throw new HttpError(422, "invalid_impression_placement", "The featured placement type is invalid.");
+      }
+      const featured = placement === "rotation"
+        ? await env.DB.prepare("SELECT id FROM spotlight_profiles WHERE id=? AND status='published' AND (featured_until IS NULL OR featured_until<=?) AND (listing_expires_at IS NULL OR listing_expires_at>?)").bind(profileId,t,t).first()
+        : await env.DB.prepare("SELECT id FROM spotlight_profiles WHERE id=? AND status='published' AND featured_until>? AND (listing_expires_at IS NULL OR listing_expires_at>?)").bind(profileId,t,t).first();
       if (!featured) return json({ok:true,counted:false});
       const insert = await env.DB.prepare("INSERT OR IGNORE INTO spotlight_impressions(event_id,profile_id,day,created_at) VALUES(?,?,?,?)").bind(eventId,profileId,d,t).run();
       if ((insert.meta.changes || 0) > 0) await env.DB.prepare("INSERT INTO spotlight_daily_metrics(profile_id,day,featured_impressions) VALUES(?,?,1) ON CONFLICT(profile_id,day) DO UPDATE SET featured_impressions=featured_impressions+1").bind(profileId,d).run();
@@ -644,8 +652,8 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
         throw new HttpError(409, "listing_expired", "This listing has expired and cannot be republished or featured.");
       }
       const current = await env.DB.prepare(
-        "SELECT id,display_name FROM spotlight_profiles WHERE status='published' AND featured_until>? ORDER BY featured_until DESC, updated_at DESC LIMIT 1",
-      ).bind(timestamp).first<any>();
+        "SELECT id,display_name FROM spotlight_profiles WHERE status='published' AND featured_until>? AND (listing_expires_at IS NULL OR listing_expires_at>?) ORDER BY featured_until DESC, updated_at DESC LIMIT 1",
+      ).bind(timestamp,timestamp).first<any>();
       if ((current?.id ?? null) !== expectedCurrent) {
         throw new HttpError(409, "featured_changed", "The featured creator changed since you opened this screen. Refresh and review before replacing.");
       }
@@ -705,6 +713,7 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
         contact_email:r.contact_email,
         status:r.status,
         application_status:r.application_status,
+        updated_at:r.updated_at,
         review_unread:Boolean(r.review_unread),
         review_expires_at:r.review_expires_at,
         listing_expires_at:r.listing_expires_at,
@@ -765,7 +774,7 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       } else if (action === "approve" && ["new","under_review"].includes(fromStatus)) {
         toStatus = "approved";
         updateSql = "UPDATE spotlight_profiles SET application_status='approved',review_unread=0,review_expires_at=?,reviewed_at=COALESCE(reviewed_at,?),decided_at=? WHERE id=? AND application_status IN ('new','under_review')";
-        updateArgs = [timestamp + SPOTLIGHT_TERM_SECONDS,timestamp,timestamp,seg[1]];
+        updateArgs = [timestamp + SPOTLIGHT_REVIEW_WINDOW_SECONDS,timestamp,timestamp,seg[1]];
       } else if (action === "decline" && ["new","under_review"].includes(fromStatus)) {
         reason = cleanDescription(body.reason).slice(0, 1000);
         if (reason.length < 10) throw new HttpError(422, "decline_reason_required", "Provide a clear decline reason of at least 10 characters.");
@@ -848,18 +857,18 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       // Featured state only changes when this request says so explicitly (featured: true | false) or the profile is
       // unpublished. Saving, editing, approving or publishing a profile leaves the current featured creator alone.
       const featured = status !== "published" ? null : b.featured === true ? FEATURED_OPEN_ENDED_UNTIL : b.featured === false ? null : old.featured_until;
-      const wasOpenEndedFeature = Number(old.featured_until || 0) >= FEATURED_OPEN_ENDED_UNTIL;
+      const wasFeatured = Number(old.featured_until || 0) > updated;
       const isOpenEndedFeature = Number(featured || 0) >= FEATURED_OPEN_ENDED_UNTIL;
       if (status === "published" && old.status === "published" && old.listing_expires_at
         && Number(old.listing_expires_at) <= updated && (b.status === "published" || b.featured === true)) {
         throw new HttpError(409, "listing_expired", "This listing has expired and cannot be republished or featured.");
       }
       const nextApplicationStatus = status === "published" ? "published" : applicationStatus;
-      // The open-ended featured placement is exempt from the 72-hour listing term while it lasts; a creator who
-      // leaves it gets a fresh term so they stay in the directory instead of being swept the moment they step down.
+      // Any active featured placement is exempt from listing expiry while it lasts; a creator who steps down
+      // receives a fresh 30-day directory term instead of being swept immediately.
       const listingExpiresAt = status !== "published" ? null
         : isOpenEndedFeature ? null
-        : wasOpenEndedFeature && old.status === "published" ? updated + SPOTLIGHT_TERM_SECONDS
+        : wasFeatured && old.status === "published" ? updated + SPOTLIGHT_TERM_SECONDS
         : old.status === "published" ? old.listing_expires_at
         : updated + SPOTLIGHT_TERM_SECONDS;
       const statements: D1PreparedStatement[] = [];
