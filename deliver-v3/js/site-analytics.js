@@ -11,12 +11,12 @@
 //   * the report, CSV and screen all read the same view-model (analytics/model.js)
 // The public exports (initSiteAnalytics, refreshSiteAnalytics) are unchanged: command-centre.js calls them as before.
 import { fetchPageAnalytics } from "./api.js";
-import { fetchSummary, fetchTrend, fetchSources, fetchFlow, fetchStore, fetchHealth, fetchSpotlight, AnalyticsError } from "./analytics/client.js?v=an4";
+import { fetchSummary, fetchTrend, fetchSources, fetchFlow, fetchStore, fetchHealth, fetchSpotlight, AnalyticsError } from "./analytics/client.js?v=an5";
 import { PRESETS, DEFAULT_RANGE, normalizeRange, rangeId, rangeLabel, validateCustom, windowMatches, addDays, MIN_CUSTOM_DAY } from "./analytics/range.js?v=an2";
-import { buildAnalyticsModel, metricPoints, METRICS } from "./analytics/model.js?v=an2";
+import { buildAnalyticsModel, metricPoints, METRICS } from "./analytics/model.js?v=an3";
 import { buildSignals } from "./analytics/signals.js?v=an2";
 import { createTrendChart } from "./analytics/chart.js?v=an2";
-import { buildFullReport, buildCsv, csvFileName } from "./analytics/export.js?v=an8";
+import { buildFullReport, buildCsv, csvFileName } from "./analytics/export.js?v=an9";
 import * as V from "./analytics/views.js?v=an7";
 
 const $ = id => document.getElementById(id);
