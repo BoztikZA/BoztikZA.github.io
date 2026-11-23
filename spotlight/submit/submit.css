@@ -76,3 +76,11 @@
 @media(max-width:760px){.sp-support-panel{grid-template-columns:1fr;margin-top:5px}.sp-support-options{max-width:520px}}
 @media(max-width:420px){.sp-support-panel{width:calc(100% - 28px);padding:20px}.sp-support-option{min-height:78px;padding:12px}}
 @media(prefers-reduced-motion:reduce){.sp-support-option,.sp-support-custom{transition:none}.sp-support-option:hover,.sp-support-custom:hover{transform:none}}
+
+
+/* Recognisable PayPal payment mark for donor confidence. */
+.sp-paypal-trust{grid-column:1/-1;display:flex;align-items:center;gap:12px;padding:0 2px 12px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sp-paypal-trust img{display:block;width:42px;height:42px;object-fit:contain;border-radius:8px;background:#fff;padding:5px}
+.sp-paypal-trust span{display:flex;flex-direction:column;gap:3px}
+.sp-paypal-trust strong{color:#f5f8f5;font-size:.9rem;font-weight:800}
+.sp-paypal-trust small{color:#9aa89e;font-size:.68rem;line-height:1.4}
