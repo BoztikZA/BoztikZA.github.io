@@ -194,7 +194,7 @@ export function buildFullReport(model, { generatedAt = new Date() } = {}) {
         line(`  ${i+1}. ${p.display_name} [${p.slug}]: ${n(p.views)} views; ${n(p.unique_views)} daily unique visitor-days; ${n(p.featured_impressions)} featured impressions; ${n(p.outbound_clicks)} outbound clicks (website ${n(p.website_clicks)}, social ${n(p.social_clicks)}, media ${n(p.media_clicks)}); top sources ${[...(p.sources || [])].sort((a,b) => Number(b.views)-Number(a.views)).slice(0,3).map(x => `${x.source} ${n(x.views)}`).join(", ") || "none recorded"}; currently featured ${p.featured ? "yes" : "no"}; click rate ${rate}; player interactions ${n(p.player_interactions)}; completed plays ${n(p.completed_plays)}.`);
       });
     } else line("- No published profiles were returned for this window.");
-    const unpublished = (sp.profiles ?? []).filter(p => p.status !== "published" && !["declined","expired"].includes(p.application_status)).sort((a,b) => Number(b.created_at || 0) - Number(a.created_at || 0));
+    const unpublished = (sp.profiles ?? []).filter(p => p.status !== "published" && p.status !== "archived" && !["declined","expired"].includes(p.application_status)).sort((a,b) => Number(b.created_at || 0) - Number(a.created_at || 0));
     if (unpublished.length) {
       line("- New / unpublished profiles requiring visibility or follow-up:");
       unpublished.slice(0, 40).forEach(p => line(`  - ${p.display_name}: ${p.application_status || p.status}; submitted ${p.created_at ? new Date(p.created_at * 1000).toISOString().slice(0,10) : "date unavailable"}; ${p.application_status === "approved" ? "approved but not published" : p.application_status === "new" ? "new application" : "not yet published"}.`));
