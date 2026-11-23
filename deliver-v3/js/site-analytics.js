@@ -117,7 +117,7 @@ function rebuild() {
   S.model = buildAnalyticsModel({ range: S.range, ...S.data, fallbackPages: S.data.summary ? null : S.fallback, states: S.states, generatedAt: S.lastOk || new Date() });
   S.signals = buildSignals(S.model);
 }
-const hasData = () => !!(S.model && (S.model.website?.available || S.model.trend));
+const hasData = () => !!(S.model && (S.model.website?.available || S.model.trend || S.model.spotlight));
 const timeText = d => (d ? d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "never");
 
 function render() {
