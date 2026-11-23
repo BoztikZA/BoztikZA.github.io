@@ -929,10 +929,59 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       return json({ ok: true, analytics: await profileAnalytics(env, seg[1]!, parseRange(new URL(request.url).searchParams.get("days"))) }, 200, { "Cache-Control": "no-store" });
     }
     if (seg.length === 1 && seg[0] === "analytics" && request.method === "GET") {
-      const rows = await env.DB.prepare(
-        "SELECT p.id,p.display_name,COALESCE(SUM(m.views),0) views,COALESCE(SUM(m.unique_views),0) unique_views,COALESCE(SUM(m.outbound_clicks),0) outbound_clicks,COALESCE(SUM(m.featured_impressions),0) featured_impressions,COALESCE(SUM(m.website_clicks),0) website_clicks,COALESCE(SUM(m.social_clicks),0) social_clicks,COALESCE(SUM(m.media_clicks),0) media_clicks,COALESCE(SUM(m.player_interactions),0) player_interactions,COALESCE(SUM(m.completed_plays),0) completed_plays FROM spotlight_profiles p LEFT JOIN spotlight_daily_metrics m ON m.profile_id=p.id GROUP BY p.id ORDER BY views DESC LIMIT 100"
-      ).all<any>();
-      return json({ ok:true, profiles:rows.results || [] });
+      const q = new URL(request.url).searchParams;
+      const today = localDay(env);
+      const addDay = (value: string, delta: number) => new Date(Date.parse(value + "T00:00:00Z") + delta * 86400000).toISOString().slice(0, 10);
+      const period = q.get("period") || "30d";
+      let from = q.get("from") || "";
+      let to = q.get("to") || today;
+      let key = period;
+      if (from || q.has("to")) {
+        key = "custom";
+        const realDay = (v: string) => /^\\d{4}-\\d{2}-\\d{2}$/.test(v) && Number.isFinite(Date.parse(v + "T00:00:00Z")) && new Date(Date.parse(v + "T00:00:00Z")).toISOString().slice(0,10) === v;
+        if (!realDay(from) || !realDay(to) || from > to || to > today || (Date.parse(to + "T00:00:00Z") - Date.parse(from + "T00:00:00Z")) / 86400000 > 365) {
+          throw new HttpError(422, "invalid_analytics_range", "Choose a valid Spotlight analytics date range of up to 366 days.");
+        }
+      } else if (period === "today") from = today;
+      else if (period === "7d") from = addDay(today, -6);
+      else if (period === "90d") from = addDay(today, -89);
+      else if (period === "all") from = "2020-01-01";
+      else { key = "30d"; from = addDay(today, -29); }
+      const [rows, sourceRows] = await Promise.all([
+        env.DB.prepare(
+          "SELECT p.id,p.slug,p.display_name,p.category,p.status,p.application_status,p.created_at,p.published_at,p.listing_expires_at,CASE WHEN p.featured_until>? THEN 1 ELSE 0 END featured,COALESCE(SUM(m.views),0) views,COALESCE(SUM(m.unique_views),0) unique_views,COALESCE(SUM(m.outbound_clicks),0) outbound_clicks,COALESCE(SUM(m.featured_impressions),0) featured_impressions,COALESCE(SUM(m.website_clicks),0) website_clicks,COALESCE(SUM(m.social_clicks),0) social_clicks,COALESCE(SUM(m.media_clicks),0) media_clicks,COALESCE(SUM(m.player_interactions),0) player_interactions,COALESCE(SUM(m.completed_plays),0) completed_plays FROM spotlight_profiles p LEFT JOIN spotlight_daily_metrics m ON m.profile_id=p.id AND m.day>=? AND m.day<=? GROUP BY p.id ORDER BY CASE WHEN p.application_status IN ('new','under_review','approved') AND p.status<>'published' THEN 0 ELSE 1 END, p.created_at DESC LIMIT 200"
+        ).bind(now(), from, to).all<any>(),
+        env.DB.prepare(
+          "SELECT s.profile_id,s.source,SUM(s.views) views FROM spotlight_source_daily s WHERE s.day>=? AND s.day<=? GROUP BY s.profile_id,s.source"
+        ).bind(from, to).all<any>(),
+      ]);
+      const sourcesByProfile = new Map<string, Array<{source:string;views:number}>>();
+      for (const row of sourceRows.results || []) {
+        const list = sourcesByProfile.get(row.profile_id) || [];
+        list.push({ source: row.source, views: Number(row.views || 0) });
+        sourcesByProfile.set(row.profile_id, list);
+      }
+      const profiles = (rows.results || []).map((p: any) => ({
+        ...p,
+        featured: Number(p.featured) === 1,
+        views: Number(p.views || 0), unique_views: Number(p.unique_views || 0),
+        outbound_clicks: Number(p.outbound_clicks || 0), featured_impressions: Number(p.featured_impressions || 0),
+        website_clicks: Number(p.website_clicks || 0), social_clicks: Number(p.social_clicks || 0),
+        media_clicks: Number(p.media_clicks || 0), player_interactions: Number(p.player_interactions || 0),
+        completed_plays: Number(p.completed_plays || 0), sources: sourcesByProfile.get(p.id) || [],
+      }));
+      const sum = (field: string) => profiles.reduce((total: number, p: any) => total + Number(p[field] || 0), 0);
+      const pending = profiles.filter((p: any) => ["new","under_review"].includes(p.application_status) && p.status !== "published").length;
+      const unpublished = profiles.filter((p: any) => p.status !== "published" && !["declined","expired"].includes(p.application_status)).length;
+      return json({
+        ok:true, period:{ key, since:from, until:to },
+        summary:{ profiles:profiles.length, pending, unpublished, published:profiles.filter((p: any) => p.status === "published").length,
+          featured:profiles.filter((p: any) => p.featured).length, views:sum("views"), unique_views:sum("unique_views"),
+          featured_impressions:sum("featured_impressions"), outbound_clicks:sum("outbound_clicks"),
+          website_clicks:sum("website_clicks"), social_clicks:sum("social_clicks"), media_clicks:sum("media_clicks"),
+          player_interactions:sum("player_interactions"), completed_plays:sum("completed_plays") },
+        profiles,
+      }, 200, { "Cache-Control":"no-store" });
     }
     return error("Not found",404);
   });
