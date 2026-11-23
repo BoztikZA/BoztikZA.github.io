@@ -169,6 +169,18 @@ await test("admin per-profile analytics requires a session and mirrors the owner
   assert.equal(list.profiles.find((p: any) => p.id === ID_A).completed_plays, 1);
 });
 
+await test("admin Spotlight analytics honours the selected date range and returns listing status without private contact data", async () => {
+  const today = new Date(Date.now() + 120 * 60000).toISOString().slice(0, 10);
+  const response = await handleSpotlightAdmin(new Request(`https://worker.test/api/admin/spotlight/analytics?from=${today}&to=${today}`, { headers: { Authorization: "Bearer " + ADMIN } }), "analytics", env);
+  assert.equal(response.status, 200);
+  const data = await response.json() as any;
+  assert.deepEqual(data.period, { key: "custom", since: today, until: today });
+  assert.ok(data.profiles.some((p: any) => p.id === ID_A && p.status === "published"));
+  assert.equal(data.summary.published >= 1, true);
+  assert.equal(data.profiles.some((p: any) => "contact_email" in p), false);
+  assert.equal(data.profiles.some((p: any) => "owner_token_hash" in p), false);
+});
+
 await test("deleting a profile cascades its analytics rows", async () => {
   sqlite.prepare("DELETE FROM spotlight_profiles WHERE id=?").run(ID_A);
   for (const table of ["spotlight_daily_metrics", "spotlight_engagement_events", "spotlight_source_daily", "spotlight_events", "spotlight_visitors"]) {

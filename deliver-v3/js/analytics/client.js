@@ -47,3 +47,5 @@ export const fetchFlow = (range, o) => get(`${A}/visitor-flow?${rangeQuery(range
 export const fetchStore = (range, o) => get(`${A}/store-clicks?${rangeQuery(range)}`, o);
 export const fetchHealth = o => get(`${A}/health`, o);
 export const fetchOverview = o => get(`${A}/overview`, o);
+/** Spotlight profile performance and moderation status for the selected reporting window. */
+export const fetchSpotlight = (range, o) => get(`/api/admin/spotlight/analytics?${rangeQuery(range)}`, o);
