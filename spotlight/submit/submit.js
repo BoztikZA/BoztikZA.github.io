@@ -139,4 +139,39 @@ function showOwnerLink(token, message) {
   });
 }
 
+
+
+// Show one low-pressure reminder after the applicant has engaged with
+// several fields. It never blocks the form and disappears automatically.
+const donationNudge = document.querySelector("#sp-donation-nudge");
+const donationNudgeClose = donationNudge?.querySelector(".sp-donation-nudge-close");
+const engagedFields = new Set();
+let nudgeTimer = null;
+let nudgeHideTimer = null;
+
+function hideDonationNudge() {
+  if (!donationNudge || donationNudge.hidden) return;
+  donationNudge.classList.remove("is-visible");
+  window.clearTimeout(nudgeHideTimer);
+  nudgeHideTimer = window.setTimeout(() => { donationNudge.hidden = true; }, 360);
+}
+
+function showDonationNudge() {
+  if (!donationNudge || !donationNudge.hidden || form.hidden) return;
+  donationNudge.hidden = false;
+  window.requestAnimationFrame(() => donationNudge.classList.add("is-visible"));
+  nudgeHideTimer = window.setTimeout(hideDonationNudge, 8500);
+}
+
+form.querySelectorAll("input:not([type=hidden]):not([type=checkbox]):not([type=file]), textarea, select").forEach(field => {
+  field.addEventListener("change", () => {
+    engagedFields.add(field);
+    if (engagedFields.size >= 3 && nudgeTimer === null) {
+      nudgeTimer = window.setTimeout(showDonationNudge, 1800);
+    }
+  });
+});
+
+donationNudgeClose?.addEventListener("click", hideDonationNudge);
+
 window.addEventListener("pagehide", () => previewUrls.forEach(url => URL.revokeObjectURL(url)));
