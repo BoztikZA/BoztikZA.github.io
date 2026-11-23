@@ -1,14 +1,16 @@
 // Boztik — quiet, rotating discovery cards for delivery and Support pages.
-// One small, dismissible promotion per browser every few days. No modal, overlay,
-// visitor profiling, analytics calls, or impact on the delivery workflow.
+// Each browser tab session sees the three promotions once, in shuffled order.
+// Cards are non-modal, dismissible, and never interrupt the delivery workflow.
 
-const STORAGE_KEY = "boztik-discovery-promo-v1";
-const AUTO_HIDE_MS = 9000;
+const SESSION_KEY = "boztik-discovery-sequence-v2";
+const AUTO_HIDE_MS = 8500;
 const FADE_MS = 420;
-const MIN_DELAY_MS = 9000;
-const MAX_DELAY_MS = 22000;
-const AUTO_COOLDOWN_MS = 5 * 24 * 60 * 60 * 1000;
-const DISMISS_COOLDOWN_MS = 14 * 24 * 60 * 60 * 1000;
+const FIRST_DELAY_MIN_MS = 6500;
+const FIRST_DELAY_MAX_MS = 10500;
+const NEXT_DELAY_MIN_MS = 18000;
+const NEXT_DELAY_MAX_MS = 24000;
+const DISMISS_DELAY_MIN_MS = 9000;
+const DISMISS_DELAY_MAX_MS = 13000;
 
 const PROMOS = [
   {
@@ -40,18 +42,34 @@ const PROMOS = [
   }
 ];
 
-function readState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    const value = raw ? JSON.parse(raw) : {};
-    return value && typeof value === "object" ? value : {};
-  } catch {
-    return {};
-  }
+function randomBetween(min, max) {
+  return min + Math.floor(Math.random() * (max - min + 1));
 }
 
-function writeState(value) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(value)); } catch { /* Storage is optional. */ }
+function shuffle(items) {
+  const result = [...items];
+  for (let i = result.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
+
+function readSequence() {
+  try {
+    const raw = sessionStorage.getItem(SESSION_KEY);
+    if (raw) {
+      const saved = JSON.parse(raw);
+      if (saved && Array.isArray(saved.order) && Number.isInteger(saved.index)) return saved;
+    }
+  } catch { /* Session storage is optional. */ }
+  const fresh = { order: shuffle(PROMOS.map(promo => promo.id)), index: 0, stopped: false };
+  saveSequence(fresh);
+  return fresh;
+}
+
+function saveSequence(sequence) {
+  try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(sequence)); } catch { /* Session storage is optional. */ }
 }
 
 function addStyles() {
@@ -81,23 +99,16 @@ function addStyles() {
       isolation: isolate;
     }
     .boztik-discovery-promo::before {
-      position: absolute;
-      z-index: -1;
-      top: 0; left: 18px; right: 18px;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(142,255,61,.7), transparent);
+      position: absolute; z-index: -1; top: 0; left: 18px; right: 18px;
+      height: 1px; background: linear-gradient(90deg, transparent, rgba(142,255,61,.7), transparent);
       content: "";
     }
     .boztik-discovery-promo.is-visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
     .boztik-discovery-promo.is-leaving { opacity: 0; transform: translateY(8px); pointer-events: none; }
     .boztik-discovery-promo__icon {
-      display: grid;
-      width: 42px; height: 42px;
-      place-items: center;
-      border: 1px solid rgba(142,255,61,.25);
-      border-radius: 13px;
-      background: rgba(142,255,61,.08);
-      color: #a8ff72;
+      display: grid; width: 42px; height: 42px; place-items: center;
+      border: 1px solid rgba(142,255,61,.25); border-radius: 13px;
+      background: rgba(142,255,61,.08); color: #a8ff72;
     }
     .boztik-discovery-promo__icon svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.65; stroke-linecap: round; stroke-linejoin: round; }
     .boztik-discovery-promo__body { min-width: 0; }
@@ -126,12 +137,7 @@ function addStyles() {
   document.head.appendChild(style);
 }
 
-function choosePromo() {
-  const index = Math.floor(Math.random() * PROMOS.length);
-  return PROMOS[index];
-}
-
-function createPromo(promo, onClose) {
+function createPromo(promo, onClose, onAction) {
   const card = document.createElement("aside");
   card.className = "boztik-discovery-promo";
   card.setAttribute("aria-label", "Discover more from Boztik");
@@ -146,9 +152,7 @@ function createPromo(promo, onClose) {
     </div>
     <button class="boztik-discovery-promo__close" type="button" aria-label="Dismiss suggestion">×</button>`;
   card.querySelector("button").addEventListener("click", onClose);
-  card.querySelector("a").addEventListener("click", () => {
-    writeState({ nextEligibleAt: Date.now() + DISMISS_COOLDOWN_MS });
-  });
+  card.querySelector("a").addEventListener("click", onAction);
   return card;
 }
 
@@ -162,43 +166,66 @@ export function initSpotlightInvitation(delivery, options = {}) {
   if (!isSupportPage && new URLSearchParams(location.search).get("preview") === "1") return;
   if (document.getElementById("boztik-discovery-promo")) return;
 
-  const state = readState();
-  if (Number(state.nextEligibleAt || 0) > Date.now()) return;
+  const sequence = readSequence();
+  if (sequence.stopped || sequence.index >= sequence.order.length) return;
 
-  let card;
+  let card = null;
   let showTimer = 0;
   let hideTimer = 0;
+  let nextTimer = 0;
   let removeTimer = 0;
-  let finished = false;
+  let disposed = false;
 
-  const cleanup = (dismissed = false) => {
-    if (finished) return;
-    finished = true;
-    window.clearTimeout(showTimer);
+  const clearCard = () => {
     window.clearTimeout(hideTimer);
-    window.clearTimeout(removeTimer);
-    if (card) {
-      card.classList.remove("is-visible");
-      card.classList.add("is-leaving");
-      removeTimer = window.setTimeout(() => card?.remove(), FADE_MS);
-    }
-    writeState({ nextEligibleAt: Date.now() + (dismissed ? DISMISS_COOLDOWN_MS : AUTO_COOLDOWN_MS) });
+    if (!card) return;
+    const oldCard = card;
+    card = null;
+    oldCard.classList.remove("is-visible");
+    oldCard.classList.add("is-leaving");
+    removeTimer = window.setTimeout(() => oldCard.remove(), FADE_MS);
   };
 
-  const delay = MIN_DELAY_MS + Math.floor(Math.random() * (MAX_DELAY_MS - MIN_DELAY_MS + 1));
-  showTimer = window.setTimeout(() => {
-    if (document.visibilityState !== "visible" || !document.body) {
-      cleanup(false);
+  const stop = () => {
+    if (disposed) return;
+    disposed = true;
+    window.clearTimeout(showTimer);
+    window.clearTimeout(hideTimer);
+    window.clearTimeout(nextTimer);
+    clearCard();
+    sequence.stopped = true;
+    saveSequence(sequence);
+  };
+
+  const scheduleNext = (delay) => {
+    if (disposed || sequence.index >= sequence.order.length) return;
+    nextTimer = window.setTimeout(showNext, delay);
+  };
+
+  const showNext = () => {
+    if (disposed || document.visibilityState !== "visible" || !document.body) return;
+    if (sequence.index >= sequence.order.length) return;
+    const promo = PROMOS.find(item => item.id === sequence.order[sequence.index]);
+    sequence.index += 1;
+    saveSequence(sequence);
+    if (!promo) {
+      scheduleNext(0);
       return;
     }
     addStyles();
-    const promo = choosePromo();
-    card = createPromo(promo, () => cleanup(true));
+    card = createPromo(promo, () => {
+      clearCard();
+      scheduleNext(randomBetween(DISMISS_DELAY_MIN_MS, DISMISS_DELAY_MAX_MS));
+    }, stop);
     card.id = "boztik-discovery-promo";
     document.body.appendChild(card);
     window.requestAnimationFrame(() => card?.classList.add("is-visible"));
-    hideTimer = window.setTimeout(() => cleanup(false), AUTO_HIDE_MS);
-  }, delay);
+    hideTimer = window.setTimeout(() => {
+      clearCard();
+      scheduleNext(randomBetween(NEXT_DELAY_MIN_MS, NEXT_DELAY_MAX_MS));
+    }, AUTO_HIDE_MS);
+  };
 
-  return { cancel: () => cleanup(true) };
+  showTimer = window.setTimeout(showNext, randomBetween(FIRST_DELAY_MIN_MS, FIRST_DELAY_MAX_MS));
+  return { cancel: stop };
 }
