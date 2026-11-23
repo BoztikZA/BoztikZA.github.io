@@ -1,0 +1,2965 @@
+{
+  "slug": "cybersecurity-digital-safety",
+  "title": "Cybersecurity & Digital Safety Fundamentals",
+  "subtitle": "Protect your accounts, devices and information from the scams and threats ordinary people actually face.",
+  "category": "cybersecurity-digital-safety",
+  "level": "Beginner–Intermediate",
+  "summary": "Practical, plain-language digital safety: passwords, MFA, phishing, malware, safe browsing, privacy, Wi-Fi and phones, ending in a personal 30-day plan.",
+  "description": "This course teaches the habits that stop most everyday cyber harm: strong unique passwords, multi-factor authentication, spotting scams, keeping good backups and sharing less. Every module ends with something you do on your own accounts and devices, and the final module turns it all into a prioritised 30-day plan.",
+  "estimatedHours": "5–6 hours",
+  "outcomes": [
+    "Explain confidentiality, integrity and availability and use them to decide what you need to protect",
+    "Create long, unique passwords and manage them with a password manager",
+    "Set up multi-factor authentication sensibly and recover access if you lose your phone",
+    "Recognise phishing and common scams across email, SMS, WhatsApp, phone calls and QR codes",
+    "Reduce the damage malware and ransomware can do with updates and tested backups",
+    "Browse, download and install software without falling for fake buttons, updates and warnings",
+    "Protect personal and business information, and secure your home router and mobile devices",
+    "Carry out a personal security assessment and follow a prioritised 30-day action plan"
+  ],
+  "audience": [
+    "Anyone who banks, shops, studies or chats online and wants to feel safer doing it",
+    "Freelancers, side-hustlers and one-person businesses who keep customer details on their own devices",
+    "Parents and family members who are the unofficial IT support for everyone else",
+    "Beginners who have heard the jargon and want it explained plainly, and intermediate users who want a structured plan"
+  ],
+  "prerequisites": "You should be comfortable using a smartphone or computer, email and a web browser; no technical or security background is needed.",
+  "modules": [
+    {
+      "id": "m01",
+      "title": "Understanding Cybersecurity",
+      "summary": "What you are protecting, who really goes after ordinary people, and why layers beat any single trick.",
+      "objectives": [
+        "Describe confidentiality, integrity and availability in your own words",
+        "Explain who attacks ordinary people and what they usually want",
+        "Challenge the belief that you have nothing worth stealing",
+        "Describe how layers of protection cover for each other"
+      ],
+      "lessons": [
+        {
+          "id": "m01-l01",
+          "title": "What are we actually protecting?",
+          "minutes": 9,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Cybersecurity sounds like something that happens in server rooms and spy films. In practice it is much closer to locking your front door. It is the everyday habit of keeping your information, accounts and devices away from people who should not have them, and keeping them working for you."
+            },
+            {
+              "type": "p",
+              "text": "Security people describe what they protect with three words: **confidentiality**, **integrity** and **availability**. Together they are often called the CIA triad. The words are big. The ideas are not."
+            },
+            {
+              "type": "table",
+              "caption": "The three things we protect",
+              "headers": [
+                "Goal",
+                "In plain words",
+                "What losing it looks like"
+              ],
+              "rows": [
+                [
+                  "Confidentiality",
+                  "Only the right people can see it",
+                  "A stranger reads your private messages, or your ID number ends up in a leaked list"
+                ],
+                [
+                  "Integrity",
+                  "It is accurate and nobody has changed it without you knowing",
+                  "A criminal edits the bank details on a supplier's invoice, so your payment goes to them"
+                ],
+                [
+                  "Availability",
+                  "You can reach it when you need it",
+                  "Ransomware locks your business files, or you are locked out of your own email"
+                ]
+              ]
+            },
+            {
+              "type": "p",
+              "text": "Notice that only one of the three is about secrets. People often assume security means hiding things. But an accountant who cannot open last month's files has a security problem even if nobody stole anything, and a tampered invoice is a security problem even if nobody read it."
+            },
+            {
+              "type": "h",
+              "text": "Assets: the things worth protecting"
+            },
+            {
+              "type": "p",
+              "text": "An **asset** is anything of value that you want to keep safe. For most people that goes well beyond money. Your email inbox, phone number, photos, study or work documents, identity details, social media accounts and even your good name are all assets."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "One small business, three goals",
+              "text": "Thandi bakes for a living from her home. She takes orders on WhatsApp, keeps her customer list in a spreadsheet on her laptop and gets paid by EFT. Her customers' addresses need confidentiality. The banking details on her invoices need integrity. The laptop holding her order book needs availability, because a dead laptop on a Friday means no weekend deliveries."
+            },
+            {
+              "type": "p",
+              "text": "Whenever you hear about a new scam or a data leak, try asking which of the three it attacks. That one question turns a confusing news story into something you can reason about, and it usually points straight at the sensible defence."
+            },
+            {
+              "type": "callout",
+              "tone": "key",
+              "title": "A habit worth building",
+              "text": "For anything you care about, ask: what could go wrong with this, and would I lose secrecy, accuracy or access?"
+            },
+            {
+              "type": "check",
+              "id": "m01-l01-c1",
+              "kind": "single",
+              "prompt": "A criminal quietly changes the bank account number on an invoice you are about to pay. Which goal has been attacked most directly?",
+              "options": [
+                "Confidentiality",
+                "Integrity",
+                "Availability",
+                "Anonymity"
+              ],
+              "correct": [
+                1
+              ],
+              "explain": "The invoice was altered without your knowledge, so its accuracy (integrity) was attacked. Nothing was necessarily read or made unavailable."
+            }
+          ]
+        },
+        {
+          "id": "m01-l02",
+          "title": "Who attacks ordinary people, and why",
+          "minutes": 10,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Forget the hooded figure typing green code in a dark room. The people who cause most harm to ordinary users are far less glamorous. They are scammers and opportunists running a numbers game."
+            },
+            {
+              "type": "p",
+              "text": "A scammer who sends the same fake message to a hundred thousand phone numbers does not care who you are. If even a handful of people respond, the work was worth it. Sending is nearly free, so the attacker only needs a few mistakes, and you are one of many recipients."
+            },
+            {
+              "type": "table",
+              "caption": "Who is on the other side",
+              "headers": [
+                "Who",
+                "What they usually want",
+                "How it tends to reach you"
+              ],
+              "rows": [
+                [
+                  "Scammers and fraudsters",
+                  "Money, quickly",
+                  "Fake messages, calls and offers that pressure you to pay or share a code"
+                ],
+                [
+                  "Account thieves",
+                  "Working logins they can use or resell",
+                  "Fake login pages and passwords reused from old leaks"
+                ],
+                [
+                  "Spammers and pests",
+                  "A trusted account to send junk from",
+                  "A hijacked email or social media account that messages your contacts"
+                ],
+                [
+                  "People you know",
+                  "Access to your private life",
+                  "A shared device, a guessed PIN, a password given years ago"
+                ],
+                [
+                  "Targeted attackers",
+                  "Valuable business or political information",
+                  "Rare for individuals, more likely if you work somewhere with something valuable"
+                ]
+              ]
+            },
+            {
+              "type": "p",
+              "text": "The last two rows matter. Not every threat is a stranger overseas. Sometimes it is an ex-partner who still knows your phone PIN, or a colleague who borrowed your login once and never stopped using it. Good security covers both."
+            },
+            {
+              "type": "h",
+              "text": "Why it works: people, not computers"
+            },
+            {
+              "type": "p",
+              "text": "Breaking through well-built software is hard and expensive. Persuading a tired person to tap a link is cheap. So most attacks aim at people. They borrow the look of a bank, a courier, a tax authority or your boss, then add urgency so you act before you think."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "The Friday-afternoon invoice",
+              "text": "A small agency's bookkeeper gets an email that looks like it comes from the director: 'Please pay this supplier today, I am boarding a flight.' The logo is right and the tone is believable. Nothing was hacked. The attacker simply studied how the agency talks and picked a moment when everyone was rushing."
+            },
+            {
+              "type": "callout",
+              "tone": "key",
+              "title": "Attackers go where it is easy",
+              "text": "They choose the cheapest route to money. Every small barrier you add, such as a unique password or a quick phone call to confirm, makes you a poorer target and pushes them to someone else."
+            },
+            {
+              "type": "check",
+              "id": "m01-l02-c1",
+              "kind": "single",
+              "prompt": "Why do scammers send the same fake message to huge numbers of people?",
+              "options": [
+                "Sending costs almost nothing, so a few replies make it worthwhile",
+                "They have personally researched every recipient",
+                "Messages to large groups cannot be reported",
+                "Each recipient is a carefully chosen high-value target"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "Mass messaging is a numbers game: it is cheap to send, so even a tiny response rate pays off for the scammer."
+            },
+            {
+              "type": "check",
+              "id": "m01-l02-c2",
+              "kind": "truefalse",
+              "prompt": "Most harm to ordinary people comes from skilled hackers who target them personally.",
+              "options": [
+                "True",
+                "False"
+              ],
+              "correct": [
+                1
+              ],
+              "explain": "Most harm comes from opportunistic scams sent to many people at once. Personal targeting does happen but is far less common for ordinary users."
+            }
+          ]
+        },
+        {
+          "id": "m01-l03",
+          "title": "“I have nothing worth stealing” and thinking in layers",
+          "minutes": 11,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "'Why would anyone bother with me? I am not rich or famous.' It is the most common thing people say about security, and it misunderstands what attackers want. They are rarely after you in particular. They want what your accounts can do for them."
+            },
+            {
+              "type": "p",
+              "text": "Your email account, for example, is a master key. Most other services let you reset a forgotten password by sending a link to your inbox. Whoever controls your inbox can often reach your shopping accounts, your cloud photos and sometimes your banking too. Your contacts matter as well: a message from your real account is far more convincing to your friends than one from a stranger."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "Sipho's chain reaction",
+              "text": "Sipho used one password for a small online forum and for his email. The forum was leaked. Someone tried that password on his email, and it worked. From there they reset his cloud storage password, found a scan of his ID, and messaged his brother asking for 'a quick loan'. Sipho had no savings worth stealing. The damage still cost him weeks."
+            },
+            {
+              "type": "p",
+              "text": "Even a hijacked phone or laptop has value. It can be used to send spam, to hide other people's activity, or to hold your own files to ransom. Your identity details can be used to apply for credit in your name. 'Nothing worth stealing' is rarely true once you count what your accounts connect to."
+            },
+            {
+              "type": "h",
+              "text": "Think in layers"
+            },
+            {
+              "type": "p",
+              "text": "No single protection is perfect. Passwords get leaked, people get fooled, software has flaws. So sensible security stacks several layers, each covering for the others. If a thief gets past one, the next still stands in the way. Security people call this **defence in depth**."
+            },
+            {
+              "type": "table",
+              "caption": "Layers that cover for each other",
+              "headers": [
+                "Layer",
+                "What it does",
+                "What it catches when another layer fails"
+              ],
+              "rows": [
+                [
+                  "Strong, unique passwords",
+                  "Make guessing and reuse attacks fail",
+                  "A leak at one website does not open your other accounts"
+                ],
+                [
+                  "Multi-factor sign-in",
+                  "Asks for a second proof of identity",
+                  "A stolen password alone is not enough"
+                ],
+                [
+                  "Updates",
+                  "Close known weaknesses in software",
+                  "Common malware finds nothing to exploit"
+                ],
+                [
+                  "Awareness",
+                  "You spot the trick before acting",
+                  "A scam message dies at the click"
+                ],
+                [
+                  "Backups",
+                  "Give you a way back",
+                  "Ransomware or a lost phone is an inconvenience, not a disaster"
+                ]
+              ]
+            },
+            {
+              "type": "p",
+              "text": "Notice the pattern: prevent, spot and recover. A good plan has something for all three, because one day something will slip through, and your backups and habits decide how bad that day is."
+            },
+            {
+              "type": "exercise",
+              "title": "Map what you protect",
+              "intro": "This takes about fifteen minutes and uses only your own accounts. You are building the picture the rest of the course will improve.",
+              "tasks": [
+                "Write down the five accounts you would hate to lose (for example email, bank, cloud storage, WhatsApp and your main social media account).",
+                "Beside each one, write what an intruder could reach through it, such as other accounts, money, private photos or your contacts.",
+                "Circle the account that could reset the others. For most people this is their main email address.",
+                "For each account, note which layers you already have: a unique password, a second sign-in step, and a way to recover it."
+              ],
+              "reflection": "Which single account is your master key, and how well protected is it today?"
+            },
+            {
+              "type": "check",
+              "id": "m01-l03-c1",
+              "kind": "single",
+              "prompt": "Why is your main email account especially valuable to a criminal?",
+              "options": [
+                "It usually holds your bank balance",
+                "Password reset links for your other accounts are often sent there",
+                "Email providers cannot detect suspicious sign-ins",
+                "It is the only account that has a password"
+              ],
+              "correct": [
+                1
+              ],
+              "explain": "Password resets usually go to your inbox, so control of your email can open many other accounts. That makes it your master key."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m02",
+      "title": "Password Security",
+      "summary": "Why length beats cleverness, why every account needs its own password, and how to cope when a service is breached.",
+      "objectives": [
+        "Build long passwords and passphrases that are hard to guess",
+        "Explain why each account needs its own unique password",
+        "Use a password manager to create and store passwords",
+        "Describe what passkeys are and respond properly to a breach notice"
+      ],
+      "lessons": [
+        {
+          "id": "m02-l01",
+          "title": "Why length beats cleverness",
+          "minutes": 10,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Most of us were taught to make a password 'complicated': a capital letter, a number, a symbol. So we take a word we like and decorate it. Dog becomes D0g!, then D0g!2024. It feels clever. It is also exactly what everyone else does, and password-guessing software knows the habit."
+            },
+            {
+              "type": "p",
+              "text": "When criminals try to guess passwords, they do not start with random strings. They start with the most popular choices, then common words, then predictable decorations such as swapping an a for an @ or adding a year at the end. A password built from a favourite word plus a little decoration sits near the front of that queue."
+            },
+            {
+              "type": "h",
+              "text": "Length is the real strength"
+            },
+            {
+              "type": "p",
+              "text": "Every extra character multiplies the number of possibilities a guesser must work through. A long password made of unrelated words beats a short, symbol-packed one, and it is easier to remember. That is the idea behind a **passphrase**: several random words strung together."
+            },
+            {
+              "type": "table",
+              "caption": "Weak versus strong, and why",
+              "headers": [
+                "Example",
+                "Verdict",
+                "Why"
+              ],
+              "rows": [
+                [
+                  "Thandi1990!",
+                  "Weak",
+                  "Built from a name and a birth year, which are easy to find or guess"
+                ],
+                [
+                  "P@ssw0rd!",
+                  "Weak",
+                  "A famous word with the usual swaps; this pattern is tried early"
+                ],
+                [
+                  "Arsenal2024",
+                  "Weak",
+                  "Favourite team plus a year is extremely common"
+                ],
+                [
+                  "copper lantern harbour sprint",
+                  "Strong",
+                  "Four unrelated words, long, and easy to picture"
+                ]
+              ]
+            },
+            {
+              "type": "p",
+              "text": "The word **random** matters. A line from your favourite song or the names of your children is not random, because someone who knows you, or reads your social media, might guess it. Pick words with no link to your life. A password manager can generate them for you, or you can choose words by chance, for example by opening a dictionary at several different pages."
+            },
+            {
+              "type": "callout",
+              "tone": "key",
+              "title": "A durable rule of thumb",
+              "text": "Aim for at least 14 characters, or four or more random words. Longer is better still, especially for your email and your password manager. Exact advice shifts over the years, but 'long and unpredictable' stays true."
+            },
+            {
+              "type": "callout",
+              "tone": "warning",
+              "title": "Keep personal details out",
+              "text": "Avoid birthdays, ID numbers, pet names, sports teams, cellphone numbers and anything about your family that appears on social media. Those are the first things a person who wants into your account would try."
+            },
+            {
+              "type": "p",
+              "text": "You do not need to change passwords on a calendar just to change them. Constant forced changes push people toward weaker, predictable tweaks like Summer1, Summer2. Change a password when there is a reason: a breach, a suspicion, or you shared it with someone."
+            },
+            {
+              "type": "check",
+              "id": "m02-l01-c1",
+              "kind": "single",
+              "prompt": "Which password is the best choice from a security point of view?",
+              "options": [
+                "Summer2025!",
+                "J0hannesburg#1",
+                "slate umbrella fennel quarry tulip",
+                "Password123456"
+              ],
+              "correct": [
+                2
+              ],
+              "explain": "Several unrelated words make a long, unpredictable passphrase. The others rely on common words and predictable decorations."
+            }
+          ]
+        },
+        {
+          "id": "m02-l02",
+          "title": "One account, one password, and a manager to remember them",
+          "minutes": 11,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Here is the rule that does more good than any other: never use the same password on two accounts. It sounds impossible, because you may have dozens or hundreds of accounts. That is the exact problem password managers were built to solve."
+            },
+            {
+              "type": "p",
+              "text": "Why does reuse matter so much? Websites get breached. When one does, the leaked email and password pairs are collected, traded and tried on other services. If your forum password is also your email password, a leak at a forum nobody has heard of becomes a break-in to the account that matters. We will meet this attack again under the name credential stuffing."
+            },
+            {
+              "type": "h",
+              "text": "What a password manager does"
+            },
+            {
+              "type": "p",
+              "text": "A **password manager** is an app that stores all your logins in an encrypted vault. You remember one strong passphrase, the master password, and the manager handles the rest. It creates long random passwords for you, fills them in on the right sites, and works across your phone and computer."
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                "It makes unique passwords painless, because you never type or remember them.",
+                "It fills a login only on the website address it saved, so a lookalike fake site often gets nothing.",
+                "It can flag reused or weak passwords and tell you when a saved site has been in a known breach.",
+                "It can also hold secure notes, such as recovery codes and card details, if you choose."
+              ]
+            },
+            {
+              "type": "p",
+              "text": "There is an honest trade-off. A manager puts many eggs in one basket, so that basket needs to be strong: a long master passphrase that you use nowhere else, plus a second sign-in step on the manager itself. Most security professionals still consider this far safer than reuse or a notebook of variations."
+            },
+            {
+              "type": "callout",
+              "tone": "tip",
+              "title": "Choosing one",
+              "text": "Pick a well-known manager from a reputable company, or start with the one built into your phone or browser if you are not ready for more. Do not store your passwords in a plain note, a spreadsheet called passwords, or a WhatsApp chat with yourself."
+            },
+            {
+              "type": "steps",
+              "title": "Moving to a manager without the overwhelm",
+              "items": [
+                {
+                  "title": "Install and set a master passphrase",
+                  "text": "Choose a long passphrase of random words and make sure you will remember it. Write it down on paper and keep it somewhere safe at home until it is second nature."
+                },
+                {
+                  "title": "Turn on a second sign-in step",
+                  "text": "Protect the manager itself with multi-factor authentication, which Module 3 covers in detail."
+                },
+                {
+                  "title": "Start with the accounts that matter",
+                  "text": "Change your email, banking and cloud storage passwords first, letting the manager generate each one."
+                },
+                {
+                  "title": "Update the rest as you log in",
+                  "text": "Whenever you sign in to something old, let the manager replace the password. In a few weeks most of your accounts are covered."
+                }
+              ]
+            },
+            {
+              "type": "exercise",
+              "title": "Upgrade your three most important passwords",
+              "intro": "Use the five accounts you listed in Module 1. Work on your own accounts only, and do it somewhere private.",
+              "tasks": [
+                "Set up a password manager if you do not have one, and create a long master passphrase.",
+                "Change the passwords for your main email and one other account from your list, using the generator to make each one long and unique.",
+                "Check that the manager has saved the new logins by signing out and signing back in once.",
+                "Make a note of which important accounts still share a password with another account, and plan to fix them this week."
+              ],
+              "reflection": "What stopped you from using a unique password everywhere before, and does a manager remove that obstacle?"
+            },
+            {
+              "type": "check",
+              "id": "m02-l02-c1",
+              "kind": "multi",
+              "prompt": "Select all the reasons a password manager improves your security.",
+              "options": [
+                "It lets every account have its own long random password",
+                "It makes it safe to reuse your master password on other sites",
+                "It usually fills logins only on the saved website address",
+                "It can warn you about reused or weak passwords"
+              ],
+              "correct": [
+                0,
+                2,
+                3
+              ],
+              "explain": "Managers make unique passwords practical, tend to fill only on the matching site, and can flag weak or reused ones. Your master password must still be used nowhere else."
+            }
+          ]
+        },
+        {
+          "id": "m02-l03",
+          "title": "Breaches, passkeys and what to do afterwards",
+          "minutes": 10,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "A **data breach** happens when a company's records are copied by people who should not have them. You cannot prevent a breach at a company you trust with your details. What you control is how much damage it can do to you, and that comes back to unique passwords and quick action."
+            },
+            {
+              "type": "p",
+              "text": "Free breach-notification services, such as Have I Been Pwned, let you enter your email address and see whether it appears in known leaks. They are a useful, honest way to learn what is already out there. Many password managers and browsers now do a similar check for you."
+            },
+            {
+              "type": "h",
+              "text": "Passkeys, in plain terms"
+            },
+            {
+              "type": "p",
+              "text": "A **passkey** replaces the password with a pair of cryptographic keys. One key stays on your device, unlocked by your fingerprint, face or screen PIN. The other sits with the website. Because nothing secret is typed or stored on the site, there is no password to leak, and a passkey will not work on a fake lookalike site."
+            },
+            {
+              "type": "p",
+              "text": "Passkeys are growing, but support still varies between services and devices. Use them where they are offered, keep a strong password and a second sign-in step wherever they are not, and do not treat them as magic. If your phone is unlocked and in a thief's hands, what is on it is exposed."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "The breach email",
+              "text": "Lindiwe receives a message: 'We detected a security incident. Click here to reset your password within 24 hours.' She stops, opens the company's app on her own and finds the same notice in her account. The email was real, but she never had to trust the link. A fake breach notice is a common scam, so always reach the company through its official app or an address you type yourself."
+            },
+            {
+              "type": "steps",
+              "title": "If a service you use has been breached",
+              "items": [
+                {
+                  "title": "Confirm it is real",
+                  "text": "Check the company's official site or app, not the link in the message."
+                },
+                {
+                  "title": "Change that password",
+                  "text": "Do it from the official site, and make the new one long and unique."
+                },
+                {
+                  "title": "Change it everywhere it was reused",
+                  "text": "Any other account with the same password is exposed. Start with email and banking."
+                },
+                {
+                  "title": "Add a second sign-in step",
+                  "text": "Turn on multi-factor authentication on the affected account and your key accounts."
+                },
+                {
+                  "title": "Watch for follow-up scams",
+                  "text": "Leaked details fuel convincing phishing. Check bank and card statements for odd activity over the next weeks."
+                }
+              ]
+            },
+            {
+              "type": "check",
+              "id": "m02-l03-c1",
+              "kind": "single",
+              "prompt": "You receive an email saying a service you use was breached and you must click a link to reset your password. What is the safest next step?",
+              "options": [
+                "Click the link quickly before the deadline",
+                "Reply asking whether the message is genuine",
+                "Go to the service through its official app or a typed address and check there",
+                "Forward the email to friends as a warning"
+              ],
+              "correct": [
+                2
+              ],
+              "explain": "Go to the service yourself rather than trusting a link in a message. Fake breach notices are a common phishing trick."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m03",
+      "title": "Multi-Factor Authentication",
+      "summary": "A second proof of identity that keeps a stolen password from being enough, and how to choose and set it up.",
+      "objectives": [
+        "Explain the three kinds of proof: something you know, have and are",
+        "Compare SMS codes, authenticator apps and hardware keys honestly",
+        "Enable multi-factor authentication on the accounts that matter most",
+        "Prepare for a lost phone with recovery codes and a plan"
+      ],
+      "lessons": [
+        {
+          "id": "m03-l01",
+          "title": "Three kinds of proof",
+          "minutes": 9,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "You already use multi-factor authentication every time you draw cash at an ATM. The card is something you **have**. The PIN is something you **know**. A thief with only the card, or only your PIN, gets nothing. They need both."
+            },
+            {
+              "type": "p",
+              "text": "**Multi-factor authentication**, usually shortened to MFA, brings the same idea to online accounts. After your password, the service asks for a second proof that the real you is signing in. If a criminal learns your password, perhaps through a leak or a fake login page, that is no longer enough."
+            },
+            {
+              "type": "table",
+              "caption": "The three kinds of factor",
+              "headers": [
+                "Factor",
+                "Meaning",
+                "Everyday examples"
+              ],
+              "rows": [
+                [
+                  "Something you know",
+                  "A secret in your head",
+                  "Password, PIN, passphrase"
+                ],
+                [
+                  "Something you have",
+                  "An object only you hold",
+                  "Phone, bank card, hardware security key"
+                ],
+                [
+                  "Something you are",
+                  "A feature of your body",
+                  "Fingerprint, face unlock"
+                ]
+              ]
+            },
+            {
+              "type": "callout",
+              "tone": "key",
+              "title": "Two different kinds, not two of the same",
+              "text": "A password plus a security question is not true MFA, because both are things you know and both can be guessed or found. Real MFA combines different kinds, such as a password plus a code from your phone."
+            },
+            {
+              "type": "p",
+              "text": "MFA does not make an account unbreakable. It makes the cheap, common attacks fail. A criminal with a leaked password list suddenly needs your phone too, and that usually ends the attempt. Many security teams see MFA as one of the highest-value steps an ordinary person can take."
+            },
+            {
+              "type": "h",
+              "text": "Watch for approval requests you did not start"
+            },
+            {
+              "type": "p",
+              "text": "Some services send a pop-up asking 'Was this you? Approve or deny.' Attackers who already have your password may trigger this over and over, hoping you will tap approve to make the buzzing stop. The rule is simple: approve only a sign-in you started yourself, just now. If a prompt appears out of nowhere, deny it and change that account's password."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "The midnight prompts",
+              "text": "Karabo's phone buzzes at 1am with six sign-in requests for his email. He has not touched his laptop. He denies them all, changes his password from his phone's password manager, and checks his account's recent activity page the next morning. His second factor did its job because he refused to be worn down."
+            },
+            {
+              "type": "check",
+              "id": "m03-l01-c1",
+              "kind": "single",
+              "prompt": "Which pair counts as genuine multi-factor authentication?",
+              "options": [
+                "A password and your mother's maiden name",
+                "A password and a code from an app on your phone",
+                "A long passphrase and a short password",
+                "Two different passwords"
+              ],
+              "correct": [
+                1
+              ],
+              "explain": "A password is something you know and a phone code is something you have. The other pairs combine two things you know."
+            }
+          ]
+        },
+        {
+          "id": "m03-l02",
+          "title": "Choosing your second factor",
+          "minutes": 11,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Not every second factor is equally strong. Most services let you pick, and choosing well takes five minutes. The honest rule is that any MFA beats none, and some forms beat others."
+            },
+            {
+              "type": "p",
+              "text": "**SMS codes** are a text message with a short code. They are easy and work on any phone, which is why they are so widespread. Their weakness is that the code travels over the phone network. If someone takes over your phone number through a SIM swap, which Module 8 covers, they can receive your codes. SMS is still much better than nothing."
+            },
+            {
+              "type": "p",
+              "text": "**Authenticator apps** generate codes on your device that change every thirty seconds or so. Nothing is sent over the network, so a swapped SIM does not help a thief. The catch is that you must set the app up again if you change phones, so keep your recovery options in order."
+            },
+            {
+              "type": "p",
+              "text": "**Hardware security keys** are small physical devices you plug in or tap. They are the strongest option against phishing, because the key checks the real website address and will not respond to a fake one. The trade-offs are cost, the need to carry one, and the fact that not every service supports them. Buy two, keep one safe as a spare."
+            },
+            {
+              "type": "table",
+              "caption": "Second factors compared",
+              "headers": [
+                "Method",
+                "Strengths",
+                "Weaknesses"
+              ],
+              "rows": [
+                [
+                  "SMS code",
+                  "Easy, no app, works on any phone",
+                  "Exposed to SIM swap and message interception; can be typed into a fake site"
+                ],
+                [
+                  "Authenticator app",
+                  "Not sent over the network; works offline",
+                  "Must be moved to a new phone; code can still be typed into a fake site"
+                ],
+                [
+                  "Push approval",
+                  "Quick, one tap",
+                  "Prompt fatigue can lead to a mistaken approval"
+                ],
+                [
+                  "Hardware key",
+                  "Resists phishing; very strong",
+                  "Costs money; needs a spare; support varies"
+                ],
+                [
+                  "Passkey",
+                  "No password to steal; tied to the real site",
+                  "Support still growing; protect the device that holds it"
+                ]
+              ]
+            },
+            {
+              "type": "callout",
+              "tone": "tip",
+              "title": "How to decide",
+              "text": "For your email, banking and password manager, choose the strongest option offered, ideally an authenticator app, a hardware key or a passkey. For everything else, SMS is better than leaving the account on a password alone."
+            },
+            {
+              "type": "callout",
+              "tone": "warning",
+              "title": "No code ever goes to another person",
+              "text": "A real service will never phone or message you to ask for the code it just sent. If someone asks you to read out or forward a code, it is a scam, however friendly they sound."
+            },
+            {
+              "type": "check",
+              "id": "m03-l02-c1",
+              "kind": "single",
+              "prompt": "Why is a hardware security key especially good against phishing?",
+              "options": [
+                "It makes your password longer",
+                "It checks the real website address and ignores fake sites",
+                "It works without any account at all",
+                "It hides your IP address"
+              ],
+              "correct": [
+                1
+              ],
+              "explain": "A hardware key verifies the genuine site, so a lookalike page cannot get a valid response from it."
+            },
+            {
+              "type": "check",
+              "id": "m03-l02-c2",
+              "kind": "truefalse",
+              "prompt": "SMS codes are worse than using no second factor at all.",
+              "options": [
+                "True",
+                "False"
+              ],
+              "correct": [
+                1
+              ],
+              "explain": "SMS has weaknesses, but it still blocks many attacks that rely on a stolen password alone. App, key or passkey is stronger, yet SMS is far better than nothing."
+            }
+          ]
+        },
+        {
+          "id": "m03-l03",
+          "title": "Setting it up, recovery codes and losing your phone",
+          "minutes": 12,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Do not try to turn on MFA everywhere in one evening. Go in order of damage. Your email comes first, because it can reset everything else. Then your bank and any payment apps, your cloud storage and photos, your password manager, your main social accounts, WhatsApp and then any work or business accounts."
+            },
+            {
+              "type": "p",
+              "text": "WhatsApp calls its version two-step verification. It adds a PIN you choose, which the app asks for from time to time and when someone tries to register your number on a new phone. Set it up and add a recovery email, so you can get back in if you forget the PIN."
+            },
+            {
+              "type": "h",
+              "text": "Recovery codes are your spare key"
+            },
+            {
+              "type": "p",
+              "text": "When you enable MFA, many services show a list of **recovery codes**. Each one works once if you cannot use your normal second factor. Most people click past them. That is a mistake, because the day you need them is the day your phone is gone."
+            },
+            {
+              "type": "p",
+              "text": "Store them somewhere that does not depend on the phone. Good choices are printing them and keeping them in a safe place at home, or saving them in your password manager. A screenshot that sits only on the phone you might lose is not a recovery plan."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "The dropped phone",
+              "text": "Naledi's phone falls into a river on a weekend away. Her authenticator app is on it. Because she printed her recovery codes after setting up MFA, she signs in to her email from her partner's laptop, moves her authenticator to a new phone and carries on. Without the codes she would have spent days proving her identity to each service."
+            },
+            {
+              "type": "steps",
+              "title": "If you lose your phone",
+              "items": [
+                {
+                  "title": "Lock or locate it",
+                  "text": "Use your phone's find-my-device service from another device to lock it or, if needed, erase it."
+                },
+                {
+                  "title": "Block the SIM",
+                  "text": "Contact your mobile provider to block the SIM and later move your number to a new one."
+                },
+                {
+                  "title": "Protect your email first",
+                  "text": "Sign in from another device using a recovery code or backup method, and change your password."
+                },
+                {
+                  "title": "Restore your second factors",
+                  "text": "Set up your authenticator again on the new phone using recovery codes or the app's backup, if you enabled one."
+                },
+                {
+                  "title": "Review the rest",
+                  "text": "Change the passwords on banking and other key accounts and look for activity you do not recognise."
+                }
+              ]
+            },
+            {
+              "type": "exercise",
+              "title": "Turn on MFA where it counts",
+              "intro": "Do this on your own accounts, and have your phone and a pen or your password manager ready.",
+              "tasks": [
+                "Turn on MFA for your main email account, choosing an authenticator app, hardware key or passkey if offered.",
+                "Turn on MFA for one financial or payment account and one more from your Module 1 list.",
+                "Save the recovery codes somewhere that does not depend on your phone, such as your password manager or a printout kept safely at home.",
+                "Turn on WhatsApp two-step verification and add a recovery email."
+              ],
+              "reflection": "If your phone vanished tonight, could you still get into your email? If not, what is missing?"
+            },
+            {
+              "type": "check",
+              "id": "m03-l03-c1",
+              "kind": "single",
+              "prompt": "Where is the safest place to keep your MFA recovery codes?",
+              "options": [
+                "In a screenshot on the same phone",
+                "In an email to yourself with the subject 'codes'",
+                "In your password manager or printed and stored safely at home",
+                "Posted in a private chat with a friend"
+              ],
+              "correct": [
+                2
+              ],
+              "explain": "Recovery codes must survive the loss of your phone and stay out of reach of attackers, so a password manager or a safely stored printout works well."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m04",
+      "title": "Phishing and Online Scams",
+      "summary": "How scam messages and calls work, the red flags that give them away, and what to do before and after you click.",
+      "objectives": [
+        "Recognise phishing across email, SMS, WhatsApp, phone calls and QR codes",
+        "Spot the common red flags: urgency, mismatched senders and links, unexpected attachments and payment pressure",
+        "Verify a request through a second channel before acting",
+        "Respond calmly and correctly if you have already clicked or paid"
+      ],
+      "lessons": [
+        {
+          "id": "m04-l01",
+          "title": "How phishing works and the red flags",
+          "minutes": 11,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "**Phishing** is when someone pretends to be a trusted person or organisation to trick you into handing over something: a password, a code, money or access to your device. The name is a pun on fishing. The message is the bait and you are the fish."
+            },
+            {
+              "type": "p",
+              "text": "It arrives through every channel you use. Email phishing is the classic. **Smishing** uses SMS and messaging apps, **vishing** uses voice calls, and **quishing** hides the trap behind a QR code. The delivery changes but the trick underneath does not: a believable story plus pressure to act now."
+            },
+            {
+              "type": "h",
+              "text": "The red flags"
+            },
+            {
+              "type": "table",
+              "caption": "Red flags and what they mean",
+              "headers": [
+                "Red flag",
+                "What it looks like",
+                "Why it is suspicious"
+              ],
+              "rows": [
+                [
+                  "Urgency or threat",
+                  "'Act in 24 hours or your account is closed'",
+                  "Pressure is there to stop you thinking and checking"
+                ],
+                [
+                  "Mismatched sender or link",
+                  "A display name you know, but a strange address behind it",
+                  "Criminals can copy a name, but not the real address"
+                ],
+                [
+                  "Unexpected attachment",
+                  "An invoice or 'delivery note' you never asked for",
+                  "Attachments can carry malware"
+                ],
+                [
+                  "Odd payment method",
+                  "Gift vouchers, crypto, or an EFT to a personal account",
+                  "Hard to trace and nearly impossible to reverse"
+                ],
+                [
+                  "Too good to be true",
+                  "A prize, a refund or a job with huge pay for easy work",
+                  "Greed is as useful to scammers as fear"
+                ],
+                [
+                  "Generic or clumsy",
+                  "'Dear customer', strange wording, wrong logo",
+                  "Not proof alone, but worth a closer look"
+                ]
+              ]
+            },
+            {
+              "type": "p",
+              "text": "Keep in mind that polished messages exist too. Absence of spelling mistakes does not mean a message is safe. The most reliable tell is not how it looks but what it asks you to do: log in through a link, hand over a code, pay in an unusual way or hurry."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "The tax refund message",
+              "text": "A text arrives: 'You are owed a refund. Confirm your details here within 12 hours or it will be cancelled.' It has a link, a deadline and a hook that feels like good news. Real tax authorities and banks do not ask for your banking details or PIN through a text link. The safe move is to ignore the link, open the official app or website by typing the address yourself, and see whether any refund is actually listed."
+            },
+            {
+              "type": "callout",
+              "tone": "key",
+              "title": "Hover before you trust",
+              "text": "On a computer you can hover over a link to preview its real address. On a phone, press and hold. If the destination does not match the organisation it claims to come from, do not open it."
+            },
+            {
+              "type": "check",
+              "id": "m04-l01-c1",
+              "kind": "single",
+              "prompt": "Which of these is the strongest warning sign in a message?",
+              "options": [
+                "It uses the company's logo",
+                "It asks you to pay by gift voucher within hours",
+                "It is addressed to you by first name",
+                "It arrived on a weekday"
+              ],
+              "correct": [
+                1
+              ],
+              "explain": "An unusual payment method combined with urgency is a classic scam signal. Logos and names are easy to copy and prove nothing."
+            }
+          ]
+        },
+        {
+          "id": "m04-l02",
+          "title": "Scams you are likely to meet",
+          "minutes": 12,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Scams change costume, but the plots repeat. Here are four that circulate widely in South Africa and, in other forms, everywhere. Knowing the plot makes you hard to fool, so read them as stories you may one day recognise."
+            },
+            {
+              "type": "p",
+              "text": "In the **courier fee** scam, you get an SMS saying a parcel is waiting and needs a small clearance or redelivery fee. The amount is tiny, which is the point. The link leads to a page that collects your card details, and the scammer can use them for far more than the fee."
+            },
+            {
+              "type": "p",
+              "text": "In the **WhatsApp code takeover**, you get a text with a verification code you did not ask for, then a message from a contact, or a stranger, saying 'I sent that code to you by mistake, can you send it back?' That code is the key to registering your WhatsApp number on another phone. Handing it over gives them your account, and they then message your contacts asking for money."
+            },
+            {
+              "type": "p",
+              "text": "In the **fake job offer**, a recruiter writes out of the blue with a well-paid, easy role. Soon you are asked to pay for training or a uniform, or to send a copy of your ID, bank details and a selfie 'for onboarding'. A real employer does not charge you to start work."
+            },
+            {
+              "type": "p",
+              "text": "In the **bank fraud department call**, someone phones and says your account is under attack, sometimes quoting a few real details. They ask you to read out a one-time PIN, install a support app or move money to a 'safe account'. Banks do not ask for your PIN, full password or one-time codes, and they never ask you to move money to protect it."
+            },
+            {
+              "type": "table",
+              "caption": "Four scams at a glance",
+              "headers": [
+                "Scam",
+                "The hook",
+                "The tell",
+                "Safe response"
+              ],
+              "rows": [
+                [
+                  "Courier fee",
+                  "A parcel needs a small fee",
+                  "Unexpected message, link to a payment page",
+                  "Ignore the link; check the courier's own app or website"
+                ],
+                [
+                  "WhatsApp code takeover",
+                  "'Please send me the code'",
+                  "A code you never requested",
+                  "Never share it; turn on two-step verification"
+                ],
+                [
+                  "Fake job offer",
+                  "Great pay, easy work",
+                  "Fees or ID and bank details before any contract",
+                  "Verify the company independently; never pay to get hired"
+                ],
+                [
+                  "Bank fraud call",
+                  "'Your account is under attack'",
+                  "Asks for a PIN, code or a transfer",
+                  "Hang up; call the number on your bank card"
+                ]
+              ]
+            },
+            {
+              "type": "callout",
+              "tone": "warning",
+              "title": "No code, PIN or full password goes to anyone",
+              "text": "That includes callers who sound kind, know your name or seem to be from the organisation. Genuine staff never need your secrets because they can already see what they need on their own systems."
+            },
+            {
+              "type": "check",
+              "id": "m04-l02-c1",
+              "kind": "single",
+              "prompt": "A stranger texts: 'I sent my code to your number by mistake, please send it back.' What should you do?",
+              "options": [
+                "Send it, since it is probably harmless",
+                "Ignore it and do not share any code",
+                "Send half of it to be safe",
+                "Reply asking for their phone number first"
+              ],
+              "correct": [
+                1
+              ],
+              "explain": "Verification codes belong to you. Sending one can let a stranger take over your account, so never pass a code to anyone."
+            },
+            {
+              "type": "check",
+              "id": "m04-l02-c2",
+              "kind": "single",
+              "prompt": "A caller from your 'bank's fraud team' asks you to move your savings to a safe account. What is the best response?",
+              "options": [
+                "Do as they say, because they know your name",
+                "Ask them to hold while you transfer part of it",
+                "Hang up and call the number printed on your bank card",
+                "Read out your PIN to prove who you are"
+              ],
+              "correct": [
+                2
+              ],
+              "explain": "Genuine banks do not ask you to move money for safety. Ending the call and phoning the official number yourself is the safe check."
+            }
+          ]
+        },
+        {
+          "id": "m04-l03",
+          "title": "Verify first, and what to do if you clicked",
+          "minutes": 11,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Everything in this module comes down to one habit: **verify through a second channel**. If a message, call or request asks for money, a code or a login, stop. Then confirm it using a route you chose, not one the sender supplied."
+            },
+            {
+              "type": "p",
+              "text": "That means hanging up and calling the number printed on your bank card or the official website. It means typing the company's address into the browser, or opening its app, instead of tapping a link. It means phoning your friend or colleague on the number you already have when a 'new number' message asks for money."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "The boss who needs vouchers",
+              "text": "A message arrives on WhatsApp from an unknown number: 'Hi, it's your manager, this is my new number. Can you buy some gift vouchers for a client? I will refund you.' Rather than reply, the employee rings the manager's usual number. The manager knows nothing about it. Thirty seconds of checking saved a loss."
+            },
+            {
+              "type": "p",
+              "text": "Pressure to hurry is a signal in itself. A genuine bank, courier or employer can wait ten minutes while you check. A scammer cannot, because the longer you think, the more likely you are to spot the trick."
+            },
+            {
+              "type": "steps",
+              "title": "If you clicked or shared something",
+              "items": [
+                {
+                  "title": "Stay calm and stop",
+                  "text": "Close the page. Do not enter anything more. Many people only clicked, and clicking alone often does little."
+                },
+                {
+                  "title": "If you typed a password, change it now",
+                  "text": "Use the official site or app, and change it anywhere else it was reused. Turn on MFA."
+                },
+                {
+                  "title": "If you shared card or banking details, call your bank",
+                  "text": "Use the number on your card. Ask them to block the card or freeze the account and to review recent transactions."
+                },
+                {
+                  "title": "If you installed something or allowed remote access",
+                  "text": "Disconnect the device from the internet, remove the app or access, and get trusted help to check it, as Module 5 explains."
+                },
+                {
+                  "title": "Report and warn",
+                  "text": "Report the message to the service it used, tell your bank, and if money was lost consider reporting it to the police. Let friends or colleagues know, since the scammer may be using the same message on them."
+                }
+              ]
+            },
+            {
+              "type": "p",
+              "text": "Do not be ashamed. Skilled, well-informed people fall for these, because the attacks are designed by professionals to exploit normal human reactions. Fast reporting is what limits the harm, and embarrassment only slows it down."
+            },
+            {
+              "type": "exercise",
+              "title": "Build your verify-first routine",
+              "intro": "Do this now, while you are calm, so the answers are ready when you are pressured. Do not click any link or open any attachment in the messages you review.",
+              "tasks": [
+                "Save the official phone numbers of your bank and your mobile provider in your contacts, copying them from your bank card or a bill, not from a message.",
+                "Find the 'report phishing' or 'report spam' option in your email app and your messaging app, so you know where it is.",
+                "Open your spam folder and look at three suspicious messages without clicking anything. Write down which red flags each one shows.",
+                "Choose one person you trust, such as a partner or friend, and agree that you will check with each other before acting on any message that asks for money."
+              ],
+              "reflection": "Which of the red flags are you most likely to miss on a busy day, and what will you do to slow yourself down?"
+            },
+            {
+              "type": "check",
+              "id": "m04-l03-c1",
+              "kind": "single",
+              "prompt": "You entered your email password on a page you now suspect was fake. What should you do first?",
+              "options": [
+                "Wait to see whether anything happens",
+                "Change the password from the official site and anywhere it was reused",
+                "Delete the email and carry on",
+                "Reply to the sender to ask for a refund"
+              ],
+              "correct": [
+                1
+              ],
+              "explain": "Acting quickly limits harm. Change the password through the genuine site, change any reused copies and turn on MFA."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m05",
+      "title": "Malware and Ransomware",
+      "summary": "What malicious software is, how it usually gets onto devices, and how updates and backups turn a disaster into an annoyance.",
+      "objectives": [
+        "Describe the main kinds of malware in plain words",
+        "Recognise the usual ways malware reaches a device",
+        "Apply the 3-2-1 backup idea and keep devices updated",
+        "Respond sensibly to a suspected infection or ransomware note"
+      ],
+      "lessons": [
+        {
+          "id": "m05-l01",
+          "title": "What malware is and how it arrives",
+          "minutes": 10,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "**Malware** is short for malicious software: any program designed to harm you or help someone else at your expense. It can steal information, watch what you do, lock your files or quietly use your device for someone else's purposes. A device does not catch it from the air. Somebody, or something, has to get it onto your device, and usually with your help."
+            },
+            {
+              "type": "table",
+              "caption": "Common kinds of malware, in plain words",
+              "headers": [
+                "Type",
+                "What it does",
+                "How it often arrives"
+              ],
+              "rows": [
+                [
+                  "Trojan",
+                  "Pretends to be something useful while doing something harmful",
+                  "A fake download, a cracked program, a bogus app"
+                ],
+                [
+                  "Spyware",
+                  "Secretly records what you type, see or say",
+                  "Bundled with dubious software or a malicious attachment"
+                ],
+                [
+                  "Ransomware",
+                  "Locks your files and demands payment to release them",
+                  "A malicious attachment or link, or an unpatched weakness"
+                ],
+                [
+                  "Adware",
+                  "Floods you with ads or redirects your browsing",
+                  "Free software with unwanted extras, shady extensions"
+                ],
+                [
+                  "Worm or virus",
+                  "Spreads itself to other files or devices",
+                  "Infected files, shared drives, unpatched software"
+                ]
+              ]
+            },
+            {
+              "type": "p",
+              "text": "The routes in are surprisingly ordinary. Opening an unexpected attachment. Running a program from a site that is not the maker's. Installing pirated or 'cracked' software, which is a favourite hiding place. Plugging in a USB stick found in a car park. Approving an app that asks for far more access than it needs. Running old software that has known weaknesses nobody patched."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "The free invoice template",
+              "text": "Pieter, who runs a small plumbing business, searches for a free invoice program and downloads the top result. The setup file is not from the real developer. Nothing looks wrong, but weeks later his bank login stops working and his email is sending strange messages. The 'free' tool came with an extra."
+            },
+            {
+              "type": "h",
+              "text": "Signs something may be wrong"
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                "The device is suddenly much slower, or the battery drains unusually fast.",
+                "Pop-ups appear when you are not browsing, or your browser homepage changed.",
+                "You see apps or toolbars you do not remember installing.",
+                "Files will not open or have been renamed, or you see a note demanding payment.",
+                "Your security software raises an alert, or your contacts say they received odd messages from you."
+              ]
+            },
+            {
+              "type": "p",
+              "text": "None of these is proof alone, since slow devices have many innocent causes. Together they are a reason to stop and check. Keep the security tools that come with your operating system switched on, and leave them updated, because they catch a great deal of known malware without any effort from you."
+            },
+            {
+              "type": "check",
+              "id": "m05-l01-c1",
+              "kind": "single",
+              "prompt": "Which is the most common way malware gets onto a device?",
+              "options": [
+                "Through the Wi-Fi signal alone, with no action from you",
+                "By tricking the user into running or installing something",
+                "From switching the device off at the wall",
+                "Through the screen brightness setting"
+              ],
+              "correct": [
+                1
+              ],
+              "explain": "Most malware needs a person to open, run or approve something. That is why safe habits matter more than gadgets."
+            }
+          ]
+        },
+        {
+          "id": "m05-l02",
+          "title": "Backups, updates and what to do if you are hit",
+          "minutes": 14,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "You cannot guarantee that malware never reaches you. But you can decide how much it costs you. The two best tools are keeping your software updated and having a backup you have actually tested."
+            },
+            {
+              "type": "p",
+              "text": "**Updates** fix weaknesses that criminals know about and use. Once a fix is published, anyone who has not applied it is an easy target. Turn on automatic updates for your phone, computer, browser and apps, and restart when asked. It is dull advice that prevents a lot of grief."
+            },
+            {
+              "type": "h",
+              "text": "The 3-2-1 backup idea"
+            },
+            {
+              "type": "p",
+              "text": "A **backup** is a separate copy of your important files. The **3-2-1** rule is an easy way to remember what a good one looks like."
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                "**3** copies of your data: the original plus two backups.",
+                "**2** different kinds of storage, for example your laptop plus an external drive plus cloud storage.",
+                "**1** copy kept away from the device and the house, either offline or in a different place."
+              ]
+            },
+            {
+              "type": "p",
+              "text": "Two traps catch people. First, syncing is not backup. If a folder syncs to the cloud, a ransomware-locked file or an accidental deletion may sync too. Look for a service that keeps older versions. Second, a backup that is always plugged in can be locked along with the original, so keep one copy disconnected most of the time."
+            },
+            {
+              "type": "callout",
+              "tone": "key",
+              "title": "A backup you have never restored is a hope, not a backup",
+              "text": "Every few months, try recovering a file from each backup. It takes minutes and tells you whether the plan really works."
+            },
+            {
+              "type": "h",
+              "text": "If ransomware hits"
+            },
+            {
+              "type": "p",
+              "text": "Ransomware locks your files and demands payment, usually in cryptocurrency. Paying is a bad plan. There is no guarantee you will get working files back, the money funds more attacks, and being known as a payer can invite repeat attempts. With a good backup the demand is simply irrelevant."
+            },
+            {
+              "type": "steps",
+              "title": "If you suspect an infection",
+              "items": [
+                {
+                  "title": "Disconnect",
+                  "text": "Unplug the network cable or switch off Wi-Fi so it cannot spread to other devices or reach your cloud and backups."
+                },
+                {
+                  "title": "Do not pay, and do not keep clicking",
+                  "text": "Take a photo of any ransom note, which may help whoever assists you, and leave the demand alone."
+                },
+                {
+                  "title": "Get help",
+                  "text": "Contact a trusted IT person, your employer's IT team or a reputable repair service. The safest route is usually to clean or rebuild the device."
+                },
+                {
+                  "title": "Change passwords from a clean device",
+                  "text": "Use a different, uninfected device to change your email, banking and other key passwords."
+                },
+                {
+                  "title": "Restore from backup",
+                  "text": "Only restore once the device is clean, and tell the people who might be affected, such as clients whose data you hold."
+                }
+              ]
+            },
+            {
+              "type": "exercise",
+              "title": "Audit your backups",
+              "intro": "Spend twenty minutes on this using your own files. It is one of the most valuable exercises in the course.",
+              "tasks": [
+                "List the files you could not bear to lose, such as photos, documents, business records and contacts, and where each one lives today.",
+                "Count the copies and the kinds of storage for each, and mark whether one is stored away from your home or office.",
+                "Choose one gap to fix this week, such as buying an external drive or turning on a cloud backup with version history.",
+                "Restore one file from a backup to prove it works."
+              ],
+              "reflection": "If your laptop were stolen tonight, what would you lose for good?"
+            },
+            {
+              "type": "check",
+              "id": "m05-l02-c1",
+              "kind": "single",
+              "prompt": "What does the '1' in the 3-2-1 backup rule stand for?",
+              "options": [
+                "One password for every backup",
+                "One copy stored away from the main device and location",
+                "One backup per year",
+                "One cloud provider only"
+              ],
+              "correct": [
+                1
+              ],
+              "explain": "The 1 is one off-site or offline copy, so that theft, fire or ransomware cannot take every copy at once."
+            },
+            {
+              "type": "check",
+              "id": "m05-l02-c2",
+              "kind": "truefalse",
+              "prompt": "Paying a ransom guarantees you will get your files back.",
+              "options": [
+                "True",
+                "False"
+              ],
+              "correct": [
+                1
+              ],
+              "explain": "Nothing guarantees it. Some victims never get working files, and payment encourages further attacks. Tested backups are the real answer."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m06",
+      "title": "Safe Browsing and Downloads",
+      "summary": "How to read the address bar, spot fake download buttons and fake updates, and keep browser extensions, pop-ups and warnings under control.",
+      "objectives": [
+        "Explain what the HTTPS padlock does and does not tell you",
+        "Check that a website address really belongs to the organisation you intend to visit",
+        "Download and install software and apps only from trustworthy sources",
+        "Respond calmly to pop-ups, fake virus warnings and unexpected update prompts"
+      ],
+      "lessons": [
+        {
+          "id": "m06-l01",
+          "title": "The padlock, the address bar and lookalike sites",
+          "minutes": 9,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "For years people were told: look for the padlock. If it is there, the site is safe. That advice is now out of date, and it can get you into trouble."
+            },
+            {
+              "type": "p",
+              "text": "The padlock, and the `https` at the start of an address, means your connection to the website is **encrypted**. Anyone sitting between you and the site, say on shared Wi-Fi, cannot read what passes back and forth. That is genuinely useful. But the padlock says nothing about who owns the site or whether they are honest. A criminal can get the same padlock for a fake page in minutes, and many do."
+            },
+            {
+              "type": "callout",
+              "tone": "key",
+              "title": "What the padlock means",
+              "text": "The padlock means 'this is a private connection'. It does not mean 'this is a trustworthy website'. A scam site can be just as private as a real one."
+            },
+            {
+              "type": "h",
+              "text": "Read the address from the right place"
+            },
+            {
+              "type": "p",
+              "text": "The part of a web address that identifies the owner is the **domain**, and it sits just before the first single slash. In `login.mybank.example/signin`, the domain is `mybank.example`. Anything to its left is only a label the owner chooses. A scammer can build `mybank.example.secure-check.example` and hope you stop reading after the first familiar word. The owner there is `secure-check.example`, not your bank."
+            },
+            {
+              "type": "table",
+              "caption": "Tricks used by lookalike addresses",
+              "headers": [
+                "Trick",
+                "What it looks like",
+                "What to check"
+              ],
+              "rows": [
+                [
+                  "Extra words",
+                  "mybank-support.example",
+                  "Is the real name exactly the one you normally use?"
+                ],
+                [
+                  "Misspelling",
+                  "mybnak.example",
+                  "Read it slowly, letter by letter"
+                ],
+                [
+                  "Familiar name on the left",
+                  "mybank.example.verify-now.example",
+                  "Find the domain just before the first single slash"
+                ],
+                [
+                  "Swapped characters",
+                  "Letters replaced by lookalikes, such as a capital I for a lowercase l",
+                  "Type the address yourself instead of reading it"
+                ],
+                [
+                  "Different ending",
+                  "mybank.example swapped for another suffix",
+                  "Does the ending match what you always use?"
+                ]
+              ]
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "The sponsored search result",
+              "text": "Zanele needs her electricity vendor's website and types the name into a search engine. The first result carries a small 'Sponsored' label and looks right, with a padlock. It is a copy that collects her card details. The real site was one line lower. She now types the address once and saves it as a bookmark."
+            },
+            {
+              "type": "p",
+              "text": "That story points at the best habit in this lesson. For the sites that handle your money or your identity, such as your bank, your mobile network, your tax authority and your email, **use a bookmark or the official app**. Do not search for them each time, and do not follow links from messages. A bookmark takes you to the exact address you saved, so a lookalike never gets a chance."
+            },
+            {
+              "type": "p",
+              "text": "Your password manager helps too. It only offers to fill a login on the address it saved. If it stays blank on a page that claims to be your bank, treat that as a loud warning."
+            },
+            {
+              "type": "check",
+              "id": "m06-l01-c1",
+              "kind": "single",
+              "prompt": "A site shows a padlock and https. What does that tell you for certain?",
+              "options": [
+                "The site is owned by an honest business",
+                "Your connection to the site is encrypted",
+                "The site has been checked and approved by your browser as safe to shop on",
+                "No criminal could be running it"
+              ],
+              "correct": [
+                1
+              ],
+              "explain": "The padlock only tells you the connection is private. Criminals can obtain it for fake sites too, so you must still check the address and the context."
+            }
+          ]
+        },
+        {
+          "id": "m06-l02",
+          "title": "Downloads, fake updates and browser extensions",
+          "minutes": 10,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Most people do not get infected by visiting a website. They get caught by choosing to install something. The skill is knowing where installing is safe."
+            },
+            {
+              "type": "p",
+              "text": "The safest sources are the **official app store** for your phone or computer, and the **maker's own website**, reached by typing the address or using a bookmark. A search for 'free download' lands on a page full of lookalikes, where the biggest green button is often an advert rather than the file you want."
+            },
+            {
+              "type": "h",
+              "text": "Fake download buttons"
+            },
+            {
+              "type": "p",
+              "text": "Free download sites often show several large buttons that all say Download. Only one, usually smaller and plainer, is the real link. The others lead to unrelated software. If you are not sure, leave the page and go to the maker's own site. Be especially wary of cracked or pirated software, games and 'free' versions of paid programs. They are a favourite hiding place for malware precisely because people expect to bypass checks."
+            },
+            {
+              "type": "h",
+              "text": "Fake updates"
+            },
+            {
+              "type": "p",
+              "text": "Your device really does need updates, so criminals imitate them. A web page suddenly says 'Your browser is out of date, click to update', or a pop-up insists you must install a new video player to watch a clip. These are baits. Genuine updates come through your device's own settings, your app store, or the program itself. They do not come from a banner on a random website."
+            },
+            {
+              "type": "callout",
+              "tone": "tip",
+              "title": "A simple rule for updates",
+              "text": "If a website tells you to update something, ignore the website and open the update settings on your own device. If an update exists, you will find it there."
+            },
+            {
+              "type": "h",
+              "text": "Browser extensions"
+            },
+            {
+              "type": "p",
+              "text": "An **extension** is a small add-on that changes how your browser works. Many are useful, but some can read every page you visit, including your banking pages. Extensions also change hands: a popular, harmless one can be sold and later updated to do something unpleasant."
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                "Install extensions only from your browser's official store, and prefer ones with many users and a well-known maker.",
+                "Read the permissions. A colour picker that wants to read and change all your websites needs a good reason.",
+                "Remove ones you no longer use. Fewer extensions means fewer things to trust.",
+                "Be cautious about extensions offered through ads, messages or pop-ups."
+              ]
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "The helpful coupon finder",
+              "text": "Ruan installs a free coupon extension recommended in an advert. It works, but its permissions let it see every page he opens. When he reviews his extensions for the exercise below, he cannot say why it needs that access, so he removes it. Nothing bad had happened yet, and now it is less likely to."
+            },
+            {
+              "type": "check",
+              "id": "m06-l02-c1",
+              "kind": "single",
+              "prompt": "While watching a clip, a page says your media player is out of date and offers an update button. What is the best response?",
+              "options": [
+                "Click it, since players do need updating",
+                "Close the page and check for updates through your device or the player's own settings",
+                "Click it but cancel if the installer looks odd",
+                "Reply to the site's chat to ask if the update is genuine"
+              ],
+              "correct": [
+                1
+              ],
+              "explain": "Updates should come from your device, app store or the program itself. A prompt on a website is a classic bait."
+            },
+            {
+              "type": "check",
+              "id": "m06-l02-c2",
+              "kind": "truefalse",
+              "prompt": "A browser extension can be safe at first and become harmful later if its owner changes or sells it.",
+              "options": [
+                "True",
+                "False"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "Extensions get updated and sometimes change owners, which is why you should review what you have installed and remove what you do not need."
+            }
+          ]
+        },
+        {
+          "id": "m06-l03",
+          "title": "Pop-ups, fake virus warnings and a browsing tidy-up",
+          "minutes": 10,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "You are reading a recipe when the screen flashes red: 'WARNING. Your device is infected with 3 viruses. Call this number now.' There may be a siren sound and a countdown. It looks dreadful. It is almost always a scam, and understanding why takes the fear out of it."
+            },
+            {
+              "type": "p",
+              "text": "A website cannot scan your device for viruses. It is only a web page, and your browser does not give pages that power. The alarming message is simply an advert-style image designed to look like an alert from your computer. The goal is to push you to phone a number, install a 'cleaner' or pay for a pointless service."
+            },
+            {
+              "type": "callout",
+              "tone": "warning",
+              "title": "Never phone a number from a warning",
+              "text": "Genuine security software does not show a helpline number in a browser pop-up. If you call, the person on the line will try to get remote access to your device or take payment. Do not call, do not click, and do not install anything."
+            },
+            {
+              "type": "steps",
+              "title": "If a fake warning takes over your screen",
+              "items": [
+                {
+                  "title": "Do not click inside the message",
+                  "text": "Buttons marked Close or Cancel may be part of the trick, so avoid them."
+                },
+                {
+                  "title": "Close the browser the usual way",
+                  "text": "Use the normal close button or the browser's quit command. If it will not close, restart the device."
+                },
+                {
+                  "title": "Do not reopen the old tabs",
+                  "text": "If the browser offers to restore your last session, decline and start fresh."
+                },
+                {
+                  "title": "Check what is installed",
+                  "text": "If you clicked anything, look at your downloads and remove anything you did not intend to install."
+                },
+                {
+                  "title": "Run your normal security check",
+                  "text": "Use the security tools that come with your device, and change passwords from a clean device if you entered any."
+                }
+              ]
+            },
+            {
+              "type": "h",
+              "text": "Other pop-ups and prompts"
+            },
+            {
+              "type": "p",
+              "text": "Some pop-ups are just irritating adverts. Others ask for permission to 'show notifications'. If you tap Allow on a shady site, it can send adverts and fake alerts straight to your screen all day. If you do not recognise why a site wants a permission, choose Block. You can review and remove those permissions in your browser's settings."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "The grandmother and the siren",
+              "text": "Mrs Dlamini is shown a loud 'virus detected' alarm on her tablet. She nearly rings the number, then remembers her grandson saying that websites cannot scan a device. She restarts the tablet, the alarm vanishes, and she tells him about it. No harm done, because she closed rather than clicked."
+            },
+            {
+              "type": "p",
+              "text": "Keep your browser updated, because browser makers fix known weaknesses regularly. Keep the built-in protections turned on too, such as the warning pages browsers show for known dangerous sites. They are not perfect, so they sit alongside your own care rather than replacing it."
+            },
+            {
+              "type": "exercise",
+              "title": "Browser tidy-up",
+              "intro": "Do this on your own browser and devices. It takes about twenty minutes and removes a surprising amount of risk.",
+              "tasks": [
+                "Open your browser's extensions page. For each extension, write down what it does and whether you still use it. Remove any you do not need or do not recognise.",
+                "Check your browser's site permissions, especially notifications. Remove permission from any site you do not recognise or no longer visit.",
+                "Make sure the browser and your device are set to update automatically, and restart if an update is waiting.",
+                "Bookmark the official site of your bank, your mobile network and your email, and use those bookmarks from now on.",
+                "Look at the list of programs or apps installed on your main computer and uninstall anything you do not remember adding."
+              ],
+              "reflection": "Which item surprised you most, and what will you do differently when a site next tells you to download or update something?"
+            },
+            {
+              "type": "check",
+              "id": "m06-l03-c1",
+              "kind": "single",
+              "prompt": "A red full-screen alert in your browser says viruses were found and gives a phone number. What is the best first move?",
+              "options": [
+                "Call the number quickly before more damage is done",
+                "Close the browser normally and do not click inside the alert",
+                "Click Scan Now to confirm the problem",
+                "Enter your email address to get a removal report"
+              ],
+              "correct": [
+                1
+              ],
+              "explain": "Web pages cannot scan your device. The alert is a trick, so close it without interacting and never call the number."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m07",
+      "title": "Protecting Personal and Business Information",
+      "summary": "What counts as sensitive information, how to share and store it carefully, and the basic duties anyone holding other people's data takes on.",
+      "objectives": [
+        "Identify which of your information is sensitive and why",
+        "Apply the habit of sharing and keeping the minimum",
+        "Share, store and delete information securely, including with device encryption",
+        "Describe, in plain terms, why businesses must protect other people's data and what a one-person business should do"
+      ],
+      "lessons": [
+        {
+          "id": "m07-l01",
+          "title": "What counts as sensitive, and sharing the minimum",
+          "minutes": 9,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Some information is harmless to share. Your favourite football team, for instance. Other information can be used against you, or against the people whose details you hold. The first job is knowing which is which."
+            },
+            {
+              "type": "table",
+              "caption": "Kinds of sensitive information",
+              "headers": [
+                "Kind",
+                "Examples",
+                "Why it matters"
+              ],
+              "rows": [
+                [
+                  "Identity",
+                  "ID number, passport, date of birth, signature, a photo of your ID",
+                  "Can be used to open accounts or take out credit in your name"
+                ],
+                [
+                  "Financial",
+                  "Card numbers, bank details, payslips, tax records",
+                  "Direct route to fraud, or to convincing a scam call"
+                ],
+                [
+                  "Access",
+                  "Passwords, PINs, one-time codes, recovery codes",
+                  "Opens your accounts without further proof"
+                ],
+                [
+                  "Personal",
+                  "Home address, health details, family information, location",
+                  "Enables stalking, targeted scams and embarrassment"
+                ],
+                [
+                  "Business and others",
+                  "Customer lists, contracts, staff records, client files",
+                  "You are responsible for protecting what belongs to others"
+                ]
+              ]
+            },
+            {
+              "type": "p",
+              "text": "Many items are harmless alone and risky together. A name, a birth date and an address may each be easy to find. Combine them and you have most of what a fraudster needs to pass for you on the phone. That is why small leaks matter."
+            },
+            {
+              "type": "h",
+              "text": "The minimum rule"
+            },
+            {
+              "type": "p",
+              "text": "The most dependable privacy habit is also the simplest: **share the minimum**, and **keep the minimum**. Information you never handed over cannot leak from someone else's system. Information you deleted cannot be stolen from your laptop."
+            },
+            {
+              "type": "p",
+              "text": "Before giving details to anyone, ask three questions. Do they really need this? What will they do with it? How long will they keep it? A gym that wants your ID number to sign you up may have a reason. A competition page that wants it for a lucky draw probably does not."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "The ID copy that travels",
+              "text": "Mpho sends a photo of her ID to a landlord, who forwards it to an agent, who saves it to a phone that is later lost. She never intended it to travel. Now she writes across any copy she must send, for example 'For the flat rental application only, 12 March', which makes the copy far less useful to a thief."
+            },
+            {
+              "type": "callout",
+              "tone": "tip",
+              "title": "Three habits that cost nothing",
+              "text": "Give optional form fields a miss. Use a separate email address for sign-ups and shops, so that a leak does not reach your main inbox. Ask 'why do you need this?' out loud. Real organisations can answer."
+            },
+            {
+              "type": "p",
+              "text": "The same thinking helps with children and relatives. A school photo with the uniform, the school name and the child's full name in one post tells a stranger more than the parent meant to share."
+            },
+            {
+              "type": "check",
+              "id": "m07-l01-c1",
+              "kind": "single",
+              "prompt": "A shop asks for your ID number to enter a prize draw. Which response best follows the 'share the minimum' habit?",
+              "options": [
+                "Give it, since they are a registered business",
+                "Ask why it is needed, and decline or skip it if there is no good reason",
+                "Give a friend's number instead",
+                "Give it but only when the shop is quiet"
+              ],
+              "correct": [
+                1
+              ],
+              "explain": "Questioning why data is needed, and withholding what is not needed, is the heart of sharing the minimum."
+            }
+          ]
+        },
+        {
+          "id": "m07-l02",
+          "title": "Storing, sharing and deleting safely",
+          "minutes": 10,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Once you know what is sensitive, the next question is how to handle it. There are three moments to think about: when it sits on your device, when you send it and when you no longer need it."
+            },
+            {
+              "type": "h",
+              "text": "When it sits on your device: encryption"
+            },
+            {
+              "type": "p",
+              "text": "**Encryption** scrambles information so it can only be read with the right key. **Device encryption** applies that to everything stored on a phone or laptop, so that a thief who takes the hardware cannot simply read the files. Most modern phones encrypt by default once you set a screen lock, and major computer systems include a built-in option. Settings vary by device, so search your device's help pages for 'encrypt' and make sure it is on."
+            },
+            {
+              "type": "p",
+              "text": "Encryption only protects you while the device is locked. That is why a strong screen lock matters, and why a laptop left logged in on a café table is not protected by it."
+            },
+            {
+              "type": "h",
+              "text": "When you send it"
+            },
+            {
+              "type": "p",
+              "text": "Email is like a postcard: fine for ordinary news, poor for an ID copy or banking details. Where you can, share a link to a file in a trusted cloud service rather than attaching a copy, and limit who can open it. Use settings that restrict access to named people, not 'anyone with the link', and remove access when the job is done."
+            },
+            {
+              "type": "p",
+              "text": "Passwords and codes should never travel in the same message as the file they protect. Send the document one way and the password another, such as by a phone call or a different app. Many messaging apps encrypt messages in transit, which helps, but a chat history sits on every device that holds it, so avoid leaving sensitive images there."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "The quote that went to the wrong person",
+              "text": "A freelance bookkeeper emails a spreadsheet of client salaries to the wrong Sipho because the address auto-filled. Nothing was hacked. The fix is simple: check the recipient before sending, and for anything sensitive, share a restricted link that she could revoke."
+            },
+            {
+              "type": "h",
+              "text": "When you are finished with it"
+            },
+            {
+              "type": "p",
+              "text": "Most of us keep everything forever. Old files are a liability, because they can still leak. This is **retention**: how long you keep information. A sensible rule is to keep what you need or are required to keep, and remove the rest."
+            },
+            {
+              "type": "p",
+              "text": "Deleting needs care. Dragging a file to the bin on an ordinary computer often leaves the data recoverable. Before you sell, give away or recycle a phone or laptop, back up what you need, sign out of your accounts, then use the device's factory reset option, which on modern devices that are encrypted makes the old data unreadable. Paper records with ID numbers or bank details should be shredded or torn up properly."
+            },
+            {
+              "type": "table",
+              "caption": "Handling sensitive information",
+              "headers": [
+                "Moment",
+                "Safer habit"
+              ],
+              "rows": [
+                [
+                  "Stored",
+                  "Turn on device encryption, use a strong screen lock, keep it backed up"
+                ],
+                [
+                  "Shared",
+                  "Restricted links, correct recipient, password sent separately"
+                ],
+                [
+                  "No longer needed",
+                  "Delete it, empty the bin, factory reset devices before passing them on, shred paper"
+                ]
+              ]
+            },
+            {
+              "type": "check",
+              "id": "m07-l02-c1",
+              "kind": "single",
+              "prompt": "Why is it better to share a restricted link to a document than to attach copies to several emails?",
+              "options": [
+                "Links are always encrypted end to end",
+                "You control who can open the file and can remove access later",
+                "Attachments cannot be opened by the recipient",
+                "Links are free while attachments cost money"
+              ],
+              "correct": [
+                1
+              ],
+              "explain": "A restricted link keeps a single copy under your control. You can limit who sees it and revoke access, which you cannot do with copies already sent."
+            }
+          ]
+        },
+        {
+          "id": "m07-l03",
+          "title": "Other people's data and basics for a one-person business",
+          "minutes": 10,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "If you keep a customer's phone number, an ID copy or a client's address, you are holding something that belongs to them. Many countries have laws that say businesses must look after it. In South Africa that law is **POPIA**, the Protection of Personal Information Act. At the level you need as a beginner, the message is plain: if you collect other people's information, you have duties to protect it."
+            },
+            {
+              "type": "callout",
+              "tone": "key",
+              "title": "Not legal advice",
+              "text": "This course does not tell you exactly what a law requires. For a business that handles customer data, read your regulator's official guidance, or ask a qualified adviser. The habits below are good practice anywhere."
+            },
+            {
+              "type": "p",
+              "text": "The principles behind laws like this are common sense, and they match what you have been learning. Collect only what you need. Use it only for the reason you collected it. Keep it safe. Do not keep it longer than necessary. Tell people when something goes wrong."
+            },
+            {
+              "type": "h",
+              "text": "Basics for a one-person business"
+            },
+            {
+              "type": "p",
+              "text": "You do not need a security department. You need a short list of habits that you actually follow."
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                "**Know what you hold.** Write down where customer or client information lives: laptop, phone, WhatsApp chats, email, paper.",
+                "**Keep business and personal apart.** Where you can, use a separate email address and, ideally, a separate profile or device for the business.",
+                "**Lock and encrypt.** Screen locks and device encryption on every phone and laptop that touches business data.",
+                "**Limit access.** If someone helps you, give them their own login rather than sharing yours, and remove access when they leave.",
+                "**Back up and test.** Apply the 3-2-1 idea from Module 5 to the files that run your business.",
+                "**Check payment changes.** If a supplier says their bank details have changed, confirm by phoning a number you already have."
+              ]
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "Thandi's customer list",
+              "text": "Thandi's baking orders and addresses sit in WhatsApp chats and a spreadsheet. She moves the list into one locked, backed-up spreadsheet, deletes old chats where customers sent addresses, and stops forwarding order screenshots to her helper. If her phone is stolen, far less is exposed, and she can show a customer exactly what she keeps."
+            },
+            {
+              "type": "p",
+              "text": "If you do suffer a leak of other people's data, such as a stolen laptop with a client list, do not hide it. Act quickly to contain it, change affected passwords, and find out what your obligations to the people and any regulator might be. Telling affected people early lets them protect themselves."
+            },
+            {
+              "type": "exercise",
+              "title": "Information map",
+              "intro": "Make a one-page map of the sensitive information you hold. Use your own accounts, devices and, if relevant, your business.",
+              "tasks": [
+                "List the five most sensitive things you keep, such as ID copies, bank statements, client lists, health details and recovery codes.",
+                "For each one, write down every place it is stored or has been sent: devices, email, chat apps, cloud folders, paper.",
+                "Mark anything stored in more places than it needs to be, then delete the extra copies you do not need.",
+                "Check that each device holding sensitive items has a screen lock and encryption turned on.",
+                "Decide how long you will keep each item and put one clean-up date in your diary."
+              ],
+              "reflection": "Which item had travelled the furthest from where you originally saved it?"
+            },
+            {
+              "type": "check",
+              "id": "m07-l03-c1",
+              "kind": "multi",
+              "prompt": "Select all the habits that suit a one-person business holding customer details.",
+              "options": [
+                "Keeping customer lists in several chat apps for convenience",
+                "Using screen locks and encryption on devices that hold business data",
+                "Keeping a backed-up, restricted copy of the customer list",
+                "Keeping customer details forever just in case"
+              ],
+              "correct": [
+                1,
+                2
+              ],
+              "explain": "Locking and encrypting devices and keeping a controlled, backed-up copy protect other people's data. Spreading details across chats and keeping them forever increase risk."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m08",
+      "title": "Wi-Fi and Mobile Device Security",
+      "summary": "Securing your home router, using public Wi-Fi and VPNs realistically, and locking down the phone that holds most of your life.",
+      "objectives": [
+        "Secure a home router with the basic settings that matter",
+        "Describe the real risks of public Wi-Fi and the honest limits of a VPN",
+        "Configure screen locks, app permissions, updates and find-my-device on a phone",
+        "Recognise SIM swap fraud and know how to reduce its impact"
+      ],
+      "lessons": [
+        {
+          "id": "m08-l01",
+          "title": "Your home router: the door to everything",
+          "minutes": 9,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Every device in your home that uses the internet goes through one box: the router, often supplied by your internet provider. It is easy to forget because it just sits in a corner with blinking lights. But if someone controls your router, they influence everything connected to it."
+            },
+            {
+              "type": "p",
+              "text": "Router security is usually a short list of one-off jobs. You do them once, check them now and then, and mostly forget them."
+            },
+            {
+              "type": "table",
+              "caption": "Home router basics",
+              "headers": [
+                "Setting",
+                "What to do",
+                "Why"
+              ],
+              "rows": [
+                [
+                  "Admin password",
+                  "Change the default login for the router's settings page to a long, unique one",
+                  "Default logins are published online and often identical across devices"
+                ],
+                [
+                  "Wi-Fi password",
+                  "Use a long passphrase, not the short one printed on the label if you can change it",
+                  "Stops neighbours and passers-by joining your network"
+                ],
+                [
+                  "Encryption setting",
+                  "Choose the newest option your devices support, which is currently WPA3 or WPA2, and avoid old options such as WEP or open networks",
+                  "Older settings are weak and easy to get past"
+                ],
+                [
+                  "Firmware updates",
+                  "Turn on automatic updates if offered, or check for updates now and then",
+                  "Firmware is the router's own software, and it gets security fixes"
+                ],
+                [
+                  "Remote management",
+                  "Leave remote access to the router off unless you truly need it",
+                  "Fewer ways in from outside"
+                ],
+                [
+                  "Guest network",
+                  "Put visitors and smart gadgets on a separate guest network if available",
+                  "Keeps less trusted devices away from your laptop and phone"
+                ]
+              ]
+            },
+            {
+              "type": "callout",
+              "tone": "key",
+              "title": "Two different passwords",
+              "text": "The **Wi-Fi password** lets devices join your network. The **router admin password** lets someone change the router's settings. They are separate, and both need to be strong. Many people only ever change the first."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "The label on the box",
+              "text": "Neo's router still has the admin login printed on the label: the same word on thousands of routers from the same provider. Anyone who got onto his network could try it. He logs in once, replaces it with a long passphrase from his password manager and notes the new Wi-Fi name and password on a card for visitors."
+            },
+            {
+              "type": "p",
+              "text": "If you are not sure how to reach these settings, your provider's support pages or the router's manual explain it. The exact steps differ between makes, so look up yours rather than copying a guide for another model. Take a photo of the settings you change so you can undo them if something stops working."
+            },
+            {
+              "type": "p",
+              "text": "Old routers matter as well. If your router no longer receives updates from its maker, replacing it is a sensible upgrade. Ask your provider if you are unsure whether yours is supported."
+            },
+            {
+              "type": "check",
+              "id": "m08-l01-c1",
+              "kind": "single",
+              "prompt": "Which of these is the most valuable single router task for most households?",
+              "options": [
+                "Hiding the router behind a cupboard door",
+                "Changing the default admin password and keeping the firmware updated",
+                "Turning the router off every night",
+                "Using the shortest Wi-Fi password so guests can remember it"
+              ],
+              "correct": [
+                1
+              ],
+              "explain": "A default admin login and outdated firmware are common weaknesses. Fixing them closes the easiest doors."
+            }
+          ]
+        },
+        {
+          "id": "m08-l02",
+          "title": "Public Wi-Fi and what a VPN can and cannot do",
+          "minutes": 9,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Free Wi-Fi at an airport, a mall or a coffee shop is wonderful when your data bundle is low. It is also a network run by someone else, shared with strangers. Understanding what that does and does not expose helps you decide how to use it."
+            },
+            {
+              "type": "p",
+              "text": "The good news is that most of what you do online today is already encrypted between your device and the site, which is what the `https` padlock from Module 6 means. That limits what someone else on the same Wi-Fi can see. The remaining risks are mostly about **fake networks** and **fake pages**."
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                "A criminal can set up a hotspot called something like 'Airport_Free_WiFi' and see whether people join it. The name alone proves nothing.",
+                "Some public networks show a sign-in page that asks for far more than it should, such as card details or your email password.",
+                "On a shared network, your device is closer to strangers' devices, so sharing settings and unpatched software matter more.",
+                "The network owner can see which sites you connect to, even if not what you do on them."
+              ]
+            },
+            {
+              "type": "h",
+              "text": "Sensible habits on public Wi-Fi"
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                "Ask staff for the exact network name rather than choosing the most obvious one.",
+                "For banking and other sensitive jobs, switching to your phone's mobile data is often the simplest option.",
+                "Keep your device updated, and do not approve unexpected prompts or certificate warnings.",
+                "Turn off automatic joining of open networks, and 'forget' networks you will not use again.",
+                "Never type a password or card number into a sign-in page that is not for the service you expect."
+              ]
+            },
+            {
+              "type": "h",
+              "text": "What about a VPN?"
+            },
+            {
+              "type": "p",
+              "text": "A **VPN**, or virtual private network, creates an encrypted tunnel from your device to the VPN company's servers. Anyone on the local Wi-Fi sees only scrambled traffic going to the VPN. It can be handy on networks you do not trust, and for connecting to a workplace's systems."
+            },
+            {
+              "type": "p",
+              "text": "But a VPN is often sold as magic. It is not. It does not make you anonymous, it does not stop phishing, and it does not remove malware. It moves your trust: instead of trusting the coffee shop, you now trust the VPN company, which can see your traffic's destinations. Free VPNs deserve extra suspicion, because someone has to pay for the servers."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "The airport top-up",
+              "text": "Kagiso needs to top up his bundle while waiting for a flight. Rather than join the first free network he sees, he asks at the desk for the official name, checks it matches, and then uses his mobile data for the actual payment. Total extra effort: one minute."
+            },
+            {
+              "type": "callout",
+              "tone": "key",
+              "title": "Honest summary",
+              "text": "Public Wi-Fi is fine for casual use if you stay alert. A reputable VPN adds a layer on untrusted networks. It is not a substitute for updates, strong passwords or caution about scams."
+            },
+            {
+              "type": "check",
+              "id": "m08-l02-c1",
+              "kind": "single",
+              "prompt": "Which statement about VPNs is accurate?",
+              "options": [
+                "A VPN makes you completely anonymous online",
+                "A VPN removes any malware on your device",
+                "A VPN encrypts traffic to the VPN provider, which then becomes a party you trust",
+                "A VPN makes phishing messages harmless"
+              ],
+              "correct": [
+                2
+              ],
+              "explain": "A VPN shifts trust from the local network to the VPN provider. It does not provide anonymity or protect you from malware or scams."
+            }
+          ]
+        },
+        {
+          "id": "m08-l03",
+          "title": "Locking down your phone, and SIM swap awareness",
+          "minutes": 11,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "For many people the phone is the front door to everything: banking, email, photos, the authenticator app and WhatsApp. If it is stolen or compromised, a lot goes with it. A handful of settings make a big difference."
+            },
+            {
+              "type": "table",
+              "caption": "Phone security essentials",
+              "headers": [
+                "Area",
+                "What to do"
+              ],
+              "rows": [
+                [
+                  "Screen lock",
+                  "Use a PIN or password of at least six digits, or a passphrase, plus fingerprint or face unlock for convenience. Avoid 1234, your birth year or a swipe pattern others can watch"
+                ],
+                [
+                  "Updates",
+                  "Turn on automatic updates for the system and the apps"
+                ],
+                [
+                  "App sources",
+                  "Install only from the official app store, and keep the option to install from unknown sources switched off"
+                ],
+                [
+                  "Permissions",
+                  "Review which apps can use your camera, microphone, contacts and location, and remove what is not needed"
+                ],
+                [
+                  "Find my device",
+                  "Switch on your phone maker's locate, lock and erase feature before you need it"
+                ],
+                [
+                  "Notifications",
+                  "Hide message previews on the lock screen, so codes do not appear to anyone nearby"
+                ]
+              ]
+            },
+            {
+              "type": "p",
+              "text": "**App permissions** are worth a careful look. A torch app that asks for your contacts and microphone is telling you something. Ask whether the app needs each permission to do its job. If not, choose Deny, or choose 'only while using the app' where it is offered."
+            },
+            {
+              "type": "h",
+              "text": "SIM swap awareness"
+            },
+            {
+              "type": "p",
+              "text": "Your phone number is tied to a **SIM card**. In a **SIM swap**, a criminal convinces your network provider, or a dishonest insider, to move your number to a SIM they control. Your phone suddenly loses signal and the criminal starts receiving your calls and SMS messages, including one-time codes."
+            },
+            {
+              "type": "p",
+              "text": "The warning sign is unexplained loss of mobile signal, especially with no service in a place where you normally have one, followed by alerts about logins or password resets. If it happens, use another device or phone to call your provider and your bank straight away, and change your email password."
+            },
+            {
+              "type": "callout",
+              "tone": "tip",
+              "title": "Making a SIM swap less damaging",
+              "text": "Where you can, use an authenticator app or passkey instead of SMS codes for email and banking. Ask your provider whether they offer extra protection against unauthorised SIM changes. Do not publish your phone number and ID number on social media."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "The phone that went quiet",
+              "text": "On a Tuesday afternoon Lerato's phone shows no signal for an hour. She borrows a colleague's phone, rings her network and discovers that someone has moved her number. She tells her bank at once, then secures her email. Because her email used an authenticator app, the criminal could not get in."
+            },
+            {
+              "type": "exercise",
+              "title": "Phone lock-down",
+              "intro": "Use your own phone, and take about fifteen minutes.",
+              "tasks": [
+                "Check your screen lock. If it is shorter than six digits or easy to guess, change it.",
+                "Turn on automatic updates and install any pending update.",
+                "Open the permissions list for camera, microphone, contacts and location. Remove any permission from an app that does not clearly need it.",
+                "Turn on find-my-device, and test it by locating your phone from another device or a computer.",
+                "Hide message previews on the lock screen, and write down your network's customer-care number from a trustworthy source."
+              ],
+              "reflection": "If your phone vanished from your bag in a taxi right now, what would you do in the first ten minutes?"
+            },
+            {
+              "type": "check",
+              "id": "m08-l03-c1",
+              "kind": "single",
+              "prompt": "Your phone suddenly shows no signal for a long time, and your email then reports a password-reset request you did not make. What is the most likely explanation worth acting on?",
+              "options": [
+                "A routine network outage that needs no action",
+                "A SIM swap, so call your provider and bank from another device",
+                "Your battery is ageing",
+                "A problem with your Wi-Fi router"
+              ],
+              "correct": [
+                1
+              ],
+              "explain": "Loss of signal followed by unexpected reset requests is a classic sign of a SIM swap. Acting quickly from another device limits the damage."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m09",
+      "title": "Recognising Common Digital Threats",
+      "summary": "How social engineering, cloned voices, reused passwords, fake apps, QR codes and oversharing work, so you can spot them and cut their effect.",
+      "objectives": [
+        "Describe how social engineering and impersonation work, including AI voice and video cloning",
+        "Explain credential stuffing and why reused passwords make it succeed",
+        "Spot fake apps and malicious QR codes before acting on them",
+        "Reduce the information that oversharing and accidental leaks hand to others"
+      ],
+      "lessons": [
+        {
+          "id": "m09-l01",
+          "title": "Social engineering and the new face of impersonation",
+          "minutes": 10,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "**Social engineering** means manipulating a person, rather than breaking software, to get what the attacker wants. The target is trust. Everything in Module 4 is a form of it, and the pattern shows up in many other places too."
+            },
+            {
+              "type": "p",
+              "text": "Almost every social engineering attempt uses the same handful of levers. Knowing them is a better defence than memorising any single scam."
+            },
+            {
+              "type": "table",
+              "caption": "The levers of social engineering",
+              "headers": [
+                "Lever",
+                "What the attacker says or does",
+                "Your counter-move"
+              ],
+              "rows": [
+                [
+                  "Authority",
+                  "Pretends to be a boss, bank, police officer or support technician",
+                  "Ask who they are, then call back on an official number"
+                ],
+                [
+                  "Urgency",
+                  "'This must happen in the next ten minutes'",
+                  "Slow down; real obligations survive a short check"
+                ],
+                [
+                  "Familiarity",
+                  "Uses a friend's name, a colleague's name or details from your social media",
+                  "Remember that details can be collected; verify the request itself"
+                ],
+                [
+                  "Helpfulness",
+                  "Asks for a small favour, such as forwarding a code",
+                  "Notice when the favour involves access or money"
+                ],
+                [
+                  "Fear or reward",
+                  "Threatens a penalty, or promises a prize or refund",
+                  "Treat strong emotion as a reason to pause"
+                ]
+              ]
+            },
+            {
+              "type": "h",
+              "text": "Cloned voices and fake video"
+            },
+            {
+              "type": "p",
+              "text": "Artificial intelligence now makes it possible to copy a person's voice from a short clip, and to create convincing fake video. Scammers have started to use these tools. The result might be a phone call from what sounds like your daughter, in tears, asking for urgent money. Or a video call in which a senior person seems to ask a finance clerk to make a payment."
+            },
+            {
+              "type": "p",
+              "text": "This is a new costume on an old plot. The person is not who they appear to be, and the call pushes you to act fast and in secret. You cannot reliably tell a good fake from a real voice by listening, so do not rely on your ears. Rely on the process."
+            },
+            {
+              "type": "callout",
+              "tone": "tip",
+              "title": "A family safe word",
+              "text": "Agree on a private word or question with close family, something that is not on social media. If an urgent call asks for money, ask for it. Real relatives will understand; a cloned voice cannot know it."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "The director on video",
+              "text": "A finance assistant is invited to a short video call where the managing director asks for an urgent payment to a new supplier. The face and voice seem right. Company policy says any new bank detail must be confirmed by a call to a known number, so she ends the call and phones the director's usual cellphone. He knows nothing about it. The rule saved the company, not her ability to spot a fake."
+            },
+            {
+              "type": "p",
+              "text": "For workplaces and small businesses, a simple rule does the work: **no payment, bank detail change or sensitive information is released on the strength of a single call, message or video.** Confirm through a second channel, and require a second person for large payments if you have one."
+            },
+            {
+              "type": "check",
+              "id": "m09-l01-c1",
+              "kind": "single",
+              "prompt": "What is the most reliable protection against a cloned voice asking you for urgent money?",
+              "options": [
+                "Listening carefully for robotic sounds",
+                "Agreeing a verification routine, such as a family safe word and a call-back on a known number",
+                "Answering questions quickly before you get confused",
+                "Asking the caller to repeat themselves"
+              ],
+              "correct": [
+                1
+              ],
+              "explain": "You cannot count on spotting a fake by ear. A prepared verification routine works regardless of how convincing the voice is."
+            }
+          ]
+        },
+        {
+          "id": "m09-l02",
+          "title": "Credential stuffing, fake apps and malicious QR codes",
+          "minutes": 10,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "This lesson covers three threats that look different but share a theme: they work because of ordinary habits. Understanding how they work shows you what to change."
+            },
+            {
+              "type": "h",
+              "text": "Credential stuffing"
+            },
+            {
+              "type": "p",
+              "text": "When a website is breached, lists of email addresses and passwords end up in criminals' hands. **Credential stuffing** is when software automatically tries those pairs on other popular services, such as email, online shops and streaming. It is not clever and it is not personal. It is a numbers game that costs the attacker almost nothing."
+            },
+            {
+              "type": "p",
+              "text": "It only works on people who **reuse passwords**. If your leaked forum password is not used anywhere else, the attempt fails. This is the plainest argument for a unique password on every account, and for turning on multi-factor authentication, which stops a correct password from being enough by itself."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "The streaming surprise",
+              "text": "Amahle gets an email that a login occurred from another country on her streaming account. She did not do it, but years ago she used the same password on a small shopping site that was later breached. She changes the password, switches on a second sign-in step, and then updates the same password on two other accounts she had forgotten about."
+            },
+            {
+              "type": "h",
+              "text": "Fake apps"
+            },
+            {
+              "type": "p",
+              "text": "Criminals publish apps that imitate banks, delivery services, popular games or well-known tools. Some sit in official stores for a while before being removed, and others are offered as direct downloads through links in messages. They may ask for your login, or request permissions that let them read messages and watch what you do."
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                "Go to your bank's or service's official website and follow its link to the right app, instead of searching the store by name.",
+                "Check the developer name, the number of downloads and the recent reviews, and be wary of an app with a brand-new account behind it.",
+                "Never install an app from a link sent in a message, or by switching on installs from unknown sources.",
+                "Notice odd permission requests, such as a calculator wanting to read your texts."
+              ]
+            },
+            {
+              "type": "h",
+              "text": "Malicious QR codes"
+            },
+            {
+              "type": "p",
+              "text": "A **QR code** is just a picture that holds a web address or other text. It is not dangerous in itself, but you cannot read where it leads. Criminals stick their own code over a genuine one on a parking meter or poster, or send one in an email, hoping you will scan without thinking, which is the QR version of phishing."
+            },
+            {
+              "type": "callout",
+              "tone": "tip",
+              "title": "Scan with care",
+              "text": "After scanning, read the address your phone shows before you open it. If a code leads you to log in or pay, ask whether you expected that. If a sticker looks pasted over another one, do not use it. Type the official address instead."
+            },
+            {
+              "type": "check",
+              "id": "m09-l02-c1",
+              "kind": "single",
+              "prompt": "Why does credential stuffing fail against a person who uses a different password on every site?",
+              "options": [
+                "Leaked passwords stop working after a month",
+                "A password leaked from one site does not unlock the other accounts",
+                "Websites block all automated login attempts",
+                "Criminals do not collect passwords from breaches"
+              ],
+              "correct": [
+                1
+              ],
+              "explain": "Credential stuffing relies on reuse. A unique password means a leak at one service reveals nothing that works elsewhere."
+            },
+            {
+              "type": "check",
+              "id": "m09-l02-c2",
+              "kind": "truefalse",
+              "prompt": "A QR code on a poster or parking meter is safe as long as it is printed professionally.",
+              "options": [
+                "True",
+                "False"
+              ],
+              "correct": [
+                1
+              ],
+              "explain": "Criminals can paste their own code over a real one. Always check where the code leads before entering any details."
+            }
+          ]
+        },
+        {
+          "id": "m09-l03",
+          "title": "Oversharing, accidental leaks and a threat spotter's checklist",
+          "minutes": 10,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Not every leak is stolen. A great deal of information escapes because we hand it out ourselves, in small harmless-looking pieces. Social engineers are happy to collect them, because each piece makes the next lie more convincing."
+            },
+            {
+              "type": "p",
+              "text": "Think about what a stranger could learn from your public posts: your full name, workplace, school, pets' names, your birthday, holiday dates, your home from the background of a photo. Several of those are also the answers to common security questions, and some appear in people's passwords."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "The holiday post",
+              "text": "Zodwa posts photos from her beach holiday with the caption 'Back on the 28th!' and a tag of her home suburb. She has just told the world her house will be empty, and given a convincing detail for a caller who rings her mother pretending to be her."
+            },
+            {
+              "type": "h",
+              "text": "Habits that cut the leak"
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                "Review privacy settings on each social account, and limit who sees your posts and friends list.",
+                "Post holiday photos after you return rather than during the trip.",
+                "Check the background of photos for house numbers, ID documents, boarding passes, screens and street signs.",
+                "Do not post photos of tickets, cards or documents, even partly covered. Barcodes and numbers can still be read.",
+                "Use answers to security questions that are not true, and store them in your password manager."
+              ]
+            },
+            {
+              "type": "h",
+              "text": "Accidental leaks"
+            },
+            {
+              "type": "p",
+              "text": "A surprising number of leaks are plain mistakes. An email goes to the wrong recipient. A shared folder is left open to anyone with the link. A spreadsheet with hidden columns still holds private data. A photo of a screen shows a password. A conversation in a group chat includes someone who should not be there."
+            },
+            {
+              "type": "p",
+              "text": "The defence is slowing down at the moment of sending. Check the recipient, check what is attached, and check what access a link gives."
+            },
+            {
+              "type": "table",
+              "caption": "Threat spotter's quick checklist",
+              "headers": [
+                "Question",
+                "If the answer is yes"
+              ],
+              "rows": [
+                [
+                  "Did this message or call arrive unexpectedly?",
+                  "Do not act on it yet"
+                ],
+                [
+                  "Is it asking for money, a code, a login or secrecy?",
+                  "Verify using a channel you choose"
+                ],
+                [
+                  "Is there pressure to hurry?",
+                  "Treat the pressure as a warning"
+                ],
+                [
+                  "Did I find the app, link or code myself, or did someone hand it to me?",
+                  "Go to the official source directly"
+                ],
+                [
+                  "Would I be comfortable if this post or file were public?",
+                  "If not, do not share it that way"
+                ]
+              ]
+            },
+            {
+              "type": "exercise",
+              "title": "Your public footprint",
+              "intro": "See yourself the way a stranger or a scammer would. Do this with your own accounts only.",
+              "tasks": [
+                "Search for your own name in a search engine, and in the search or profile pages of your main social platforms while logged out. Note everything personal that appears.",
+                "Open your social media privacy settings. Tighten who can see your posts, friends list, phone number and birthday.",
+                "Scroll through your last twenty posts and mark any that reveal your home, routine, workplace, children or documents. Delete or edit those.",
+                "List your security-question answers on important accounts. If any can be found online, change them to something untrue and store them in your password manager.",
+                "Pick one family member and agree a verification routine, such as a safe word for urgent money requests."
+              ],
+              "reflection": "What was the most surprising thing a stranger could learn about you in ten minutes?"
+            },
+            {
+              "type": "check",
+              "id": "m09-l03-c1",
+              "kind": "single",
+              "prompt": "You are about to share a shared-drive link to a spreadsheet of client details with one colleague. Which approach best avoids an accidental leak?",
+              "options": [
+                "Set it to anyone with the link and paste it in a large group chat",
+                "Share it with that colleague's named account only, and check the access setting",
+                "Send it as an attachment to several people in case they need it",
+                "Rename the file so it does not look sensitive"
+              ],
+              "correct": [
+                1
+              ],
+              "explain": "Restricting access to named people and checking the setting limits who can open it. Open links and extra copies multiply the chance of leaks."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m10",
+      "title": "Conducting a Personal Security Assessment",
+      "summary": "Bring the course together: inventory what you have, rate the risks, work through a checklist, follow a 30-day plan and know what to do after an incident.",
+      "objectives": [
+        "Build an inventory of your accounts, devices and important information",
+        "Rate risks using likelihood and impact, and choose what to fix first",
+        "Complete a security checklist and a prioritised 30-day action plan",
+        "Respond calmly and in the right order after a security incident"
+      ],
+      "lessons": [
+        {
+          "id": "m10-l01",
+          "title": "Inventory first, then rate the risks",
+          "minutes": 12,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "A security assessment sounds formal. For a person or a small business it is simply an honest look at what you have, what could go wrong and what to do about it first. Professionals use the same three steps on much larger organisations."
+            },
+            {
+              "type": "p",
+              "text": "You cannot protect what you have forgotten about. So begin with a list."
+            },
+            {
+              "type": "h",
+              "text": "Step one: the inventory"
+            },
+            {
+              "type": "p",
+              "text": "Write down your **accounts**, your **devices** and your **important information**. Do not aim for perfection. Aim for the ones that would hurt if they were lost or taken over. A password manager's list, your phone's installed apps and your email's old receipts are good places to jog your memory."
+            },
+            {
+              "type": "table",
+              "caption": "A simple inventory",
+              "headers": [
+                "Item",
+                "Where it is",
+                "Protected by",
+                "Backed up?"
+              ],
+              "rows": [
+                [
+                  "Main email",
+                  "Online provider",
+                  "Unique passphrase and authenticator app",
+                  "Not applicable"
+                ],
+                [
+                  "Internet banking",
+                  "Bank app and website",
+                  "Unique password and bank approval",
+                  "Not applicable"
+                ],
+                [
+                  "Laptop",
+                  "Home and work bag",
+                  "Screen lock and encryption",
+                  "External drive, yes"
+                ],
+                [
+                  "Family photos",
+                  "Phone and old laptop",
+                  "Screen lock only",
+                  "No"
+                ],
+                [
+                  "Customer spreadsheet",
+                  "Laptop",
+                  "Not locked or encrypted",
+                  "No"
+                ]
+              ]
+            },
+            {
+              "type": "p",
+              "text": "Notice how a table like this already shows the gaps. Two rows are the obvious worry, and you did not need any technical knowledge to see it."
+            },
+            {
+              "type": "h",
+              "text": "Step two: rate the risk"
+            },
+            {
+              "type": "p",
+              "text": "**Risk** is a mix of two things: how **likely** a bad event is, and how bad the **impact** would be. For each item, give likelihood and impact a simple score of low, medium or high. You are not calculating anything exact. You are deciding where to look first."
+            },
+            {
+              "type": "table",
+              "caption": "Likelihood and impact, simply",
+              "headers": [
+                "",
+                "Low impact",
+                "Medium impact",
+                "High impact"
+              ],
+              "rows": [
+                [
+                  "High likelihood",
+                  "Fix when convenient",
+                  "Fix soon",
+                  "Fix first"
+                ],
+                [
+                  "Medium likelihood",
+                  "Leave for now",
+                  "Fix soon",
+                  "Fix soon"
+                ],
+                [
+                  "Low likelihood",
+                  "Accept it",
+                  "Keep an eye on it",
+                  "Plan for it, for example with a backup"
+                ]
+              ]
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "Rating Thandi's list",
+              "text": "Her customer spreadsheet is on an unlocked laptop with no backup. A stolen bag or a dead hard drive is quite likely, and losing the order book would be serious. High likelihood, high impact: fix first. Her old streaming login is reused but holds little of value. Fix when convenient."
+            },
+            {
+              "type": "callout",
+              "tone": "tip",
+              "title": "Impact is about what it connects to",
+              "text": "As Module 1 showed, an account's impact depends on what it can unlock. Your email and your phone number almost always rate high, even if they hold nothing exciting."
+            },
+            {
+              "type": "check",
+              "id": "m10-l01-c1",
+              "kind": "single",
+              "prompt": "In a simple risk rating, which item should you fix first?",
+              "options": [
+                "Low likelihood and low impact",
+                "High likelihood and high impact",
+                "High likelihood and low impact",
+                "Low likelihood and medium impact"
+              ],
+              "correct": [
+                1
+              ],
+              "explain": "Risk combines how likely something is with how much it would hurt. High on both means it goes to the top of your list."
+            }
+          ]
+        },
+        {
+          "id": "m10-l02",
+          "title": "The checklist and your 30-day plan",
+          "minutes": 12,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "With your inventory and risk ratings in hand, you need a plan you can actually follow. A long to-do list that nobody finishes protects nobody. A short list in the right order does."
+            },
+            {
+              "type": "p",
+              "text": "The checklist below pulls together the biggest wins from the course. Tick what you already do, and the unticked items become your plan."
+            },
+            {
+              "type": "code",
+              "label": "Personal security checklist",
+              "text": "ACCOUNTS\n[ ] Main email has a long unique password and the strongest second factor on offer\n[ ] Banking, cloud storage and password manager have a second factor\n[ ] I use a password manager and no password is reused\n[ ] Recovery codes are stored in my password manager or printed somewhere safe\n[ ] WhatsApp two-step verification is on\n\nDEVICES\n[ ] Phone and laptop have screen locks and encryption on\n[ ] Automatic updates are on for the system, browser and apps\n[ ] Find-my-device is switched on and tested\n[ ] Router admin password changed and firmware updated\n\nDATA\n[ ] Important files follow 3-2-1 and a restore has been tested\n[ ] I have deleted old sensitive files and unused accounts\n\nHABITS\n[ ] I verify money, code and login requests through a second channel\n[ ] I only install from official stores and maker websites\n[ ] Social media privacy settings are reviewed\n[ ] My family has a verification routine for urgent requests"
+            },
+            {
+              "type": "h",
+              "text": "Putting it in order"
+            },
+            {
+              "type": "p",
+              "text": "Order matters because some steps protect everything else. If your email is weak, every other improvement leans on a cracked foundation. So start there."
+            },
+            {
+              "type": "table",
+              "caption": "A suggested 30-day plan",
+              "headers": [
+                "Week",
+                "Focus",
+                "Examples"
+              ],
+              "rows": [
+                [
+                  "1",
+                  "Protect the master keys",
+                  "Email password and second factor, password manager set up with a strong master passphrase, recovery codes saved"
+                ],
+                [
+                  "2",
+                  "Money and identity",
+                  "Bank and payment apps, cloud storage and WhatsApp second factor; replace reused passwords on your five most important accounts"
+                ],
+                [
+                  "3",
+                  "Devices and backups",
+                  "Updates, screen locks, encryption, find-my-device, router settings, a backup and one test restore"
+                ],
+                [
+                  "4",
+                  "Privacy and habits",
+                  "Social media settings, deleting old data and accounts, family verification routine, a calendar reminder to repeat this review"
+                ]
+              ]
+            },
+            {
+              "type": "callout",
+              "tone": "tip",
+              "title": "Small and finishable beats big and abandoned",
+              "text": "Aim for about thirty to sixty minutes a few times a week. If a week slips, carry the tasks forward. A plan that bends is better than one that breaks."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "Sipho's plan",
+              "text": "Sipho's inventory shows his email has no second factor and his forum password is reused on his email. In week one he changes the email password, adds an authenticator app and prints recovery codes. By week four he has fixed his five main accounts, backed up his photos and set a diary reminder for six months ahead."
+            },
+            {
+              "type": "exercise",
+              "title": "Run your own security assessment",
+              "intro": "This is the capstone exercise. Set aside about an hour for the first pass, and use your own accounts and devices only.",
+              "tasks": [
+                "Build your inventory: list at least ten accounts, your devices, and the important information you hold. Use a table like the one in the previous lesson.",
+                "Rate each item for likelihood and impact, and mark the ones that fall in the top-priority boxes.",
+                "Work through the personal security checklist and tick only what is true today.",
+                "Turn the unticked items into a dated 30-day plan, with no more than four or five tasks per week and the email account first.",
+                "Complete the first task from week one before you stop."
+              ],
+              "reflection": "Which three items would make the biggest difference if you did only them?"
+            },
+            {
+              "type": "check",
+              "id": "m10-l02-c1",
+              "kind": "single",
+              "prompt": "Why does a 30-day security plan usually start with your main email account?",
+              "options": [
+                "Email is the most fun account to secure",
+                "A weak email account can be used to reset many other accounts",
+                "Email is the only account that needs a password",
+                "Email providers insist on it"
+              ],
+              "correct": [
+                1
+              ],
+              "explain": "Password resets usually go to your email, so protecting it first stops weak spots elsewhere from being used against you."
+            }
+          ]
+        },
+        {
+          "id": "m10-l03",
+          "title": "When something goes wrong: incident response and keeping it up",
+          "minutes": 11,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "However careful you are, one day something may slip through. A phishing page fools you, a device is stolen, a service you use is breached. What you do in the first hour matters more than how embarrassed you feel."
+            },
+            {
+              "type": "p",
+              "text": "Plan for it now, when you are calm. Think of it like knowing where the fire extinguisher is."
+            },
+            {
+              "type": "steps",
+              "title": "The first response to any incident",
+              "items": [
+                {
+                  "title": "Stop and contain",
+                  "text": "Disconnect an affected device from the internet, close the suspicious page, and stop responding to the person contacting you."
+                },
+                {
+                  "title": "Secure your email and key accounts",
+                  "text": "From a clean device, change passwords for your email first, then banking and other important accounts, and check for sign-ins you do not recognise."
+                },
+                {
+                  "title": "Call the people who can act",
+                  "text": "Phone your bank on the number on your card if money or card details are involved, and your mobile provider if your number may have been taken over."
+                },
+                {
+                  "title": "Preserve evidence",
+                  "text": "Keep messages, screenshots, emails and transaction details. They help banks, employers and the police."
+                },
+                {
+                  "title": "Report and warn",
+                  "text": "Report the scam to the organisation being imitated and to the relevant authority, and warn people who might receive follow-up messages from your accounts."
+                },
+                {
+                  "title": "Review and improve",
+                  "text": "Once things are calm, ask what let it happen and which layer would have stopped it, then add that layer."
+                }
+              ]
+            },
+            {
+              "type": "p",
+              "text": "Different incidents need different emphasis. The table gives a quick guide, and the general steps above apply in every case."
+            },
+            {
+              "type": "table",
+              "caption": "Quick guide by incident",
+              "headers": [
+                "Incident",
+                "First move",
+                "Then"
+              ],
+              "rows": [
+                [
+                  "Clicked a phishing link and typed a password",
+                  "Change that password and any reused ones",
+                  "Turn on a second factor and check recent activity"
+                ],
+                [
+                  "Shared card or banking details",
+                  "Phone your bank straight away",
+                  "Watch statements and expect follow-up scams"
+                ],
+                [
+                  "Phone lost or stolen",
+                  "Lock or locate it, and block the SIM",
+                  "Secure email, then restore second factors"
+                ],
+                [
+                  "Ransomware note",
+                  "Disconnect; do not pay",
+                  "Get help, then restore from backup"
+                ],
+                [
+                  "Account taken over",
+                  "Recover through the official process and change the password",
+                  "Tell your contacts not to trust messages from that account"
+                ]
+              ]
+            },
+            {
+              "type": "callout",
+              "tone": "key",
+              "title": "Speed beats shame",
+              "text": "People who report quickly lose less. Banks and providers see these cases every day. They are much more interested in stopping the damage than in judging you."
+            },
+            {
+              "type": "h",
+              "text": "Keeping it up"
+            },
+            {
+              "type": "p",
+              "text": "Security is a habit, not a project. Set a reminder for every six months to repeat a short version of the assessment: new accounts, retired devices, a test restore, a look at what has changed in your life. People change jobs, buy phones and start businesses, and each one changes what needs protecting."
+            },
+            {
+              "type": "exercise",
+              "title": "Write your incident card",
+              "intro": "Prepare now so you are not working it out in a panic. Keep the finished card somewhere safe that does not depend on your phone.",
+              "tasks": [
+                "Write the contact numbers for your bank, card issuer and mobile provider, copied from your card or the official website rather than a message.",
+                "Note where your recovery codes, backup drive and a second trusted device are.",
+                "Write the first three actions you will take if your phone is lost, if you click a phishing link and if your laptop is locked by a ransom note.",
+                "Share the card's location, not its contents, with one trusted person."
+              ],
+              "reflection": "Which of your accounts would be hardest to recover, and what could you do this week to make that easier?"
+            },
+            {
+              "type": "check",
+              "id": "m10-l03-c1",
+              "kind": "single",
+              "prompt": "You gave your card details to a convincing caller a minute ago. What is the most urgent step?",
+              "options": [
+                "Wait to see if any charge appears",
+                "Phone your bank on the number on your card and report it",
+                "Post a warning on social media first",
+                "Change your Wi-Fi password"
+              ],
+              "correct": [
+                1
+              ],
+              "explain": "Your bank can block the card and stop fraudulent payments quickly. Speed limits the loss."
+            },
+            {
+              "type": "check",
+              "id": "m10-l03-c2",
+              "kind": "multi",
+              "prompt": "Select all the steps that belong in a first response to a suspected account takeover.",
+              "options": [
+                "Secure your email and key accounts from a clean device",
+                "Preserve messages and screenshots as evidence",
+                "Delete every record so nothing can be found",
+                "Warn contacts not to trust messages from that account"
+              ],
+              "correct": [
+                0,
+                1,
+                3
+              ],
+              "explain": "Securing accounts, keeping evidence and warning contacts all limit harm. Deleting records removes information that helps investigators and your bank."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "furtherLearning": [
+    "Take a course on secure small-business practice, including staff access, supplier payments and incident planning",
+    "Learn the basics of networking so you understand what your router and Wi-Fi are really doing",
+    "Explore privacy and data-protection fundamentals, including how your own country's data-protection law applies to businesses",
+    "Follow your bank's and your government's official scam-awareness pages to keep up with new fraud tricks"
+  ]
+}
