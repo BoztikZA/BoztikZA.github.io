@@ -100,3 +100,43 @@
 .sp-feature-ack[hidden],.sp-feature-error[hidden]{display:none}
 .sp-feature-error{margin:12px 0 0;color:#ff8b8b;font-size:.85rem}
 @media(max-width:700px){.sp-featured-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.sp-featured-actions .cc-btn{flex:1}}
+
+
+/* Spotlight identity: a restrained green beam sweeps across the active tab
+   label and the Spotlight Manager heading. Decorative only; no layout shifts. */
+@keyframes sp-light-sweep {
+  0%, 12% { background-position: 180% 50%; }
+  62%, 100% { background-position: -80% 50%; }
+}
+#tab-spotlight > span:last-child > strong,
+#panel-spotlight > .dash-section-heading h2 {
+  color: #dfffcf;
+  background-image: linear-gradient(
+    105deg,
+    #dfffcf 0%,
+    #dfffcf 34%,
+    #8eff3d 43%,
+    #ffffff 49%,
+    #8eff3d 55%,
+    #dfffcf 66%,
+    #dfffcf 100%
+  );
+  background-size: 240% 100%;
+  background-position: 180% 50%;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: sp-light-sweep 5.5s ease-in-out infinite;
+}
+#tab-spotlight > span:last-child > strong b {
+  -webkit-text-fill-color: var(--cc-accent, #8eff3d);
+  background: rgba(142, 255, 61, .14);
+}
+@media (prefers-reduced-motion: reduce) {
+  #tab-spotlight > span:last-child > strong,
+  #panel-spotlight > .dash-section-heading h2 {
+    animation: none;
+    background-position: 50% 50%;
+  }
+}
