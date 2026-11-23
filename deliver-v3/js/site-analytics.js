@@ -163,7 +163,7 @@ function renderSpotlightPerformance(data, state) {
   ];
   const rows = [...profiles].sort((a,b) => Number(b.views || 0) - Number(a.views || 0) || Number(b.outbound_clicks || 0) - Number(a.outbound_clicks || 0));
   const top = rows.filter(p => p.status === "published").slice(0, 12);
-  const queue = rows.filter(p => p.status !== "published" && !["declined","expired"].includes(p.application_status));
+  const queue = rows.filter(p => p.status !== "published" && p.status !== "archived" && !["declined","expired"].includes(p.application_status));
   const statusLabel = p => p.status === "published" ? "Published" : p.application_status === "approved" ? "Approved · not published" : p.application_status === "new" ? "New application" : p.application_status === "under_review" ? "Under review" : (p.application_status || p.status || "Draft").replace(/_/g," ");
   host.innerHTML = `
     <div class="an-spotlight-kpis">${tiles.map(([label,value,note]) => `<div class="an-spotlight-tile"><span>${label}</span><strong>${nf(value)}</strong><small>${note}</small></div>`).join("")}</div>
