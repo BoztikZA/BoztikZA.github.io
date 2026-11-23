@@ -53,3 +53,26 @@
 .sp-owner-link input{width:100%;box-sizing:border-box;padding:12px;border:1px solid rgba(255,255,255,.18);border-radius:8px;background:#0a1011;color:#e6efe8;font:.8rem ui-monospace,monospace}
 .sp-owner-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
 .sp-form-panel [hidden]{display:none!important}
+
+
+/* Optional Spotlight support — clear value, no pressure, mobile-first. */
+.sp-support-panel{width:min(1160px,calc(100% - 44px));margin:18px auto 70px;padding:clamp(24px,4vw,42px);display:grid;grid-template-columns:minmax(0,1.1fr) minmax(280px,.9fr);gap:clamp(24px,4vw,48px);align-items:center;border:1px solid rgba(142,255,61,.25);border-radius:18px;background:radial-gradient(ellipse at 5% 0,rgba(142,255,61,.09),transparent 48%),linear-gradient(145deg,#131d1b,#0b1113 75%);box-shadow:0 22px 65px rgba(0,0,0,.2)}
+.sp-support-eyebrow{color:var(--sp-green);font-size:.65rem;font-weight:800;letter-spacing:.17em}
+.sp-support-copy h2{margin:13px 0 12px;color:#f2f7f2;font:800 clamp(1.8rem,3.5vw,2.7rem)/1.08 "Plus Jakarta Sans",Inter,sans-serif;letter-spacing:-.045em}
+.sp-support-copy h2 em{color:var(--sp-green);font-style:normal}
+.sp-support-copy p{max-width:620px;color:#aebbb2;font-size:.84rem;line-height:1.8}
+.sp-support-copy .sp-support-impact{padding:13px 15px;border-left:2px solid var(--sp-green);background:rgba(142,255,61,.045);color:#d2dfd4}
+.sp-support-copy .sp-support-thanks{margin-bottom:0;color:#87958c;font-size:.75rem}
+.sp-support-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.sp-support-option,.sp-support-custom{min-height:88px;padding:14px 15px;display:flex;flex-direction:column;justify-content:center;gap:5px;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:rgba(255,255,255,.025);text-decoration:none;transition:border-color .18s,background .18s,transform .18s}
+.sp-support-option:hover,.sp-support-custom:hover{transform:translateY(-2px);border-color:rgba(142,255,61,.55);background:rgba(142,255,61,.055)}
+.sp-support-option>span{color:#f4f8f4;font:800 1.45rem "Plus Jakarta Sans",Inter,sans-serif}
+.sp-support-option>small,.sp-support-custom>small{color:#9aa89e;font-size:.68rem}
+.sp-support-custom{grid-column:1/-1;min-height:68px;border-color:rgba(0,156,222,.35);background:rgba(0,156,222,.055)}
+.sp-support-custom>span{color:#9edfff;font-size:.85rem;font-weight:800}
+.sp-support-reference{grid-column:1/-1;margin:2px 0 0;color:#829087;font-size:.68rem;line-height:1.6}
+.sp-support-reference strong{color:#c5d2c8}
+.sp-support-option:focus-visible,.sp-support-custom:focus-visible{outline:3px solid rgba(142,255,61,.65);outline-offset:3px}
+@media(max-width:760px){.sp-support-panel{grid-template-columns:1fr;margin-top:5px}.sp-support-options{max-width:520px}}
+@media(max-width:420px){.sp-support-panel{width:calc(100% - 28px);padding:20px}.sp-support-option{min-height:78px;padding:12px}}
+@media(prefers-reduced-motion:reduce){.sp-support-option,.sp-support-custom{transition:none}.sp-support-option:hover,.sp-support-custom:hover{transform:none}}
