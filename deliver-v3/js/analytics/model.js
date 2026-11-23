@@ -137,7 +137,7 @@ function sourceRows(sources) {
  * @param {object} inputs  range, summary, trend, sources, flow, store, health, overview (each may be null) and
  *                         states: { summary: {status, error}, … } so the UI can show per-section loading/error.
  */
-export function buildAnalyticsModel({ range, summary = null, trend = null, sources = null, flow = null, store = null, health = null, overview = null, fallbackPages = null, states = {}, generatedAt = new Date() } = {}) {
+export function buildAnalyticsModel({ range, summary = null, trend = null, sources = null, flow = null, store = null, health = null, overview = null, spotlight = null, fallbackPages = null, states = {}, generatedAt = new Date() } = {}) {
   const period = trend?.period ?? summary?.period ?? null;
   const granularity = trend?.granularity ?? (period?.key === "today" ? "hour" : "day");
   const includesToday = !!(period?.includes_today ?? period?.includesToday);
@@ -177,7 +177,7 @@ export function buildAnalyticsModel({ range, summary = null, trend = null, sourc
     // ---- additive fields
     askedRange: asked, period: period ? { key: period.key, since: period.since, until: period.until, days: period.days ?? null, previous: period.previous ?? null, includesToday } : null,
     granularity, includesToday, timezone: trend?.timezone ?? null, generatedAt,
-    states, summary, trend, sourcesRaw: sources, flow, store, health, overview,
+    states, summary, trend, sourcesRaw: sources, flow, store, health, overview, spotlight,
     pages, sources: src, top, topSource,
     totals: Object.fromEntries(Object.keys(METRICS).map(m => [m, metricTotal(m)])),
     cmp,
