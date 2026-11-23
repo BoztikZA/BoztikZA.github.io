@@ -938,7 +938,7 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       let key = period;
       if (from || q.has("to")) {
         key = "custom";
-        const realDay = (v: string) => /^\\d{4}-\\d{2}-\\d{2}$/.test(v) && Number.isFinite(Date.parse(v + "T00:00:00Z")) && new Date(Date.parse(v + "T00:00:00Z")).toISOString().slice(0,10) === v;
+        const realDay = (v: string) => /^\d{4}-\d{2}-\d{2}$/.test(v) && Number.isFinite(Date.parse(v + "T00:00:00Z")) && new Date(Date.parse(v + "T00:00:00Z")).toISOString().slice(0,10) === v;
         if (!realDay(from) || !realDay(to) || from > to || to > today || (Date.parse(to + "T00:00:00Z") - Date.parse(from + "T00:00:00Z")) / 86400000 > 365) {
           throw new HttpError(422, "invalid_analytics_range", "Choose a valid Spotlight analytics date range of up to 366 days.");
         }
