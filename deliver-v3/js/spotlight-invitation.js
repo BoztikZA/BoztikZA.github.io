@@ -25,8 +25,8 @@ const PROMOS = [
   {
     id: "stores",
     eyebrow: "Explore Boztik Stores",
-    title: "Discover useful digital finds.",
-    description: "Browse a growing collection of independent games, software, creator tools and interesting digital products in one place.",
+    title: "Original designs for everyday life.",
+    description: "Explore original Boztik apparel and giftable designs on Redbubble and TeePublic, plus downloadable wallpaper packs for your phone, tablet or desktop on Ko-fi.",
     action: "Browse Stores",
     href: "https://www.boztik.com/stores.html",
     icon: '<path d="M3 9h18l-1.5-5h-15L3 9Z"/><path d="M5 9v11h14V9M9 20v-6h6v6M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/>'
