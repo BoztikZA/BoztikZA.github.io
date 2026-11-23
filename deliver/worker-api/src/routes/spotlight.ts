@@ -972,7 +972,7 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       }));
       const sum = (field: string) => profiles.reduce((total: number, p: any) => total + Number(p[field] || 0), 0);
       const pending = profiles.filter((p: any) => ["new","under_review"].includes(p.application_status) && p.status !== "published").length;
-      const unpublished = profiles.filter((p: any) => p.status !== "published" && !["declined","expired"].includes(p.application_status)).length;
+      const unpublished = profiles.filter((p: any) => p.status !== "published" && p.status !== "archived" && !["declined","expired"].includes(p.application_status)).length;
       return json({
         ok:true, period:{ key, since:from, until:to },
         summary:{ profiles:profiles.length, pending, unpublished, published:profiles.filter((p: any) => p.status === "published").length,
