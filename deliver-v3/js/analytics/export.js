@@ -89,6 +89,17 @@ export function buildCsv(model, { generatedAt = new Date() } = {}) {
     L.push("");
   }
 
+  if (model.spotlight) {
+    const sp = model.spotlight;
+    L.push(row(["SPOTLIGHT LISTINGS"]));
+    L.push(row(["Reporting window", sp.period?.since ?? "", sp.period?.until ?? ""]));
+    L.push(row(["Metric", "Value"]));
+    for (const [label, value] of Object.entries(sp.summary ?? {})) L.push(row([label, value]));
+    L.push(row(["Profile", "Slug", "Category", "Publication status", "Application status", "Submitted", "Published", "Listing expiry", "Views", "Daily unique visitor-days", "Featured impressions", "Website clicks", "Social clicks", "Media clicks", "Player interactions", "Completed plays"]));
+    for (const p of sp.profiles ?? []) L.push(row([p.display_name, p.slug, p.category, p.status, p.application_status, p.created_at ? new Date(p.created_at * 1000).toISOString() : "", p.published_at ? new Date(p.published_at * 1000).toISOString() : "", p.listing_expires_at ? new Date(p.listing_expires_at * 1000).toISOString() : "", p.views, p.unique_views, p.featured_impressions, p.website_clicks, p.social_clicks, p.media_clicks, p.player_interactions, p.completed_plays]));
+    L.push("");
+  }
+
   if (model.deliver?.available) {
     L.push(row(["DELIVER BY TYPE"]));
     L.push(row(["Type", "Views", "Downloads", "Shares", "Active deliveries"]));
@@ -163,6 +174,34 @@ export function buildFullReport(model, { generatedAt = new Date() } = {}) {
     if (f.events_capped) line("- The Worker event safety cap was reached; flow results use a capped sample.");
     if (f.session_data_since) line(`- Visitor-path collection began: ${f.session_data_since}.`);
   }
+  line(); line("6. SPOTLIGHT LISTING PERFORMANCE (SEPARATE FIRST-PARTY COUNTERS)");
+  const sp = model.spotlight;
+  if (!sp) line("- Spotlight listing analytics are unavailable for this reporting window.");
+  else {
+    const ss = sp.summary ?? {};
+    line(`- Reporting window: ${sp.period?.since ?? "not available"} to ${sp.period?.until ?? "not available"}.`);
+    line(`- Listings in the manager: ${n(ss.profiles)}; published: ${n(ss.published)}; awaiting decision: ${n(ss.pending)}; unpublished and not declined/expired: ${n(ss.unpublished)}; currently featured: ${n(ss.featured)}.`);
+    line(`- Profile views: ${n(ss.views)}; daily unique visitor-days: ${n(ss.unique_views)}; featured impressions: ${n(ss.featured_impressions)}.`);
+    line(`- Outbound clicks: ${n(ss.outbound_clicks)} (website ${n(ss.website_clicks)}, social ${n(ss.social_clicks)}, media ${n(ss.media_clicks)}); deliberate player interactions: ${n(ss.player_interactions)}; completed plays: ${n(ss.completed_plays)} (YouTube only).`);
+    line("- Profile views are individual profile page loads. Daily unique visitor-days can count the same visitor again on a different day; they are not unique people across the entire reporting window.");
+    line("- Featured impressions are recorded when a profile is visible in the Featured stage or a featured card. They are not profile views.");
+    line("- Outbound clicks are link activations, not completed enquiries, purchases or revenue. Completed-play tracking is available for YouTube only; Twitch and Spotify do not expose the same completion event.");
+    const published = [...(sp.profiles ?? [])].filter(p => p.status === "published").sort((a,b) => Number(b.views || 0) - Number(a.views || 0));
+    if (published.length) {
+      line("- Published profile ranking (views, visitor-days, featured impressions, outbound clicks and click rate):");
+      published.slice(0, 30).forEach((p,i) => {
+        const rate = Number(p.views) > 0 ? (Number(p.outbound_clicks || 0) / Number(p.views) * 100).toFixed(1) + "%" : "not calculable (no views)";
+        line(`  ${i+1}. ${p.display_name} [${p.slug}]: ${n(p.views)} views; ${n(p.unique_views)} daily unique visitor-days; ${n(p.featured_impressions)} featured impressions; ${n(p.outbound_clicks)} outbound clicks (website ${n(p.website_clicks)}, social ${n(p.social_clicks)}, media ${n(p.media_clicks)}); click rate ${rate}; player interactions ${n(p.player_interactions)}; completed plays ${n(p.completed_plays)}.`);
+      });
+    } else line("- No published profiles were returned for this window.");
+    const unpublished = (sp.profiles ?? []).filter(p => p.status !== "published" && !["declined","expired"].includes(p.application_status)).sort((a,b) => Number(b.created_at || 0) - Number(a.created_at || 0));
+    if (unpublished.length) {
+      line("- New / unpublished profiles requiring visibility or follow-up:");
+      unpublished.slice(0, 40).forEach(p => line(`  - ${p.display_name}: ${p.application_status || p.status}; submitted ${p.created_at ? new Date(p.created_at * 1000).toISOString().slice(0,10) : "date unavailable"}; ${p.application_status === "approved" ? "approved but not published" : p.application_status === "new" ? "new application" : "not yet published"}.`));
+    } else line("- No active unpublished profiles were returned.");
+    if ((sp.profiles ?? []).length >= 200) line("- The profile list reached the API's 200-profile cap; older listings beyond that cap are not represented in this report.");
+  }
+
   line(); line("6. DELIVER ACTIVITY (SEPARATE SYSTEM)");
   if (!d?.available) line("- Deliver activity is unavailable for this period.");
   else {
@@ -174,7 +213,7 @@ export function buildFullReport(model, { generatedAt = new Date() } = {}) {
     line("- Deliver views are private delivery-page or direct-image loads. They are not added to public website page views.");
   }
 
-  line(); line("7. TREND (like-for-like) — DAILY TRAFFIC & ACTIVITY");
+  line(); line("8. TREND (like-for-like) — DAILY TRAFFIC & ACTIVITY");
   if (!t?.buckets?.length) line("- Trend data is unavailable.");
   else {
     line(`- Bucket granularity: ${model.granularity === "hour" ? "hourly" : "daily"}.`);
@@ -191,12 +230,12 @@ export function buildFullReport(model, { generatedAt = new Date() } = {}) {
     line("- Null / not measured values are deliberately not treated as zero. The final in-progress bucket is included as partial data.");
   }
 
-  line(); line("8. WHAT STANDS OUT");
+  line(); line("9. WHAT STANDS OUT");
   const signals = buildSignals(model);
   if (!signals.length) line("- No pattern crossed the dashboard's reporting thresholds.");
   else signals.forEach(x => line(`- [${x.level.toUpperCase()}] ${x.title}: ${x.detail}`));
 
-  line(); line("9. DATA HEALTH & LIMITATIONS");
+  line(); line("10. DATA HEALTH & LIMITATIONS");
   if (model.limited) line("- Limited mode: the deployed Worker does not provide the selected reporting range; some sections may only show the fixed 30-day page counter.");
   if (f) line(`- Visitor-flow coverage: ${f.session_coverage_pct === null ? "not measured" : `${f.session_coverage_pct}%`}; this is a subset of page views, not every page load.`);
   if (model.website?.dataSince) line(`- Website page-view collection began: ${model.website.dataSince}.`);
@@ -212,7 +251,7 @@ export function buildFullReport(model, { generatedAt = new Date() } = {}) {
   line("- Store clicks measure outbound link activation, not purchases. The report does not infer sales, revenue, bounce rate, unique visitors or engagement time.");
   line("- Website, store-click and Deliver counters are separate measures and must not be added together.");
 
-  line(); line("9. ANALYSIS GUIDE");
+  line(); line("11. ANALYSIS GUIDE");
   line("- Identify the strongest entry pages and whether recorded visitors continue to another page or leave.");
   line("- Look for high-view pages with few onward transitions, and pages that repeatedly appear as exits.");
   line("- Compare Reddit/search/social/referral traffic with the pages and journeys that follow.");
