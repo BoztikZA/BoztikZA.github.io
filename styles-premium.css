@@ -4281,3 +4281,98 @@ footer h3 {
   .nav-links .nav-spotlight-link{transition:none}
 }
 
+/* Intermediate-width navigation: collapse before the desktop row runs out of room.
+   Keep the existing accessible menu toggle and dropdown behavior; only the breakpoint changes. */
+@media (min-width: 821px) and (max-width: 1200px) {
+  .navbar {
+    min-height: 72px;
+    padding: 10px 20px;
+    flex-direction: row;
+    gap: 12px;
+  }
+
+  .logo-area {
+    flex: 0 1 auto;
+    min-width: 0;
+    gap: 10px;
+  }
+  .logo-area img { width: 44px; }
+  .logo-area .logo-title { font-size: 0.95rem; }
+  .logo-area .logo-subtitle { display: none; }
+
+  .nav-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    padding: 10px 12px;
+    border: 1px solid rgba(142, 255, 61, 0.28);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text);
+    font: 700 0.85rem var(--font-body);
+    cursor: pointer;
+  }
+
+  .nav-toggle__icon,
+  .nav-toggle__icon::before,
+  .nav-toggle__icon::after {
+    display: block;
+    width: 17px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--primary);
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+  .nav-toggle__icon { position: relative; }
+  .nav-toggle__icon::before,
+  .nav-toggle__icon::after { content: ""; position: absolute; left: 0; }
+  .nav-toggle__icon::before { top: -5px; }
+  .nav-toggle__icon::after { top: 5px; }
+  .is-menu-open .nav-toggle__icon { background: transparent; }
+  .is-menu-open .nav-toggle__icon::before { transform: translateY(5px) rotate(45deg); }
+  .is-menu-open .nav-toggle__icon::after { transform: translateY(-5px) rotate(-45deg); }
+
+  .nav-links {
+    position: absolute;
+    top: calc(100% + 1px);
+    right: 12px;
+    left: 12px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: rgba(7, 12, 8, 0.98);
+    box-shadow: 0 22px 55px rgba(0, 0, 0, 0.38);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+  }
+
+  .is-menu-open .nav-links {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .nav-links a {
+    display: flex;
+    align-items: center;
+    min-height: 42px;
+    padding: 11px 12px;
+    border-radius: 10px;
+  }
+  .nav-links .nav-store-link { gap: 8px; }
+  .nav-links a:hover,
+  .nav-links a[aria-current="page"] { background: rgba(142, 255, 61, 0.1); }
+  .nav-links a::after { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-links { transition: none; }
+}
