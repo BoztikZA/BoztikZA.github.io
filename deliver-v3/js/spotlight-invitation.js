@@ -146,6 +146,9 @@ function createPromo(promo, onClose) {
     </div>
     <button class="boztik-discovery-promo__close" type="button" aria-label="Dismiss suggestion">×</button>`;
   card.querySelector("button").addEventListener("click", onClose);
+  card.querySelector("a").addEventListener("click", () => {
+    writeState({ nextEligibleAt: Date.now() + DISMISS_COOLDOWN_MS });
+  });
   return card;
 }
 
