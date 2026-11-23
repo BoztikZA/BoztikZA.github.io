@@ -149,6 +149,8 @@ function render() {
   unreadBadge.textContent = Number(moderation.unread_count || 0) + " unread";
   unreadBadge.hidden = !moderation.unread_count;
   $("sp-admin-published").textContent = published.length;
+  const newProfiles = profiles.filter(p => Date.now() - Number(p.created_at || 0) * 1000 <= 7 * 86400000 && Date.now() - Number(p.created_at || 0) * 1000 >= 0);
+  const newKpi = $("sp-admin-new-profiles"); if (newKpi) newKpi.textContent = newProfiles.length.toLocaleString();
   $("sp-admin-featured").textContent = featured ? featured.display_name : "None";
   const overviewCount = $("stat-spotlight-active");
   if (overviewCount) overviewCount.textContent = published.length.toLocaleString();
