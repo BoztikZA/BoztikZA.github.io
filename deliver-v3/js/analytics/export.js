@@ -96,7 +96,7 @@ export function buildCsv(model, { generatedAt = new Date() } = {}) {
     L.push(row(["Metric", "Value"]));
     for (const [label, value] of Object.entries(sp.summary ?? {})) L.push(row([label, value]));
     L.push(row(["Profile", "Slug", "Category", "Publication status", "Application status", "Submitted", "Published", "Listing expiry", "Views", "Daily unique visitor-days", "Featured impressions", "Website clicks", "Social clicks", "Media clicks", "Player interactions", "Completed plays"]));
-    for (const p of sp.profiles ?? []) L.push(row([p.display_name, p.slug, p.category, p.status, p.application_status, p.created_at ? new Date(p.created_at * 1000).toISOString() : "", p.published_at ? new Date(p.published_at * 1000).toISOString() : "", p.listing_expires_at ? new Date(p.listing_expires_at * 1000).toISOString() : "", p.views, p.unique_views, p.featured_impressions, p.website_clicks, p.social_clicks, p.media_clicks, p.player_interactions, p.completed_plays]));
+    for (const p of sp.profiles ?? []) L.push(row([p.display_name, p.slug, p.category, p.status, p.application_status, p.created_at ? new Date(p.created_at * 1000).toISOString() : "", p.published_at ? new Date(p.published_at * 1000).toISOString() : "", p.listing_expires_at ? new Date(p.listing_expires_at * 1000).toISOString() : "", p.featured ? "yes" : "no", p.views, p.unique_views, p.featured_impressions, p.outbound_clicks, p.website_clicks, p.social_clicks, p.media_clicks, (p.sources || []).map(x => `${x.source}:${x.views}`).join("; "), p.player_interactions, p.completed_plays]));
     L.push("");
   }
 
@@ -191,7 +191,7 @@ export function buildFullReport(model, { generatedAt = new Date() } = {}) {
       line("- Published profile ranking (views, visitor-days, featured impressions, outbound clicks and click rate):");
       published.slice(0, 30).forEach((p,i) => {
         const rate = Number(p.views) > 0 ? (Number(p.outbound_clicks || 0) / Number(p.views) * 100).toFixed(1) + "%" : "not calculable (no views)";
-        line(`  ${i+1}. ${p.display_name} [${p.slug}]: ${n(p.views)} views; ${n(p.unique_views)} daily unique visitor-days; ${n(p.featured_impressions)} featured impressions; ${n(p.outbound_clicks)} outbound clicks (website ${n(p.website_clicks)}, social ${n(p.social_clicks)}, media ${n(p.media_clicks)}); click rate ${rate}; player interactions ${n(p.player_interactions)}; completed plays ${n(p.completed_plays)}.`);
+        line(`  ${i+1}. ${p.display_name} [${p.slug}]: ${n(p.views)} views; ${n(p.unique_views)} daily unique visitor-days; ${n(p.featured_impressions)} featured impressions; ${n(p.outbound_clicks)} outbound clicks (website ${n(p.website_clicks)}, social ${n(p.social_clicks)}, media ${n(p.media_clicks)}); top sources ${(p.sources || []).sort((a,b) => Number(b.views)-Number(a.views)).slice(0,3).map(x => `${x.source} ${n(x.views)}`).join(", ") || "none recorded"}; currently featured ${p.featured ? "yes" : "no"}; click rate ${rate}; player interactions ${n(p.player_interactions)}; completed plays ${n(p.completed_plays)}.`);
       });
     } else line("- No published profiles were returned for this window.");
     const unpublished = (sp.profiles ?? []).filter(p => p.status !== "published" && !["declined","expired"].includes(p.application_status)).sort((a,b) => Number(b.created_at || 0) - Number(a.created_at || 0));
@@ -202,7 +202,7 @@ export function buildFullReport(model, { generatedAt = new Date() } = {}) {
     if ((sp.profiles ?? []).length >= 200) line("- The profile list reached the API's 200-profile cap; older listings beyond that cap are not represented in this report.");
   }
 
-  line(); line("6. DELIVER ACTIVITY (SEPARATE SYSTEM)");
+  line(); line("7. DELIVER ACTIVITY (SEPARATE SYSTEM)");
   if (!d?.available) line("- Deliver activity is unavailable for this period.");
   else {
     line(`- Views: ${fmtInt(d.totals.views)}; downloads: ${fmtInt(d.totals.downloads)}; shares: ${fmtInt(d.totals.shares)}; active deliveries: ${fmtInt(d.totals.active)}.`);
