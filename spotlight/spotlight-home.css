@@ -683,7 +683,7 @@
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: hm-spotlight-title-beam 5.8s ease-in-out infinite;
+  animation: hm-spotlight-title-beam 10.5s ease-in-out infinite;
   filter: drop-shadow(0 0 10px rgba(142,255,61,.24));
 }
 @media (prefers-reduced-motion: reduce) {
