@@ -172,8 +172,8 @@ function render() {
   list.innerHTML = visible.length ? visible.map(p => {
     const age = Date.now() - Number(p.created_at || 0) * 1000;
     const isNew = age >= 0 && age <= 7 * 86400000;
-    const isUnpublished = p.status !== "published" && !["declined","expired"].includes(p.application_status);
-    const stateLabel = p.status === "published" ? "Published" : p.application_status === "approved" ? "Approved · not published" : p.application_status === "new" ? "New application" : (p.application_status || p.status || "Draft").replace(/_/g," ");
+    const isUnpublished = p.status !== "published" && p.status !== "archived" && !["declined","expired"].includes(p.application_status);
+    const stateLabel = p.status === "published" ? "Published" : p.status === "archived" ? "Archived" : p.application_status === "approved" ? "Approved · not published" : p.application_status === "new" ? "New application" : (p.application_status || p.status || "Draft").replace(/_/g," ");
     return `
     <article class="sp-admin-row${isNew ? " is-new" : ""}${isUnpublished ? " is-unpublished" : ""}">
       <div class="sp-admin-main">
