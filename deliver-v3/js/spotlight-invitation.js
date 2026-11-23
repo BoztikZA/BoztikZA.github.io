@@ -1,16 +1,16 @@
 // Boztik — quiet, rotating discovery cards for delivery and Support pages.
-// Each browser tab session sees the three promotions once, in shuffled order.
+// Each browser tab session sees the promotions once, in shuffled order.
 // Cards are non-modal, dismissible, and never interrupt the delivery workflow.
 
-const SESSION_KEY = "boztik-discovery-sequence-v2";
-const AUTO_HIDE_MS = 8500;
-const FADE_MS = 420;
-const FIRST_DELAY_MIN_MS = 6500;
-const FIRST_DELAY_MAX_MS = 10500;
-const NEXT_DELAY_MIN_MS = 18000;
-const NEXT_DELAY_MAX_MS = 24000;
-const DISMISS_DELAY_MIN_MS = 9000;
-const DISMISS_DELAY_MAX_MS = 13000;
+const SESSION_KEY = "boztik-discovery-sequence-v3";
+const AUTO_HIDE_MS = 9500;
+const FADE_MS = 1000;
+const FIRST_DELAY_MIN_MS = 11000;
+const FIRST_DELAY_MAX_MS = 16000;
+const NEXT_DELAY_MIN_MS = 22000;
+const NEXT_DELAY_MAX_MS = 29000;
+const DISMISS_DELAY_MIN_MS = 11000;
+const DISMISS_DELAY_MAX_MS = 15000;
 
 const PROMOS = [
   {
@@ -39,6 +39,15 @@ const PROMOS = [
     action: "Explore Creative Toolkit",
     href: "https://www.boztik.com/creative-toolkit.html",
     icon: '<path d="m15 5 4 4M4 20l4.5-1 10.8-10.8a2.1 2.1 0 0 0-3-3L5.5 16 4 20Z"/><path d="M12 3H5a2 2 0 0 0-2 2v7M21 12v7a2 2 0 0 1-2 2h-7"/>'
+  },
+  {
+    id: "photo-editing",
+    eyebrow: "Professional photo editing",
+    title: "Have a photo that needs a little care?",
+    description: "From natural portrait retouching to thoughtful photo enhancements, get in touch to discuss your image and what you have in mind.",
+    action: "Enquire about photo editing",
+    href: "https://www.boztik.com/contact.html",
+    icon: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/>'
   }
 ];
 
@@ -87,34 +96,35 @@ function addStyles() {
       gap: 13px;
       width: min(410px, calc(100vw - 32px));
       padding: 17px 16px 16px;
-      border: 1px solid rgba(142,255,61,.24);
+      border: 1px solid rgba(142,255,61,.2);
       border-radius: 17px;
-      background: linear-gradient(145deg, rgba(18,25,19,.98), rgba(8,12,10,.985));
+      background: linear-gradient(145deg, rgba(18,25,19,.985), rgba(8,12,10,.99));
       color: #f2f7ef;
-      box-shadow: 0 18px 54px rgba(0,0,0,.42), 0 0 28px rgba(142,255,61,.07), inset 0 1px rgba(255,255,255,.045);
+      box-shadow: 0 18px 54px rgba(0,0,0,.38), 0 0 24px rgba(142,255,61,.055), inset 0 1px rgba(255,255,255,.04);
       opacity: 0;
-      transform: translateY(13px);
+      filter: blur(2px);
+      transform: translateY(10px) scale(.99);
       pointer-events: none;
-      transition: opacity 420ms cubic-bezier(.2,.7,.2,1), transform 420ms cubic-bezier(.2,.7,.2,1);
+      transition: opacity 950ms cubic-bezier(.2,.65,.25,1), transform 950ms cubic-bezier(.2,.65,.25,1), filter 950ms cubic-bezier(.2,.65,.25,1);
       isolation: isolate;
     }
     .boztik-discovery-promo::before {
       position: absolute; z-index: -1; top: 0; left: 18px; right: 18px;
-      height: 1px; background: linear-gradient(90deg, transparent, rgba(142,255,61,.7), transparent);
+      height: 1px; background: linear-gradient(90deg, transparent, rgba(142,255,61,.58), transparent);
       content: "";
     }
-    .boztik-discovery-promo.is-visible { opacity: 1; transform: translateY(0); pointer-events: auto; }
-    .boztik-discovery-promo.is-leaving { opacity: 0; transform: translateY(8px); pointer-events: none; }
+    .boztik-discovery-promo.is-visible { opacity: 1; filter:blur(0); transform:translateY(0) scale(1); pointer-events:auto; }
+    .boztik-discovery-promo.is-leaving { opacity:0; filter:blur(2px); transform:translateY(7px) scale(.99); pointer-events:none; }
     .boztik-discovery-promo__icon {
-      display: grid; width: 42px; height: 42px; place-items: center;
-      border: 1px solid rgba(142,255,61,.25); border-radius: 13px;
-      background: rgba(142,255,61,.08); color: #a8ff72;
+      display:grid; width:42px; height:42px; place-items:center;
+      border:1px solid rgba(142,255,61,.22); border-radius:13px;
+      background:rgba(142,255,61,.075); color:#a8ff72;
     }
-    .boztik-discovery-promo__icon svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.65; stroke-linecap: round; stroke-linejoin: round; }
-    .boztik-discovery-promo__body { min-width: 0; }
+    .boztik-discovery-promo__icon svg { width:21px; height:21px; fill:none; stroke:currentColor; stroke-width:1.65; stroke-linecap:round; stroke-linejoin:round; }
+    .boztik-discovery-promo__body { min-width:0; }
     .boztik-discovery-promo__eyebrow { display:block; margin:1px 0 5px; color:#a5f56e; font-size:9px; font-weight:800; letter-spacing:.14em; line-height:1.35; text-transform:uppercase; }
-    .boztik-discovery-promo__title { margin:0 0 5px; color:#f4f8f1; font:750 15px/1.3 Inter, sans-serif; letter-spacing:-.025em; }
-    .boztik-discovery-promo__description { margin:0; color:#b6c1b3; font:400 11.5px/1.55 Inter, sans-serif; }
+    .boztik-discovery-promo__title { margin:0 0 5px; color:#f4f8f1; font:750 15px/1.3 Inter,sans-serif; letter-spacing:-.025em; }
+    .boztik-discovery-promo__description { margin:0; color:#b6c1b3; font:400 11.5px/1.55 Inter,sans-serif; }
     .boztik-discovery-promo__action { display:inline-flex; align-items:center; gap:7px; margin-top:10px; color:#aaff79; font:750 11px/1.4 Inter,sans-serif; text-decoration:none; }
     .boztik-discovery-promo__action:hover { color:#d2ffb8; }
     .boztik-discovery-promo__close {
@@ -132,7 +142,7 @@ function addStyles() {
       .boztik-discovery-promo__title { font-size:14px; }
       .boztik-discovery-promo__description { font-size:11px; }
     }
-    @media(prefers-reduced-motion:reduce) { .boztik-discovery-promo { transition:none; transform:none; } }
+    @media(prefers-reduced-motion:reduce) { .boztik-discovery-promo { transition:none; transform:none; filter:none; } }
   `;
   document.head.appendChild(style);
 }
@@ -173,7 +183,6 @@ export function initSpotlightInvitation(delivery, options = {}) {
   let showTimer = 0;
   let hideTimer = 0;
   let nextTimer = 0;
-  let removeTimer = 0;
   let disposed = false;
 
   const clearCard = () => {
@@ -183,7 +192,7 @@ export function initSpotlightInvitation(delivery, options = {}) {
     card = null;
     oldCard.classList.remove("is-visible");
     oldCard.classList.add("is-leaving");
-    removeTimer = window.setTimeout(() => oldCard.remove(), FADE_MS);
+    window.setTimeout(() => oldCard.remove(), FADE_MS);
   };
 
   const stop = () => {
