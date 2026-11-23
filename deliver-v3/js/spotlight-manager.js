@@ -167,10 +167,15 @@ function render() {
   renderFilterBar();
   featuredPanel.render();
   const visible = profiles.filter(p => matchesQueueFilter(p));
-  list.innerHTML = visible.length ? visible.map(p => `
-    <article class="sp-admin-row">
+  list.innerHTML = visible.length ? visible.map(p => {
+    const age = Date.now() - Number(p.created_at || 0) * 1000;
+    const isNew = age >= 0 && age <= 7 * 86400000;
+    const isUnpublished = p.status !== "published" && !["declined","expired"].includes(p.application_status);
+    const stateLabel = p.status === "published" ? "Published" : p.application_status === "approved" ? "Approved · not published" : p.application_status === "new" ? "New application" : (p.application_status || p.status || "Draft").replace(/_/g," ");
+    return `
+    <article class="sp-admin-row${isNew ? " is-new" : ""}${isUnpublished ? " is-unpublished" : ""}">
       <div class="sp-admin-main">
-        <strong>${esc(p.display_name)}</strong>
+        <strong>${esc(p.display_name)} <span class="sp-admin-badges">${isNew ? '<b class="sp-admin-state is-new">NEW · 7 DAYS</b>' : ""}${isUnpublished ? `<b class="sp-admin-state is-unpublished">${esc(stateLabel)}</b>` : '<b class="sp-admin-state is-live">LIVE</b>'}</span></strong>
         <span>${esc(p.category.replace(/-/g, " "))} · ${esc(p.application_status || p.status)} · ${new Date(p.created_at * 1000).toLocaleDateString()}${p.placement_plan && p.placement_plan !== "free" ? ` · <b class="sp-plan-badge">${esc(p.placement_plan)}</b>` : ""}</span>
         <small>${esc(p.contact_email || "")}</small>
         ${p.application_status === "new" || p.application_status === "under_review" || p.application_status === "approved"
@@ -189,7 +194,8 @@ function render() {
         ${p.status === "published" && (!p.listing_expires_at || p.listing_expires_at * 1000 > Date.now()) ? (p.featured ? `<button class="cc-btn" data-action="unfeature" data-id="${esc(p.id)}">Remove feature</button>` : `<button class="cc-btn" data-action="feature" data-id="${esc(p.id)}">Preview &amp; feature…</button>`) : ""}
         <button class="cc-btn sp-delete" data-action="delete" data-id="${esc(p.id)}">Delete</button>
       </div>
-    </article>`).join("") : profiles.length ? "<p class='cc-muted'>Nothing matches this filter.</p>" : "<p class='cc-muted'>No submissions yet. New entries will appear here for review.</p>";
+    </article>`;
+  }).join("") : profiles.length ? "<p class='cc-muted'>Nothing matches this filter.</p>" : "<p class='cc-muted'>No submissions yet. New entries will appear here for review.</p>";
 }
 
 let spotlightLoadInProgress = false;
@@ -226,16 +232,33 @@ async function load({ silent = false } = {}) {
     const rows = Array.isArray(analyticsResponse.profiles) ? analyticsResponse.profiles : [];
     const views = rows.reduce((total, p) => total + Number(p.views || 0), 0);
     $("sp-admin-views").textContent = views.toLocaleString();
-    if (!analyticsUnavailable) analytics.innerHTML = rows.length ? rows.map(p => `
-      <div class="sp-admin-metric">
-        <strong>${esc(p.display_name)}</strong>
-        <span>${Number(p.views || 0).toLocaleString()} views</span>
-        <span>${Number(p.unique_views || 0).toLocaleString()} daily unique visitors</span>
-        <span>${Number(p.outbound_clicks || 0).toLocaleString()} outbound clicks</span>
-        <span>${Number(p.featured_impressions || 0).toLocaleString()} featured impressions</span>
-        <span>${Number(p.website_clicks || 0).toLocaleString()} website · ${Number(p.social_clicks || 0).toLocaleString()} social · ${Number(p.media_clicks || 0).toLocaleString()} media clicks</span>
-        <span>${Number(p.player_interactions || 0).toLocaleString()} plays · ${Number(p.completed_plays || 0).toLocaleString()} completed (YouTube)</span>
-      </div>`).join("") : "<p class='cc-muted'>Engagement will appear when visitors start exploring profiles.</p>";
+    if (!analyticsUnavailable) {
+      const clickRate = p => Number(p.views) > 0 ? (Number(p.outbound_clicks || 0) / Number(p.views) * 100).toFixed(1) + "%" : "—";
+      const ranked = [...rows].sort((a,b) => Number(b.views || 0) - Number(a.views || 0));
+      analytics.innerHTML = `
+        <div class="sp-admin-performance-summary">
+          <div><span>Total profile views</span><strong>${views.toLocaleString()}</strong></div>
+          <div><span>Outbound link clicks</span><strong>${ranked.reduce((n,p)=>n+Number(p.outbound_clicks||0),0).toLocaleString()}</strong></div>
+          <div><span>Featured impressions</span><strong>${ranked.reduce((n,p)=>n+Number(p.featured_impressions||0),0).toLocaleString()}</strong></div>
+          <div><span>Player interactions</span><strong>${ranked.reduce((n,p)=>n+Number(p.player_interactions||0),0).toLocaleString()}</strong></div>
+        </div>
+        <div class="sp-admin-ranking">${ranked.length ? ranked.slice(0,15).map((p,i) => {
+          const width = views > 0 ? Math.max(2, Number(p.views || 0) / Math.max(1, ...ranked.map(x=>Number(x.views||0))) * 100) : 0;
+          return `<article class="sp-admin-performance-row">
+            <div class="sp-admin-performance-heading"><strong><span class="sp-admin-rank">${i+1}</span>${esc(p.display_name)}</strong><span>${Number(p.views||0).toLocaleString()} views</span></div>
+            <div class="sp-admin-view-track" aria-label="${Number(p.views||0)} profile views"><i style="width:${width}%"></i></div>
+            <div class="sp-admin-performance-facts">
+              <span><b>${Number(p.unique_views||0).toLocaleString()}</b> visitor-days</span>
+              <span><b>${Number(p.outbound_clicks||0).toLocaleString()}</b> outbound clicks · ${clickRate(p)} click rate</span>
+              <span><b>${Number(p.website_clicks||0).toLocaleString()}</b> website</span>
+              <span><b>${Number(p.social_clicks||0).toLocaleString()}</b> social</span>
+              <span><b>${Number(p.media_clicks||0).toLocaleString()}</b> media</span>
+              <span><b>${Number(p.featured_impressions||0).toLocaleString()}</b> featured impressions</span>
+              <span><b>${Number(p.player_interactions||0).toLocaleString()}</b> plays · <b>${Number(p.completed_plays||0).toLocaleString()}</b> completed (YouTube)</span>
+            </div>
+          </article>`;
+        }).join("") : "<p class='cc-muted'>Engagement will appear when visitors start exploring profiles.</p>"}</div>`;
+    }
     const updatedAt = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
     feedback.textContent = analyticsUnavailable
       ? `Spotlight profiles loaded · analytics temporarily unavailable · Updated ${updatedAt}`
@@ -680,14 +703,17 @@ async function loadStats(days) {
     const names = { direct: "Direct or unknown", directory: "Spotlight directory", featured: "Featured page", search: "Search engines", social: "Social platforms", other: "Other websites" };
     body.innerHTML = `
       <dl class="sp-review-facts">
+        <div><dt>Profile views</dt><dd>${Number(t.views).toLocaleString()}</dd></div>
+        <div><dt>Daily unique visitor-days</dt><dd>${Number(t.unique_views).toLocaleString()}</dd></div>
         <div><dt>Featured impressions</dt><dd>${Number(t.featured_impressions).toLocaleString()}</dd></div>
-        <div><dt>Profile views (${Number(t.unique_views).toLocaleString()} unique visitor-days)</dt><dd>${Number(t.views).toLocaleString()}</dd></div>
-        <div><dt>Link clicks: website / social / media</dt><dd>${Number(t.link_clicks).toLocaleString()} (${t.website_clicks} / ${t.social_clicks} / ${t.media_clicks})</dd></div>
-        <div><dt>Player plays · completed (YouTube only)</dt><dd>${Number(t.player_interactions).toLocaleString()} · ${Number(t.completed_plays).toLocaleString()}</dd></div>
+        <div><dt>Outbound click rate</dt><dd>${Number(t.views) ? (Number(t.link_clicks) / Number(t.views) * 100).toFixed(1) + "%" : "—"}</dd></div>
+        <div><dt>Website / social / media clicks</dt><dd>${Number(t.website_clicks).toLocaleString()} / ${Number(t.social_clicks).toLocaleString()} / ${Number(t.media_clicks).toLocaleString()}</dd></div>
+        <div><dt>Player interactions · completed</dt><dd>${Number(t.player_interactions).toLocaleString()} · ${Number(t.completed_plays).toLocaleString()} (YouTube only)</dd></div>
       </dl>
-      <section><h4>Views per day, ${esc(a.from)} to ${esc(a.to)}</h4>
-        <div class="sp-stats-bars" role="img" aria-label="Profile views per day: ${Number(t.views)} in total">${a.series.map(d => `<i style="height:${Math.round(d.views / max * 100)}%" title="${esc(d.day)}: ${d.views}"></i>`).join("")}</div></section>
-      <section><h4>Where visits came from</h4><div class="sp-review-links">${a.sources.filter(x => x.views).map(x => `<span>${esc(names[x.source] || x.source)}: <b>${Number(x.views).toLocaleString()}</b></span>`).join("") || "<span>No visits in this period.</span>"}</div></section>`;
+      <section><h4>Daily profile activity, ${esc(a.from)} to ${esc(a.to)}</h4>
+        <div class="sp-stats-bars" role="img" aria-label="Profile views per day: ${Number(t.views)} in total">${a.series.map(d => `<i style="height:${Math.round(d.views / max * 100)}%" title="${esc(d.day)}: ${d.views} views"></i>`).join("")}</div></section>
+      <section><h4>Where profile visits came from</h4><div class="sp-review-links">${a.sources.filter(x => x.views).map(x => `<span>${esc(names[x.source] || x.source)}: <b>${Number(x.views).toLocaleString()}</b></span>`).join("") || "<span>No visits in this period.</span>"}</div></section>
+      <p class="sp-review-note">Visitor-days may count the same person on different days. Click rate is a directional ratio, not a conversion or sales rate. YouTube is the only provider that reports completed plays.</p>`;
   } catch (error) { body.textContent = "Analytics unavailable: " + error.message; }
 }
 statsModal.addEventListener("click", event => {
