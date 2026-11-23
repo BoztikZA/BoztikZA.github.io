@@ -95,7 +95,7 @@ export function buildCsv(model, { generatedAt = new Date() } = {}) {
     L.push(row(["Reporting window", sp.period?.since ?? "", sp.period?.until ?? ""]));
     L.push(row(["Metric", "Value"]));
     for (const [label, value] of Object.entries(sp.summary ?? {})) L.push(row([label, value]));
-    L.push(row(["Profile", "Slug", "Category", "Publication status", "Application status", "Submitted", "Published", "Listing expiry", "Views", "Daily unique visitor-days", "Featured impressions", "Website clicks", "Social clicks", "Media clicks", "Player interactions", "Completed plays"]));
+    L.push(row(["Profile", "Slug", "Category", "Publication status", "Application status", "Submitted", "Published", "Listing expiry", "Currently featured", "Views", "Daily unique visitor-days", "Featured impressions", "Outbound clicks", "Website clicks", "Social clicks", "Media clicks", "Traffic sources", "Player interactions", "Completed plays"]));
     for (const p of sp.profiles ?? []) L.push(row([p.display_name, p.slug, p.category, p.status, p.application_status, p.created_at ? new Date(p.created_at * 1000).toISOString() : "", p.published_at ? new Date(p.published_at * 1000).toISOString() : "", p.listing_expires_at ? new Date(p.listing_expires_at * 1000).toISOString() : "", p.featured ? "yes" : "no", p.views, p.unique_views, p.featured_impressions, p.outbound_clicks, p.website_clicks, p.social_clicks, p.media_clicks, (p.sources || []).map(x => `${x.source}:${x.views}`).join("; "), p.player_interactions, p.completed_plays]));
     L.push("");
   }
