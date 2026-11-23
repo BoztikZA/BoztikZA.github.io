@@ -1,0 +1,2811 @@
+{
+  "slug": "practical-ai-productivity",
+  "title": "Practical Artificial Intelligence & AI Productivity",
+  "subtitle": "Use AI tools confidently, check what they give you, and build routines that save real time.",
+  "category": "ai-emerging-technology",
+  "level": "Beginner–Intermediate",
+  "summary": "A hands-on, jargon-free course on using AI chat and image tools for study, work and small business, safely and honestly.",
+  "description": "Learn what AI really is, how chat assistants work, and how to write prompts that get useful results. You will practise research, writing, planning, small-business and image tasks, learn to protect private information and spot mistakes, and finish by designing an AI workflow for your own work. No technical background is needed, and every exercise can be done with a free tool or on paper.",
+  "estimatedHours": "5–6 hours",
+  "outcomes": [
+    "Explain in plain language what AI is, what it is not, and how language models produce answers",
+    "Choose the right kind of AI tool for a task and recognise when not to use AI at all",
+    "Write clear prompts using context, task, audience, format, constraints and examples, and improve them by iterating",
+    "Use AI to research, draft, edit, summarise and study while checking claims against real sources",
+    "Apply AI to email, meeting notes, planning and small-business tasks while keeping decisions and promises human",
+    "Describe images for AI tools and explain the honesty, copyright, likeness and photo-restoration risks",
+    "Protect personal, client and confidential information and write a personal AI-use policy",
+    "Design a reusable AI workflow with templates, a review checklist and a measure of time saved"
+  ],
+  "audience": [
+    "Students and school-leavers who want to use AI honestly and effectively",
+    "Office workers and freelancers who want to save time on writing and admin",
+    "Small-business owners and side-hustlers handling customers, quotes and social posts",
+    "Anyone curious about AI who wants a practical, plain-language starting point"
+  ],
+  "prerequisites": "Basic comfort with a web browser and typing; a free AI chat tool is helpful but not required.",
+  "modules": [
+    {
+      "id": "m01",
+      "title": "Understanding artificial intelligence",
+      "summary": "What AI actually is, what it is not, and why it has suddenly become relevant to ordinary work.",
+      "objectives": [
+        "Explain AI in plain language without hype or jargon",
+        "Separate the narrow tools in use today from science-fiction ideas",
+        "Recognise AI in everyday tools you already use",
+        "Describe why AI matters for ordinary work right now"
+      ],
+      "lessons": [
+        {
+          "id": "m01-l01",
+          "title": "What AI is, and what it is not",
+          "minutes": 9,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Artificial intelligence is a loose label for software that does tasks we normally think need human judgement: recognising speech, sorting photos, spotting fraud, writing a paragraph. The software is not following a long list of rules that a programmer typed out. It was built by showing a system a very large number of examples until it picked up useful patterns."
+            },
+            {
+              "type": "p",
+              "text": "That last sentence is the whole trick, and it explains most of what you will learn in this course. Today's AI is pattern-matching at huge scale, packaged so that ordinary people can use it by typing or talking."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "Your phone keyboard already does this",
+              "text": "When you type a WhatsApp message and your phone offers the next word, it has not understood your message. It has learned which words tend to follow other words. A modern chat assistant is the same basic idea, scaled up enormously and trained on far more text."
+            },
+            {
+              "type": "h",
+              "text": "What AI is not"
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                "**Not a mind.** It has no wants, no feelings and no understanding of the way you understand a sentence.",
+                "**Not a database of checked facts.** It produces answers that look right based on patterns. Some are wrong.",
+                "**Not a person who knows you.** Unless you tell it, it does not know your business, your client or your deadline.",
+                "**Not magic.** It is software with clear strengths and clear weaknesses, and you can learn both."
+              ]
+            },
+            {
+              "type": "h",
+              "text": "Narrow tools versus the film version"
+            },
+            {
+              "type": "p",
+              "text": "Everything in real use today is narrow AI. It is built for a type of task. A spam filter cannot plan your holiday. A chat assistant can write about almost any topic, yet it cannot tell you reliably whether what it wrote is true."
+            },
+            {
+              "type": "p",
+              "text": "The movie version, a machine with its own goals or a single system that is an expert at everything, is science fiction. Keeping that distinction in your head protects you from two opposite mistakes: fearing AI as a scheming mind, and trusting it as an all-knowing expert."
+            },
+            {
+              "type": "table",
+              "caption": "Real tools and imagined ones",
+              "headers": [
+                "Idea",
+                "Real today?",
+                "What it means for you"
+              ],
+              "rows": [
+                [
+                  "Spam filter, voice typing, photo search",
+                  "Yes, narrow",
+                  "Dependable at one job, wrong now and then"
+                ],
+                [
+                  "Chat assistant that drafts and summarises",
+                  "Yes, flexible but pattern-based",
+                  "A useful drafting partner whose work needs checking"
+                ],
+                [
+                  "A machine with its own goals and feelings",
+                  "No, science fiction",
+                  "Nothing to plan your week around"
+                ],
+                [
+                  "One system that is an expert at everything",
+                  "No, treat such claims with suspicion",
+                  "Keep the final decision with a person"
+                ]
+              ]
+            },
+            {
+              "type": "callout",
+              "tone": "key",
+              "title": "A working definition",
+              "text": "AI is software that has learned patterns from examples and uses them to make a prediction, attach a label or produce new content. It is useful, it is fallible, and it is not a mind."
+            },
+            {
+              "type": "check",
+              "id": "m01-l01-c1",
+              "kind": "single",
+              "prompt": "Which statement best describes the AI tools ordinary people use today?",
+              "options": [
+                "Narrow, pattern-based software that is useful but can be wrong",
+                "Thinking machines that understand questions the way people do",
+                "Databases that only store facts that have been verified",
+                "Programs that follow a complete list of rules written by hand"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "Today's tools learn patterns from examples. They are useful for specific jobs but they do not understand like a person and they do not guarantee accuracy."
+            }
+          ]
+        },
+        {
+          "id": "m01-l02",
+          "title": "AI you already use, and why it matters now",
+          "minutes": 11,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "You have been using AI for years without calling it that. The point of recognising it is practical: once you see how much of it is already in your day, the newer chat tools stop feeling like a strange invention and start looking like the next step."
+            },
+            {
+              "type": "h",
+              "text": "Everyday examples"
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                "Your email app moving junk into the spam folder.",
+                "A maps app estimating how long the drive will take, including traffic.",
+                "Voice typing on your phone and automatic captions on a video.",
+                "Your bank flagging a card payment that looks unusual for you.",
+                "Photo apps grouping pictures of the same person, or searching for pictures of a beach.",
+                "Streaming and shopping apps suggesting what to watch or buy next."
+              ]
+            },
+            {
+              "type": "p",
+              "text": "Each of these does one narrow job. None of them chats with you. What changed recently is that tools appeared which handle language so flexibly that you can ask for almost any text task in your own words."
+            },
+            {
+              "type": "h",
+              "text": "Why it suddenly matters for ordinary work"
+            },
+            {
+              "type": "p",
+              "text": "Much of office and small-business work is language: emails, quotes, summaries, social posts, instructions, notes. A tool that can produce a decent first draft of any of those in seconds changes how long the boring parts take. It does not remove the need for a person to decide what is correct and appropriate. It changes where your time goes."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "A plumber in Pretoria",
+              "text": "Thandi runs a small plumbing business. Each evening she types quotes into a template and answers WhatsApp questions about availability. With an assistant she pastes in her rough job notes, asks for a clear quote in friendly language, checks the numbers herself, and sends it. Twenty minutes becomes five. The prices, the promises and the final send are still hers."
+            },
+            {
+              "type": "p",
+              "text": "Three reasons the timing matters. The tools are free or cheap to try. You need no technical skills to start, only the ability to write clearly. And people who learn to use them well will finish certain tasks much faster than people who do not, which is already shaping what employers and clients expect."
+            },
+            {
+              "type": "callout",
+              "tone": "warning",
+              "title": "Speed is not the same as quality",
+              "text": "A fast draft is only worth having if you check it. The rest of this course is about getting the speed without paying for it later in mistakes."
+            },
+            {
+              "type": "exercise",
+              "title": "Spot the AI in your day",
+              "intro": "You do not need an AI tool for this one. You are training your eye.",
+              "tasks": [
+                "List five places in a normal day where software predicts, sorts, recommends or generates something for you. Use the examples above as a starting point.",
+                "For each, write one line on what it learned from (for example, past spam reports or your own viewing history).",
+                "Pick one task from your own work or study that is mostly language, such as emails, reports or notes. Write down roughly how long it takes you each week.",
+                "If you have a free chat assistant, ask it: 'Explain in three sentences what you can and cannot do.' Read the answer critically."
+              ],
+              "reflection": "Which of your five examples would you be uncomfortable seeing get things wrong, and why? That discomfort tells you where checking matters most."
+            },
+            {
+              "type": "check",
+              "id": "m01-l02-c1",
+              "kind": "single",
+              "prompt": "Why does AI matter now for ordinary workplace tasks?",
+              "options": [
+                "Tools that handle everyday language are cheap to try and need no technical skill",
+                "Computers have recently begun to understand and feel as people do",
+                "It replaces the need for anyone to check written work before sending",
+                "It is only useful to programmers and large companies"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "The shift is practical: flexible language tools are easy to access, so routine writing and summarising work can be sped up. People still need to check and decide."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m02",
+      "title": "How AI systems work (the practical version)",
+      "summary": "Learning from examples, patterns rather than understanding, and why language models sound confident even when they are wrong.",
+      "objectives": [
+        "Describe how a system learns from examples and what that means for its limits",
+        "Distinguish training from using a trained system",
+        "Explain in plain words what a language model does when it answers you",
+        "Recognise why fluent answers can still be false, and what to do about it"
+      ],
+      "lessons": [
+        {
+          "id": "m02-l01",
+          "title": "Learning from examples, not from rules",
+          "minutes": 10,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Traditional software follows instructions a programmer wrote. If the email contains this word, do that. For some problems the rules are impossible to write down. Try describing, in exact steps, how to recognise a cat in any photo, or what makes a message sound like a scam. Nobody can list every case."
+            },
+            {
+              "type": "p",
+              "text": "Machine learning takes a different route. Instead of writing rules, you show the system a large number of examples and let it work out the rules for itself."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "How a spam filter gets built",
+              "text": "Take thousands of real emails, each labelled by people as spam or not spam. The system tries to sort them, checks its guesses against the labels, and adjusts itself again and again. After enough rounds it has picked up patterns, such as odd wording, suspicious links and urgent money requests. Then it is tested on emails it has never seen."
+            },
+            {
+              "type": "steps",
+              "title": "The learning loop",
+              "items": [
+                {
+                  "title": "Collect examples",
+                  "text": "Gather a large set of inputs, usually with the right answers attached."
+                },
+                {
+                  "title": "Adjust",
+                  "text": "The system makes guesses, measures how wrong they are, and tweaks its internal settings to be less wrong."
+                },
+                {
+                  "title": "Test",
+                  "text": "Check it on fresh examples it did not train on, to see if it learned something general."
+                },
+                {
+                  "title": "Use",
+                  "text": "Release it to handle new inputs it has never seen."
+                }
+              ]
+            },
+            {
+              "type": "h",
+              "text": "Training versus using"
+            },
+            {
+              "type": "p",
+              "text": "The learning happens once, in advance, and it is expensive. That stage is called training. What you do when you type into a chat assistant is using the trained system. In general, your conversation does not retrain it on the spot. Its built-in knowledge stays what it was when training finished."
+            },
+            {
+              "type": "table",
+              "caption": "Two stages",
+              "headers": [
+                "",
+                "Training",
+                "Using"
+              ],
+              "rows": [
+                [
+                  "Who does it",
+                  "The company that builds the system",
+                  "You, the person with a question"
+                ],
+                [
+                  "When",
+                  "Before release, over a long period",
+                  "Every time you ask, in seconds"
+                ],
+                [
+                  "What changes",
+                  "The system's internal settings",
+                  "Nothing in the system itself; only the conversation grows"
+                ],
+                [
+                  "Why it matters to you",
+                  "Explains its knowledge and its gaps",
+                  "Explains why you must supply facts it lacks"
+                ]
+              ]
+            },
+            {
+              "type": "h",
+              "text": "Patterns, not understanding"
+            },
+            {
+              "type": "p",
+              "text": "A system only learns what its examples show. Imagine training a tool to tell photos of two kinds of animal apart, where one kind was mostly photographed on snow. The tool may quietly learn that snow means that animal. It scores well in testing and fails the first time the animal appears on grass. It found a pattern, just not the one you meant."
+            },
+            {
+              "type": "callout",
+              "tone": "key",
+              "title": "The lesson to carry forward",
+              "text": "AI is as good as its examples and only inside the situations those examples cover. Outside them it can fail in ways that look strange to a human, and it will not warn you."
+            },
+            {
+              "type": "check",
+              "id": "m02-l01-c1",
+              "kind": "single",
+              "prompt": "What is the main difference between traditional software and a machine learning system?",
+              "options": [
+                "Machine learning works out its own patterns from examples instead of following hand-written rules",
+                "Machine learning needs no data at all before it can work",
+                "Traditional software can only be used by programmers",
+                "Machine learning always understands the reason behind each answer"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "Machine learning systems extract patterns from many examples. Traditional software follows instructions someone wrote, and learning systems do not understand why a pattern holds."
+            }
+          ]
+        },
+        {
+          "id": "m02-l02",
+          "title": "What a language model actually does",
+          "minutes": 11,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Chat assistants such as ChatGPT, Claude, Gemini and Copilot are built on language models. A language model has one core skill: given some text, it predicts what text is likely to come next. Then it does that again, and again, one small piece at a time, until it has built a whole reply."
+            },
+            {
+              "type": "p",
+              "text": "That sounds too simple to explain a tool that can draft a contract clause or explain a maths problem. The reason it works is scale. The model was trained on an enormous amount of writing, so its sense of what usually follows what is very rich."
+            },
+            {
+              "type": "code",
+              "label": "A tiny illustration of prediction",
+              "text": "Text so far:  Thank you for your\nLikely next words:  email / order / patience / feedback / help\nUnlikely next words:  giraffe / bicycle\n\nThe model picks one, adds it to the text, and predicts again."
+            },
+            {
+              "type": "callout",
+              "tone": "key",
+              "title": "Tokens",
+              "text": "Models do not read whole words the way you do. They work in tokens, which are chunks of text. A short common word is often a single token, while a long or unusual word may be split into several. You do not need to count tokens. You only need to know that limits on length and cost are measured in them."
+            },
+            {
+              "type": "h",
+              "text": "What this explains"
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                "**Why it is so good at tone and structure.** It has seen millions of emails, reports and recipes, so it knows how they usually look.",
+                "**Why the same question can give different answers.** There is some controlled randomness in which likely word gets chosen.",
+                "**Why it forgets things in a long chat.** It can only consider a limited amount of text at once, called the context window. Details from far back may drop out of view.",
+                "**Why it does not know yesterday's news.** Training stops at a cut-off date. Some tools add a web search, but then the quality depends on what it finds."
+              ]
+            },
+            {
+              "type": "p",
+              "text": "It also explains why it is better at some jobs than others. Rewriting a rough paragraph in a friendly tone leans on pattern knowledge it has in abundance. Telling you the exact opening hours of your local clinic depends on a fact it may never have seen."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "Same prompt, two replies",
+              "text": "Ask for a one-line slogan for a bakery in Durban twice. You will almost certainly get two different slogans. Neither is the correct answer, because there is no single correct answer. For creative work that variety is a benefit. For a factual question it is a warning sign."
+            },
+            {
+              "type": "exercise",
+              "title": "Watch it predict",
+              "intro": "A short experiment you can do with any free chat assistant, or on paper if you have none.",
+              "tasks": [
+                "Type the start of a sentence, such as 'The best thing about load-shedding is', and ask the assistant to continue it in one sentence. Ask again in a new chat.",
+                "Compare the two answers. Note what is the same (structure, tone) and what differs (details).",
+                "Ask it: 'What was the most recent event you know about?' Note how it describes its own knowledge limits.",
+                "No AI tool? Write the start of a sentence on a card, hand it to a friend, and ask them to finish it quickly without thinking too hard. Compare how many different endings you get from three people."
+              ],
+              "reflection": "If the model builds answers one piece at a time from patterns, what kinds of questions would you expect it to handle well, and which would you double-check?"
+            },
+            {
+              "type": "check",
+              "id": "m02-l02-c1",
+              "kind": "single",
+              "prompt": "In plain terms, what is a language model doing when it writes a reply?",
+              "options": [
+                "Predicting likely next pieces of text, one after another, from learned patterns",
+                "Searching a verified library of facts and quoting the matching entry",
+                "Looking up your question in a list of answers written by staff",
+                "Reasoning about the world exactly as a human expert would"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "A language model generates text by repeatedly predicting what is likely to come next. It is not retrieving a checked answer from a library unless it has been connected to a search tool."
+            }
+          ]
+        },
+        {
+          "id": "m02-l03",
+          "title": "Why it sounds sure and still gets things wrong",
+          "minutes": 10,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "A language model is built to produce text that reads well. Reading well and being true are two different things. The model has no built-in fact checker that stops it when it reaches the edge of what it knows. It keeps producing the most plausible-sounding continuation, in the same confident voice."
+            },
+            {
+              "type": "p",
+              "text": "When that confident text is false, people call it a hallucination. The word is slightly dramatic, but the problem is real."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "A made-up source",
+              "text": "A student asks an assistant for three academic articles on township tourism, with authors and journal names. The reply lists three neat references. Two of them do not exist. The titles are believable, the authors are plausible, and nothing in the tone hints at a problem. The model produced what a reference list usually looks like."
+            },
+            {
+              "type": "h",
+              "text": "Where it goes wrong most often"
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                "Exact figures, dates, quotes, and page numbers.",
+                "Sources, references, case law and links it has not actually seen.",
+                "Local or niche facts, such as a small town's by-laws or a particular shop's trading hours.",
+                "Recent events after its training cut-off.",
+                "Anything where you gave it too little to go on and it filled the gap."
+              ]
+            },
+            {
+              "type": "table",
+              "caption": "Rough risk guide",
+              "headers": [
+                "Task",
+                "Risk of invented content",
+                "Your habit"
+              ],
+              "rows": [
+                [
+                  "Rewrite my paragraph in a friendlier tone",
+                  "Low",
+                  "Read it to check it still says what you meant"
+                ],
+                [
+                  "Summarise text I paste in",
+                  "Low to medium",
+                  "Spot-check against the original"
+                ],
+                [
+                  "Explain a general concept",
+                  "Medium",
+                  "Confirm key points with a trusted source"
+                ],
+                [
+                  "Give me statistics, quotes or references",
+                  "High",
+                  "Never use without finding the real source"
+                ]
+              ]
+            },
+            {
+              "type": "h",
+              "text": "What you can do about it"
+            },
+            {
+              "type": "p",
+              "text": "First, give it the material. If you paste in the facts, it works from them instead of guessing. Second, ask for plain reasoning and for what it is unsure about, but do not treat its self-assessment as proof. A model can be wrong about its own certainty. Third, verify anything that matters against a source that a person or organisation stands behind."
+            },
+            {
+              "type": "callout",
+              "tone": "tip",
+              "title": "A useful instinct",
+              "text": "The smoother and more specific an unsupported claim sounds, the more reason you have to check it. Precision costs the model nothing."
+            },
+            {
+              "type": "exercise",
+              "title": "Catch it out, safely",
+              "intro": "Practise checking on something low-stakes where you already know the truth.",
+              "tasks": [
+                "Ask a chat assistant a question about a local topic you know well, such as the history of your suburb, a school, or a nearby business.",
+                "Mark each claim as correct, wrong, or unverifiable. Note whether the tone changed between correct and wrong claims.",
+                "Now paste in a short paragraph of true facts and ask it to answer from only that text. Compare the accuracy.",
+                "No AI tool? Take any answer you have previously received from an assistant and fact-check three claims in it using official websites or a library book."
+              ],
+              "reflection": "Did the confident tone ever drop when it was wrong? What does that tell you about using tone as a guide to truth?"
+            },
+            {
+              "type": "check",
+              "id": "m02-l03-c1",
+              "kind": "single",
+              "prompt": "Why do language models sometimes state false things in a confident way?",
+              "options": [
+                "They produce plausible-sounding text and have no automatic check that stops them at the edge of their knowledge",
+                "They deliberately mislead users to keep them chatting",
+                "They only repeat sentences taken whole from official websites",
+                "They are always sure because they have verified every statement"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "A model generates likely-sounding text. Fluency is not evidence of truth, so a confident tone says nothing about accuracy."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m03",
+      "title": "Generative AI: text, images, audio and code",
+      "summary": "What generative tools can produce, where each kind is strong or weak, and how to decide when to use AI and when not to.",
+      "objectives": [
+        "Describe what generative AI is and name its main output types",
+        "Match common tasks to the kind of tool that suits them",
+        "Compare general chat assistants with specialised tools",
+        "Decide when a task should not be handed to AI"
+      ],
+      "lessons": [
+        {
+          "id": "m03-l01",
+          "title": "Four kinds of output and what each is good at",
+          "minutes": 11,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Most of the AI you meet in everyday life labels or predicts. Generative AI creates something new in response to your request: a paragraph, a picture, a voice recording, a piece of code. It has learned patterns from huge collections of existing examples and produces fresh output that follows those patterns."
+            },
+            {
+              "type": "p",
+              "text": "Fresh does not mean original in the human sense, and it does not mean correct. It means newly assembled. Keep both points in mind as we look at each type."
+            },
+            {
+              "type": "table",
+              "caption": "Four kinds of generative AI",
+              "headers": [
+                "Type",
+                "Good at",
+                "Weak at",
+                "Watch for"
+              ],
+              "rows": [
+                [
+                  "Text",
+                  "Drafting, rewriting, summarising, brainstorming, changing tone",
+                  "Exact facts, recent events, precise numbers",
+                  "Confident errors and invented sources"
+                ],
+                [
+                  "Images",
+                  "Concept pictures, mood boards, backgrounds, rough ideas",
+                  "Readable text inside the image, specific real places, small details such as hands or counts",
+                  "Faces and logos that resemble real people or brands"
+                ],
+                [
+                  "Audio",
+                  "Turning speech into text, voice-overs, background music",
+                  "Noisy recordings, strong accents, unusual names, people talking over each other",
+                  "Cloned voices used to deceive"
+                ],
+                [
+                  "Code",
+                  "Small scripts, spreadsheet formulas, explaining what code does",
+                  "Large, carefully secured systems",
+                  "Code that looks right but fails on real data"
+                ]
+              ]
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "A tutor and a spreadsheet",
+              "text": "Sipho tutors maths after school and tracks which learners have paid. He asks an assistant for a spreadsheet formula that flags anyone who owes more than R500. The formula it gives looks sensible. He tests it on five invented rows, one of which he knows should be flagged, before trusting it with real learners. The formula had one wrong bracket. Testing caught it in two minutes."
+            },
+            {
+              "type": "h",
+              "text": "Why the weak spots look the way they do"
+            },
+            {
+              "type": "p",
+              "text": "Because the system works from patterns, it is strongest where patterns are rich and forgiving. Many different emails are acceptable, so drafting one is easy. There is only one right answer to what R4 850 less 12 percent equals, so loose pattern-matching is risky. Pictures work the same way. The tool knows what a bakery counter usually looks like, but it does not count the loaves."
+            },
+            {
+              "type": "callout",
+              "tone": "tip",
+              "title": "Make it easier to check",
+              "text": "Ask for output you can test quickly. A formula you can try on sample rows, a draft you can read in a minute, a summary you can compare to the original. The cheaper a result is to verify, the safer it is to use AI for it."
+            },
+            {
+              "type": "p",
+              "text": "None of these four types is better than the others. They are different tools with different failure modes. Learning a tool's usual failure mode is the fastest way to use it well."
+            },
+            {
+              "type": "check",
+              "id": "m03-l01-c1",
+              "kind": "single",
+              "prompt": "Which task is generative AI generally best suited to?",
+              "options": [
+                "Producing several differently worded drafts of a friendly reminder message",
+                "Giving exact legal citations that you will rely on without checking",
+                "Counting the objects in a crowded photo with perfect accuracy",
+                "Confirming this week's fuel price with certainty"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "Drafting varied text is a pattern-rich task where many outputs are acceptable. Exact citations, precise counts and current prices are areas where errors are common and need checking."
+            }
+          ]
+        },
+        {
+          "id": "m03-l02",
+          "title": "Chat assistants, specialised tools, and when not to use AI",
+          "minutes": 12,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "There are two broad families of AI tools. A general chat assistant, such as ChatGPT, Claude, Gemini or Copilot, will try almost anything you type. A specialised tool is built around one job: transcribing meetings, translating, checking grammar, removing a background from a photo, or drafting social posts."
+            },
+            {
+              "type": "table",
+              "caption": "General and specialised tools",
+              "headers": [
+                "",
+                "Chat assistant",
+                "Specialised tool"
+              ],
+              "rows": [
+                [
+                  "Range",
+                  "Very wide: text, ideas, explanations, sometimes images and files",
+                  "Narrow: one task done well"
+                ],
+                [
+                  "Effort to use",
+                  "You must explain what you want",
+                  "Often one click or a template"
+                ],
+                [
+                  "Typical strength",
+                  "Flexibility and conversation",
+                  "Consistency and fit for one workflow"
+                ],
+                [
+                  "Typical risk",
+                  "Plausible but wrong answers",
+                  "Hidden settings and unclear data handling"
+                ]
+              ]
+            },
+            {
+              "type": "p",
+              "text": "A sensible rule is to reach for a specialised tool when a job is routine and you do it often, and for a chat assistant when the job is varied or you need to think out loud. Whichever you use, the habits in this course apply equally."
+            },
+            {
+              "type": "h",
+              "text": "When not to use AI"
+            },
+            {
+              "type": "p",
+              "text": "Knowing when to leave AI out is as valuable as knowing how to use it."
+            },
+            {
+              "type": "steps",
+              "title": "Four questions before you start",
+              "items": [
+                {
+                  "title": "Is it safe to share?",
+                  "text": "If the task needs confidential, personal or client information you may not share, stop or remove those details first."
+                },
+                {
+                  "title": "Can I check the result?",
+                  "text": "If you cannot judge whether the output is right, you cannot safely use it."
+                },
+                {
+                  "title": "What does a mistake cost?",
+                  "text": "A typo in a casual message is cheap. A wrong figure in a quote, a medical instruction or a legal letter is not."
+                },
+                {
+                  "title": "Is the point to do it myself?",
+                  "text": "If you are learning a skill, being assessed, or writing something that must sound personally like you, handing it over defeats the purpose."
+                }
+              ]
+            },
+            {
+              "type": "callout",
+              "tone": "warning",
+              "title": "Poor fits",
+              "text": "Personal messages where your own words matter, such as condolences or an apology. Decisions about people, such as hiring or discipline, made on AI output alone. Medical, legal or financial advice that nobody qualified reviews. Arithmetic you could do on a calculator. Work your school or employer has said must be your own."
+            },
+            {
+              "type": "exercise",
+              "title": "Green, amber or red?",
+              "intro": "This works on paper, and also with an assistant if you want a second opinion.",
+              "tasks": [
+                "Sort these into green (fine to use AI), amber (use AI but check carefully) or red (do not use, or only with removal of private details): a draft thank-you note to a client; a summary of a public news article; a reply that includes a customer's ID number; an answer to your own assessed assignment; a spreadsheet formula; a performance review for a staff member; the exact VAT on an invoice.",
+                "Write one sentence of reasoning next to each choice.",
+                "Add two tasks from your own week and sort them as well.",
+                "If you used an assistant, compare its suggestions with yours. Where did you disagree, and who had the better argument?"
+              ],
+              "reflection": "What question from the four above did you find yourself asking most often?"
+            },
+            {
+              "type": "check",
+              "id": "m03-l02-c1",
+              "kind": "single",
+              "prompt": "Which situation is the clearest reason NOT to hand a task to a chat assistant?",
+              "options": [
+                "You are writing a personal apology where your own words matter",
+                "You want three alternative subject lines for a newsletter",
+                "You need a plain-language summary of a public article",
+                "You want help structuring a weekly to-do list"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "A personal apology should reflect your voice and sincerity. The other tasks are low-risk drafting or organising jobs where AI help is reasonable."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m04",
+      "title": "Writing effective prompts",
+      "summary": "A prompt is a brief. Learn the ingredients of a good one, how to rewrite weak prompts, and how to improve results by iterating.",
+      "objectives": [
+        "Build a prompt from context, task, audience, format, constraints and examples",
+        "Rewrite a vague prompt into a specific one",
+        "Improve a result through targeted follow-up instead of starting over",
+        "Use the assistant to ask you clarifying questions before it drafts"
+      ],
+      "lessons": [
+        {
+          "id": "m04-l01",
+          "title": "A prompt is a brief: the six ingredients",
+          "minutes": 11,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "A prompt is what you type to the AI. The best way to think about it is as a brief you would give to a capable new assistant on their first day. They are clever, they work fast, and they know nothing about your situation. If you say 'write something about our sale', you will get something generic. If you explain who it is for, what you want and what to avoid, you will get something close to usable."
+            },
+            {
+              "type": "table",
+              "caption": "The six ingredients",
+              "headers": [
+                "Ingredient",
+                "Question it answers",
+                "Example"
+              ],
+              "rows": [
+                [
+                  "Context",
+                  "What is the situation?",
+                  "I run a small bakery in Gqeberha and we are launching a Saturday-only sourdough"
+                ],
+                [
+                  "Task",
+                  "What exactly should you do?",
+                  "Write a WhatsApp broadcast announcing it"
+                ],
+                [
+                  "Audience",
+                  "Who will read it?",
+                  "Existing customers, mostly parents, who prefer short messages"
+                ],
+                [
+                  "Format",
+                  "What shape should the output take?",
+                  "Three short lines and one call to action"
+                ],
+                [
+                  "Constraints",
+                  "What must or must not appear?",
+                  "Under 50 words, friendly, no exclamation marks, include the R65 price"
+                ],
+                [
+                  "Examples",
+                  "What does good look like?",
+                  "Here is a previous message that worked well: ..."
+                ]
+              ]
+            },
+            {
+              "type": "p",
+              "text": "You will not need all six every time. A quick request for a synonym needs none of them. A message that goes to your customers needs most of them. The skill lies in noticing what is missing that the assistant cannot guess."
+            },
+            {
+              "type": "code",
+              "label": "A reusable skeleton",
+              "text": "Context: [who you are and the situation]\nTask: [what you want done]\nAudience: [who will read or use it]\nFormat: [length, structure, layout]\nConstraints: [must include / must avoid / tone]\nExample: [optional sample of good output]"
+            },
+            {
+              "type": "callout",
+              "tone": "key",
+              "title": "Specific beats long",
+              "text": "A good prompt is not about length. One precise sentence with the right audience and constraint can beat a vague paragraph. Add detail only where the assistant would otherwise have to guess."
+            },
+            {
+              "type": "h",
+              "text": "Keep your facts honest"
+            },
+            {
+              "type": "p",
+              "text": "The assistant will happily fill any gaps with invented details, such as a promotion you never offered or an opening time you never gave. State the facts you need to be in the output. Then check that nothing extra slipped in."
+            },
+            {
+              "type": "callout",
+              "tone": "tip",
+              "title": "Say what you do not want",
+              "text": "Telling it to avoid certain words, clichés or claims is often more useful than describing the tone you want. 'No exclamation marks, no jargon' is easier to follow than 'sound professional'."
+            },
+            {
+              "type": "check",
+              "id": "m04-l01-c1",
+              "kind": "single",
+              "prompt": "Which addition would most improve the prompt 'Write a post about our new service'?",
+              "options": [
+                "Saying who the service is for, what it does, and how long the post should be",
+                "Adding the word 'please' and asking it to try its best",
+                "Repeating the request three times in capital letters",
+                "Asking it to be more creative without further detail"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "Audience, task details and format give the assistant what it would otherwise have to guess. Politeness, repetition and vague requests for creativity do not add information."
+            }
+          ]
+        },
+        {
+          "id": "m04-l02",
+          "title": "Before and after: rewriting weak prompts",
+          "minutes": 11,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "The quickest way to learn prompting is to look at weak prompts and fix them. In each pair below, notice what the second version adds that the first leaves the assistant to guess."
+            },
+            {
+              "type": "h",
+              "text": "Example 1: a customer reply"
+            },
+            {
+              "type": "code",
+              "label": "Before",
+              "text": "Reply to this customer complaint."
+            },
+            {
+              "type": "code",
+              "label": "After",
+              "text": "I run a small electrical business in Midrand. A customer says our electrician arrived two hours late and did not call. Write a reply on WhatsApp. Apologise once, explain that traffic and an earlier job overran (do not invent other reasons), offer a R150 discount on the next visit, and ask if they would like to rebook. Keep it under 80 words, warm but not grovelling."
+            },
+            {
+              "type": "p",
+              "text": "The first prompt forces the assistant to invent the story, the tone and the offer. The second carries your facts, your decision about the discount, and a limit on length. You are still deciding what happens. The assistant is only helping with the wording."
+            },
+            {
+              "type": "h",
+              "text": "Example 2: a study summary"
+            },
+            {
+              "type": "code",
+              "label": "Before",
+              "text": "Summarise this chapter."
+            },
+            {
+              "type": "code",
+              "label": "After",
+              "text": "I am a first-year student revising for a test on Friday. Summarise the text below into five key ideas, each with a one-sentence plain-language explanation and one everyday example. Then give me three short questions I can use to test myself. Text: [paste chapter]"
+            },
+            {
+              "type": "h",
+              "text": "Example 3: a plan"
+            },
+            {
+              "type": "code",
+              "label": "Before",
+              "text": "Help me plan my week."
+            },
+            {
+              "type": "code",
+              "label": "After",
+              "text": "I freelance as a photographer and also have a day job on weekdays until 17:00. This week I must edit 40 wedding photos by Thursday, invoice two clients, and shoot a family session on Saturday morning. Load-shedding may cut evening editing time. Suggest a day-by-day plan with realistic time blocks, and flag anything that looks too tight."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "What changed in every case",
+              "text": "The strong prompts say who you are, what the real situation is, what output you want, and what limits apply. None of them is clever. They are simply complete."
+            },
+            {
+              "type": "exercise",
+              "title": "Rewrite three prompts",
+              "intro": "You can do this on paper first and test it with an assistant afterwards.",
+              "tasks": [
+                "Choose three prompts you have used, or would use: for instance 'write an email to my landlord', 'explain budgeting' and 'give me content ideas'.",
+                "Rewrite each using at least four of the six ingredients. Include one real fact and one constraint in each.",
+                "If you have a free assistant, run both versions of one prompt and compare the results side by side.",
+                "Save your best rewrite as a template by replacing the specific details with square brackets."
+              ],
+              "reflection": "What details did you have to go and find out before you could write the better prompt? Those gaps are what the assistant would otherwise have guessed."
+            },
+            {
+              "type": "check",
+              "id": "m04-l02-c1",
+              "kind": "single",
+              "prompt": "What is the main reason the 'After' customer-reply prompt works better than the 'Before' version?",
+              "options": [
+                "It supplies the facts, the decision and the limits, so the assistant does not have to invent them",
+                "It uses longer sentences, which the assistant prefers",
+                "It avoids mentioning the customer's complaint",
+                "It leaves the offer and the tone for the assistant to choose"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "A better prompt carries the real situation, your decisions and the constraints. The assistant should polish wording, not invent facts or make promises on your behalf."
+            }
+          ]
+        },
+        {
+          "id": "m04-l03",
+          "title": "Iterate, and let the AI interview you",
+          "minutes": 10,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Almost nobody gets the best result from the first prompt. Treat the first reply as a rough draft and shape it with follow-up instructions. This is faster than starting from scratch, and the conversation keeps the context you have already given."
+            },
+            {
+              "type": "h",
+              "text": "Give feedback the way an editor would"
+            },
+            {
+              "type": "table",
+              "caption": "Vague and useful feedback",
+              "headers": [
+                "Vague",
+                "Useful"
+              ],
+              "rows": [
+                [
+                  "Make it better",
+                  "Cut it to 60 words and put the price in the first line"
+                ],
+                [
+                  "Sounds wrong",
+                  "Too formal. We say 'hi' not 'dear customer'. Rewrite as if texting a regular"
+                ],
+                [
+                  "Not what I wanted",
+                  "I wanted three options, each with a different opening. Keep the facts the same"
+                ],
+                [
+                  "More professional",
+                  "Remove the slang and the exclamation marks, keep the warmth"
+                ]
+              ]
+            },
+            {
+              "type": "p",
+              "text": "Change one or two things at a time so that you can tell what helped. If a chat has become tangled, start a fresh one and paste in the best version so far."
+            },
+            {
+              "type": "h",
+              "text": "Ask it to ask you questions"
+            },
+            {
+              "type": "p",
+              "text": "When a task is big or you are unsure what to include, flip the roles. Tell the assistant to interview you first. It will ask for the facts it needs, and you will notice which of them you had not thought about."
+            },
+            {
+              "type": "code",
+              "label": "Interview prompt",
+              "text": "I need to write a quote for a client who wants her lounge repainted. Before you write anything, ask me up to six questions about what you need to know. Ask them one at a time and wait for my answers. Then draft the quote and list any assumptions you made."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "Why this works",
+              "text": "A freelance photographer asks for help with a proposal. The assistant asks about the shoot date, hours, number of edited images, travel costs and deposit terms. Two of those were missing from her own notes. The interview exposed the gaps before a client did."
+            },
+            {
+              "type": "callout",
+              "tone": "tip",
+              "title": "Keep a prompt log",
+              "text": "When a prompt works, copy it into a note with a title. Within a month you will have a small personal library, and most of your future prompts will be edits of past ones."
+            },
+            {
+              "type": "check",
+              "id": "m04-l03-c1",
+              "kind": "single",
+              "prompt": "A reply is nearly right but too formal. What is the most effective next step?",
+              "options": [
+                "Tell the assistant exactly what to change, such as the tone and an example of how you speak",
+                "Close the chat and write the whole message again without help",
+                "Type 'try again' repeatedly until a better one appears",
+                "Ask for the same text but with the word 'better' added"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "Specific feedback keeps the useful parts and corrects the problem. Vague retries leave the assistant guessing again."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m05",
+      "title": "AI for research and writing",
+      "summary": "A safe research workflow, checking claims against real sources, and drafting and studying with AI while keeping your own voice and honesty.",
+      "objectives": [
+        "Follow a research workflow that uses AI as a guide, not as a source",
+        "Check claims against real sources and cite the sources you actually used",
+        "Use AI to edit and improve drafts while keeping your own voice",
+        "Use AI to study and summarise without losing accuracy"
+      ],
+      "lessons": [
+        {
+          "id": "m05-l01",
+          "title": "A safe research workflow",
+          "minutes": 10,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Research is where AI is both most tempting and most dangerous. It can explain unfamiliar topics in seconds, and it can also hand you invented facts that read perfectly well. The fix is to change what you ask it to be. Use it as a guide to the topic, never as the source of the facts you rely on."
+            },
+            {
+              "type": "steps",
+              "title": "Six steps you can reuse",
+              "items": [
+                {
+                  "title": "Write your question",
+                  "text": "State what you need to find out and why. A sharp question gets you a better search than a vague topic."
+                },
+                {
+                  "title": "Get oriented",
+                  "text": "Ask the assistant to explain the topic simply, list key terms, and suggest what you should look up. Treat this as a map, not as findings."
+                },
+                {
+                  "title": "Find real sources",
+                  "text": "Search for official websites, textbooks, journals, news organisations and the people who actually know. Open them yourself."
+                },
+                {
+                  "title": "Work from the text",
+                  "text": "Paste short passages from those sources into the assistant and ask for summaries or comparisons. Now it is working from material you chose."
+                },
+                {
+                  "title": "Verify",
+                  "text": "Check any figure, date, quote or rule against the original source before it goes into your work."
+                },
+                {
+                  "title": "Write it up",
+                  "text": "Put things in your own words, and cite the sources you used."
+                }
+              ]
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "A tax threshold",
+              "text": "Lindiwe is a freelancer asking about the income level at which she must register for a tax. An assistant gives a clear-sounding figure. Tax thresholds change and differ by country, and the assistant may be using old information. She uses the answer only to learn the terms, then finds the current figure on the revenue authority's own website and quotes that."
+            },
+            {
+              "type": "h",
+              "text": "What counts as a source"
+            },
+            {
+              "type": "table",
+              "caption": "Trust ladder",
+              "headers": [
+                "Kind of material",
+                "How far to trust it",
+                "Habit"
+              ],
+              "rows": [
+                [
+                  "Official body, law, original data",
+                  "Highest",
+                  "Cite the document itself, with the date"
+                ],
+                [
+                  "Textbook, peer-reviewed journal, established news outlet",
+                  "High",
+                  "Check the publication date and who wrote it"
+                ],
+                [
+                  "Company marketing, personal blog, social media post",
+                  "Use with care",
+                  "Ask who gains if you believe it"
+                ],
+                [
+                  "AI chat output",
+                  "Not a source",
+                  "Use it to find sources and ideas, then confirm elsewhere"
+                ]
+              ]
+            },
+            {
+              "type": "callout",
+              "tone": "key",
+              "title": "Rule of thumb",
+              "text": "If a claim matters enough to appear in your work, it matters enough to trace to something a person or organisation stands behind."
+            },
+            {
+              "type": "p",
+              "text": "Some assistants can browse the web and show links. That helps, but it does not remove the need to check. Open the link, find the passage, and confirm it says what the assistant claims it says."
+            },
+            {
+              "type": "check",
+              "id": "m05-l01-c1",
+              "kind": "single",
+              "prompt": "In a safe research workflow, what role should an AI assistant play?",
+              "options": [
+                "A guide for getting oriented and summarising passages you chose, not the source of the facts you rely on",
+                "The final authority whose statements you cite directly",
+                "A replacement for looking at any official or published material",
+                "A way to skip checking figures and dates"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "AI is good at explaining and organising. The facts you rely on should come from sources you have opened and verified."
+            }
+          ]
+        },
+        {
+          "id": "m05-l02",
+          "title": "Checking claims and citing honestly",
+          "minutes": 11,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Checking is a skill, and it is quicker than most people expect. You do not have to re-research everything. You have to find the claims that could hurt you if they were wrong, and test those."
+            },
+            {
+              "type": "h",
+              "text": "A fast claim check"
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                "Underline every checkable claim: numbers, dates, names, quotes, rules, and 'studies show' statements.",
+                "Sort them: which would embarrass you or cause harm if wrong? Check those first.",
+                "Search for each one separately in a source you trust. Do not just ask the same assistant 'are you sure?'",
+                "If you cannot confirm it, cut it, soften it, or say plainly that you could not verify it."
+              ]
+            },
+            {
+              "type": "callout",
+              "tone": "warning",
+              "title": "Asking the same tool to confirm itself",
+              "text": "An assistant that invented a statistic will often agree that it is correct when you ask. Treat its reassurance as a prompt to go and look elsewhere, never as the check itself."
+            },
+            {
+              "type": "h",
+              "text": "Citing: honesty about what you used"
+            },
+            {
+              "type": "p",
+              "text": "Cite the sources you actually opened and read. Do not cite a reference because an assistant produced it. If a reference came from AI and you cannot find it, it may not exist. A made-up reference in a report or assignment looks like deliberate fabrication, whatever your intent."
+            },
+            {
+              "type": "p",
+              "text": "Be open about AI use where it is expected. Many schools, universities and employers have rules about how and when AI may be used and how it must be acknowledged. Find the rule for your situation. If you are unsure, ask. Passing off AI-written text as your own unaided work, or presenting unchecked AI claims as fact, is the quick way to lose someone's trust."
+            },
+            {
+              "type": "table",
+              "caption": "What to do in common situations",
+              "headers": [
+                "Situation",
+                "Honest approach"
+              ],
+              "rows": [
+                [
+                  "School or university assignment",
+                  "Follow the course policy; note AI help if asked; never submit AI text as your own work if that is prohibited"
+                ],
+                [
+                  "Report for your manager",
+                  "Check the facts, and say if AI helped when it matters to how the report is relied on"
+                ],
+                [
+                  "Blog or social media post",
+                  "You are responsible for every claim, whatever tool drafted it"
+                ],
+                [
+                  "A quote you want to use",
+                  "Find it in the original source, not in an AI answer"
+                ]
+              ]
+            },
+            {
+              "type": "exercise",
+              "title": "Audit an AI paragraph",
+              "intro": "Practise checking without needing to trust anything.",
+              "tasks": [
+                "Ask a chat assistant for a 150-word paragraph on a topic you are interested in, including at least five specific facts or figures. If you have no AI tool, take a paragraph from any online summary or a social media post instead.",
+                "Underline every checkable claim. Number them.",
+                "Find a trustworthy source for each claim and write beside it: confirmed, wrong, or could not find.",
+                "Rewrite the paragraph keeping only what you confirmed. Add the sources you used."
+              ],
+              "reflection": "How many claims survived? Which kind of claim was hardest to verify, and what does that tell you about where to be most careful?"
+            },
+            {
+              "type": "check",
+              "id": "m05-l02-c1",
+              "kind": "single",
+              "prompt": "An assistant gives you a reference you cannot find online. What should you do?",
+              "options": [
+                "Leave it out, because you cannot confirm it exists",
+                "Include it, since the assistant sounded certain",
+                "Include it but change the author's name so it looks more plausible",
+                "Ask the assistant to confirm and cite it if it says yes"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "An unverifiable reference may be invented. Only cite what you have opened and read, and never rely on the assistant to confirm its own output."
+            }
+          ]
+        },
+        {
+          "id": "m05-l03",
+          "title": "Drafting, editing and studying with your own voice",
+          "minutes": 11,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "The best use of AI in writing is as a sharp editor and a patient practice partner. The weakest is as a ghostwriter that you let speak for you. Writing that is entirely generated tends to be bland and slightly off. Readers notice, and it also does not sound like you."
+            },
+            {
+              "type": "h",
+              "text": "Draft first, then ask for help"
+            },
+            {
+              "type": "p",
+              "text": "Start with your own rough version, even if it is messy. You supply the ideas, the facts and the point of view. Then use the assistant for jobs that improve the writing without replacing it."
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                "Ask it to list the five weakest sentences and say why, then fix them yourself.",
+                "Ask it to cut your text by a third without changing the meaning.",
+                "Ask it to check for confusing order, repeated points or missing steps.",
+                "Ask for two or three alternative openings, then choose and adapt one."
+              ]
+            },
+            {
+              "type": "code",
+              "label": "Voice-keeping prompt",
+              "text": "Here are two short pieces I wrote, so you can see how I write: [paste samples].\nBelow is a rough draft. Edit it for clarity and flow only. Keep my wording where it already works, keep my facts exactly as they are, and mark any place where you changed the meaning. Do not add new claims.\n\nDraft: [paste draft]"
+            },
+            {
+              "type": "callout",
+              "tone": "tip",
+              "title": "Spot the sameness",
+              "text": "If you ask for several pieces in a row, watch for the same favourite phrases showing up in each. Cut them. Your own specific details are what make writing sound like a person."
+            },
+            {
+              "type": "h",
+              "text": "Studying and summarising"
+            },
+            {
+              "type": "p",
+              "text": "AI can also help you learn. Paste in your own notes or a passage you are allowed to use, and ask for a summary, a simpler explanation, or practice questions. A summary can leave out something that matters, so compare it with the original before you rely on it for a test."
+            },
+            {
+              "type": "code",
+              "label": "Study prompt",
+              "text": "Here are my notes on [topic]. 1) Summarise them in five bullet points. 2) Explain the hardest idea as if I am new to it, with an everyday example. 3) Ask me five questions one at a time, wait for my answer, and tell me what I missed."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "Explain it back",
+              "text": "A learner finishes a chapter and writes a short explanation from memory. Then she asks the assistant to point out what is missing or wrong in her version. This works better than reading a summary, because she has to produce the idea herself."
+            },
+            {
+              "type": "check",
+              "id": "m05-l03-c1",
+              "kind": "single",
+              "prompt": "Which approach to writing with AI is most likely to keep your own voice?",
+              "options": [
+                "Write a rough draft yourself, then ask the assistant to edit for clarity while keeping your wording and facts",
+                "Ask it to write the whole piece, then submit it unchanged",
+                "Ask for ten different versions and mix random sentences from each",
+                "Paste in a topic and let it decide the argument"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "Starting from your own draft keeps your ideas and voice. The assistant then improves clarity rather than replacing you."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m06",
+      "title": "AI for productivity and planning",
+      "summary": "Practical routines for email, meeting notes, messy notes, weekly planning and learning a new topic faster.",
+      "objectives": [
+        "Triage an inbox and draft replies from your own bullet points",
+        "Turn meeting notes or messy text into decisions, actions and owners",
+        "Build a realistic weekly plan with AI while keeping the final decisions",
+        "Use AI to learn a new topic faster without trusting it blindly"
+      ],
+      "lessons": [
+        {
+          "id": "m06-l01",
+          "title": "Email triage and replies",
+          "minutes": 10,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Email is a natural fit for AI because it is mostly language, much of it routine. The aim is not to stop reading your mail. The aim is to spend your attention on the messages that need judgement, and to spend less time wording the ones that do not."
+            },
+            {
+              "type": "h",
+              "text": "Triage"
+            },
+            {
+              "type": "p",
+              "text": "Paste in a batch of subject lines and the first sentence of each, with anything private removed. Ask the assistant to sort them. You are not asking it to decide what matters to you. You are asking it for a first pass that you can overrule."
+            },
+            {
+              "type": "code",
+              "label": "Triage prompt",
+              "text": "Below are 15 email subject lines with their first sentences. Sort them into: 1) needs a reply today, 2) needs a reply this week, 3) for information only, 4) probably ignorable. Give a one-line reason for each. If you cannot tell, say so rather than guessing.\n\n[paste]"
+            },
+            {
+              "type": "h",
+              "text": "Replies from your own bullets"
+            },
+            {
+              "type": "p",
+              "text": "The reliable pattern is to give the decision and the facts in rough bullet points, and let the assistant turn them into polite, clear sentences. You make the decision. It handles the phrasing."
+            },
+            {
+              "type": "code",
+              "label": "Reply prompt",
+              "text": "Write a short, friendly reply to the email below. My decisions: yes to a call on Thursday after 14:00, no to the Friday deadline, and I need the signed form first. Keep it under 90 words. Do not promise anything else.\n\nEmail: [paste]"
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "After a long load-shedding day",
+              "text": "Zanele, a freelance bookkeeper, has twenty-two unread emails and two hours of power left on her laptop. She pastes the subject lines, finds three that need replies today, and writes three sets of bullets. Ten minutes later three short, courteous replies are ready for her to read, adjust and send."
+            },
+            {
+              "type": "table",
+              "caption": "Who does what",
+              "headers": [
+                "The assistant",
+                "You"
+              ],
+              "rows": [
+                [
+                  "Sorts and summarises",
+                  "Decide what is urgent in your real situation"
+                ],
+                [
+                  "Turns bullets into clear sentences",
+                  "Provide the facts, prices and promises"
+                ],
+                [
+                  "Adjusts tone: warmer, firmer, shorter",
+                  "Read every word before sending"
+                ],
+                [
+                  "Suggests a subject line",
+                  "Check names, dates, amounts and attachments"
+                ]
+              ]
+            },
+            {
+              "type": "callout",
+              "tone": "warning",
+              "title": "Do not paste everything",
+              "text": "Emails often contain other people's personal details, account numbers or confidential matters. Remove or replace them first, and check what your workplace allows. Module 9 covers this in detail."
+            },
+            {
+              "type": "check",
+              "id": "m06-l01-c1",
+              "kind": "single",
+              "prompt": "What is the most reliable way to use AI to write an email reply?",
+              "options": [
+                "Give it your decision and key facts in bullet points and have it phrase them, then read the result before sending",
+                "Paste the email and send whatever it returns without reading",
+                "Ask it to decide what you should agree to",
+                "Let it add any details it thinks sound good"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "You supply the decisions and facts. The assistant helps with wording, and you review the result because you are accountable for what you send."
+            }
+          ]
+        },
+        {
+          "id": "m06-l02",
+          "title": "Meeting notes and messy notes into structure",
+          "minutes": 10,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Most notes are messy because they were written fast. AI is good at imposing order on text you already have, which is a lower-risk job than producing facts from nothing. The material is yours, so you can check the result against it."
+            },
+            {
+              "type": "h",
+              "text": "Meeting notes"
+            },
+            {
+              "type": "p",
+              "text": "Start with your own jottings or a transcript. If a meeting is recorded or transcribed, tell the other people and follow your organisation's rules. Some people do not want to be recorded, and some meetings are confidential."
+            },
+            {
+              "type": "steps",
+              "title": "From messy to useful",
+              "items": [
+                {
+                  "title": "Paste the raw notes",
+                  "text": "Include whatever you have, however rough. Remove names or figures that should not leave your organisation."
+                },
+                {
+                  "title": "Ask for a fixed structure",
+                  "text": "Decisions made, actions with owner and due date, open questions, and a three-line summary."
+                },
+                {
+                  "title": "Tell it not to invent",
+                  "text": "Where an owner or date is missing, it must write 'not stated' rather than guess."
+                },
+                {
+                  "title": "Check against the notes",
+                  "text": "Make sure each action matches what was said, then send."
+                }
+              ]
+            },
+            {
+              "type": "code",
+              "label": "Before: raw notes",
+              "text": "mon mtg w/ Pieter + Aisha. stock count fri? Aisha says supplier late again. Pieter wants new supplier quotes, maybe 3. website banner needs changing b4 month end. who does invoices?? decided: no new hires till Jan."
+            },
+            {
+              "type": "code",
+              "label": "After: structured",
+              "text": "Decisions\n- No new hires until January.\n\nActions\n- Get quotes from up to three new suppliers: Pieter, due date not stated\n- Update website banner: owner not stated, before month end\n- Stock count: Friday (confirm who)\n\nOpen questions\n- Who handles invoices?\n- Does Aisha's supplier delay change the stock count date?"
+            },
+            {
+              "type": "callout",
+              "tone": "key",
+              "title": "The prompt that prevents the worst error",
+              "text": "Always add: 'If an owner, date or number is not in my notes, write not stated. Do not guess.' Otherwise assistants tend to fill gaps with believable guesses, and a wrong owner on an action item causes real trouble."
+            },
+            {
+              "type": "h",
+              "text": "Other messy-text jobs"
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                "A page of voice-note transcription into a tidy checklist.",
+                "A rambling customer message into three clear questions to answer.",
+                "A pile of ideas into a grouped list with duplicates merged."
+              ]
+            },
+            {
+              "type": "exercise",
+              "title": "Tidy a real mess",
+              "intro": "Use your own notes, or the sample above if you want a safe example.",
+              "tasks": [
+                "Take a page of rough notes from a recent meeting, class or phone call. Remove names, numbers and anything private.",
+                "Write a prompt that asks for decisions, actions with owner and due date, and open questions, and tells the assistant to write 'not stated' for gaps.",
+                "Run it, then compare the result with your original line by line. Mark anything the assistant changed or invented.",
+                "No AI tool? Do the restructuring by hand using the three headings above, and time yourself."
+              ],
+              "reflection": "Which part of the structured version would you have missed if you had only skimmed it?"
+            },
+            {
+              "type": "check",
+              "id": "m06-l02-c1",
+              "kind": "single",
+              "prompt": "Why add 'write not stated if information is missing' when asking for action items?",
+              "options": [
+                "It stops the assistant from guessing owners or dates that were never mentioned",
+                "It makes the assistant write longer summaries",
+                "It lets the assistant skip checking your notes",
+                "It improves the grammar of the output"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "Without that instruction a model may fill gaps with plausible guesses. A clear 'not stated' makes missing information visible so a person can resolve it."
+            }
+          ]
+        },
+        {
+          "id": "m06-l03",
+          "title": "Weekly planning and learning a new topic faster",
+          "minutes": 11,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Planning is another job where the assistant organises and you decide. It cannot know your energy, your family commitments or how long a task really takes you. You can tell it, though, and it can then lay the pieces out more sensibly than a blank page does."
+            },
+            {
+              "type": "h",
+              "text": "A planning conversation"
+            },
+            {
+              "type": "code",
+              "label": "Weekly plan prompt",
+              "text": "Here is my week. Fixed commitments: work 08:00 to 17:00 Mon to Fri, school pick-up at 14:30 on Tuesdays and Thursdays. Must finish: a presentation by Thursday, two invoices by Wednesday, and a first draft of my CV. I focus best in the early morning. Evening power cuts may remove 2 hours some nights. Draft a day-by-day plan with realistic blocks, a buffer each day, and tell me which items look too tight."
+            },
+            {
+              "type": "p",
+              "text": "Read the plan critically. Assistants are often too optimistic about time. If it has scheduled four hours of focused work in a day that is already full, say so and ask it to rebalance. Then copy the final version into your own calendar or notebook, because that is where you will actually look."
+            },
+            {
+              "type": "callout",
+              "tone": "tip",
+              "title": "Break big jobs down",
+              "text": "Ask: 'Break this task into steps of 30 minutes or less, in order, and tell me what I need before each step.' A vague project like 'sort out my taxes' becomes a short list that you can start in the next ten minutes."
+            },
+            {
+              "type": "h",
+              "text": "Learning a new topic faster"
+            },
+            {
+              "type": "p",
+              "text": "Used well, an assistant works like a patient tutor available at any hour. Used badly, it hands you a pile of confident half-truths. The difference is that you stay in charge of the learning and check anything important."
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                "Ask for a map: the main ideas, in a sensible order, for a complete beginner.",
+                "Ask what beginners usually get wrong or confuse.",
+                "Ask for one simple analogy per idea, then judge whether it holds up.",
+                "Practise: have it quiz you one question at a time and explain your mistakes.",
+                "Confirm the key facts with a textbook, a course or an official source."
+              ]
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "Learning spreadsheets",
+              "text": "Kagiso wants to use spreadsheets for his side-hustle stock list. He asks for a four-week plan at thirty minutes a day. He follows it, asks the assistant to quiz him on formulas, and checks anything unfamiliar in the spreadsheet program's own help pages. After a month he can build the sheet himself."
+            },
+            {
+              "type": "check",
+              "id": "m06-l03-c1",
+              "kind": "single",
+              "prompt": "An assistant's weekly plan packs six hours of focused work into a day you described as already full. What should you do?",
+              "options": [
+                "Tell it the plan is unrealistic and ask it to rebalance with buffers",
+                "Follow the plan exactly because the assistant is good at maths",
+                "Delete your other commitments",
+                "Ask it to schedule more tasks so you finish earlier"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "You know your real capacity. Assistants tend to be optimistic, so correct the plan with specific feedback, and keep the final say yourself."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m07",
+      "title": "AI for small businesses",
+      "summary": "Customer replies, product descriptions, social posts, quotes, simple procedures and FAQs, plus what a small business should always keep human.",
+      "objectives": [
+        "Draft customer replies and FAQ answers that stay accurate to your business",
+        "Produce product descriptions and social posts without inventing claims",
+        "Structure quotes, proposals and simple procedures with AI help",
+        "Decide which business tasks should always stay with a person"
+      ],
+      "lessons": [
+        {
+          "id": "m07-l01",
+          "title": "Customer replies and FAQs",
+          "minutes": 10,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Small businesses answer the same questions again and again. What time do you open? How much for this? Can you come on Saturday? What happens if I need to cancel? Each answer takes a minute, and those minutes add up to hours. AI is well suited to this, as long as the facts stay yours."
+            },
+            {
+              "type": "h",
+              "text": "Build a facts-and-voice sheet once"
+            },
+            {
+              "type": "p",
+              "text": "Before asking for any replies, write a short note that you can paste at the start of a chat. It holds the things the assistant cannot know and should never invent."
+            },
+            {
+              "type": "code",
+              "label": "Facts-and-voice sheet (example: a bakery)",
+              "text": "Business: Lekker Loaf, small home bakery in Bloemfontein.\nHours: Tue to Sat, 07:00 to 14:00. Closed Sunday and Monday.\nOrders: custom cakes need 5 days notice and a 50% deposit.\nDelivery: within 10 km, R60. Otherwise collection only.\nAllergens: we use wheat, eggs, milk and nuts in the same kitchen. Never state that anything is allergen-free.\nVoice: warm, brief, first names, no exclamation marks, English with the odd Afrikaans word."
+            },
+            {
+              "type": "p",
+              "text": "With that sheet in the conversation, you can paste a customer's message and ask for a reply. The assistant works from your facts instead of guessing."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "An electrician's reply",
+              "text": "Pieter, an electrician, gets a WhatsApp asking whether he can fix a tripping DB board today. His facts sheet says he is booked until Thursday for non-emergencies. The draft politely offers Thursday morning, asks for a photo of the board, and says nothing about the cause. He added one line himself: if there is a burning smell, switch off the main supply and call him. He did not want the assistant making that safety call for him."
+            },
+            {
+              "type": "h",
+              "text": "Turn real questions into an FAQ"
+            },
+            {
+              "type": "p",
+              "text": "Collect the ten questions customers ask most, from your own messages. Ask the assistant to write a clear answer to each using only your facts sheet, and to put 'ask the owner' where your facts do not cover the question. Read each answer against what you actually do."
+            },
+            {
+              "type": "table",
+              "caption": "Reply types and how much care they need",
+              "headers": [
+                "Type",
+                "AI help",
+                "Keep in mind"
+              ],
+              "rows": [
+                [
+                  "Simple enquiry (hours, price, availability)",
+                  "Draft and send quickly after checking",
+                  "Make sure prices and dates are yours"
+                ],
+                [
+                  "Delay or reschedule",
+                  "Draft an honest, courteous note",
+                  "Do not let it invent reasons"
+                ],
+                [
+                  "Complaint or refund",
+                  "Help with wording only",
+                  "Decide the outcome yourself and read every word"
+                ],
+                [
+                  "Anything about safety or health",
+                  "Very little",
+                  "Say it yourself or have a qualified person review it"
+                ]
+              ]
+            },
+            {
+              "type": "callout",
+              "tone": "warning",
+              "title": "Never let it speak for you on allergens or safety",
+              "text": "A cheerful draft might say a product is nut-free or a wiring job is safe. If you did not tell it so, it should not say so. Add rules like this to the facts sheet and check every reply."
+            },
+            {
+              "type": "check",
+              "id": "m07-l01-c1",
+              "kind": "single",
+              "prompt": "Why create a facts-and-voice sheet for your business?",
+              "options": [
+                "It gives the assistant your real details and tone so it does not invent policies or prices",
+                "It lets the assistant decide your policies for you",
+                "It makes replies longer",
+                "It is required before any AI tool will work"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "The sheet supplies facts the assistant cannot know. This keeps replies accurate and in your voice, but you still review them."
+            }
+          ]
+        },
+        {
+          "id": "m07-l02",
+          "title": "Product descriptions and social posts",
+          "minutes": 10,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Writing about your own products is oddly hard. You know them so well that you forget what a new customer needs to hear. An assistant gives you a starting draft in seconds, and you edit it into something true."
+            },
+            {
+              "type": "h",
+              "text": "Start with facts, then ask for words"
+            },
+            {
+              "type": "p",
+              "text": "Give it the real details: what the product is, size, materials or ingredients, price, who it is for, and what makes it different. Ask for two or three options in different tones. Then delete anything that is not true."
+            },
+            {
+              "type": "code",
+              "label": "Product description prompt",
+              "text": "Write two short product descriptions (under 60 words each) for a hand-poured soy candle, 200 g, burns about 40 hours, scents: lavender and rooibos, R145, made in Pietermaritzburg. For gift buyers. Use only the facts I gave you. Do not claim health benefits or use the word 'eco-friendly'."
+            },
+            {
+              "type": "table",
+              "caption": "Four small businesses, four uses",
+              "headers": [
+                "Business",
+                "What to ask for",
+                "What you check"
+              ],
+              "rows": [
+                [
+                  "Home bakery",
+                  "Menu descriptions and a Saturday WhatsApp broadcast",
+                  "Ingredients, allergens, prices, collection times"
+                ],
+                [
+                  "Electrician",
+                  "A short 'what we do' page and a post about winter safety checks",
+                  "Any safety or compliance wording, which must come from you"
+                ],
+                [
+                  "Freelance photographer",
+                  "Package descriptions and captions for a portfolio post",
+                  "What each package really includes, and permission to post client photos"
+                ],
+                [
+                  "Tutoring side-hustle",
+                  "A flyer and a welcome message to parents",
+                  "Subjects, grades, rates, and no claims about guaranteed results"
+                ]
+              ]
+            },
+            {
+              "type": "callout",
+              "tone": "warning",
+              "title": "The claim check",
+              "text": "AI loves persuasive phrases: best in town, guaranteed results, 100 percent natural, award-winning. If you cannot prove it, cut it. Untrue claims can damage trust and, in some cases, break advertising rules."
+            },
+            {
+              "type": "h",
+              "text": "Social posts without sounding robotic"
+            },
+            {
+              "type": "p",
+              "text": "Ask for post ideas, not finished posts. Pick one, then rewrite it in how you actually speak. Add the specific detail only you have: the customer who always orders the same loaf, the photo from this morning's job. That detail is what people respond to."
+            },
+            {
+              "type": "callout",
+              "tone": "tip",
+              "title": "A batch day",
+              "text": "Spend 30 minutes once a week asking for a week of post ideas based on your facts sheet. Choose three, edit them, and schedule them. This is easier than inventing something every morning."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "A tutor's post",
+              "text": "Naledi tutors maths for Grade 8 and 9. Her first draft promised 'guaranteed distinctions'. She removed it. Her final post said what she does: weekly small-group sessions, past-paper practice, and a short progress note to parents each month."
+            },
+            {
+              "type": "check",
+              "id": "m07-l02-c1",
+              "kind": "single",
+              "prompt": "A draft product description says your candle is 'eco-friendly and award-winning'. You have never made either claim. What should you do?",
+              "options": [
+                "Remove the claims, because you cannot support them",
+                "Keep them, since they sound appealing",
+                "Keep them but make the text smaller",
+                "Ask the assistant to say they are proven"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "Marketing claims must be true. Remove anything you cannot back up, however good it sounds."
+            }
+          ]
+        },
+        {
+          "id": "m07-l03",
+          "title": "Quotes, simple procedures and what to keep human",
+          "minutes": 12,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Quotes, proposals and written procedures share a pattern: the structure is repetitive and the content is yours. That makes them a good fit for AI. The assistant provides a clean layout and clear wording. You provide the numbers, terms and promises."
+            },
+            {
+              "type": "h",
+              "text": "Quotes and proposals"
+            },
+            {
+              "type": "code",
+              "label": "Quote structure prompt",
+              "text": "I am a freelance photographer. Draft a one-page quote for a 4-hour family shoot. Use these details only: R2 800 for the session, 30 edited images delivered online within 14 days, R400 extra for a printed album, 50% deposit to secure the date, balance due on the day. Include a short friendly introduction, a clear list of what is included and not included, and a line asking the client to reply to confirm. Do not add terms I have not listed."
+            },
+            {
+              "type": "p",
+              "text": "Check every figure and date on the result. Then ask yourself what is missing: travel, cancellation, what happens if it rains. Add those from your own policy. For larger contracts, have a qualified person review the final wording."
+            },
+            {
+              "type": "h",
+              "text": "Simple procedures (SOPs)"
+            },
+            {
+              "type": "p",
+              "text": "A standard operating procedure is a written way of doing a routine job, so that someone else could do it the same way. Small businesses often keep these in their heads. An assistant can help you get them onto a page."
+            },
+            {
+              "type": "steps",
+              "title": "A fast way to write one",
+              "items": [
+                {
+                  "title": "Talk it out",
+                  "text": "Describe the job aloud or in rough bullets, exactly as you do it, including the awkward bits."
+                },
+                {
+                  "title": "Ask for numbered steps",
+                  "text": "Have the assistant turn it into clear steps and a short 'before you start' list."
+                },
+                {
+                  "title": "Mark gaps",
+                  "text": "Tell it to flag anything unclear rather than fill it in."
+                },
+                {
+                  "title": "Test it",
+                  "text": "Ask someone who has never done the job to follow it. Fix every place they stumble."
+                }
+              ]
+            },
+            {
+              "type": "h",
+              "text": "What to keep human"
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                "Prices, discounts, deadlines and any other promise made in your name.",
+                "Safety, legal, health and compliance statements.",
+                "How to settle a serious complaint or refund.",
+                "Anything involving a customer's private details, unless you have removed them.",
+                "Relationships: the personal call, the thank-you, the apology."
+              ]
+            },
+            {
+              "type": "exercise",
+              "title": "Your business starter kit",
+              "intro": "Use your own business, a side-hustle, or one you would like to start.",
+              "tasks": [
+                "Write a facts-and-voice sheet of about 100 words: what you sell, prices, hours, policies, and three rules about what must never be claimed.",
+                "Pick one customer message you often receive. Write a prompt that uses your sheet and asks for a reply, then check the draft against your facts.",
+                "Choose one routine job and write it as a procedure draft, using the four steps above.",
+                "No AI tool? Write the sheet and the procedure by hand, and write the reply yourself in two versions, one short and one warmer."
+              ],
+              "reflection": "Which line in your facts sheet prevented the most potential mistakes?"
+            },
+            {
+              "type": "check",
+              "id": "m07-l03-c1",
+              "kind": "single",
+              "prompt": "Which task should stay with a person in a small business?",
+              "options": [
+                "Deciding how to settle a serious customer complaint",
+                "Turning bullet points into a tidy checklist",
+                "Suggesting three subject lines for a newsletter",
+                "Reformatting a list of products as a table"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "Settling a complaint involves judgement, empathy and promises made in your name. Formatting and suggestion tasks are suitable for AI support."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m08",
+      "title": "AI image generation and creative content",
+      "summary": "How image tools respond to prompts, how to iterate, and how to stay honest about copyright, likeness and the limits of enhancing real photos.",
+      "objectives": [
+        "Describe an image to an AI tool using subject, style, light and composition",
+        "Iterate on an image by changing one thing at a time",
+        "Decide when AI images are suitable for ideas and when they are not suitable as final work",
+        "Explain the honesty, copyright, likeness and photo-restoration risks of AI-made and AI-edited images"
+      ],
+      "lessons": [
+        {
+          "id": "m08-l01",
+          "title": "Describing the picture you want",
+          "minutes": 11,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "An image generator takes a written description and produces a picture that matches the patterns it learned from a very large number of captioned images. Like a chat assistant, it cannot read your mind. If you type 'a cake', you will get the most average cake imaginable. If you describe the cake, the room and the mood, you get something far closer to what you had in your head."
+            },
+            {
+              "type": "p",
+              "text": "The good news is that you do not need artistic vocabulary. You need to answer four plain questions."
+            },
+            {
+              "type": "table",
+              "caption": "Four things to describe",
+              "headers": [
+                "Part",
+                "Question",
+                "Example words"
+              ],
+              "rows": [
+                [
+                  "Subject",
+                  "What is in the picture, and what is it doing?",
+                  "A baker dusting flour over a tray of rusks"
+                ],
+                [
+                  "Style",
+                  "What kind of image is it?",
+                  "Documentary photograph, flat vector illustration, watercolour, simple icon"
+                ],
+                [
+                  "Light and colour",
+                  "What is the lighting and mood?",
+                  "Soft morning window light, warm tones, a little steam"
+                ],
+                [
+                  "Composition",
+                  "Where is the camera and what is the framing?",
+                  "Close-up from the side, shallow focus, empty space at the top for a headline"
+                ]
+              ]
+            },
+            {
+              "type": "code",
+              "label": "Weak and stronger image prompts",
+              "text": "Weak:\nA bakery.\n\nStronger:\nA small home bakery kitchen in the early morning. A baker in an apron dusts flour over a tray of rusks on a wooden table. Soft window light, warm colours, documentary photograph style. Shot from the side at table height, shallow focus, space at the top of the frame for text."
+            },
+            {
+              "type": "p",
+              "text": "Notice that the stronger prompt says nothing technical. It says what you would tell a photographer arriving to shoot the scene."
+            },
+            {
+              "type": "h",
+              "text": "Iterate one change at a time"
+            },
+            {
+              "type": "p",
+              "text": "The first image is rarely the one you keep. Look at what is wrong and change one thing: the light, the style, or the framing. If you change everything at once, you cannot tell what helped. Most tools let you generate several versions of the same prompt, which is a quick way to see the range."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "A flyer for a Saturday market",
+              "text": "Zodwa sells handmade soap and needs a background for a flyer. Her first prompt produced a glossy, crowded scene with strange blurry lettering on the bottles. She asked for a plain flat illustration with a pale background and no text, then added the words herself in a free design app. The AI gave her the picture. She supplied the letters, because image tools often struggle to produce readable text."
+            },
+            {
+              "type": "callout",
+              "tone": "tip",
+              "title": "Say what to leave out",
+              "text": "If your tool allows it, state what you do not want: no text, no people, no logos, no clutter. Fewer elements usually means fewer odd details."
+            },
+            {
+              "type": "h",
+              "text": "Ideas versus final work"
+            },
+            {
+              "type": "p",
+              "text": "AI images are excellent for exploring: mood boards, rough concepts, colour ideas, and options to show a client before committing to a real photo shoot. They are riskier as finished work when the image has to show your actual product, your actual premises or a real person. A picture of a cake the tool invented is not a picture of your cake, and customers who receive something different have a fair complaint."
+            },
+            {
+              "type": "check",
+              "id": "m08-l01-c1",
+              "kind": "single",
+              "prompt": "A first image comes out with the wrong lighting but the right subject and framing. What is the best next step?",
+              "options": [
+                "Change only the lighting description and generate again",
+                "Rewrite the whole prompt from scratch with new subject and style",
+                "Add several unrelated changes in the same attempt",
+                "Give up, because the tool cannot adjust light"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "Changing one element at a time shows you what influenced the result. Rewriting everything makes it hard to know what worked."
+            }
+          ]
+        },
+        {
+          "id": "m08-l02",
+          "title": "Honesty, copyright and likeness",
+          "minutes": 11,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Making an image takes seconds, which makes it easy to skip the questions that matter. Three of them come up again and again: is it clear the picture is AI-made, who owns it, and whose face or style is in it?"
+            },
+            {
+              "type": "h",
+              "text": "Honesty about what the image is"
+            },
+            {
+              "type": "p",
+              "text": "An AI image is an illustration of something imagined, not a record of something that happened. Problems start when people treat it as a record. A made-up photo of a 'happy customer', a fake testimonial portrait, or a picture of a building project that was never built can mislead the people who see it."
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                "Do not present an AI picture as a real photograph of a real event, person or product.",
+                "Do not use invented people as if they were your actual clients, staff or reviewers.",
+                "Where it matters, label the image. A short note such as 'AI-generated illustration' is enough.",
+                "Follow the rules of your school, employer or platform. Many ask for disclosure, and some competitions and publications ban AI images outright."
+              ]
+            },
+            {
+              "type": "h",
+              "text": "Copyright"
+            },
+            {
+              "type": "p",
+              "text": "Copyright rules for AI-generated material are still being argued in courts and parliaments, and they differ from country to country. Do not rely on a confident claim from a chat or a website about who owns an image. For commercial work, read the terms of the tool you use, which say what you may do with the output. If you need certainty, ask someone qualified."
+            },
+            {
+              "type": "p",
+              "text": "A safer habit is to avoid copying. Do not ask for an image 'in the style of' a named living artist so that you can sell something that looks like their work, and do not feed in someone else's artwork or photographs without permission."
+            },
+            {
+              "type": "h",
+              "text": "Likeness"
+            },
+            {
+              "type": "p",
+              "text": "A real person's face, voice and name belong to them in a way that matters. Making pictures of real people doing things they never did can hurt them, even when you mean it as a joke."
+            },
+            {
+              "type": "callout",
+              "tone": "warning",
+              "title": "People are not raw material",
+              "text": "Do not generate or alter images of a real person without their permission, and never create anything that could embarrass, impersonate or sexualise someone. Do not upload photographs of children or of other people's faces into a tool unless you are allowed to and you know how the tool handles them. Module 9 returns to deepfakes."
+            },
+            {
+              "type": "table",
+              "caption": "Quick decisions",
+              "headers": [
+                "Situation",
+                "Reasonable approach"
+              ],
+              "rows": [
+                [
+                  "Illustrating a blog post with a general concept",
+                  "Fine. Consider a short label that it is AI-made."
+                ],
+                [
+                  "A product photo for your shop",
+                  "Use a real photo of the real product."
+                ],
+                [
+                  "A portrait of a satisfied client",
+                  "Use a real photo with their consent, or no portrait."
+                ],
+                [
+                  "A meme using a classmate's face",
+                  "Do not. Ask yourself how they would feel, and whether they agreed."
+                ]
+              ]
+            },
+            {
+              "type": "check",
+              "id": "m08-l02-c1",
+              "kind": "single",
+              "prompt": "A small shop wants a picture of a happy customer for its website. What is the honest approach?",
+              "options": [
+                "Use a real photograph taken with the customer's consent, or use no portrait",
+                "Generate a face with AI and present it as a real customer",
+                "Take a stranger's photo from social media without asking",
+                "Use an AI face and quote an invented testimonial beside it"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "An AI-made face is not a real customer, and presenting it as one misleads viewers. A real photo with consent keeps the claim true."
+            }
+          ]
+        },
+        {
+          "id": "m08-l03",
+          "title": "Restoring and enhancing real photos without inventing the past",
+          "minutes": 11,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Many people first meet AI image tools when they want to fix an old photograph: sharpen a blurry wedding picture, colour a black-and-white portrait of a grandparent, or clear up a scanned school photo. The results can be striking. They can also be wrong in a way that is hard to see."
+            },
+            {
+              "type": "p",
+              "text": "When a photo is blurry or damaged, the detail is simply not in the file. The tool fills the gap by predicting what such a face, fabric or building would usually look like. That prediction is plausible. It is not a record of what was actually there."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "Grandfather's new face",
+              "text": "Sizwe uploads a faded 1970s portrait of his grandfather and asks an enhancer to sharpen it. The new version looks crisp. His aunt looks at it and says it is not him. The tool had given him a slightly different nose, smoother skin, and teeth that were never in the original. It looked better and showed someone who did not exist."
+            },
+            {
+              "type": "h",
+              "text": "What can be invented"
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                "Facial features, expressions, teeth, hair, and the exact shape of eyes and mouths.",
+                "Writing, signs, badges and numbers, which may become neat but meaningless.",
+                "Colours in a black-and-white photo, such as clothing, skin tone and a car's paint.",
+                "Objects and background details that were too blurry to see."
+              ]
+            },
+            {
+              "type": "steps",
+              "title": "A faithful restoration routine",
+              "items": [
+                {
+                  "title": "Keep the original",
+                  "text": "Always save an untouched copy of the scan or file before you try anything."
+                },
+                {
+                  "title": "Choose the lightest fix",
+                  "text": "Cleaning scratches, adjusting brightness and gentle sharpening change less than full AI enhancement."
+                },
+                {
+                  "title": "Compare side by side",
+                  "text": "Look at features that matter: faces, hands, text, medals, dates. Ask people who knew the subject if you can."
+                },
+                {
+                  "title": "Label the result",
+                  "text": "Note that the image has been enhanced or coloured by AI, especially if it will be shared or archived."
+                },
+                {
+                  "title": "Never use it as evidence",
+                  "text": "Do not use an enhanced image to identify a person, prove an event or settle a dispute."
+                }
+              ]
+            },
+            {
+              "type": "callout",
+              "tone": "key",
+              "title": "Enhanced is not the same as recovered",
+              "text": "An AI-enhanced photo is an interpretation. It may be lovely and useful for a family album. It is not a more accurate version of the past, and it should not be treated as one."
+            },
+            {
+              "type": "exercise",
+              "title": "Compare original and enhanced",
+              "intro": "Use a photo you own and have the right to edit. Avoid photographs of other people's faces unless they agree.",
+              "tasks": [
+                "Choose one old or low-quality image of an object, a place or a pet, or a photo of yourself.",
+                "Save a copy of the original. If you have an AI enhancer or generator, run the copy through it once.",
+                "Zoom in on the original and the result side by side. List every difference you can find: shape, colour, text, texture.",
+                "Mark each difference as 'was visible in the original' or 'invented by the tool'.",
+                "No AI tool? Do the same exercise with a photocopy and a pen: sketch what you believe is hidden in a smudged area, then list what you are guessing."
+              ],
+              "reflection": "Which of the invented details would have been easiest to accept without noticing, and what would you tell someone who wanted to use the enhanced image as proof?"
+            },
+            {
+              "type": "check",
+              "id": "m08-l03-c1",
+              "kind": "single",
+              "prompt": "Why can an AI-enhanced version of a blurry old portrait be misleading?",
+              "options": [
+                "The tool fills missing detail with plausible guesses, which may differ from the real person",
+                "It always makes faces older than they were",
+                "It recovers the exact original pixels that the camera lost",
+                "It cannot change the image at all"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "When detail is missing from the file, enhancement tools predict what is probably there. The result can look convincing and still show features that were never in the photograph."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m09",
+      "title": "Privacy, limitations and responsible AI use",
+      "summary": "What never to paste into an AI tool, how bias, hallucination and deepfakes can hurt you, and how to write a simple personal AI-use policy.",
+      "objectives": [
+        "Identify the kinds of information that should not be pasted into an AI tool",
+        "Explain how hallucination, bias and deepfakes can cause harm",
+        "Describe when and how to disclose AI use at work or school",
+        "Write a short personal AI-use policy you can follow"
+      ],
+      "lessons": [
+        {
+          "id": "m09-l01",
+          "title": "What not to paste in",
+          "minutes": 11,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "When you type or paste something into an online AI tool, you are sending it to a company's servers. What happens next depends on the tool, your account type and your settings. Some services may store conversations, let staff review them, or use them to improve their systems unless you switch that off. Others, usually business plans, make firmer promises. You cannot see any of this from the chat window."
+            },
+            {
+              "type": "p",
+              "text": "So the safest rule is simple. Do not paste anything you would not be comfortable seeing leave your control."
+            },
+            {
+              "type": "table",
+              "caption": "Sort your information",
+              "headers": [
+                "Type",
+                "Examples",
+                "Habit"
+              ],
+              "rows": [
+                [
+                  "Personal information",
+                  "ID numbers, home addresses, phone numbers, medical details, photos of other people",
+                  "Remove, or replace with placeholders"
+                ],
+                [
+                  "Client and customer data",
+                  "Names with order details, invoices, complaints, student records",
+                  "Anonymise, or do not paste"
+                ],
+                [
+                  "Financial details",
+                  "Bank account and card numbers, passwords, tax records, payslips",
+                  "Never paste"
+                ],
+                [
+                  "Confidential business material",
+                  "Unreleased plans, contracts, staff reviews, supplier prices",
+                  "Check your workplace rules first"
+                ],
+                [
+                  "Public or invented information",
+                  "A published article, a made-up example, your own general question",
+                  "Generally fine"
+                ]
+              ]
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "Swap the details, keep the task",
+              "text": "A bookkeeper wants help wording a payment reminder. Instead of pasting the client's invoice, she writes: 'Client A, invoice for R12 400, 30 days overdue, regular customer, polite but firm.' She gets a good draft, then adds the real name and amount herself. The assistant never saw either."
+            },
+            {
+              "type": "h",
+              "text": "Anonymise before you paste"
+            },
+            {
+              "type": "steps",
+              "title": "A three-step habit",
+              "items": [
+                {
+                  "title": "Strip the identifiers",
+                  "text": "Remove names, ID and account numbers, addresses, phone numbers, email addresses and anything that points to one person."
+                },
+                {
+                  "title": "Use placeholders",
+                  "text": "Write Client A, Staff member B, [amount] and [date]. Put the real details back after."
+                },
+                {
+                  "title": "Keep only what the task needs",
+                  "text": "Paste the paragraph that matters, not the whole document or email chain."
+                }
+              ]
+            },
+            {
+              "type": "h",
+              "text": "Laws and workplace rules"
+            },
+            {
+              "type": "p",
+              "text": "Many countries regulate how personal information may be handled. In South Africa, that includes the Protection of Personal Information Act, usually called POPIA. You do not need to know the detail to use a good rule: if the information is about identifiable people who did not agree to it being shared with a tool like this, think twice."
+            },
+            {
+              "type": "p",
+              "text": "Your employer or school may also have its own policy, including approved tools. Find it and follow it. If there is no policy, ask."
+            },
+            {
+              "type": "callout",
+              "tone": "warning",
+              "title": "Free is not private",
+              "text": "Never assume a free tool treats your data the way a paid business tool might. Read the privacy settings and what the provider says about storing and reusing conversations. If you cannot find a clear answer, treat the chat as semi-public."
+            },
+            {
+              "type": "exercise",
+              "title": "Clean up a risky prompt",
+              "intro": "Paper or screen. No AI tool is needed.",
+              "tasks": [
+                "Take this prompt: 'Write a letter to Mrs Dlamini, ID 7203150123083, at 14 Protea Road, telling her that her account 4012 3456 is R3 200 overdue.' Rewrite it so no private detail remains.",
+                "List what you would now add back by hand, after you have the draft.",
+                "Look at your last three prompts to any AI tool. Mark anything you would remove if you did them again.",
+                "Find the privacy or data-use settings in one tool you use, and note what they say about your conversations."
+              ],
+              "reflection": "Which kind of information did you find easiest to forget about when you were in a hurry?"
+            },
+            {
+              "type": "check",
+              "id": "m09-l01-c1",
+              "kind": "single",
+              "prompt": "What is the safest way to get help wording a reminder to an overdue client?",
+              "options": [
+                "Describe the situation with placeholders and add real names and amounts yourself",
+                "Paste the client's full invoice with their account details",
+                "Share a photo of the signed contract",
+                "Include the client's ID number so the draft is accurate"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "Placeholders give the assistant what it needs for wording while keeping personal and financial details out of the tool."
+            }
+          ]
+        },
+        {
+          "id": "m09-l02",
+          "title": "Hallucination, bias and deepfakes",
+          "minutes": 11,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Earlier in the course you met hallucination, where a model produces fluent text that is false. Here is how that and two other limitations turn into real-world harm."
+            },
+            {
+              "type": "h",
+              "text": "Hallucination in the real world"
+            },
+            {
+              "type": "p",
+              "text": "The harm comes from trust. A wrong figure goes into a quote. An invented rule goes into a staff notice. A made-up reference goes into an assignment. In each case, someone relied on text that looked authoritative. In some fields, such as law, medicine and finance, relying on a wrong answer can have serious consequences, which is why a qualified person must check anything that matters."
+            },
+            {
+              "type": "h",
+              "text": "Bias"
+            },
+            {
+              "type": "p",
+              "text": "Models learn from human writing, and human writing contains stereotypes, gaps and unequal attention. The result is that AI output can reflect those patterns. It may assume a nurse is a woman and an engineer is a man, describe some groups more negatively than others, or know far more about some countries and languages than about others. It may handle English better than isiZulu or Sesotho, and writing about African contexts may be thinner or more generic."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "A job advert gone wrong",
+              "text": "A small agency asks an assistant to write a job advert and a shortlist guide. The draft describes the ideal candidate as 'young, energetic and a native English speaker'. That is not a requirement for the role, and it may be unfair or unlawful. A person reading it critically caught it. Anyone just pressing send would not have."
+            },
+            {
+              "type": "p",
+              "text": "You cannot remove bias from a tool. You can notice it, ask for neutral wording, and keep humans responsible for decisions about people. Do not let AI output alone decide who gets hired, graded, promoted or refused."
+            },
+            {
+              "type": "h",
+              "text": "Deepfakes and fake content"
+            },
+            {
+              "type": "p",
+              "text": "A deepfake is an image, video or audio clip made or altered by AI to show someone saying or doing something they never did. Voices can be cloned from short recordings. Fake photos can look real at a glance. These are used for scams, harassment and false news."
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                "A voice note that sounds like your boss asking for an urgent payment.",
+                "A video of a public figure endorsing a get-rich-quick scheme.",
+                "A convincing screenshot of a conversation that never happened."
+              ]
+            },
+            {
+              "type": "callout",
+              "tone": "tip",
+              "title": "Slow down and verify another way",
+              "text": "If a message asks for money, passwords or secrecy, contact the person on a number you already have. Look for the original source of a clip. Be wary of content that is designed to make you angry or afraid, and do not forward it until you have checked."
+            },
+            {
+              "type": "callout",
+              "tone": "warning",
+              "title": "Do not make them",
+              "text": "Never create a deepfake of a real person without their clear permission. Doing so can harm them and may be against the law or against the rules of a school, employer or platform."
+            },
+            {
+              "type": "check",
+              "id": "m09-l02-c1",
+              "kind": "single",
+              "prompt": "You receive a voice note that sounds like your manager, asking you to pay a supplier urgently into a new account. What is the best response?",
+              "options": [
+                "Confirm by calling your manager on a number you already know before doing anything",
+                "Pay immediately, since voice notes cannot be faked",
+                "Reply to the same voice note asking if it is really them",
+                "Forward it to colleagues to see what they think"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "Voices can be cloned. Verifying through a separate, trusted channel protects you, while replying in the same thread leaves you talking to the sender."
+            }
+          ]
+        },
+        {
+          "id": "m09-l03",
+          "title": "Disclosure and your personal AI-use policy",
+          "minutes": 10,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Using AI is rarely the problem. Hiding it where people expect you to be open about it is. Disclosure is simply telling the people who rely on your work how it was made, so they can judge it properly."
+            },
+            {
+              "type": "h",
+              "text": "When to say you used it"
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                "At school or university: follow your institution's rules. Some allow AI for brainstorming but not for writing, some require a note, and some ban it for certain tasks. Presenting AI-written work as your own where it is not allowed is cheating, however good the text.",
+                "At work: check the policy, and tell your manager or client if AI shaped a deliverable they are paying for, especially if their contract or rules say something about it.",
+                "In public content: a short note is good practice when AI generated an image, voice or large parts of a text.",
+                "Whenever someone asks you directly: tell the truth."
+              ]
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "Two ways to hand in the same report",
+              "text": "Thabo drafts a report, uses an assistant to tidy his grammar, and checks every fact. His manager has said light editing help is fine, so he sends it as is. Lerato asks the assistant to write the whole report from scratch, does not read it closely, and sends it with an invented statistic inside. Both used AI. Only one was responsible for the result."
+            },
+            {
+              "type": "callout",
+              "tone": "key",
+              "title": "You are accountable",
+              "text": "Whatever tool helped, the name on the work is yours. If it is wrong, you answer for it, not the software."
+            },
+            {
+              "type": "h",
+              "text": "A personal AI-use policy"
+            },
+            {
+              "type": "p",
+              "text": "A policy sounds formal, but yours can fit on a card. Writing it down in advance means you decide calmly, not under deadline pressure."
+            },
+            {
+              "type": "code",
+              "label": "Template: my AI-use policy",
+              "text": "1. I will not paste: [personal, client, financial or confidential information].\n2. I will always check: [figures, names, dates, quotes, anything that could cost money or hurt someone].\n3. I will not use AI for: [tasks that must be my own work, or that need a qualified expert].\n4. I will disclose AI use when: [school or work rules ask, or the reader would reasonably expect to know].\n5. If I am unsure, I will: [ask my manager, teacher or client before using it]."
+            },
+            {
+              "type": "exercise",
+              "title": "Write your policy",
+              "intro": "Fill in the template for your own situation. Keep it to one page.",
+              "tasks": [
+                "Complete all five lines using real examples from your own work or study.",
+                "Find your school's or employer's rule on AI, or write down who you could ask.",
+                "Add one line about image or voice content if you create it.",
+                "Put the finished policy somewhere you will see it, such as the first page of your notes app or a card on your desk.",
+                "Offline option: write it by hand and stick it above your workspace."
+              ],
+              "reflection": "Which line in your policy will be hardest to keep when you are tired and under deadline, and what small habit would support it?"
+            },
+            {
+              "type": "check",
+              "id": "m09-l03-c1",
+              "kind": "single",
+              "prompt": "Which description best fits a responsible approach to using AI in assessed work?",
+              "options": [
+                "Follow the stated rules, check every claim and be open about any AI help the rules require you to mention",
+                "Use it freely and hope nobody asks about it",
+                "Avoid reading the rules so you can say you did not know",
+                "Present the AI output as your own because you typed the request"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "Responsible use means following the rules, checking what you submit, and disclosing as required. Responsibility for the final work stays with you."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m10",
+      "title": "Building practical AI workflows",
+      "summary": "Turn a repeated job into a reliable process: split it into steps, decide who does what, reuse templates, review the output and measure the time you save.",
+      "objectives": [
+        "Break a job into clear steps and decide which are done by AI and which by a person",
+        "Build a reusable prompt template with placeholders",
+        "Apply a review checklist before using AI output",
+        "Measure time saved honestly and design a workflow for your own work"
+      ],
+      "lessons": [
+        {
+          "id": "m10-l01",
+          "title": "Break the job into steps and split the work",
+          "minutes": 11,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Up to now you have used AI one task at a time. The real gains come when you take a job you repeat, such as a weekly client update or monthly quotes, and turn it into a small, dependable process. A workflow is just that: a sequence of steps, with a clear owner for each."
+            },
+            {
+              "type": "p",
+              "text": "The key move is to stop asking 'Can AI do this job?' and start asking 'Which parts of this job can AI help with, and which parts must stay with me?' Almost every job contains both."
+            },
+            {
+              "type": "steps",
+              "title": "How to build a workflow",
+              "items": [
+                {
+                  "title": "Pick one repeated job",
+                  "text": "Choose something you do at least weekly, that is mostly language or organising, and that does not carry high risk."
+                },
+                {
+                  "title": "Write down the steps as you do them today",
+                  "text": "Be honest and specific. Include the boring bits, like finding the file or checking the price list."
+                },
+                {
+                  "title": "Mark each step: AI, human or both",
+                  "text": "Use the questions below to decide."
+                },
+                {
+                  "title": "Define the input and the output of each step",
+                  "text": "What goes in, and what should come out, in what format?"
+                },
+                {
+                  "title": "Add a review point",
+                  "text": "Decide where a person checks before anything reaches a customer or a decision."
+                },
+                {
+                  "title": "Test it on real work and adjust",
+                  "text": "Run it two or three times and fix what breaks."
+                }
+              ]
+            },
+            {
+              "type": "h",
+              "text": "Who does which step"
+            },
+            {
+              "type": "table",
+              "caption": "A simple way to divide the work",
+              "headers": [
+                "Give to AI",
+                "Keep with a person"
+              ],
+              "rows": [
+                [
+                  "First drafts and rewording",
+                  "Decisions, prices and promises"
+                ],
+                [
+                  "Sorting, summarising and reformatting text you supplied",
+                  "Facts that must be right: figures, dates, names"
+                ],
+                [
+                  "Generating options to choose from",
+                  "Anything involving private or sensitive information"
+                ],
+                [
+                  "Spotting gaps by asking questions",
+                  "Sensitive conversations and relationships"
+                ],
+                [
+                  "Turning notes into a template",
+                  "Final approval and sending"
+                ]
+              ]
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "A tutor's weekly parent update",
+              "text": "Naledi tutors six learners. Her old routine: remember how each session went, write a message to each parent, find the homework page, send on WhatsApp. It took about 90 minutes on Sunday. Her workflow: she types three rough bullets per learner (the human step, because only she knows how the session went). The assistant turns each set into a warm, short message in a fixed format (the AI step). She reads each one, corrects anything wrong and adds a personal line (the review step), then sends them herself (the human step). Her step list is now one page, and she knows exactly where a mistake could creep in."
+            },
+            {
+              "type": "callout",
+              "tone": "tip",
+              "title": "Start small",
+              "text": "Automate nothing you do not understand. Run the workflow by hand with a chat assistant for a few weeks before thinking about tools that connect apps and send things for you. Anything that sends messages without a person looking at them needs far more care."
+            },
+            {
+              "type": "check",
+              "id": "m10-l01-c1",
+              "kind": "single",
+              "prompt": "In a good AI workflow, which step should normally stay with a person?",
+              "options": [
+                "Final approval and sending of anything that reaches a customer",
+                "Rewording a rough note into a cleaner sentence",
+                "Sorting a pasted list into categories",
+                "Producing three alternative subject lines"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "Drafting and sorting suit AI help. A person should approve and send, because accountability for what reaches other people stays with them."
+            }
+          ]
+        },
+        {
+          "id": "m10-l02",
+          "title": "Templates, a review checklist and time saved",
+          "minutes": 11,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "A workflow that you re-invent every week is not much of a workflow. Three habits make it repeatable: a reusable prompt template, a review checklist and a simple measure of time saved."
+            },
+            {
+              "type": "h",
+              "text": "Reusable prompt templates"
+            },
+            {
+              "type": "p",
+              "text": "Take a prompt that worked and swap the details that change for placeholders in square brackets. You are left with a fill-in-the-blanks form. Next week you only supply the new facts."
+            },
+            {
+              "type": "code",
+              "label": "Template: weekly parent update",
+              "text": "I am a maths tutor. Write a WhatsApp message to the parent of [learner name], Grade [grade]. Use only the notes below.\nNotes: [3 bullet points about this week]\nHomework: [what and by when]\nTone: warm, honest and brief. Under 70 words. No promises about marks. If anything is missing, write [missing] instead of guessing."
+            },
+            {
+              "type": "p",
+              "text": "Keep templates in one place, such as a notes app or a document, with a title and a line about when to use each. Update the template whenever you find a fix, and the next run starts from the better version."
+            },
+            {
+              "type": "h",
+              "text": "A review checklist"
+            },
+            {
+              "type": "p",
+              "text": "The review step is where most of the value and most of the risk sits. A short checklist stops you skimming. Print it, or keep it beside the template."
+            },
+            {
+              "type": "code",
+              "label": "Review checklist",
+              "text": "[ ] Facts: names, dates, amounts and promises match my notes\n[ ] Nothing invented: no extra offers, claims, sources or statistics\n[ ] Private details: nothing sensitive went in, nothing sensitive came out\n[ ] Tone: sounds like me and suits the reader\n[ ] Fairness: no assumptions about age, gender, language or background\n[ ] Purpose: it does what I need and nothing more\n[ ] Rules: allowed under my school or workplace policy"
+            },
+            {
+              "type": "h",
+              "text": "Measuring time saved"
+            },
+            {
+              "type": "p",
+              "text": "Do not guess. Time the old way for one or two rounds, then time the new way, including the review. Count everything: preparing notes, running the prompt, checking, fixing and sending."
+            },
+            {
+              "type": "table",
+              "caption": "A simple time record",
+              "headers": [
+                "Item",
+                "Old way",
+                "New workflow"
+              ],
+              "rows": [
+                [
+                  "Minutes per run",
+                  "90",
+                  "35"
+                ],
+                [
+                  "Runs per month",
+                  "4",
+                  "4"
+                ],
+                [
+                  "Minutes per month",
+                  "360",
+                  "140"
+                ],
+                [
+                  "Saved per month",
+                  "",
+                  "220 minutes, about 3.7 hours"
+                ]
+              ]
+            },
+            {
+              "type": "callout",
+              "tone": "warning",
+              "title": "Count the hidden costs",
+              "text": "If the AI draft needs so much correction that you spend as long fixing it as writing it, the workflow is not saving time. That is a useful result too. Change the template, change the step, or stop using AI for that job."
+            },
+            {
+              "type": "callout",
+              "tone": "key",
+              "title": "Quality counts too",
+              "text": "Time saved is only one measure. Note any change in mistakes, customer replies or stress. A workflow that is fast and gets more errors is worse than the old one."
+            },
+            {
+              "type": "check",
+              "id": "m10-l02-c1",
+              "kind": "single",
+              "prompt": "Why should you time the review and fixing steps when measuring a new AI workflow?",
+              "options": [
+                "They are part of the real cost, so leaving them out overstates the time saved",
+                "They are optional and rarely affect the total",
+                "Only the AI drafting time matters in the comparison",
+                "They always take zero minutes once you have a template"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "The workflow includes checking and correcting. If you leave those out, the figures flatter the process and hide whether it is actually helping."
+            }
+          ]
+        },
+        {
+          "id": "m10-l03",
+          "title": "Capstone: design a workflow for your own work",
+          "minutes": 14,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "This lesson pulls the whole course into one piece of practical work. You will design a complete workflow for something you really do, in your job, studies, household admin or small business. No new theory is needed. You already have the parts: knowing what AI is good and bad at, writing a clear prompt, checking facts, protecting private information and being honest about how you used it."
+            },
+            {
+              "type": "h",
+              "text": "Choose well"
+            },
+            {
+              "type": "p",
+              "text": "Good first candidates are repeated, language-heavy and low-risk: weekly updates, quote drafts, social post batches, meeting follow-ups, study summaries, customer replies. Poor first candidates involve sensitive personal data, legal or medical advice, or decisions about people."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "Three possible choices",
+              "text": "A freelance photographer: turn a booking enquiry into a quote and a confirmation message. A student: turn lecture notes into a revision summary and ten practice questions each week. A shop owner: turn the week's stock notes into a supplier order email and a customer announcement."
+            },
+            {
+              "type": "exercise",
+              "title": "Capstone: design your AI workflow",
+              "intro": "Work on paper or in a document. If you have a free AI chat tool, use it for steps 5 and 6. You can complete the whole design without one.",
+              "tasks": [
+                "Name the job and who it is for. Describe it in two sentences, including how often you do it and how long it takes now. Record the time honestly.",
+                "List the steps as you do them today, in order. Aim for five to eight steps.",
+                "Mark each step as AI, human or both. Write one sentence of reasoning for any step you give to AI. Remove or protect any private data before it reaches a tool.",
+                "Write the input and the expected output for each AI step. Then write one reusable prompt template with at least three placeholders. Use the ingredients from Module 4: context, task, audience, format, constraints.",
+                "Add a review point. Copy the review checklist and adapt it with at least two items specific to your job, such as a figure that must match your price list.",
+                "Test it with one real example (with private details removed). Time the new way from start to finish, including review. Note what the assistant got wrong and fix your template.",
+                "Write a short disclosure line, if one is needed, and one line of your personal AI-use policy that applies to this job.",
+                "Summarise in three lines: time before, time after, and the one mistake your checklist caught."
+              ],
+              "reflection": "If your workflow saved you no time, which step would you redesign first? And what would you tell a friend who wanted to copy your workflow, including the warnings?"
+            },
+            {
+              "type": "callout",
+              "tone": "tip",
+              "title": "Keep the version history",
+              "text": "Save your template and checklist with a date. After a month, look back at what you changed. The improvements show you what you learned about your own work, and the tool, in that time."
+            },
+            {
+              "type": "p",
+              "text": "You have now covered the whole path: what AI is, how it works, how to ask it well, where it helps, where it harms and how to put it into a routine you control. The next step is the one that matters most. Use it on real work, check it carefully and keep adjusting."
+            },
+            {
+              "type": "check",
+              "id": "m10-l03-c1",
+              "kind": "single",
+              "prompt": "Which job makes the best first candidate for an AI workflow?",
+              "options": [
+                "A weekly, language-heavy task with low risk, such as drafting routine customer updates",
+                "A one-off legal dispute that needs precise wording",
+                "Deciding which staff member to dismiss",
+                "Storing clients' bank details in a chat to save time"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "Repeated, language-based and low-risk jobs offer clear gains and limit the cost of mistakes. Legal, personnel and financial-data tasks need qualified people or strict protection."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "furtherLearning": [
+    "Practise one workflow from Module 10 on real work for a month, then refine your templates.",
+    "Read your school's, employer's or industry body's current guidance on AI use and keep your personal policy up to date.",
+    "Explore a free course on data basics or spreadsheets to check AI-generated numbers more confidently.",
+    "Try a digital safety course to sharpen your instincts about scams, deepfakes and account security."
+  ]
+}
