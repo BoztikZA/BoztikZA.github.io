@@ -203,7 +203,11 @@ export function initSpotlightInvitation(delivery, options = {}) {
   };
 
   const showNext = () => {
-    if (disposed || document.visibilityState !== "visible" || !document.body) return;
+    if (disposed) return;
+    if (document.visibilityState !== "visible" || !document.body) {
+      scheduleNext(5000);
+      return;
+    }
     if (sequence.index >= sequence.order.length) return;
     const promo = PROMOS.find(item => item.id === sequence.order[sequence.index]);
     sequence.index += 1;
