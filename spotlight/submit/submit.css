@@ -84,3 +84,18 @@
 .sp-paypal-trust span{display:flex;flex-direction:column;gap:3px}
 .sp-paypal-trust strong{color:#f5f8f5;font-size:.9rem;font-weight:800}
 .sp-paypal-trust small{color:#9aa89e;font-size:.68rem;line-height:1.4}
+
+
+/* Small, non-blocking donation reminder shown after form engagement. */
+.sp-donation-nudge{position:fixed;z-index:30;right:clamp(16px,3vw,34px);bottom:clamp(16px,3vw,30px);width:min(340px,calc(100vw - 32px));box-sizing:border-box;padding:19px 21px 18px;border:1px solid rgba(142,255,61,.3);border-radius:14px;background:linear-gradient(145deg,rgba(20,31,27,.98),rgba(10,16,18,.98));box-shadow:0 16px 48px rgba(0,0,0,.42),0 0 28px rgba(142,255,61,.07);opacity:0;transform:translateY(9px);transition:opacity .32s ease,transform .32s ease;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.sp-donation-nudge[hidden]{display:none}
+.sp-donation-nudge.is-visible{opacity:1;transform:translateY(0)}
+.sp-donation-nudge-close{position:absolute;top:8px;right:10px;width:30px;height:30px;border:0;border-radius:50%;background:transparent;color:#aab8ae;font:400 1.35rem/1 Inter,sans-serif;cursor:pointer}
+.sp-donation-nudge-close:hover{background:rgba(255,255,255,.08);color:#fff}
+.sp-donation-nudge-kicker{display:block;padding-right:24px;color:var(--sp-green);font-size:.59rem;font-weight:800;letter-spacing:.15em}
+.sp-donation-nudge p{margin:9px 22px 12px 0;color:#d5dfd8;font-size:.77rem;line-height:1.65}
+.sp-donation-nudge-link{display:inline-flex;align-items:center;gap:7px;color:var(--sp-green);font-size:.75rem;font-weight:800;text-decoration:none;text-underline-offset:4px}
+.sp-donation-nudge-link:hover{text-decoration:underline}
+.sp-donation-nudge-close:focus-visible,.sp-donation-nudge-link:focus-visible{outline:2px solid var(--sp-green);outline-offset:3px}
+@media(max-width:600px){.sp-donation-nudge{right:12px;bottom:12px;width:min(330px,calc(100vw - 24px));padding:16px 18px}}
+@media(prefers-reduced-motion:reduce){.sp-donation-nudge{transition:none;transform:none}}
