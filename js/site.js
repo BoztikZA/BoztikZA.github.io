@@ -44,8 +44,8 @@
         'contact.html'
       ] : [
         'index.html',
-        { label: 'Photo work', items: ['services.html', 'portfolio.html', 'deliver.html'] },
-        { label: 'Creative tools', items: ['creative-toolkit.html'] },
+        { label: 'Services', items: ['services.html', 'portfolio.html', 'deliver.html'] },
+        'creative-toolkit.html',
         'guides.html',
         'spotlight/',
         'stores.html',
