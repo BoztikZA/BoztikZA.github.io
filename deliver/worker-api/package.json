@@ -30,7 +30,8 @@
     "test:learning-content": "tsx scripts/learning-content-test.mts",
     "test:learning": "tsx scripts/learning-test.mts",
     "learning:build": "tsx scripts/learning-build.mts",
-    "learning:check": "tsx scripts/learning-build.mts --check"
+    "learning:check": "tsx scripts/learning-build.mts --check && tsx scripts/learning-pages.mts --check",
+    "learning:pages": "tsx scripts/learning-pages.mts"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260901.0",

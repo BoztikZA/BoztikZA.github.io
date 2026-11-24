@@ -6,6 +6,17 @@
   const toggle = document.querySelector('.nav-toggle');
   const links = document.querySelector('.nav-links');
 
+  // Boztik Learning Hub entry point (additive; the existing "Learn" guides link is unchanged).
+  if (nav && links && !links.querySelector('a[href*="learning/"]')) {
+    const learningLink = document.createElement('a');
+    learningLink.href = '/learning/';
+    learningLink.textContent = 'Courses';
+    if (/^\/learning\//.test(location.pathname)) learningLink.setAttribute('aria-current', 'page');
+    const guidesLink = links.querySelector('a[href$="guides.html"]');
+    if (guidesLink) guidesLink.insertAdjacentElement('afterend', learningLink);
+    else links.append(learningLink);
+  }
+
   if (nav && links && !links.querySelector('a[href*="spotlight/"]')) {
     const spotlightLink = document.createElement('a');
     spotlightLink.href = '/spotlight/';
@@ -38,6 +49,7 @@
         { label: 'Photo work', items: ['services.html', 'portfolio.html', 'deliver.html'] },
         { label: 'Creative tools', items: ['creative-toolkit.html', 'creative-studio.html'] },
         'guides.html',
+        'learning/',
         'spotlight/',
         'stores.html',
         { label: 'More', items: ['about.html', 'support.html'] },
