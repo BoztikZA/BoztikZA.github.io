@@ -1,0 +1,3076 @@
+{
+  "slug": "data-analysis-spreadsheets",
+  "title": "Data Analysis & Spreadsheet Skills",
+  "subtitle": "From messy spreadsheet to a clear answer you can defend, using one real practice file.",
+  "category": "data-analytics",
+  "level": "Beginner–Intermediate",
+  "summary": "Learn to clean data, build formulas and PivotTables, chart honestly and report findings, using a practice café dataset that is deliberately messy.",
+  "description": "Most spreadsheet problems are not about clever formulas. They are about untidy data, unclear questions and numbers nobody checked. This course teaches you to start with the question, clean the data, calculate with confidence, summarise with PivotTables, chart honestly and write up what you found. You practise on a downloadable café sales file with blank rows, repeated orders and inconsistent spellings, then finish with a practical on a fresh dataset.",
+  "estimatedHours": "6–7 hours",
+  "outcomes": [
+    "Explain the difference between data and information, and turn a vague request into a question that data can answer",
+    "Recognise records, fields and data types, and set up a sheet with one record per row",
+    "Clean a messy dataset by removing blank rows and duplicates and standardising text, while keeping the raw data untouched",
+    "Write formulas using relative and absolute references, IF, SUMIF, COUNTIF and lookups, and read common error messages",
+    "Sort, filter and summarise data with PivotTables without corrupting the underlying records",
+    "Choose a chart that fits the question and avoid designs that mislead",
+    "Write a short report that gives the answer first and states its caveats",
+    "Plan a simple one-screen dashboard whose totals stay correct when the data changes"
+  ],
+  "audience": [
+    "Learners who use spreadsheets but have never been taught to structure or clean data properly",
+    "Small-business owners, freelancers and club treasurers who need to understand their own numbers",
+    "Students and job seekers who want a practical data skill for admin, finance, marketing or operations roles",
+    "Anyone preparing for further study in data analytics"
+  ],
+  "prerequisites": "You should be comfortable using a computer and have access to any spreadsheet program, such as Excel, Google Sheets or LibreOffice Calc; no prior data experience is needed.",
+  "furtherLearning": [
+    "Learn SQL to ask questions of larger databases than a spreadsheet can comfortably hold",
+    "Explore Power Query or an equivalent import-and-transform tool to automate the cleaning steps you did by hand",
+    "Study introductory statistics so you can judge when a difference in your numbers is large enough to matter",
+    "Try a dedicated dashboard tool such as Power BI, Looker Studio or Tableau once the one-screen principles feel natural"
+  ],
+  "modules": [
+    {
+      "id": "m01",
+      "title": "Understanding data",
+      "summary": "Learn what data is, how it is structured and how to judge whether it can be trusted.",
+      "objectives": [
+        "Distinguish data from information and frame a clear question before opening a spreadsheet",
+        "Describe records, fields and the main data types",
+        "Judge data quality by accuracy, completeness and consistency",
+        "Handle personal data with care"
+      ],
+      "lessons": [
+        {
+          "id": "m01-l01",
+          "title": "From data to information to a question",
+          "minutes": 9,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Imagine a spaza shop owner who writes every sale in an exercise book. After a year she has hundreds of pages of entries. That pile is **data**: raw facts, recorded one at a time, with no meaning attached yet. If she sits down and works out that Fridays bring in twice the takings of Tuesdays, she has produced **information**: data that has been organised and interpreted so it helps someone decide something."
+            },
+            {
+              "type": "p",
+              "text": "Data analysis is the work of getting from the first to the second. It is not mainly about software. It is about asking a sensible question, choosing the data that bears on it, and being honest about what the numbers can and cannot tell you."
+            },
+            {
+              "type": "table",
+              "caption": "The same facts at three levels",
+              "headers": [
+                "Level",
+                "Example",
+                "What you can do with it"
+              ],
+              "rows": [
+                [
+                  "Data",
+                  "BZC-1008, 2026-01-01, Johannesburg, Flat white, 2, R38",
+                  "Almost nothing on its own"
+                ],
+                [
+                  "Information",
+                  "Cape Town sold R2,579 in the quarter across 33 orders",
+                  "Compare it with other branches"
+                ],
+                [
+                  "Decision",
+                  "Gqeberha earns far less than the other three branches, so check whether staffing or opening hours explain it",
+                  "Act, or ask a better follow-up question"
+                ]
+              ]
+            },
+            {
+              "type": "h",
+              "text": "Start with the question"
+            },
+            {
+              "type": "p",
+              "text": "Beginners open a spreadsheet and start clicking. Experienced analysts write down the question first, because the question decides which columns matter, how to summarise them and what a good answer looks like."
+            },
+            {
+              "type": "p",
+              "text": "Compare two requests. \"Look at the sales data\" is a task with no finish line. \"Which branch earned the most revenue between January and March, and how large is its lead?\" is a question you can answer in a sentence, and you will know when you have done so."
+            },
+            {
+              "type": "code",
+              "label": "A question worth asking has four parts",
+              "text": "What do I want to know?   (which branch earned the most revenue)\nOver what period?        (January to March 2026)\nMeasured how?            (revenue = quantity x unit price)\nWho needs the answer?    (the owner, who will decide on staffing)"
+            },
+            {
+              "type": "callout",
+              "tone": "key",
+              "title": "Question first, tool second",
+              "text": "A clear question tells you what to calculate. If you cannot say what a good answer would look like, you are not ready to open the spreadsheet yet."
+            },
+            {
+              "type": "h",
+              "text": "Where the café file fits"
+            },
+            {
+              "type": "p",
+              "text": "Throughout this course you will work with one practice file of café orders from four branches across January to March 2026. Each row is one order. You will be asked questions like the ones above, and you will clean the file before you trust any answer. The file is deliberately untidy, because real data usually is."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "A freelancer's invoices",
+              "text": "A freelance designer exports a year of invoices and asks \"how am I doing?\". That is too vague. Better: \"Which three clients paid me the most last year, and which invoices were paid more than 30 days late?\" Now she knows which columns to use: client, amount, due date, paid date."
+            },
+            {
+              "type": "check",
+              "id": "m01-l01-c1",
+              "kind": "single",
+              "prompt": "A shop owner has two years of till slips in boxes. Which statement best describes the difference between her data and information?",
+              "options": [
+                "The slips are data; a summary showing which weekday earns most is information",
+                "The slips are information; a printed spreadsheet is data",
+                "Data is anything stored on a computer; information is anything stored on paper",
+                "Data and information mean exactly the same thing in analysis"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "Data is the raw recorded facts. Information is what you get after organising and interpreting them so that someone can act. Where the facts are stored makes no difference."
+            }
+          ]
+        },
+        {
+          "id": "m01-l02",
+          "title": "Records, fields and data types",
+          "minutes": 9,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Almost every dataset you will meet is a table, and a table has a simple anatomy. Each **record** is one thing that happened or one thing that exists: one order, one invoice, one learner. Each **field** is one fact you keep about every record: the date, the price, the region. Records run down the rows and fields run across the columns."
+            },
+            {
+              "type": "table",
+              "caption": "Three records from the café file",
+              "headers": [
+                "OrderID",
+                "OrderDate",
+                "Region",
+                "Product",
+                "Quantity",
+                "UnitPrice"
+              ],
+              "rows": [
+                [
+                  "BZC-1008",
+                  "2026-01-01",
+                  "Johannesburg",
+                  "Flat white",
+                  "2",
+                  "38.00"
+                ],
+                [
+                  "BZC-1017",
+                  "2026-01-01",
+                  "durban",
+                  "Flat white",
+                  "1",
+                  "38.00"
+                ],
+                [
+                  "BZC-1025",
+                  "2026-01-02",
+                  "Durban",
+                  "Blueberry muffin",
+                  "1",
+                  "32.00"
+                ]
+              ]
+            },
+            {
+              "type": "p",
+              "text": "The first column is an **identifier**. Each record has its own, and no two records should share one. When two rows carry the same OrderID, you are looking at the same order entered twice, and that matters a great deal when you add things up."
+            },
+            {
+              "type": "h",
+              "text": "Three kinds of values"
+            },
+            {
+              "type": "p",
+              "text": "Each field holds one kind of value, and the kind decides what you can do with it."
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                "**Numbers** can be added, averaged and compared: Quantity and UnitPrice.",
+                "**Text** is for labels you group by or look up, not calculate with: Region, Product, SalesRep.",
+                "**Dates** are numbers in disguise, which is why you can ask how many days lie between two of them or group orders by month."
+              ]
+            },
+            {
+              "type": "p",
+              "text": "There is a trap hiding here. Some things look like numbers but are really identifiers. A phone number or an OrderID is text, because adding two phone numbers together is meaningless. Likewise some things that are stored as text should be numbers, such as a price that arrived with a stray space or a currency symbol typed in as part of the value."
+            },
+            {
+              "type": "callout",
+              "tone": "warning",
+              "title": "Looks like a number is not the same as is a number",
+              "text": "If a column of prices sits against the left edge of its cells in many programs, or the sum of the column comes out as 0, the values are probably stored as text. You will learn how to fix that in the next module."
+            },
+            {
+              "type": "h",
+              "text": "Choosing sensible fields"
+            },
+            {
+              "type": "p",
+              "text": "When you design your own sheet, ask what you will want to count, total or group later, and give each of those its own column. A school sports club tracking fees might use: MemberName, Sport, Term, AmountDue, AmountPaid, DatePaid. Notice that each column holds one kind of fact. There is no column called \"Notes and payments\" that mixes comments with amounts."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "One fact per field",
+              "text": "A café owner types \"Cape Town - Cappuccino - 2\" into a single cell. It reads fine to a human. But she cannot total the quantity or count the Cape Town orders without untangling the text first. Splitting it into Region, Product and Quantity costs three columns and saves hours."
+            },
+            {
+              "type": "check",
+              "id": "m01-l02-c1",
+              "kind": "single",
+              "prompt": "In the café file, which field is best treated as text rather than as a number?",
+              "options": [
+                "OrderID, because it labels an order and is never added up",
+                "Quantity, because it counts items",
+                "UnitPrice, because it is shown in rand",
+                "OrderDate, because it contains digits"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "OrderID is an identifier. You count and compare identifiers, but you never add them. Quantity and UnitPrice are numbers, and dates behave like numbers that can be counted by month."
+            },
+            {
+              "type": "check",
+              "id": "m01-l02-c2",
+              "kind": "truefalse",
+              "prompt": "True or false: in a well-structured table, each row is one record and each column is one field.",
+              "options": [
+                "True",
+                "False"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "That is the basic shape of a tidy dataset. Everything later, from sorting to PivotTables, assumes it."
+            }
+          ]
+        },
+        {
+          "id": "m01-l03",
+          "title": "Data quality and handling other people's data",
+          "minutes": 10,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Before you trust an answer, you have to trust the data underneath it. Three questions cover most of what goes wrong: is it **accurate**, **complete** and **consistent**?"
+            },
+            {
+              "type": "table",
+              "caption": "Three quality checks, with café examples",
+              "headers": [
+                "Quality",
+                "Question to ask",
+                "How it fails in the café file"
+              ],
+              "rows": [
+                [
+                  "Accurate",
+                  "Do values match what really happened?",
+                  "A quantity typed as 20 instead of 2"
+                ],
+                [
+                  "Complete",
+                  "Is anything missing?",
+                  "The file contains 5 entirely blank rows"
+                ],
+                [
+                  "Consistent",
+                  "Is the same thing written the same way?",
+                  "Durban appears as Durban, durban, DURBAN and Durban with a trailing space"
+                ]
+              ]
+            },
+            {
+              "type": "p",
+              "text": "The practice file also has 9 orders that were entered twice. That is a fourth problem, duplication, and it is a quiet one: nothing looks wrong, but the revenue is inflated. If you added up every row without removing the repeats, the total would be R9,152 instead of the true R8,542. That is a gap of R610 caused by nothing more than copy-and-paste."
+            },
+            {
+              "type": "callout",
+              "tone": "key",
+              "title": "Garbage in, garbage out",
+              "text": "A formula never questions the data you feed it. It will happily add up repeated orders and misspelled regions and give you a confident, wrong number. Checking the data is part of the analysis, not a chore before it."
+            },
+            {
+              "type": "h",
+              "text": "Other people's data is other people's"
+            },
+            {
+              "type": "p",
+              "text": "A customer list, a class register or a staff payroll is not just a table. Each row is a person. In South Africa, the Protection of Personal Information Act (POPIA) sets rules for how personal information may be collected and used, and good habits matter even for small projects."
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                "Keep only the columns you need for the question. If you are counting orders per branch, you do not need customers' ID numbers or phone numbers.",
+                "Do not email a spreadsheet of personal details to people who do not need it, and be careful with shared links.",
+                "Remove or anonymise names before sharing an analysis more widely, for example by using a reference number.",
+                "Say where the data came from and when. Someone will ask, and the answer affects how far it can be trusted."
+              ]
+            },
+            {
+              "type": "callout",
+              "tone": "tip",
+              "title": "The practice file is safe by design",
+              "text": "The café file contains staff first names and no customer details. In your own work, ask what you would be comfortable seeing on a notice board before you share a file."
+            },
+            {
+              "type": "exercise",
+              "title": "Audit a dataset you already have",
+              "intro": "Pick any list you keep: contacts, a budget, a club register or a stock list. You will check it against the three quality questions without changing anything yet.",
+              "tasks": [
+                "Write down the question the list is meant to answer.",
+                "Scan for missing values, spellings that differ for the same thing, and anything that looks impossible, such as a negative quantity.",
+                "Note which columns hold personal information, and whether the question really needs them."
+              ],
+              "reflection": "Which quality problem did you find most often, and what would you change about how the data is entered so it stops happening?"
+            },
+            {
+              "type": "check",
+              "id": "m01-l03-c1",
+              "kind": "single",
+              "prompt": "A club's member list shows the sport \"Netball\" typed three ways: Netball, netball and Netball (with a trailing space). Which quality problem is this?",
+              "options": [
+                "Inconsistency",
+                "Incompleteness",
+                "Inaccuracy",
+                "Anonymisation"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "The same category is recorded in different ways, which makes grouping and counting unreliable. Nothing is missing and nothing is necessarily false; it is inconsistent."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m02",
+      "title": "Spreadsheet fundamentals",
+      "summary": "Understand the parts of a spreadsheet, how references work and why data types and tidy structure matter.",
+      "objectives": [
+        "Name the parts of a spreadsheet and write cell and range references",
+        "Explain why a number stored as text causes wrong answers and how to detect it",
+        "Separate formats from values",
+        "Lay data out with one record per row and one field per column"
+      ],
+      "lessons": [
+        {
+          "id": "m02-l01",
+          "title": "Workbooks, sheets, cells and references",
+          "minutes": 9,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Every spreadsheet program, whether Excel, Google Sheets or LibreOffice Calc, is built from the same few parts. Learn the vocabulary once and it carries across all of them."
+            },
+            {
+              "type": "table",
+              "caption": "The parts of a spreadsheet",
+              "headers": [
+                "Term",
+                "What it is",
+                "Example"
+              ],
+              "rows": [
+                [
+                  "Workbook",
+                  "The whole file, which can hold many sheets",
+                  "boztik-cafe-practice"
+                ],
+                [
+                  "Sheet",
+                  "One page of cells inside the workbook, usually shown as a tab",
+                  "A sheet named Raw and another named Clean"
+                ],
+                [
+                  "Cell",
+                  "One box, where a column and a row meet",
+                  "C2"
+                ],
+                [
+                  "Row",
+                  "A horizontal line of cells, numbered 1, 2, 3 and so on",
+                  "Row 2 is the first order"
+                ],
+                [
+                  "Column",
+                  "A vertical line of cells, lettered A, B, C and so on",
+                  "Column G holds UnitPrice"
+                ],
+                [
+                  "Range",
+                  "A block of neighbouring cells",
+                  "G2:G125"
+                ]
+              ]
+            },
+            {
+              "type": "p",
+              "text": "A cell's address is its column letter followed by its row number. In the café file, A1 holds the heading OrderID and H1 holds SalesRep. The data runs from row 2 to row 125 and from column A to column H, so the whole thing is the range A1:H125."
+            },
+            {
+              "type": "h",
+              "text": "References do the work"
+            },
+            {
+              "type": "p",
+              "text": "A formula refers to other cells by address instead of copying their contents. If F2 holds a quantity of 2 and G2 holds a price of 38, then `=F2*G2` returns 76. Change F2 to 3 and the answer becomes 114 without you touching the formula. That is the whole reason spreadsheets exist."
+            },
+            {
+              "type": "code",
+              "label": "Reference styles you will use constantly",
+              "text": "=F2*G2          one cell times another\n=SUM(F2:F125)   a range: every cell from F2 to F125\n=Raw!F2         a cell on another sheet called Raw"
+            },
+            {
+              "type": "p",
+              "text": "Ranges are written with a colon, meaning \"from here to there\". A whole column can be referred to as F:F, which keeps working when you add rows, though in a very large file it can slow things down."
+            },
+            {
+              "type": "callout",
+              "tone": "tip",
+              "title": "Name your sheets",
+              "text": "Sheet1, Sheet2 and Sheet3 tell you nothing. Rename them Raw, Clean and Summary. Anyone opening the file, including you in six months, will know where to look."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "A club treasurer's workbook",
+              "text": "A school sports club keeps one workbook for the year. The sheet Members holds one row per learner. The sheet Payments holds one row per payment. The sheet Summary holds only formulas that refer back to the other two. Nothing is typed twice, so nothing can disagree with itself."
+            },
+            {
+              "type": "h",
+              "text": "Typed values versus formulas"
+            },
+            {
+              "type": "p",
+              "text": "A cell holds either a value you typed or a formula that begins with an equals sign. A good habit is to keep the two apart: raw facts in one place, calculations in another. That makes it obvious which numbers came from the world and which were worked out."
+            },
+            {
+              "type": "exercise",
+              "title": "Explore the practice file's layout",
+              "intro": "Download the café practice file and open it in any spreadsheet program.",
+              "tasks": [
+                "Find the cell that holds the heading Region and write its address.",
+                "Work out the range that holds every UnitPrice value, including the header row, by looking at where the data starts and ends.",
+                "Type a formula in an empty cell to multiply Quantity by UnitPrice for the first order and confirm the answer by hand."
+              ],
+              "reflection": "Which part of the layout surprised you? Did you notice anything odd about some of the rows?"
+            },
+            {
+              "type": "check",
+              "id": "m02-l01-c1",
+              "kind": "single",
+              "prompt": "Cell D7 holds a price and cell E7 holds a quantity. Which formula returns their product?",
+              "options": [
+                "=D7*E7",
+                "=D7:E7",
+                "D7*E7",
+                "=D7+E7"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "A formula starts with an equals sign. A colon makes a range, a plus adds, and without the equals sign the program treats the entry as text."
+            }
+          ]
+        },
+        {
+          "id": "m02-l02",
+          "title": "Data types, formats and tidy structure",
+          "minutes": 10,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Spreadsheets do not guess what you mean. They store each cell as a number, text, a date or a true/false value, and what you can do with a cell depends on that type. Most beginner problems that look like \"the formula is broken\" are really \"the data type is wrong\"."
+            },
+            {
+              "type": "h",
+              "text": "When a number is really text"
+            },
+            {
+              "type": "p",
+              "text": "Suppose prices were copied in from a website or a bank export. They look like numbers, but the program has stored them as text, perhaps because of a stray space or an apostrophe. A SUM over that column ignores them and returns a total that is too small, sometimes 0. A lookup for 101 will fail to find \"101\" typed as text. Nothing announces the problem; the answers are just wrong."
+            },
+            {
+              "type": "steps",
+              "title": "How to spot a number stored as text",
+              "items": [
+                {
+                  "title": "Look at alignment",
+                  "text": "Numbers usually sit to the right of a cell and text to the left. A mixed column is a warning sign."
+                },
+                {
+                  "title": "Check with COUNT",
+                  "text": "`=COUNT(G2:G125)` counts only true numbers. If it returns fewer than the number of filled cells, some values are text."
+                },
+                {
+                  "title": "Look for small warnings",
+                  "text": "Many programs flag such cells with a marker. Do not rely on it, but notice it."
+                },
+                {
+                  "title": "Convert, then recheck",
+                  "text": "Re-enter or convert the values, then confirm that COUNT now matches."
+                }
+              ]
+            },
+            {
+              "type": "h",
+              "text": "Formats change the look, not the value"
+            },
+            {
+              "type": "p",
+              "text": "A **format** controls how a cell is displayed. The **value** is what is stored. If the real value is 77.654545 and the format shows two decimal places, you see 77.65 but any formula that uses the cell uses the full number. The same goes for dates: 2026-01-01 may be shown as 1 Jan 2026 or as a date serial number, and both are the same date underneath."
+            },
+            {
+              "type": "table",
+              "caption": "Value versus display",
+              "headers": [
+                "Stored value",
+                "Shown with 2 decimals",
+                "Shown as a whole number"
+              ],
+              "rows": [
+                [
+                  "8542 / 110 = 77.6545...",
+                  "77.65",
+                  "78"
+                ],
+                [
+                  "38",
+                  "38.00",
+                  "38"
+                ]
+              ]
+            },
+            {
+              "type": "callout",
+              "tone": "warning",
+              "title": "Do not round by formatting when you mean to round",
+              "text": "If you add three cells that display 0.33 each, the sum may display 1.00 or 0.99 depending on the real values. Round in a formula with ROUND when the rounded number is the one you need."
+            },
+            {
+              "type": "h",
+              "text": "One record per row, one field per column"
+            },
+            {
+              "type": "p",
+              "text": "Tidy data follows three rules: every column is one field, every row is one record, and there is exactly one header row at the top. Avoid merged cells, blank lines between records and totals mixed into the data. They look neat but they break sorting, filtering and PivotTables."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "Wide versus tall",
+              "text": "A shop lists sales as Product, Jan, Feb, Mar. It reads easily, but a month column cannot be grouped or filtered as a month. The tidy version has columns Product, Month and Sales, with one row per product per month. The café file is already tall: one row per order."
+            },
+            {
+              "type": "check",
+              "id": "m02-l02-c1",
+              "kind": "single",
+              "prompt": "A column of 40 prices is typed into cells, but `=SUM()` over it returns 0. What is the most likely cause?",
+              "options": [
+                "The prices are stored as text",
+                "The sheet has too many rows",
+                "The column needs to be merged",
+                "The prices need a currency format"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "SUM adds true numbers and ignores text. A total of 0 on visible figures usually means they are text. A currency format would change the display only."
+            },
+            {
+              "type": "check",
+              "id": "m02-l02-c2",
+              "kind": "truefalse",
+              "prompt": "True or false: formatting a cell to show two decimal places rounds the stored value to two decimals.",
+              "options": [
+                "True",
+                "False"
+              ],
+              "correct": [
+                1
+              ],
+              "explain": "Formatting changes only the display. The cell keeps its full value, and formulas use that full value. To round the value itself you use a function such as ROUND."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m03",
+      "title": "Excel and spreadsheet basics",
+      "summary": "See how Excel, Google Sheets and LibreOffice Calc share the same ideas, and build habits that keep sheets readable and reliable.",
+      "objectives": [
+        "Compare Excel, Google Sheets and LibreOffice Calc and name their honest differences",
+        "Navigate a sheet using ideas rather than memorised menu paths",
+        "Format a sheet for readability, including a frozen header",
+        "Apply data-entry habits that prevent errors later"
+      ],
+      "lessons": [
+        {
+          "id": "m03-l01",
+          "title": "One set of ideas, three programs",
+          "minutes": 9,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "You do not need to buy anything to learn this course. Microsoft Excel, Google Sheets and LibreOffice Calc all arrange data in sheets, cells, rows and columns, and they share the same core functions: SUM, AVERAGE, COUNT, IF, SUMIF and many more. A skill learned in one moves to the others with a little adjusting."
+            },
+            {
+              "type": "table",
+              "caption": "Three programs compared",
+              "headers": [
+                "Program",
+                "How you use it",
+                "Worth knowing"
+              ],
+              "rows": [
+                [
+                  "Excel",
+                  "Desktop app, and a browser version",
+                  "The most common in workplaces; the full desktop version has the most features"
+                ],
+                [
+                  "Google Sheets",
+                  "In the browser, with automatic saving",
+                  "Easy to share and edit with others at the same time; needs a connection for most work"
+                ],
+                [
+                  "LibreOffice Calc",
+                  "Free desktop app",
+                  "Opens Excel files; its own format is .ods; works without internet"
+                ]
+              ]
+            },
+            {
+              "type": "h",
+              "text": "Where they differ"
+            },
+            {
+              "type": "p",
+              "text": "The differences are small, but they cause confusion if nobody warns you."
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                "**Newer functions.** XLOOKUP arrived in Excel 365 and 2021, and Google Sheets supports it. LibreOffice added it in recent versions. If you work with an older copy of any program, it may be missing, and the older VLOOKUP is the safe alternative.",
+                "**Argument separators.** Some language and region settings expect a semicolon between arguments, as in `=IF(F2>3;1;0)`, instead of a comma. If a formula copied from a tutorial is rejected, check this first.",
+                "**Menu names and positions.** They change between versions. That is why this course describes what to do, such as \"remove duplicate rows\", rather than where to click.",
+                "**Features with different names.** PivotTables appear in all three, though the wording and the layout of the builder differ."
+              ]
+            },
+            {
+              "type": "callout",
+              "tone": "warning",
+              "title": "Check your version before blaming yourself",
+              "text": "If a function you were taught gives a \"name\" error, the program may simply not know it. Search for the function's name together with your program's name before assuming your formula is wrong."
+            },
+            {
+              "type": "h",
+              "text": "Moving around without getting lost"
+            },
+            {
+              "type": "p",
+              "text": "You do not need to memorise commands. You need to know the ideas. Every program has a box showing which cell is selected and a bar showing what that cell actually contains: a typed value or a formula. Every program lets you jump to the edge of a block of data, select a whole column or row, and switch sheets using tabs along the bottom. Look up the shortcuts for your program once, and practise a few."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "The same file, three places",
+              "text": "A freelancer keeps invoices in an .xlsx file. Her accountant opens it in Excel, her business partner edits it in Google Sheets, and she opens it on a laptop in LibreOffice. The data and formulas survive all three. Fancy formatting and the newest functions are the things most likely to look different."
+            },
+            {
+              "type": "callout",
+              "tone": "tip",
+              "title": "CSV is plain text",
+              "text": "The café practice file is a CSV. A CSV holds values separated by commas and nothing else: no formulas, no colours, no multiple sheets. Open it, then save a copy as a normal spreadsheet before doing real work."
+            },
+            {
+              "type": "check",
+              "id": "m03-l01-c1",
+              "kind": "single",
+              "prompt": "Your program rejects `=SUMIF(C2:C50,\"Durban\",I2:I50)` but the same formula works for a colleague. Which cause should you check first?",
+              "options": [
+                "Whether your settings expect semicolons between arguments",
+                "Whether the sheet has too few rows",
+                "Whether the file is saved as a CSV",
+                "Whether the formula contains lower-case letters"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "Regional settings can require a semicolon instead of a comma. Case does not matter in function names, and the row count and file type are not the likely cause."
+            }
+          ]
+        },
+        {
+          "id": "m03-l02",
+          "title": "Readable sheets and good data-entry habits",
+          "minutes": 10,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "A sheet that is easy to read is also easier to check. People will trust your numbers more, and you will make fewer mistakes when you come back to them. None of what follows is decoration; each habit prevents a specific problem."
+            },
+            {
+              "type": "h",
+              "text": "Make the header work for you"
+            },
+            {
+              "type": "p",
+              "text": "Give the top row its own look, such as bold text or a fill colour, so the field names stand out. Then **freeze** the header row. Freezing keeps the top row in view as you scroll down a long list, so you never have to wonder which column you are looking at. Freeze the identifier column too if the sheet is wide."
+            },
+            {
+              "type": "p",
+              "text": "Widen columns so values are not cut off, and use a consistent number format: a currency format for money, a date format for dates. Avoid colour as the only way to carry meaning, because it is lost when a file is printed in black and white or opened by someone who cannot tell the colours apart."
+            },
+            {
+              "type": "h",
+              "text": "Tables and filters"
+            },
+            {
+              "type": "p",
+              "text": "Excel and recent versions of Google Sheets can turn a block of data into a **table**: a range that knows it has headers, grows as you add rows, and carries filter buttons. Calc offers similar behaviour through database ranges and its AutoFilter. The principle matters more than the feature name: tell the program where your data begins and ends, and formulas and summaries will follow it."
+            },
+            {
+              "type": "callout",
+              "tone": "key",
+              "title": "Keep data in one unbroken block",
+              "text": "No blank rows, no blank columns, no title above the header in the same block, and no totals underneath. Anything that interrupts the block makes sorting, filtering and PivotTables misbehave."
+            },
+            {
+              "type": "h",
+              "text": "Entering data well"
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                "Type each category the same way every time. A drop-down list, called data validation, can enforce this so \"Durban\" cannot become \"durban\".",
+                "Enter dates in an unambiguous order, such as 2026-03-14 (year, month, day), so 03/04 can never mean two different things.",
+                "Put one fact in each cell. Do not type \"2 x Cappuccino\" when you need a quantity and a product.",
+                "Never type a total over the top of a formula, and never hide a number inside a formula, such as `=36*2`. Put the price and the quantity in their own cells.",
+                "Leave the raw data alone once it is in. Do calculations in separate columns or on other sheets."
+              ]
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "A café's weekly sheet",
+              "text": "A branch manager records orders daily. Without validation, Region is typed freely and the file ends up with spellings such as \"durban\", \"DURBAN\" and a trailing-space \"Durban \" (all of which appear in the practice file). A three-line drop-down would have stopped every one of them."
+            },
+            {
+              "type": "exercise",
+              "title": "Make the practice file readable",
+              "intro": "Open the café practice file and save a working copy as a normal spreadsheet. Do not change any values yet.",
+              "tasks": [
+                "Format the header row so it stands out, and freeze it so it stays visible while you scroll.",
+                "Widen the columns and format UnitPrice as currency and OrderDate as a date.",
+                "Scroll down the file and write down the row numbers of any rows that are completely blank."
+              ],
+              "reflection": "Which one change made the biggest difference to how easy the file is to read, and why?"
+            },
+            {
+              "type": "check",
+              "id": "m03-l02-c1",
+              "kind": "multi",
+              "prompt": "Select all habits that help keep a dataset reliable.",
+              "options": [
+                "Use a drop-down list for categories such as Region",
+                "Enter dates as year-month-day",
+                "Leave a blank row between each week's orders",
+                "Type a total over the top of the formula that calculated it"
+              ],
+              "correct": [
+                0,
+                1
+              ],
+              "explain": "Drop-downs prevent inconsistent spellings and year-month-day dates are unambiguous. Blank rows break a data block, and typing over a formula destroys the calculation."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m04",
+      "title": "Cleaning and organising data",
+      "summary": "Clean the practice café file: protect the raw data, remove blank rows and duplicates, and make the Region text consistent.",
+      "objectives": [
+        "Keep raw data untouched and work on a copy",
+        "Find and remove blank rows and duplicate records",
+        "Standardise text with TRIM, UPPER, LOWER, PROPER and find and replace",
+        "Check each cleaning step with a before-and-after count"
+      ],
+      "lessons": [
+        {
+          "id": "m04-l01",
+          "title": "Protect the raw data and remove blank rows",
+          "minutes": 10,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Cleaning data is surgery on your own evidence, so the first rule is: never operate on the only copy. Before you change anything, keep the original exactly as you received it. If a cleaning step goes wrong, or someone asks how you got your numbers, the untouched original is your way back."
+            },
+            {
+              "type": "steps",
+              "title": "Set up a safe workspace",
+              "items": [
+                {
+                  "title": "Save the file as a spreadsheet",
+                  "text": "If the practice file opened as a CSV, save a copy as a normal workbook."
+                },
+                {
+                  "title": "Name one sheet Raw",
+                  "text": "This sheet is never edited, sorted or filtered. Treat it as read-only."
+                },
+                {
+                  "title": "Copy the data to a new sheet called Clean",
+                  "text": "All cleaning happens here."
+                },
+                {
+                  "title": "Write down what you do",
+                  "text": "A short log, even on a third sheet, lets you repeat or explain every step."
+                }
+              ]
+            },
+            {
+              "type": "h",
+              "text": "Look before you touch"
+            },
+            {
+              "type": "p",
+              "text": "Scroll through the data and run a few quick counts. In the café file, the header is in row 1 and the orders run from row 2 to row 125, so there are 124 rows beneath the header. But `=COUNTA(A2:A125)` counts only the cells in the OrderID column that actually contain something. It returns 119. So five of those rows hold no order at all."
+            },
+            {
+              "type": "code",
+              "label": "Quick health checks (café file)",
+              "text": "=ROWS(A2:A125)      returns 124, the rows in the range\n=COUNTA(A2:A125)    returns 119, rows with an OrderID\n=COUNTBLANK(A2:A125) returns 5, the empty ones"
+            },
+            {
+              "type": "p",
+              "text": "Those five rows are completely blank: every one of the eight columns is empty. In the raw file they are sheet rows 33, 75, 109, 112 and 116. Blank rows are harmless to the eye but harmful to tools: a filter or sort may treat the data as ending at the first blank row and quietly ignore everything below it."
+            },
+            {
+              "type": "callout",
+              "tone": "warning",
+              "title": "Check that a row is fully blank before deleting it",
+              "text": "A row with an OrderID but a missing price is not blank, and deleting it throws away real information. Delete only rows where every field is empty. Sorting the sheet so that blank rows gather at the bottom is one safe way to see and remove them together."
+            },
+            {
+              "type": "h",
+              "text": "Delete them and recount"
+            },
+            {
+              "type": "p",
+              "text": "Remove the five blank rows from the Clean sheet. Then repeat `=COUNTA` on OrderID. You should get 119 orders, with no gaps in the block. Writing down the before and after counts is not fussiness: it is how you prove that your cleaning removed exactly what you meant to remove."
+            },
+            {
+              "type": "table",
+              "caption": "Row count log",
+              "headers": [
+                "Step",
+                "Rows of data",
+                "Note"
+              ],
+              "rows": [
+                [
+                  "As received",
+                  "124",
+                  "Includes 5 blank rows"
+                ],
+                [
+                  "After removing blank rows",
+                  "119",
+                  "Every row has an OrderID"
+                ],
+                [
+                  "After removing repeated orders",
+                  "110",
+                  "Next lesson"
+                ]
+              ]
+            },
+            {
+              "type": "exercise",
+              "title": "Back up and remove the blank rows",
+              "intro": "Use the downloadable café practice file.",
+              "tasks": [
+                "Save the file as a workbook and create two sheets: Raw (untouched) and Clean (a copy of the data).",
+                "On Clean, count the OrderIDs with COUNTA and confirm that you get 119 out of 124 data rows.",
+                "Remove the five completely blank rows and recount. Record both counts in a log."
+              ],
+              "reflection": "What could have gone wrong if you had worked directly on the only copy of the file?"
+            },
+            {
+              "type": "check",
+              "id": "m04-l01-c1",
+              "kind": "single",
+              "prompt": "In the café file, 124 data rows sit under the header and `=COUNTA(A2:A125)` returns 119. What does the difference tell you?",
+              "options": [
+                "Five rows have no OrderID, and inspection shows they are blank in every column",
+                "Five orders have a missing quantity",
+                "Five orders were entered twice",
+                "Five rows contain text where numbers should be"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "COUNTA counts non-empty cells. The five uncounted rows have no OrderID, and inspection shows they are blank across all eight columns. Repeats and text problems are different issues."
+            }
+          ]
+        },
+        {
+          "id": "m04-l02",
+          "title": "Finding and removing duplicate orders",
+          "minutes": 10,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "A duplicate is one record that has been entered more than once. In the café file, the same order appears twice on adjacent rows in nine cases. They are not obvious as you scroll, but they matter: if you add up all 119 non-blank rows without removing them, revenue comes out at R9,152 instead of R8,542."
+            },
+            {
+              "type": "h",
+              "text": "Spot them before you delete them"
+            },
+            {
+              "type": "p",
+              "text": "Never delete what you have not looked at. A helper column can flag duplicates using COUNTIF, which counts how many cells in a range match a value. A \"running\" version counts matches only from the top of the list down to the current row, so the first copy scores 1 and any later copy scores 2 or more."
+            },
+            {
+              "type": "code",
+              "label": "Helper column J: flag repeat OrderIDs",
+              "text": "=COUNTIF($A$2:A2,A2)\n\nCopy down. A result of 1 means first time seen.\nA result of 2 or more means a repeat."
+            },
+            {
+              "type": "p",
+              "text": "The dollar signs lock the start of the range so that it grows as the formula is copied down. You will learn exactly how that works in the next module. For now, filter the helper column for values above 1: nine rows come back. Look at a pair side by side and confirm they are identical in every column."
+            },
+            {
+              "type": "table",
+              "caption": "A repeated order in the raw file (sheet rows 23 and 24)",
+              "headers": [
+                "Sheet row",
+                "OrderID",
+                "OrderDate",
+                "Product",
+                "Qty",
+                "Flag"
+              ],
+              "rows": [
+                [
+                  "23",
+                  "BZC-1006",
+                  "2026-01-24",
+                  "Bran muffin",
+                  "4",
+                  "1"
+                ],
+                [
+                  "24",
+                  "BZC-1006",
+                  "2026-01-24",
+                  "Bran muffin",
+                  "4",
+                  "2"
+                ]
+              ]
+            },
+            {
+              "type": "h",
+              "text": "Remove them"
+            },
+            {
+              "type": "p",
+              "text": "Most programs have a Remove Duplicates feature. It asks which columns to compare, then keeps the first matching row and deletes the others. Two choices matter. If you compare all columns, a row is only removed if every field is identical. If you compare OrderID alone, any row sharing an ID is removed, even if its other fields differ. Because an OrderID should be unique, comparing OrderID is the cleaner rule here, and the course's cleaning rule is: **keep each OrderID once**."
+            },
+            {
+              "type": "callout",
+              "tone": "tip",
+              "title": "Delete blank rows first",
+              "text": "If you run Remove Duplicates while the five blank rows are still there, they count as identical to each other, so four are removed and one remains. Clear the blanks first and the order of operations stays predictable."
+            },
+            {
+              "type": "callout",
+              "tone": "key",
+              "title": "Know what to expect",
+              "text": "After removing blanks you have 119 rows. Nine repeats come out, so you expect 110 orders. If you get a different number, stop and find out why before moving on."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "When a repeat is not a mistake",
+              "text": "Two rows with the same Product, Date and Region are not necessarily duplicates. Two customers can buy a flat white in Durban on the same day. That is why the OrderID, not the other columns, decides what counts as the same order."
+            },
+            {
+              "type": "exercise",
+              "title": "Flag and remove duplicates",
+              "intro": "Continue on the Clean sheet from the last lesson.",
+              "tasks": [
+                "Add the running COUNTIF helper column and filter for values above 1. Count the flagged rows.",
+                "Remove duplicate rows by comparing the OrderID column, then delete the helper column.",
+                "Count the remaining orders and compare with your expected 110."
+              ],
+              "reflection": "Why is it safer to flag duplicates first than to remove them straight away?"
+            },
+            {
+              "type": "check",
+              "id": "m04-l02-c1",
+              "kind": "single",
+              "prompt": "After removing blank rows you have 119 orders, and the helper `=COUNTIF($A$2:A2,A2)` returns 2 on nine rows. How many orders should remain once repeats are removed?",
+              "options": [
+                "110",
+                "119",
+                "128",
+                "9"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "Nine rows are second entries of orders already listed. Removing them leaves 119 minus 9, which is 110 distinct orders."
+            }
+          ]
+        },
+        {
+          "id": "m04-l03",
+          "title": "Making text consistent",
+          "minutes": 11,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Blank rows and duplicates change how many rows you have. Inconsistent text changes how your rows get grouped. The Region column in the café file contains sixteen different spellings of four branches: Durban, durban, DURBAN, Durban with a trailing space, and so on. A person reads all of them as Durban. A formula does not."
+            },
+            {
+              "type": "h",
+              "text": "What goes wrong if you skip this"
+            },
+            {
+              "type": "p",
+              "text": "COUNTIF and SUMIF ignore upper or lower case, so \"durban\" and \"DURBAN\" match \"Durban\". But they do not ignore stray spaces. After removing blanks and duplicates, a SUMIF for \"Johannesburg\" on the untouched Region column returns R2,498. The correct figure is R2,712. Johannesburg still tops the list, but your answer for its revenue would be R214 short, with nothing to warn you."
+            },
+            {
+              "type": "table",
+              "caption": "Region counts: untrimmed versus cleaned (110 orders)",
+              "headers": [
+                "Region",
+                "Orders if spaces are left",
+                "Orders after cleaning"
+              ],
+              "rows": [
+                [
+                  "Johannesburg",
+                  "32",
+                  "35"
+                ],
+                [
+                  "Cape Town",
+                  "29",
+                  "33"
+                ],
+                [
+                  "Durban",
+                  "27",
+                  "30"
+                ],
+                [
+                  "Gqeberha",
+                  "12",
+                  "12"
+                ]
+              ]
+            },
+            {
+              "type": "h",
+              "text": "The standard text-cleaning functions"
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                "`TRIM(text)` removes spaces at the start and end and shrinks repeated spaces inside to one.",
+                "`UPPER`, `LOWER` and `PROPER` change case. PROPER capitalises the first letter of each word, so \"cape town\" becomes \"Cape Town\".",
+                "Find and replace swaps one piece of text for another across a range. Use it for known mistakes, such as a typo that appears in many places.",
+                "Text to columns splits one cell into several at a separator, for example a combined \"Durban - Tea\" cell into two."
+              ]
+            },
+            {
+              "type": "code",
+              "label": "Helper column for a clean Region",
+              "text": "=PROPER(TRIM(C2))"
+            },
+            {
+              "type": "p",
+              "text": "Fill that formula down, then copy the result and paste it as plain values into the Region column on the Clean sheet. Pasting values replaces the formulas with their results so your cleaned data stands on its own. Check by counting: four distinct regions should remain, and the counts should match the table above."
+            },
+            {
+              "type": "h",
+              "text": "Dates stored as text"
+            },
+            {
+              "type": "p",
+              "text": "Dates can also arrive as text. If you cannot group a date column by month, or its values sit on the left of the cells, they are probably text. Your program may convert ISO dates like 2026-01-01 automatically when it opens the file, so check before you assume. If they are text, a conversion function or the import settings can turn them into real dates."
+            },
+            {
+              "type": "callout",
+              "tone": "warning",
+              "title": "Clean the copy, never the original",
+              "text": "Everything here happens on the Clean sheet. The Raw sheet should still show the sixteen spellings, because they are the evidence of what you were given."
+            },
+            {
+              "type": "exercise",
+              "title": "Standardise the Region column",
+              "intro": "Use the Clean sheet with blank rows and duplicates already removed.",
+              "tasks": [
+                "Add a helper column with `=PROPER(TRIM(C2))` and fill it down.",
+                "Check how many distinct regions remain. You should see exactly four.",
+                "Paste the results as values into the Region column, then use COUNTIF to confirm Johannesburg 35, Cape Town 33, Durban 30 and Gqeberha 12."
+              ],
+              "reflection": "How would you have noticed the problem if nobody had told you the Region column was untidy?"
+            },
+            {
+              "type": "check",
+              "id": "m04-l03-c1",
+              "kind": "multi",
+              "prompt": "Select all that apply. Which of these would make \"CAPE TOWN \" (capitals, trailing space) match \"Cape Town\" in a lookup or SUMIF?",
+              "options": [
+                "Wrapping the cell in TRIM",
+                "Wrapping the TRIM result in PROPER",
+                "Applying a bold format to the cell",
+                "Freezing the header row"
+              ],
+              "correct": [
+                0,
+                1
+              ],
+              "explain": "TRIM removes the trailing space and PROPER standardises capital letters. Bold text and frozen panes change only how the sheet looks."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m05",
+      "title": "Formulas and calculations",
+      "summary": "Write formulas, use the main functions and conditional totals, build the Revenue helper column and read common errors.",
+      "objectives": [
+        "Write formulas using operators, ranges and the core summary functions",
+        "Use relative and absolute references correctly",
+        "Calculate conditional totals with IF, SUMIF, COUNTIFS and AVERAGEIFS",
+        "Use lookups and interpret common error messages"
+      ],
+      "lessons": [
+        {
+          "id": "m05-l01",
+          "title": "Formulas, functions and the Revenue column",
+          "minutes": 11,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "A formula is an instruction the spreadsheet carries out for you and keeps up to date. It always begins with an equals sign. After that you can combine cell references, numbers and operators: `+` to add, `-` to subtract, `*` to multiply, `/` to divide and `^` for powers."
+            },
+            {
+              "type": "p",
+              "text": "Spreadsheets follow the usual order of operations: brackets first, then powers, then multiplication and division, then addition and subtraction. So `=2+3*4` returns 14, while `=(2+3)*4` returns 20. When in doubt, add brackets. They cost nothing and make your intent clear to the next reader."
+            },
+            {
+              "type": "h",
+              "text": "The five functions you will use daily"
+            },
+            {
+              "type": "table",
+              "caption": "Summary functions",
+              "headers": [
+                "Function",
+                "What it returns",
+                "Café file result (110 clean orders)"
+              ],
+              "rows": [
+                [
+                  "SUM(range)",
+                  "The total of the numbers",
+                  "Total revenue R8,542"
+                ],
+                [
+                  "AVERAGE(range)",
+                  "The mean",
+                  "Average order R77.65"
+                ],
+                [
+                  "COUNT(range)",
+                  "How many numeric cells",
+                  "110 orders"
+                ],
+                [
+                  "MIN(range)",
+                  "The smallest value",
+                  "R26"
+                ],
+                [
+                  "MAX(range)",
+                  "The largest value",
+                  "R275"
+                ]
+              ]
+            },
+            {
+              "type": "p",
+              "text": "Notice that COUNT counts numbers only. To count filled cells of any type, such as the IDs in column A, use COUNTA. To count empty cells, use COUNTBLANK."
+            },
+            {
+              "type": "h",
+              "text": "Add a helper column"
+            },
+            {
+              "type": "p",
+              "text": "The café file records Quantity and UnitPrice but not the money each order brought in. Revenue is something you work out: quantity times price. Rather than doing the arithmetic in your head, add a column to the right of the data. We will call it Revenue and put it in column I."
+            },
+            {
+              "type": "code",
+              "label": "Revenue helper column (cell I2, then fill down to I111)",
+              "text": "=F2*G2"
+            },
+            {
+              "type": "p",
+              "text": "The first order, BZC-1008, is two flat whites at R38. The formula returns 76. When you fill the formula down, each row refers to its own quantity and price: row 3 becomes `=F3*G3`, row 4 becomes `=F4*G4`. That behaviour is called a **relative reference**, because the address shifts relative to where the formula sits."
+            },
+            {
+              "type": "table",
+              "caption": "Revenue helper column, first rows of the cleaned file",
+              "headers": [
+                "Row",
+                "Product",
+                "Quantity (F)",
+                "UnitPrice (G)",
+                "Revenue (I)"
+              ],
+              "rows": [
+                [
+                  "2",
+                  "Flat white",
+                  "2",
+                  "38.00",
+                  "76.00"
+                ],
+                [
+                  "3",
+                  "Flat white",
+                  "1",
+                  "38.00",
+                  "38.00"
+                ],
+                [
+                  "4",
+                  "Blueberry muffin",
+                  "1",
+                  "32.00",
+                  "32.00"
+                ]
+              ]
+            },
+            {
+              "type": "p",
+              "text": "Now `=SUM(I2:I111)` gives total revenue of R8,542 and `=AVERAGE(I2:I111)` gives the average order value, R77.65 (the full value is 77.6545...). This assumes that you cleaned the data first. On the uncleaned 119 rows, the repeated orders would push the total to R9,152."
+            },
+            {
+              "type": "callout",
+              "tone": "warning",
+              "title": "Do not summarise a range that includes a total",
+              "text": "If you put `=SUM(I2:I111)` in cell I112, then later extend your range to include it, the total counts itself, and the sheet reports a circular reference. Keep totals on a separate Summary sheet or well away from the data block."
+            },
+            {
+              "type": "exercise",
+              "title": "Build the Revenue column",
+              "intro": "Use your cleaned café Clean sheet with 110 orders in rows 2 to 111.",
+              "tasks": [
+                "Add a header Revenue in I1 and the formula `=F2*G2` in I2. Fill it down to row 111.",
+                "Calculate the total, the average, the minimum and the maximum of the Revenue column.",
+                "Compare your results with R8,542, R77.65, R26 and R275."
+              ],
+              "reflection": "If your total came out different, which cleaning step would you re-check first?"
+            },
+            {
+              "type": "check",
+              "id": "m05-l01-c1",
+              "kind": "single",
+              "prompt": "Cell F5 holds 3 and G5 holds 52 (a cheese toastie order). Which formula in I5 gives the revenue of that order?",
+              "options": [
+                "=F5*G5",
+                "=F5+G5",
+                "=SUM(F5:G5)",
+                "=F5/G5"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "Revenue is quantity times price, so multiply the two cells. Adding or summing them would give 55, and dividing would give about 0.06."
+            }
+          ]
+        },
+        {
+          "id": "m05-l02",
+          "title": "Absolute references and conditional totals",
+          "minutes": 12,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Sometimes you want a reference to stay put when you copy a formula. Imagine the café applies a service fee, stored once in cell L1 as 0.1. If row 2 says `=I2*L1` and you fill down, row 3 becomes `=I3*L2`, which points to an empty cell. You need L1 to stay fixed."
+            },
+            {
+              "type": "p",
+              "text": "A dollar sign locks part of a reference. `$L$1` is **absolute**: neither the column nor the row changes when copied. `L$1` locks only the row, and `$L1` locks only the column. Relative references move; absolute references stay."
+            },
+            {
+              "type": "code",
+              "label": "Absolute reference in action",
+              "text": "=I2*$L$1      copy down: row 3 gives =I3*$L$1"
+            },
+            {
+              "type": "h",
+              "text": "IF: a decision inside a formula"
+            },
+            {
+              "type": "p",
+              "text": "IF takes a test, a result if the test is true and a result if it is false. Use it to label orders. In the café data, an order is \"Large\" if its revenue is 100 or more."
+            },
+            {
+              "type": "code",
+              "label": "IF in column J",
+              "text": "=IF(I2>=100,\"Large\",\"Standard\")"
+            },
+            {
+              "type": "p",
+              "text": "Thirty of the 110 clean orders reach R100 or more. Quote text in double quotes, and remember that the test is a statement that is either true or false."
+            },
+            {
+              "type": "h",
+              "text": "Totals with conditions"
+            },
+            {
+              "type": "p",
+              "text": "Often you do not want the total of everything, only of the rows that meet a condition. That is what the \"IF\" family does."
+            },
+            {
+              "type": "table",
+              "caption": "Conditional functions",
+              "headers": [
+                "Function",
+                "Question it answers",
+                "Syntax pattern"
+              ],
+              "rows": [
+                [
+                  "SUMIF",
+                  "Total of one range where another range matches",
+                  "SUMIF(criteria_range, criteria, sum_range)"
+                ],
+                [
+                  "COUNTIF",
+                  "How many rows match",
+                  "COUNTIF(criteria_range, criteria)"
+                ],
+                [
+                  "AVERAGEIF",
+                  "Average where rows match",
+                  "AVERAGEIF(criteria_range, criteria, average_range)"
+                ],
+                [
+                  "SUMIFS, COUNTIFS, AVERAGEIFS",
+                  "The same, with several conditions at once",
+                  "SUMIFS(sum_range, range1, criteria1, range2, criteria2)"
+                ]
+              ]
+            },
+            {
+              "type": "code",
+              "label": "Café examples on the clean data (rows 2 to 111)",
+              "text": "=SUMIF(C2:C111,\"Johannesburg\",I2:I111)   returns 2712\n=COUNTIF(C2:C111,\"Durban\")               returns 30\n=AVERAGEIF(C2:C111,\"Durban\",I2:I111)     returns 85.17 (rounded)\n=COUNTIFS(E2:E111,\"Coffee\",B2:B111,\">=\"&DATE(2026,2,1),B2:B111,\"<\"&DATE(2026,3,1))   returns 12"
+            },
+            {
+              "type": "p",
+              "text": "The last one counts Coffee orders placed in February 2026. Notice that SUMIFS puts the range to add first, while COUNTIFS has no such range. Dates in criteria are built with DATE and joined to the comparison symbol with an ampersand."
+            },
+            {
+              "type": "callout",
+              "tone": "tip",
+              "title": "Point to a cell, not typed text",
+              "text": "Instead of typing \"Johannesburg\" into each formula, put the region name in a cell such as K2 and use `=SUMIF($C$2:$C$111,K2,$I$2:$I$111)`. Copy it down a list of regions and each row calculates its own total. This is where absolute references earn their keep."
+            },
+            {
+              "type": "exercise",
+              "title": "Region totals with SUMIF",
+              "intro": "Use your cleaned Clean sheet with the Revenue column.",
+              "tasks": [
+                "List the four regions in a small table beside the data.",
+                "Write one SUMIF formula using locked ranges and fill it down.",
+                "Add up the four results and confirm they equal your overall total of R8,542."
+              ],
+              "reflection": "What does it tell you if the four regional totals do not add up to the overall total?"
+            },
+            {
+              "type": "check",
+              "id": "m05-l02-c1",
+              "kind": "single",
+              "prompt": "Which formula counts the orders where Category (column E) is \"Tea\" in a clean range E2:E111?",
+              "options": [
+                "=COUNTIF(E2:E111,\"Tea\")",
+                "=SUMIF(E2:E111,\"Tea\")",
+                "=COUNT(E2:E111,\"Tea\")",
+                "=IF(E2:E111,\"Tea\")"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "COUNTIF counts the cells that meet a condition. COUNT counts numbers only, and the other two are not valid ways to count matches."
+            }
+          ]
+        },
+        {
+          "id": "m05-l03",
+          "title": "Lookups and reading error messages",
+          "minutes": 11,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "A lookup finds a value in one list and returns a related value from the same row. Suppose you keep a small price list on a sheet called Prices, with products in column A and prices in column B. A lookup can fetch the price for any product on the order sheet."
+            },
+            {
+              "type": "code",
+              "label": "Two ways to look up a price",
+              "text": "=XLOOKUP(D2,Prices!A:A,Prices!B:B)\n=VLOOKUP(D2,Prices!$A$2:$B$14,2,FALSE)"
+            },
+            {
+              "type": "p",
+              "text": "XLOOKUP is the newer function: give it the value to find, the column to search and the column to return. It is available in current Excel, in Google Sheets and in recent LibreOffice. VLOOKUP is the older equivalent and works in every version. Its second-to-last argument says which column of the range to return, counting from the left, and the final FALSE asks for an exact match. Forget that FALSE and you may get a wrong answer without any warning."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "Cappuccino",
+              "text": "With D2 holding Cappuccino, both formulas return 36, the café's Cappuccino price. If D2 held \"Cappuccino \" with a trailing space, they would return an error, because the lookup finds no exact match. The cleaning in the last module is what makes lookups work."
+            },
+            {
+              "type": "h",
+              "text": "Reading error messages"
+            },
+            {
+              "type": "p",
+              "text": "When a formula cannot give an answer it shows an error code. These are not insults. Each one is a clue."
+            },
+            {
+              "type": "table",
+              "caption": "Common spreadsheet errors",
+              "headers": [
+                "Error",
+                "Usual meaning",
+                "Typical cause"
+              ],
+              "rows": [
+                [
+                  "#DIV/0!",
+                  "Division by zero",
+                  "AVERAGE of a range with no numbers, or a divide by an empty cell"
+                ],
+                [
+                  "#N/A",
+                  "A lookup found nothing",
+                  "Value missing from the list, or a stray space or different spelling"
+                ],
+                [
+                  "#VALUE!",
+                  "Wrong kind of value",
+                  "Trying to do arithmetic on text"
+                ],
+                [
+                  "#NAME?",
+                  "Unknown name",
+                  "Misspelt function, or one your program version lacks"
+                ],
+                [
+                  "#REF!",
+                  "Broken reference",
+                  "A cell or column the formula used was deleted"
+                ]
+              ]
+            },
+            {
+              "type": "p",
+              "text": "Never hide an error just to make a sheet look tidy. Find the cause. Wrapping a formula in IFERROR hides a problem rather than solving it, and a lookup that silently returns a blank can hide a wrong total. If you do use it, display a message such as \"check\" so that you can find the problem later."
+            },
+            {
+              "type": "callout",
+              "tone": "key",
+              "title": "Check your own formulas",
+              "text": "After writing a formula, test it on one row you can calculate by hand. If row 2 should give 76 and the cell says 760, you want to know before you copy it down 110 rows."
+            },
+            {
+              "type": "exercise",
+              "title": "Break it on purpose",
+              "intro": "Do this in a scratch workbook, not your Clean sheet.",
+              "tasks": [
+                "Type a price list for three products, then write a lookup formula that finds a price.",
+                "Add a trailing space to one product name on the order list and note which error appears.",
+                "Try dividing a number by an empty cell and by a text cell, and record both error codes."
+              ],
+              "reflection": "For each error you caused, what was the quickest way to find the real problem?"
+            },
+            {
+              "type": "check",
+              "id": "m05-l03-c1",
+              "kind": "single",
+              "prompt": "A lookup of the product name \"Chai latte\" returns #N/A even though Chai latte is in the price list. What is the most likely cause?",
+              "options": [
+                "A hidden space or different spelling in one of the two names",
+                "The price is too large for the cell",
+                "The sheet has been frozen",
+                "The formula uses brackets"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "#N/A means no exact match was found. Invisible differences such as a trailing space are a classic cause. Freezing, bracket use and cell size do not cause #N/A."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m06",
+      "title": "Sorting, filtering and summarising",
+      "summary": "Sort and filter safely, then use PivotTables to summarise the cleaned café data by region, month and category.",
+      "objectives": [
+        "Sort by one or several columns without scrambling records",
+        "Filter data and use SUBTOTAL so totals respect the filter",
+        "Build PivotTables with rows, columns and different summary types",
+        "Group dates by month and show values as shares"
+      ],
+      "lessons": [
+        {
+          "id": "m06-l01",
+          "title": "Sorting and filtering without breaking your data",
+          "minutes": 10,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Sorting puts rows in order. Filtering hides the rows that do not meet a condition. Both are quick and powerful, and both are common ways to damage a dataset if you do them carelessly."
+            },
+            {
+              "type": "h",
+              "text": "The classic mistake"
+            },
+            {
+              "type": "p",
+              "text": "Imagine a block of orders where each row holds an OrderID, a region and a price. You click on the Region column, choose \"sort A to Z\" and the program sorts only that one column. Each region name moves to a new row, but the prices stay where they were. Every record is now scrambled: Durban's name sits beside Johannesburg's price. Some programs ask whether to expand the selection, and a hurried click on the wrong answer causes exactly this. The sheet looks fine until someone checks a single order."
+            },
+            {
+              "type": "callout",
+              "tone": "warning",
+              "title": "Sort whole records, never a lone column",
+              "text": "Select the whole block of data, or click a single cell inside it and let the program detect the table, and confirm that it treats the top row as a header. A sort moves entire rows only when the whole range is included."
+            },
+            {
+              "type": "p",
+              "text": "Most programs detect a continuous block automatically when you click inside it. That is another reason blank rows and stray notes beside the data are dangerous: they cut the block in two."
+            },
+            {
+              "type": "h",
+              "text": "Sorting by more than one column"
+            },
+            {
+              "type": "p",
+              "text": "You can sort by one column first and break ties with another. To see the biggest orders in each region, sort by Region A to Z, then by Revenue largest to smallest. Within Cape Town the highest-revenue orders come first, then Durban, and so on."
+            },
+            {
+              "type": "table",
+              "caption": "Single sort versus multi-level sort",
+              "headers": [
+                "Sort order",
+                "Result"
+              ],
+              "rows": [
+                [
+                  "Revenue, largest first",
+                  "The top order overall comes first: BZC-1063, R275 (Soup of the day, Cape Town)"
+                ],
+                [
+                  "Region A to Z, then Revenue largest first",
+                  "Each region is grouped, with its biggest orders at the top of its group"
+                ]
+              ]
+            },
+            {
+              "type": "h",
+              "text": "Filtering"
+            },
+            {
+              "type": "p",
+              "text": "A filter adds a drop-down to each header. Choose Durban in the Region filter and only Durban rows remain visible. The other rows are hidden, not deleted, and clearing the filter brings them back. Use filters to inspect, to check suspicious rows and to copy a subset elsewhere."
+            },
+            {
+              "type": "p",
+              "text": "Here is the catch. A plain `=SUM` over a filtered column still adds the hidden rows. If you want a total that respects the filter, use SUBTOTAL, which ignores rows hidden by a filter when you use its summing version."
+            },
+            {
+              "type": "code",
+              "label": "A total that follows the filter",
+              "text": "=SUBTOTAL(9,I2:I111)\n\nWith no filter: 8542\nFiltered to Durban: 2555"
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "A treasurer's list",
+              "text": "A school club treasurer filters the member list to show unpaid fees. She sees 18 names, but the plain SUM at the bottom still shows the total owed by everyone. Switching to SUBTOTAL makes the number match what she can see."
+            },
+            {
+              "type": "callout",
+              "tone": "tip",
+              "title": "Work on a copy",
+              "text": "Sort and filter on the Clean sheet or on a copy, never on Raw. If a sort goes wrong, an Undo should fix it, but a saved mistake on your only copy cannot be fixed."
+            },
+            {
+              "type": "exercise",
+              "title": "Sort and filter the café data",
+              "intro": "Use the Clean sheet with 110 orders and the Revenue column.",
+              "tasks": [
+                "Sort by Revenue, largest first, with the whole block selected. Note the top order and its region.",
+                "Sort again by Region, then by Revenue largest first.",
+                "Filter to Durban and compare `=SUBTOTAL(9,I2:I111)` with a plain SUM of the same range."
+              ],
+              "reflection": "Which row of the data would have been scrambled if you had sorted only column C?"
+            },
+            {
+              "type": "check",
+              "id": "m06-l01-c1",
+              "kind": "single",
+              "prompt": "You sort only the Region column of a table, leaving the other columns unselected. What is the result?",
+              "options": [
+                "Region values no longer line up with the rest of their records",
+                "The table sorts correctly because the other columns follow automatically",
+                "The program deletes the unselected columns",
+                "Only the header row is sorted"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "Sorting one column in isolation rearranges it independently of the others, so each record now mixes fields from different orders."
+            }
+          ]
+        },
+        {
+          "id": "m06-l02",
+          "title": "PivotTables, step by step",
+          "minutes": 12,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "A **PivotTable** summarises a large table in a few seconds. Instead of writing a SUMIF for every region, you drag fields into a layout and the program builds the summary for you. It is the most useful tool in this course, and it only works well on tidy data. Because your Region column is now clean, it will work well on the café file."
+            },
+            {
+              "type": "steps",
+              "title": "Build a revenue-by-region PivotTable",
+              "items": [
+                {
+                  "title": "Check the source",
+                  "text": "Your Clean sheet has one header row, no blank rows, 110 orders, and a Revenue column in I."
+                },
+                {
+                  "title": "Insert a PivotTable",
+                  "text": "Select a cell inside the data and choose the PivotTable option. Place it on a new sheet called Summary."
+                },
+                {
+                  "title": "Choose Region for the rows",
+                  "text": "Drag the Region field into the Rows area."
+                },
+                {
+                  "title": "Choose Revenue for the values",
+                  "text": "Drag Revenue into Values. Make sure it says Sum of Revenue, not Count."
+                },
+                {
+                  "title": "Sort and check",
+                  "text": "Sort the results from largest to smallest and compare the grand total with your overall SUM."
+                }
+              ]
+            },
+            {
+              "type": "table",
+              "caption": "What the PivotTable shows",
+              "headers": [
+                "Region",
+                "Sum of Revenue"
+              ],
+              "rows": [
+                [
+                  "Johannesburg",
+                  "2,712"
+                ],
+                [
+                  "Cape Town",
+                  "2,579"
+                ],
+                [
+                  "Durban",
+                  "2,555"
+                ],
+                [
+                  "Gqeberha",
+                  "696"
+                ],
+                [
+                  "Grand total",
+                  "8,542"
+                ]
+              ]
+            },
+            {
+              "type": "p",
+              "text": "Johannesburg is the top region by revenue, at R2,712. The grand total matches your formula total, which is the cross-check that tells you the PivotTable is reading the right data."
+            },
+            {
+              "type": "h",
+              "text": "Count, sum and average are different questions"
+            },
+            {
+              "type": "p",
+              "text": "In the Values area you choose how to summarise. Sum of Revenue answers \"how much money\". Count of OrderID answers \"how many orders\". Average of Revenue answers \"how big is a typical order\". The same field can give three different tables. Johannesburg leads on orders with 35 and on revenue. Durban has the highest average order, about R85.17, even though it ranks third on revenue."
+            },
+            {
+              "type": "callout",
+              "tone": "key",
+              "title": "A PivotTable is only as clean as your data",
+              "text": "Run the PivotTable on the raw file and Region would list sixteen spellings of four branches, each with its own little total. The PivotTable has not made a mistake. It has faithfully summarised messy data."
+            },
+            {
+              "type": "callout",
+              "tone": "warning",
+              "title": "PivotTables may need refreshing",
+              "text": "If you change values in the source data, many programs do not update the PivotTable until you refresh it. A stale PivotTable is a quiet way to report old numbers."
+            },
+            {
+              "type": "exercise",
+              "title": "Region summary with a PivotTable",
+              "intro": "Use your cleaned café data.",
+              "tasks": [
+                "Build the PivotTable above and sort it by revenue.",
+                "Change the value to Count of OrderID and note the order counts per region.",
+                "Change it to Average of Revenue and find which region has the highest average order."
+              ],
+              "reflection": "Which of the three summaries would you show the owner, and why?"
+            },
+            {
+              "type": "check",
+              "id": "m06-l02-c1",
+              "kind": "single",
+              "prompt": "You build a PivotTable of Sum of Revenue by Region from the cleaned café data. The grand total should equal which figure?",
+              "options": [
+                "R8,542, the total revenue of the 110 orders",
+                "R9,152, the total of all 119 non-blank rows",
+                "R2,712, the top region's revenue",
+                "R77.65, the average order value"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "The PivotTable summarises the same 110 clean orders as your SUM formula, so the grand total must match R8,542. R9,152 would include repeated orders."
+            }
+          ]
+        },
+        {
+          "id": "m06-l03",
+          "title": "Grouping, columns and shares in a PivotTable",
+          "minutes": 11,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Once the first PivotTable feels natural, the same few moves answer most business questions. Put one field in Rows, another in Columns, and a measure in Values."
+            },
+            {
+              "type": "h",
+              "text": "Grouping dates by month"
+            },
+            {
+              "type": "p",
+              "text": "A PivotTable that lists every date separately is not much of a summary. Group the dates into months. Some programs offer this when you drop a date into Rows; others have a Group command. Either way, your dates must be real dates, not text, or grouping will fail. Once grouped, revenue by month for the cleaned file reads:"
+            },
+            {
+              "type": "table",
+              "caption": "Revenue and orders by month, January to March 2026",
+              "headers": [
+                "Month",
+                "Orders",
+                "Revenue (R)"
+              ],
+              "rows": [
+                [
+                  "January",
+                  "30",
+                  "2,344"
+                ],
+                [
+                  "February",
+                  "38",
+                  "2,904"
+                ],
+                [
+                  "March",
+                  "42",
+                  "3,294"
+                ]
+              ]
+            },
+            {
+              "type": "p",
+              "text": "Revenue rose each month, from R2,344 to R3,294. That is a pattern worth asking about, though it does not say why. More orders contributed; the file alone cannot tell you whether more customers came or the same customers came more often."
+            },
+            {
+              "type": "h",
+              "text": "Cross-tabs: rows and columns together"
+            },
+            {
+              "type": "p",
+              "text": "Put Category in Rows and month in Columns to get a grid. Here is the count of orders by month and category:"
+            },
+            {
+              "type": "table",
+              "caption": "Orders by month and category",
+              "headers": [
+                "Category",
+                "Jan",
+                "Feb",
+                "Mar"
+              ],
+              "rows": [
+                [
+                  "Bakery",
+                  "6",
+                  "9",
+                  "8"
+                ],
+                [
+                  "Coffee",
+                  "11",
+                  "12",
+                  "21"
+                ],
+                [
+                  "Light meals",
+                  "3",
+                  "7",
+                  "8"
+                ],
+                [
+                  "Tea",
+                  "10",
+                  "10",
+                  "5"
+                ]
+              ]
+            },
+            {
+              "type": "p",
+              "text": "To answer \"how many Coffee orders were placed in February\", find where the Coffee row meets the Feb column: 12. Coffee took off in March with 21 orders, while Tea fell from 10 to 5."
+            },
+            {
+              "type": "h",
+              "text": "Shares of the total"
+            },
+            {
+              "type": "p",
+              "text": "PivotTables can show each value as a percentage of the grand total instead of a raw sum. Revenue by category, as a share of R8,542: Coffee R3,358 (39.3%), Light meals R2,486 (29.1%), Tea R1,360 (15.9%) and Bakery R1,338 (15.7%). You can reach the same figure by hand with a formula: a category's total divided by the overall total, then formatted as a percentage."
+            },
+            {
+              "type": "code",
+              "label": "Share of total by hand",
+              "text": "=SUMIF(E2:E111,\"Bakery\",I2:I111)/SUM(I2:I111)\n\nReturns 0.1566, shown as 15.7%"
+            },
+            {
+              "type": "callout",
+              "tone": "tip",
+              "title": "Check the PivotTable against a formula",
+              "text": "Pick one cell in the PivotTable and rebuild it with SUMIFS or COUNTIFS. If both agree, you can trust the rest."
+            },
+            {
+              "type": "exercise",
+              "title": "Month and category summaries",
+              "intro": "Use your cleaned café data with the PivotTable you built.",
+              "tasks": [
+                "Group the dates by month and confirm that revenue reads 2,344, 2,904 and 3,294.",
+                "Rearrange the PivotTable with Category in rows and month in columns, counting OrderID.",
+                "Show the category revenue as a percentage of the grand total and identify the biggest share."
+              ],
+              "reflection": "Which result surprised you, and what extra data would you want before drawing a conclusion?"
+            },
+            {
+              "type": "check",
+              "id": "m06-l03-c1",
+              "kind": "single",
+              "prompt": "Using the cross-tab of orders in this lesson, how many Tea orders were placed in March?",
+              "options": [
+                "5",
+                "10",
+                "8",
+                "21"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "Find the Tea row and the Mar column: 5. The figure 21 is Coffee in March, 8 is Bakery or Light meals, and 10 is Tea in January and February."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m07",
+      "title": "Charts and data visualisation",
+      "summary": "Choose a chart that fits the question, and build bar and line charts that are honest, simple and clear.",
+      "objectives": [
+        "Match chart types to questions about comparison, trend, parts of a whole and relationships",
+        "Explain why bar axes start at zero",
+        "Write titles that state the finding",
+        "Remove clutter and avoid misleading design"
+      ],
+      "lessons": [
+        {
+          "id": "m07-l01",
+          "title": "Choosing the right chart for the question",
+          "minutes": 10,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "A chart is an argument made with shapes. It should answer one question quickly. The best way to pick a chart is to name the question first, then choose the shape that makes that answer easiest to see."
+            },
+            {
+              "type": "table",
+              "caption": "Question to chart",
+              "headers": [
+                "Your question",
+                "Best fit",
+                "Café example"
+              ],
+              "rows": [
+                [
+                  "Which is bigger? (comparing categories)",
+                  "Bar or column chart",
+                  "Revenue for each of the four regions"
+                ],
+                [
+                  "How is it changing over time?",
+                  "Line chart",
+                  "Revenue for January, February and March"
+                ],
+                [
+                  "How much of the whole is each part?",
+                  "Pie, only with a few slices; otherwise a bar chart",
+                  "Category share of total revenue"
+                ],
+                [
+                  "Do two numbers move together?",
+                  "Scatter chart",
+                  "Hours of practice against test mark"
+                ]
+              ]
+            },
+            {
+              "type": "h",
+              "text": "Compare with bars"
+            },
+            {
+              "type": "p",
+              "text": "Bars work because we judge length well. Revenue by region, as four bars, shows at once that Johannesburg (R2,712), Cape Town (R2,579) and Durban (R2,555) are close and that Gqeberha (R696) is far behind. Sort the bars from largest to smallest, unless the categories have a natural order such as months. Use horizontal bars when the labels are long, such as product names."
+            },
+            {
+              "type": "h",
+              "text": "Show change with a line"
+            },
+            {
+              "type": "p",
+              "text": "A line connects points that come in order, so the eye reads direction. The café's monthly revenue of R2,344, R2,904 and R3,294 forms a rising line. With only three months, columns would also be fine. With 12 or 52 points, a line is clearly better. Never use a line for unordered categories like regions, because the line suggests that one region leads into the next."
+            },
+            {
+              "type": "h",
+              "text": "Parts of a whole"
+            },
+            {
+              "type": "p",
+              "text": "A pie chart suits a small number of slices that add to 100%, ideally two to four, when the point is a rough impression such as \"about two-fifths is Coffee\". Coffee is 39.3% of revenue, Light meals 29.1%, Tea 15.9% and Bakery 15.7%. Notice that Tea and Bakery are almost identical, and a pie makes that kind of small difference hard to judge. A bar chart handles it better."
+            },
+            {
+              "type": "callout",
+              "tone": "warning",
+              "title": "Thirteen slices are not a pie chart",
+              "text": "The café sells thirteen products. A pie of units sold would have thirteen thin wedges with a legend nobody can follow. A sorted bar chart shows Cappuccino's 55 units against Rooibos latte's 23 immediately."
+            },
+            {
+              "type": "h",
+              "text": "Relationships with scatter"
+            },
+            {
+              "type": "p",
+              "text": "A scatter chart plots each case as a dot, with one measure across and another up. If dots rise from left to right, the two measures tend to rise together. It suits questions like \"do the learners who practise more score higher?\". A pattern in a scatter shows association, not proof that one thing causes the other."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "A freelancer's decision",
+              "text": "A freelance photographer wants to know whether her busiest months are also her most profitable. One dot per month, with number of shoots across and income up, would answer that. A pie of income by month would not."
+            },
+            {
+              "type": "callout",
+              "tone": "key",
+              "title": "One chart, one question",
+              "text": "If a chart needs a paragraph of explanation before anyone understands it, change the chart, not the paragraph."
+            },
+            {
+              "type": "exercise",
+              "title": "Match charts to questions",
+              "intro": "No software needed for this one. Use paper or a document.",
+              "tasks": [
+                "For each question, write the chart type you would pick: revenue by SalesRep; revenue trend over three months; share of orders by Category; quantity against revenue for each order.",
+                "For each choice, write one sentence on why a different chart would be worse.",
+                "Pick one and sketch it with its title."
+              ],
+              "reflection": "Which of your choices would you least like to defend, and what would you change?"
+            },
+            {
+              "type": "check",
+              "id": "m07-l01-c1",
+              "kind": "single",
+              "prompt": "A café owner wants to see how monthly revenue changed from January to March. Which chart is the best fit?",
+              "options": [
+                "A line chart with the months in order",
+                "A pie chart with one slice per month",
+                "A scatter chart with regions on the horizontal axis",
+                "A bar chart with the bars in random order"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "Change over ordered time is shown best by a line. A pie shows parts of a whole, and random ordering or unrelated axes make the pattern harder to see."
+            }
+          ]
+        },
+        {
+          "id": "m07-l02",
+          "title": "Honest charts: axes, titles and clutter",
+          "minutes": 11,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "The same numbers can make very different pictures. Most misleading charts are not lies on purpose. They are the result of default settings, or the wish to make a small difference look dramatic. Learn the common traps and you will avoid them, and spot them in other people's work."
+            },
+            {
+              "type": "h",
+              "text": "Start bar axes at zero"
+            },
+            {
+              "type": "p",
+              "text": "A bar's length stands for its value. If the axis starts above zero, the bars are chopped, and a small difference looks huge. Take the two top regions: Johannesburg R2,712 and Cape Town R2,579. Johannesburg's revenue is about 5% higher. If the axis starts at R2,500, Johannesburg's visible bar is 212 units tall and Cape Town's only 79, nearly three times as tall, for a difference of 5%."
+            },
+            {
+              "type": "table",
+              "caption": "The same two bars, two axes",
+              "headers": [
+                "Axis starts at",
+                "Johannesburg bar",
+                "Cape Town bar",
+                "Looks like"
+              ],
+              "rows": [
+                [
+                  "0",
+                  "2,712",
+                  "2,579",
+                  "A small gap"
+                ],
+                [
+                  "2,500",
+                  "212",
+                  "79",
+                  "A huge gap"
+                ]
+              ]
+            },
+            {
+              "type": "callout",
+              "tone": "key",
+              "title": "Line charts have more freedom",
+              "text": "A line chart shows position, not bar length, so its axis need not start at zero. But if you zoom in, say so, and keep the scale fair."
+            },
+            {
+              "type": "h",
+              "text": "Write titles that state the finding"
+            },
+            {
+              "type": "p",
+              "text": "\"Revenue by region\" describes the chart. \"Johannesburg leads, but only by R133 over Cape Town\" tells the reader what to notice. A finding-style title does the first job of the analyst: it says what the data means. Add axis labels with units, such as rand, and a note of the data period."
+            },
+            {
+              "type": "h",
+              "text": "Remove clutter"
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                "Delete heavy gridlines, borders and background fills.",
+                "Skip 3D effects. They distort the bar sizes and add nothing.",
+                "Use one colour for all the bars, and a second colour only to highlight the one you are talking about.",
+                "Label bars directly when there are few, instead of forcing readers to trace across to an axis.",
+                "Keep fonts large enough to read on a phone screen."
+              ]
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "The pie with thirteen wedges",
+              "text": "A café manager builds a rainbow pie of units by product. The viewer needs the legend to decode every colour and still cannot compare Chai latte with Bran muffin. A single-colour bar chart sorted by units solves it."
+            },
+            {
+              "type": "h",
+              "text": "Check before you share"
+            },
+            {
+              "type": "p",
+              "text": "Compare every number on the chart with your PivotTable or formula. Check that the title matches what is plotted, that the period is stated, and that the sorting makes sense. A chart with a wrong number is worse than no chart because people trust pictures."
+            },
+            {
+              "type": "exercise",
+              "title": "Chart the regions honestly",
+              "intro": "Use your Summary PivotTable of revenue by region.",
+              "tasks": [
+                "Create a bar or column chart, sorted largest first, with the axis starting at zero.",
+                "Replace the default title with a finding, add an axis label with the unit, and remove anything that does not help.",
+                "Change the axis minimum to 2,500 to see how the picture changes, then put it back to zero."
+              ],
+              "reflection": "Why would changing the axis be a poor choice if the owner uses the chart to decide where to invest?"
+            },
+            {
+              "type": "check",
+              "id": "m07-l02-c1",
+              "kind": "truefalse",
+              "prompt": "True or false: a column chart's value axis should normally start at zero, because the length of each column represents its value.",
+              "options": [
+                "True",
+                "False"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "Truncating a bar axis exaggerates differences, so columns and bars should start at zero. Line charts have more freedom because they show position rather than length."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m08",
+      "title": "Reporting",
+      "summary": "Turn your analysis into a short, clear report with the answer first, honest caveats, checked numbers and tidy versions.",
+      "objectives": [
+        "Structure a report with the answer first",
+        "Separate what the data shows from interpretation",
+        "Check your own numbers by reconciling and cross-checking",
+        "Keep versions of a report under control"
+      ],
+      "lessons": [
+        {
+          "id": "m08-l01",
+          "title": "Structuring a report: answer first",
+          "minutes": 10,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Analysis that stays in your spreadsheet helps nobody. A report is how your work reaches someone who has to decide something, and that person is usually busy. They will read the first few lines carefully and skim the rest. So you write for that reader: the answer comes first, the evidence follows."
+            },
+            {
+              "type": "steps",
+              "title": "A report structure that works",
+              "items": [
+                {
+                  "title": "The question",
+                  "text": "One line: what were you asked, and for which period and data?"
+                },
+                {
+                  "title": "The answer",
+                  "text": "State it plainly in one to three sentences, with the key numbers."
+                },
+                {
+                  "title": "Supporting numbers",
+                  "text": "A small table or a few figures that back the answer up."
+                },
+                {
+                  "title": "One or two charts",
+                  "text": "Only those that carry the point. More charts dilute it."
+                },
+                {
+                  "title": "Caveats",
+                  "text": "What the reader should know about the data, the cleaning and the limits."
+                },
+                {
+                  "title": "Recommended action",
+                  "text": "What you suggest happens next, or what you would check next."
+                }
+              ]
+            },
+            {
+              "type": "h",
+              "text": "A short example"
+            },
+            {
+              "type": "p",
+              "text": "Here is a report on the café file, short enough for a message to the owner."
+            },
+            {
+              "type": "code",
+              "label": "Café sales, January to March 2026",
+              "text": "Question: Which branch earned the most, and how is the business trending?\n\nAnswer: The four branches earned R8,542 from 110 orders, an average of R77.65 per order. Johannesburg earned the most, R2,712, narrowly ahead of Cape Town (R2,579) and Durban (R2,555). Gqeberha earned R696 from 12 orders. Monthly revenue rose from R2,344 in January to R2,904 in February and R3,294 in March.\n\nSupporting: Coffee brought in 39.3% of revenue. Cappuccino was the best seller with 55 units.\n\nCaveats: 5 blank rows and 9 repeated orders were removed, and region spellings were standardised. The data covers three months only.\n\nNext step: Ask the Gqeberha manager what explains its low order count before the next review."
+            },
+            {
+              "type": "p",
+              "text": "Notice what that report does not do. It does not describe every step you took, and it does not bury the answer under a method section. It also does not claim a reason for Gqeberha's result, because the file does not contain one."
+            },
+            {
+              "type": "callout",
+              "tone": "key",
+              "title": "Answer first",
+              "text": "Put the conclusion at the top. If the reader stops after two lines, they should still know what you found."
+            },
+            {
+              "type": "h",
+              "text": "Describe, do not overclaim"
+            },
+            {
+              "type": "p",
+              "text": "There is a gap between what the data shows and what you can claim. The data shows that revenue rose each month. It does not show that a promotion caused the rise, or that the trend will continue. Words like \"suggests\" and \"is consistent with\" are honest where certainty is not available. State what the data shows, then mark any interpretation as interpretation."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "A club's membership report",
+              "text": "A school club's secretary reports: \"Membership rose from 40 to 55 this term.\" That is a fact. \"The new coach drew them in\" is a theory. Keeping the two in separate sentences lets the committee see which is which."
+            },
+            {
+              "type": "exercise",
+              "title": "Draft a three-line summary",
+              "intro": "Use the facts from your own café analysis, or the example above.",
+              "tasks": [
+                "Write the answer to the question \"Which region earned the most revenue, and by how much more than the second?\" in one sentence with numbers.",
+                "Add one caveat about the data and one recommended next step.",
+                "Read it aloud. Cut every word that the reader does not need."
+              ],
+              "reflection": "What did you cut, and did the report get stronger or weaker?"
+            },
+            {
+              "type": "check",
+              "id": "m08-l01-c1",
+              "kind": "single",
+              "prompt": "A busy owner has two minutes to read your report. Where should the answer to her question go?",
+              "options": [
+                "At the very top, before the supporting detail",
+                "After a full description of every cleaning step",
+                "At the end, as a conclusion",
+                "In an appendix at the bottom"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "Readers who stop early should still have the answer. Put the finding first, then the evidence, caveats and next steps."
+            }
+          ]
+        },
+        {
+          "id": "m08-l02",
+          "title": "Checking your numbers and keeping versions",
+          "minutes": 10,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "A wrong number in a report does more damage than a late one. People act on what you say, and the first error you are caught in makes them doubt the rest. Checking is part of the work, and most checks take minutes."
+            },
+            {
+              "type": "h",
+              "text": "Four checks before you send anything"
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                "**Reconcile.** Do the parts add up to the whole? The four region totals (R2,712, R2,579, R2,555 and R696) must sum to R8,542, and the four category totals must reach the same figure.",
+                "**Cross-check with a second method.** If a PivotTable says Johannesburg earned R2,712, a SUMIF should say so too. If they disagree, one of them is wrong.",
+                "**Sanity-check the size.** Is the average order R77.65? Check against the smallest and largest orders (R26 and R275). An average of R700 would be impossible.",
+                "**Retrace the cleaning.** Confirm your counts: 124 rows became 119 after blanks and 110 after repeats."
+              ]
+            },
+            {
+              "type": "p",
+              "text": "Then reread the report as a stranger. Can they tell which period it covers, what the units are, and where the numbers came from? Is every percentage defined? A figure like 39.3% means little until the reader knows it is a share of revenue and not of orders."
+            },
+            {
+              "type": "callout",
+              "tone": "warning",
+              "title": "Do not trust a number just because a tool produced it",
+              "text": "A formula does exactly what you wrote, which may not be what you meant. If your SUMIF range is one row short, you will still get an answer, just a wrong one."
+            },
+            {
+              "type": "table",
+              "caption": "A small check log",
+              "headers": [
+                "Check",
+                "Result",
+                "Pass?"
+              ],
+              "rows": [
+                [
+                  "Region totals sum to overall total",
+                  "2,712 + 2,579 + 2,555 + 696 = 8,542",
+                  "Yes"
+                ],
+                [
+                  "Category totals sum to overall total",
+                  "3,358 + 2,486 + 1,360 + 1,338 = 8,542",
+                  "Yes"
+                ],
+                [
+                  "Orders after cleaning",
+                  "110",
+                  "Yes"
+                ]
+              ]
+            },
+            {
+              "type": "h",
+              "text": "Keep versions under control"
+            },
+            {
+              "type": "p",
+              "text": "Reports change. Someone asks for one more breakdown, and you fix a typo, and soon there are five files called final. Choose a simple habit and stick to it."
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                "Put the date or a version number in the file name, such as cafe-analysis-2026-04-02-v2.",
+                "Keep the raw data file untouched and separate, and say in the report which file it came from.",
+                "Keep a short change log: what changed, when and why.",
+                "When sending a report, send the finished version in a format that cannot be edited by accident, and keep the working file yourself."
+              ]
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "The freelancer's quote",
+              "text": "A freelancer sends a quote spreadsheet to a client, then adjusts a rate and sends another. The client's accountant uses the first, the client the second. A version number in the file name and a single line in the email, \"this replaces v1\", would have prevented the argument."
+            },
+            {
+              "type": "exercise",
+              "title": "Reconcile your own analysis",
+              "intro": "Use your café Summary sheet.",
+              "tasks": [
+                "Add up the four region totals and the four category totals and confirm both equal R8,542.",
+                "Recalculate one region total by SUMIF and compare it with your PivotTable.",
+                "Write a three-line check log and give your file a name that includes a date and version."
+              ],
+              "reflection": "Which check would have caught your most likely mistake?"
+            },
+            {
+              "type": "check",
+              "id": "m08-l02-c1",
+              "kind": "multi",
+              "prompt": "Select all that apply. Which are sensible checks before sending a report?",
+              "options": [
+                "Confirm that the region totals add up to the overall total",
+                "Recalculate one key figure with a second method",
+                "Replace any figure you cannot explain with a rounder number",
+                "Check that the period and units are stated"
+              ],
+              "correct": [
+                0,
+                1,
+                3
+              ],
+              "explain": "Reconciling, cross-checking and stating the period and units all make a report more reliable. Replacing unexplained figures with rounder ones hides the problem rather than solving it."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m09",
+      "title": "Basic dashboards",
+      "summary": "Plan and build a simple one-screen dashboard with KPI cells, a selector and charts that stay correct as data changes.",
+      "objectives": [
+        "Define a dashboard's purpose and audience",
+        "Lay out KPI cells and charts in a clear reading order on one screen",
+        "Build a selector that drives formulas",
+        "Keep totals correct and refresh the dashboard when data changes"
+      ],
+      "lessons": [
+        {
+          "id": "m09-l01",
+          "title": "What a dashboard is for, and how to lay one out",
+          "minutes": 9,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "A dashboard is a single page that shows the handful of numbers someone needs to keep an eye on, so they can see how things stand at a glance. It is not a report with every chart you could make. It is closer to the instrument panel of a car: speed, fuel, warning lights, and nothing you do not need while driving."
+            },
+            {
+              "type": "h",
+              "text": "Start with purpose and audience"
+            },
+            {
+              "type": "p",
+              "text": "Two questions decide everything. Who will look at this, and what decision will it help them make? The café owner who checks sales each Monday needs a different dashboard from a branch manager who watches the day's orders. If you cannot answer both questions in a sentence, you are not ready to build."
+            },
+            {
+              "type": "h",
+              "text": "The parts of a simple dashboard"
+            },
+            {
+              "type": "table",
+              "caption": "Parts and their jobs",
+              "headers": [
+                "Part",
+                "Job",
+                "Café example"
+              ],
+              "rows": [
+                [
+                  "KPI cells",
+                  "Show a key number big and clear",
+                  "Total revenue R8,542; 110 orders; average order R77.65"
+                ],
+                [
+                  "Linked charts",
+                  "Show a comparison or a trend",
+                  "Revenue by region; revenue by month"
+                ],
+                [
+                  "Selector",
+                  "Let the viewer choose a region or period",
+                  "A drop-down to pick Durban"
+                ],
+                [
+                  "Notes",
+                  "State the data period and source",
+                  "Jan to Mar 2026, cleaned practice data"
+                ]
+              ]
+            },
+            {
+              "type": "p",
+              "text": "**KPI** stands for key performance indicator: a number chosen because it matters to the purpose. Pick few, perhaps three to six. If everything is a KPI, nothing is."
+            },
+            {
+              "type": "h",
+              "text": "Layout and reading order"
+            },
+            {
+              "type": "p",
+              "text": "People read a screen like a page: from the top left, across and down. Put the most important figures at the top, supporting charts below, and details last. Keep related items together. Align the pieces on a tidy grid and leave some white space. Use one number format throughout."
+            },
+            {
+              "type": "steps",
+              "title": "A reading order that works",
+              "items": [
+                {
+                  "title": "Title and period",
+                  "text": "What is this and what dates does it cover?"
+                },
+                {
+                  "title": "KPI row",
+                  "text": "The three to six headline numbers."
+                },
+                {
+                  "title": "Main chart",
+                  "text": "The single comparison or trend that matters most."
+                },
+                {
+                  "title": "Supporting chart",
+                  "text": "One more view, such as a breakdown by category."
+                },
+                {
+                  "title": "Notes",
+                  "text": "Source, last updated date and any caveat."
+                }
+              ]
+            },
+            {
+              "type": "callout",
+              "tone": "key",
+              "title": "One screen",
+              "text": "If the viewer has to scroll or click through tabs to understand the page, it is not a dashboard yet. Cut something. Every extra element competes with the important ones."
+            },
+            {
+              "type": "callout",
+              "tone": "warning",
+              "title": "A dashboard cannot rescue bad data",
+              "text": "A dashboard shows whatever its source contains. If the source still has repeated orders, every KPI is inflated, and it looks authoritative. Clean first, build second."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "A school sports club",
+              "text": "The club chair wants to know three things each term: how many members have paid, how much is still owed, and which sport is the busiest. Three KPI cells, one bar chart and a term selector make a perfectly good dashboard."
+            },
+            {
+              "type": "exercise",
+              "title": "Sketch a dashboard on paper",
+              "intro": "You do not need software.",
+              "tasks": [
+                "Write a one-sentence purpose and name the audience for a café dashboard.",
+                "Choose four KPIs from the cleaned café data and one chart.",
+                "Draw a rough grid showing where each item sits, and number the reading order."
+              ],
+              "reflection": "What did you leave out, and why?"
+            },
+            {
+              "type": "check",
+              "id": "m09-l01-c1",
+              "kind": "single",
+              "prompt": "Which choice describes a well-designed dashboard best?",
+              "options": [
+                "A single screen with a few key numbers and one or two charts chosen for a stated purpose",
+                "A workbook of fifteen charts, so that every question has an answer",
+                "A long scrolling page of every table in the file",
+                "A page that uses a different colour for each chart to look lively"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "A dashboard is selective. A few relevant numbers and charts, arranged in reading order on one screen, serve its purpose better than a collection of everything."
+            }
+          ]
+        },
+        {
+          "id": "m09-l02",
+          "title": "Building one: KPIs, selectors and refreshing",
+          "minutes": 11,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "Build your dashboard on its own sheet, called Dashboard, and let it draw everything from the Clean sheet. The dashboard holds formulas and charts, never typed-in numbers. When the data changes, the dashboard should change with it."
+            },
+            {
+              "type": "h",
+              "text": "KPI cells"
+            },
+            {
+              "type": "p",
+              "text": "Each KPI is a formula that points at the data. With the clean café data in rows 2 to 111 and Revenue in column I, these are the headline numbers:"
+            },
+            {
+              "type": "code",
+              "label": "KPI formulas",
+              "text": "Total revenue    =SUM(Clean!I2:I111)           returns 8542\nOrders           =COUNTA(Clean!A2:A111)        returns 110\nAverage order    =AVERAGE(Clean!I2:I111)       returns 77.65 (formatted)"
+            },
+            {
+              "type": "p",
+              "text": "Format each KPI cell with a large font and a currency or number format, and put a small label above it. Locking the ranges and checking the answers against what you know to be true, R8,542 and 110, is what makes them trustworthy."
+            },
+            {
+              "type": "h",
+              "text": "A selector"
+            },
+            {
+              "type": "p",
+              "text": "A selector lets the viewer choose, for example, a region from a drop-down list. The list comes from data validation. The KPI formulas then read the chosen value. An \"All\" option is handy."
+            },
+            {
+              "type": "code",
+              "label": "Revenue for the chosen region (selector in B2)",
+              "text": "=IF($B$2=\"All\",SUM(Clean!$I$2:$I$111),SUMIF(Clean!$C$2:$C$111,$B$2,Clean!$I$2:$I$111))"
+            },
+            {
+              "type": "table",
+              "caption": "What the selector should return",
+              "headers": [
+                "Selector",
+                "Revenue",
+                "Orders",
+                "Average order"
+              ],
+              "rows": [
+                [
+                  "All",
+                  "R8,542",
+                  "110",
+                  "R77.65"
+                ],
+                [
+                  "Durban",
+                  "R2,555",
+                  "30",
+                  "R85.17"
+                ],
+                [
+                  "Johannesburg",
+                  "R2,712",
+                  "35",
+                  "R77.49"
+                ]
+              ]
+            },
+            {
+              "type": "p",
+              "text": "Charts on the dashboard should point to summary cells that react to the selector, so they update when it changes. A chart that points straight at fixed data will not respond."
+            },
+            {
+              "type": "h",
+              "text": "Keeping totals correct"
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                "Check every KPI against a trusted total whenever you build or change the dashboard.",
+                "Test the selector for each option. All regions added together should equal the All figure.",
+                "Point formulas at the whole data range, and use a table or a generous range so new rows are included.",
+                "Refresh any PivotTable that feeds the dashboard after the data changes, because many programs do not do it for you.",
+                "Show the date of the data and the last refresh, so readers know how current it is."
+              ]
+            },
+            {
+              "type": "callout",
+              "tone": "warning",
+              "title": "Hardcoded numbers rot",
+              "text": "A KPI that someone typed in as 8542 will still say 8542 after new orders arrive. Always use formulas that point at the data, and keep typed numbers out of the dashboard."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "The reconciliation test",
+              "text": "Set the selector to each of the four regions and add the four revenue results: 2,712 + 2,579 + 2,555 + 696 gives 8,542, matching the All figure. If it did not, something in the formula or the data would be wrong."
+            },
+            {
+              "type": "exercise",
+              "title": "Build a mini dashboard",
+              "intro": "Use your cleaned café data.",
+              "tasks": [
+                "Create a Dashboard sheet with KPI cells for total revenue, orders and average order, and confirm they show R8,542, 110 and R77.65.",
+                "Add a region drop-down and the revenue formula with an All option, and test it for Durban.",
+                "Add one chart of revenue by month and check that its title states the finding."
+              ],
+              "reflection": "Which KPI would you remove first if the dashboard felt crowded?"
+            },
+            {
+              "type": "check",
+              "id": "m09-l02-c1",
+              "kind": "truefalse",
+              "prompt": "True or false: if a KPI cell contains a typed number instead of a formula, it will update automatically when new orders are added to the data.",
+              "options": [
+                "True",
+                "False"
+              ],
+              "correct": [
+                1
+              ],
+              "explain": "A typed number is fixed. Only formulas that point at the data recalculate, which is why dashboards must be built from formulas."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m10",
+      "title": "Practical data analysis",
+      "summary": "Apply the whole workflow to the practice file, practise the eight question types and prepare to do the final practical carefully.",
+      "objectives": [
+        "Carry out the full open, clean, calculate, chart and report workflow",
+        "Answer the eight practical question types accurately and check each one a second way",
+        "Recognise and avoid the common slips",
+        "Approach the final practical with a careful routine"
+      ],
+      "lessons": [
+        {
+          "id": "m10-l01",
+          "title": "The whole workflow on the practice file",
+          "minutes": 12,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "You now have every piece: structure, cleaning, formulas, summaries, charts and reporting. This lesson joins them into one routine you can repeat on any dataset. Follow it on the café practice file and keep a log of your counts as you go."
+            },
+            {
+              "type": "steps",
+              "title": "The end-to-end routine",
+              "items": [
+                {
+                  "title": "Open and back up",
+                  "text": "Open the file, save it as a workbook, and keep an untouched Raw sheet. Work on a copy called Clean."
+                },
+                {
+                  "title": "Look first",
+                  "text": "Note the layout: 8 columns, 124 data rows under the header. Run COUNTA on OrderID and look for odd values."
+                },
+                {
+                  "title": "Clean",
+                  "text": "Remove the 5 blank rows, then keep each OrderID once, then standardise Region. Log each count."
+                },
+                {
+                  "title": "Add the helper column",
+                  "text": "Revenue in column I: `=F2*G2`, filled down to the last order."
+                },
+                {
+                  "title": "Answer the questions",
+                  "text": "With formulas first, then confirm each with a PivotTable."
+                },
+                {
+                  "title": "Chart and write",
+                  "text": "One honest chart, then a short report with the answer first and the caveats stated."
+                }
+              ]
+            },
+            {
+              "type": "h",
+              "text": "Your checkpoints"
+            },
+            {
+              "type": "p",
+              "text": "These numbers should come out the same for anyone who follows the cleaning rules, which is why they make good checkpoints. If one of yours differs, stop and find out why before going on."
+            },
+            {
+              "type": "table",
+              "caption": "Checkpoint log for the practice file",
+              "headers": [
+                "Step",
+                "Expected result"
+              ],
+              "rows": [
+                [
+                  "Data rows as received",
+                  "124"
+                ],
+                [
+                  "After removing blank rows",
+                  "119"
+                ],
+                [
+                  "After keeping each OrderID once",
+                  "110"
+                ],
+                [
+                  "Distinct regions after standardising",
+                  "4"
+                ],
+                [
+                  "Total revenue",
+                  "R8,542"
+                ]
+              ]
+            },
+            {
+              "type": "p",
+              "text": "If your total is R9,152, you added the repeated orders. If a region total looks low, check for trailing spaces in Region. If a region appears several times in a PivotTable, the standardising step is incomplete."
+            },
+            {
+              "type": "callout",
+              "tone": "tip",
+              "title": "Order matters",
+              "text": "Backup, then blanks, then duplicates, then text, then calculations. Each step removes a problem that would confuse the next one."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "What a stubborn mismatch looks like",
+              "text": "A learner's Johannesburg total shows R2,498 instead of R2,712 after removing duplicates. Everything else seems fine. The cause is the stray spaces: some Johannesburg rows have a space before or after the name, and the SUMIF skips them. TRIM, then recalculate."
+            },
+            {
+              "type": "h",
+              "text": "Finish with a chart and a finding"
+            },
+            {
+              "type": "p",
+              "text": "Make a column chart of revenue by region, with the axis starting at zero and a title that states the finding: \"Johannesburg leads Cape Town by only R133 across three months\". Then write the first lines of your report, answer first. You have done the full job."
+            },
+            {
+              "type": "exercise",
+              "title": "Run the whole routine",
+              "intro": "Use the café practice file. Allow 60 to 90 minutes, and keep your log open.",
+              "tasks": [
+                "Back up the raw data, clean it, and confirm each checkpoint in the table.",
+                "Add the Revenue column and calculate total revenue and the average order value.",
+                "Build a region PivotTable, make a chart, and write a four-line report with a caveat."
+              ],
+              "reflection": "Which step took longest, and what would you automate if you had to repeat this every month?"
+            },
+            {
+              "type": "check",
+              "id": "m10-l01-c1",
+              "kind": "single",
+              "prompt": "You remove blank rows and duplicates from the practice file and calculate total revenue. You get R9,152. What most likely happened?",
+              "options": [
+                "The repeated orders were still in the data",
+                "The blank rows were counted twice",
+                "Region spellings were not standardised",
+                "The Revenue column was formatted as currency"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "R9,152 is the total of all 119 non-blank rows, including the nine repeated orders. The correct cleaned total is R8,542."
+            }
+          ]
+        },
+        {
+          "id": "m10-l02",
+          "title": "Eight question types, worked on the practice file",
+          "minutes": 12,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "The final practical asks eight questions of a fresh dataset with the same layout as the café file. Here are the eight question types, each worked on the practice file, so you know what a careful answer looks like. These answers belong to the practice file only. Your practical uses different data, so its answers will differ."
+            },
+            {
+              "type": "table",
+              "caption": "The eight questions on the practice file (110 clean orders)",
+              "headers": [
+                "#",
+                "Question type",
+                "Worked answer"
+              ],
+              "rows": [
+                [
+                  "1",
+                  "Orders after removing blank rows and duplicate OrderIDs",
+                  "110"
+                ],
+                [
+                  "2",
+                  "Total revenue",
+                  "R8,542.00"
+                ],
+                [
+                  "3",
+                  "Top region by revenue",
+                  "Johannesburg"
+                ],
+                [
+                  "4",
+                  "That region's revenue",
+                  "R2,712.00"
+                ],
+                [
+                  "5",
+                  "Average order value",
+                  "R77.65"
+                ],
+                [
+                  "6",
+                  "Best-selling product by units",
+                  "Cappuccino, 55 units"
+                ],
+                [
+                  "7",
+                  "Orders in a given month for a given category",
+                  "Coffee in February: 12 orders"
+                ],
+                [
+                  "8",
+                  "A category's share of total revenue",
+                  "Bakery: 15.7%"
+                ]
+              ]
+            },
+            {
+              "type": "h",
+              "text": "How each one is found"
+            },
+            {
+              "type": "code",
+              "label": "Formulas used (clean data in rows 2 to 111, Revenue in I)",
+              "text": "1  =COUNTA(A2:A111)\n2  =SUM(I2:I111)\n3  PivotTable: Region in rows, Sum of Revenue in values, sorted\n4  =SUMIF(C2:C111,\"Johannesburg\",I2:I111)\n5  =AVERAGE(I2:I111)   or   =SUM(I2:I111)/COUNTA(A2:A111)\n6  PivotTable: Product in rows, Sum of Quantity, sorted\n7  =COUNTIFS(E2:E111,\"Coffee\",B2:B111,\">=\"&DATE(2026,2,1),B2:B111,\"<\"&DATE(2026,3,1))\n8  =SUMIF(E2:E111,\"Bakery\",I2:I111)/SUM(I2:I111)"
+            },
+            {
+              "type": "p",
+              "text": "Question 5 uses the full average, 77.6545..., shown as R77.65. Question 8 returns 0.1566, which is 15.7% when shown to one decimal place. Round at the end only, never in the middle of a calculation."
+            },
+            {
+              "type": "h",
+              "text": "Two traps worth seeing"
+            },
+            {
+              "type": "p",
+              "text": "Best-selling by units is not the same as best-selling by revenue. Cappuccino leads on both here, with 55 units and R1,980. But second place differs: Rooibos latte is next by units with 23, while Chicken wrap is next by revenue with R884. Read the question: \"best-selling\" in the practical is measured in units."
+            },
+            {
+              "type": "p",
+              "text": "For question 7, the month and the category both matter. Coffee orders in February number 12. Coffee orders in March number 21. Tea orders in February number 10. Filtering on only one of the two conditions would give a different, wrong figure."
+            },
+            {
+              "type": "callout",
+              "tone": "warning",
+              "title": "Orders are not units",
+              "text": "Counting rows counts orders. Summing Quantity counts units. A single order of 5 soups is one order and five units."
+            },
+            {
+              "type": "callout",
+              "tone": "key",
+              "title": "Show the denominator",
+              "text": "For a share, say what it is a share of. Bakery is 15.7% of total revenue. It is not 15.7% of orders; by orders it is a different number."
+            },
+            {
+              "type": "exercise",
+              "title": "Answer all eight on the practice file",
+              "intro": "Use your cleaned file and write each answer next to its question number.",
+              "tasks": [
+                "Find all eight answers and compare them with the table above.",
+                "For any answer that differs, find the cause before correcting anything.",
+                "Then answer two new questions of your own: Tea orders in March and the revenue share of Coffee. Check the second against the shares given in this course."
+              ],
+              "reflection": "Which question type needed the most care, and what mistake would it have been easy to make?"
+            },
+            {
+              "type": "check",
+              "id": "m10-l02-c1",
+              "kind": "single",
+              "prompt": "On the practice file, you count 12 orders for the category Coffee. Which month and category pair does this answer?",
+              "options": [
+                "Coffee in February",
+                "Coffee in March",
+                "Tea in February",
+                "Bakery in March"
+              ],
+              "correct": [
+                0
+              ],
+              "explain": "The cross-tab gives Coffee as 11 in January, 12 in February and 21 in March. Tea in February was 10 and Bakery in March was 8."
+            }
+          ]
+        },
+        {
+          "id": "m10-l03",
+          "title": "The final practical: how to do it carefully",
+          "minutes": 11,
+          "blocks": [
+            {
+              "type": "p",
+              "text": "In the final practical you download a fresh dataset with the same shape as the café file: the same eight columns and different orders, so expect similar untidiness and check for it. You answer eight questions about it, and you need six correct to pass. Nothing in it is a trick, but small slips are easy to make and each one shifts a number."
+            },
+            {
+              "type": "p",
+              "text": "The eight questions are the types you just practised: orders left after cleaning, total revenue, the top region and its revenue, average order value, best-selling product by units, orders in one month for one category, and a category's percentage share of revenue. You already know how to find each."
+            },
+            {
+              "type": "h",
+              "text": "A careful routine"
+            },
+            {
+              "type": "steps",
+              "title": "Work in this order",
+              "items": [
+                {
+                  "title": "Download and back up",
+                  "text": "Save the file, keep an untouched Raw sheet and work on a copy."
+                },
+                {
+                  "title": "Clean in the right order",
+                  "text": "Remove blank rows, keep each OrderID once, then fix the Region spellings. Log every count."
+                },
+                {
+                  "title": "Add Revenue",
+                  "text": "Quantity times UnitPrice in a helper column, filled down to the last order."
+                },
+                {
+                  "title": "Answer with formulas",
+                  "text": "Use SUM, COUNTIFS, SUMIF and a PivotTable where it helps."
+                },
+                {
+                  "title": "Check each answer a second way",
+                  "text": "Confirm with a PivotTable, a SUMIF or a reconciliation."
+                },
+                {
+                  "title": "Read each question again",
+                  "text": "Check the month, the category, the unit and the rounding asked for."
+                }
+              ]
+            },
+            {
+              "type": "h",
+              "text": "Common slips"
+            },
+            {
+              "type": "list",
+              "ordered": false,
+              "items": [
+                "Not removing duplicate orders, which inflates the count and every total.",
+                "Leaving stray spaces or case differences in Region, so a region total comes out short.",
+                "Reporting orders when the question asks for units, or revenue when it asks for orders.",
+                "Filtering on the category but forgetting the month, or the reverse.",
+                "Calculating a share against the wrong total, or rounding too early.",
+                "Typing an answer into the wrong place, or with the wrong number of decimals."
+              ]
+            },
+            {
+              "type": "p",
+              "text": "Use the sanity checks from the reporting module. Region totals should add up to total revenue. The top region's revenue should be less than the total, and the average order value should sit between the smallest and the largest order. If a number fails one of these tests, go back and look."
+            },
+            {
+              "type": "callout",
+              "tone": "tip",
+              "title": "Pace yourself",
+              "text": "Accuracy matters more than speed. If you are stuck on one question, move on and return to it. Once the data is clean, most of the questions are quick."
+            },
+            {
+              "type": "callout",
+              "tone": "warning",
+              "title": "Your answers must be your own numbers",
+              "text": "The practice file's answers, such as R8,542 and Johannesburg, are for practice only. Your assessment dataset is different. Do not enter practice-file answers, and do not guess. Calculate from the file you downloaded."
+            },
+            {
+              "type": "callout",
+              "tone": "example",
+              "title": "A careful check on question 3",
+              "text": "A learner finds the top region by revenue using a PivotTable, then cross-checks the same region with a SUMIF. Both give the same figure, and the four region totals add to the overall revenue. Only then does she write the answer down."
+            },
+            {
+              "type": "exercise",
+              "title": "Rehearse the practical",
+              "intro": "Use the café practice file as if it were the real assessment.",
+              "tasks": [
+                "Set a timer for 60 minutes and answer the eight question types, writing each answer with its units.",
+                "Use the checks above and log any number you corrected.",
+                "Afterwards, list the three slips you came closest to making."
+              ],
+              "reflection": "What one habit will you add to your own routine before attempting the practical?"
+            },
+            {
+              "type": "check",
+              "id": "m10-l03-c1",
+              "kind": "multi",
+              "prompt": "Select all that apply. Which of these actions help you avoid errors in the final practical?",
+              "options": [
+                "Keeping an untouched copy of the downloaded file",
+                "Cleaning the Region text before calculating by region",
+                "Entering the practice file's answers to save time",
+                "Checking each answer a second way before writing it down"
+              ],
+              "correct": [
+                0,
+                1,
+                3
+              ],
+              "explain": "A backup, consistent text and a second check all protect your numbers. The practice file's answers belong to different data and would be wrong for your dataset."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
