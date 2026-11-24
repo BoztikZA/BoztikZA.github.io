@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-labelledby="t"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0d1a10"/><stop offset="1" stop-color="#050806"/></linearGradient><radialGradient id="glow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#8eff3d" stop-opacity=".28"/><stop offset="1" stop-color="#8eff3d" stop-opacity="0"/></radialGradient></defs><rect width="800" height="450" fill="url(#bg)"/><title id="t">A shield with a keyhole surrounded by protective rings</title>
+<circle cx="420" cy="225" r="230" fill="url(#glow)"/>
+<g fill="none" stroke="#8eff3d" stroke-opacity=".25" stroke-width="2"><circle cx="420" cy="225" r="150"/><circle cx="420" cy="225" r="195" stroke-dasharray="4 10"/></g>
+<path d="M420 90 L520 126 V232 C520 292 474 336 420 358 C366 336 320 292 320 232 V126 Z" fill="#0f1c13" stroke="#8eff3d" stroke-width="4"/>
+<path d="M420 112 L500 140 V232 C500 280 464 316 420 336 C376 316 340 280 340 232 V140 Z" fill="none" stroke="#8eff3d" stroke-opacity=".3" stroke-width="2"/>
+<circle cx="420" cy="214" r="26" fill="#8eff3d"/><path d="M420 232 l-12 46 h24 z" fill="#8eff3d"/><circle cx="420" cy="214" r="9" fill="#050806"/>
+<g transform="translate(110 120)"><rect width="150" height="62" rx="12" fill="#101b13" stroke="#f6fff4" stroke-opacity=".16"/><circle cx="24" cy="31" r="9" fill="#8eff3d"/><rect x="44" y="22" width="80" height="7" rx="3.5" fill="#f6fff4" fill-opacity=".8"/><rect x="44" y="37" width="52" height="6" rx="3" fill="#f6fff4" fill-opacity=".3"/></g>
+<g transform="translate(560 270)"><rect width="150" height="62" rx="12" fill="#101b13" stroke="#f6fff4" stroke-opacity=".16"/><g fill="#8eff3d"><circle cx="26" cy="31" r="4"/><circle cx="42" cy="31" r="4"/><circle cx="58" cy="31" r="4"/><circle cx="74" cy="31" r="4"/></g><rect x="92" y="24" width="38" height="14" rx="7" fill="none" stroke="#8eff3d"/></g>
+</svg>
