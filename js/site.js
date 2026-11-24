@@ -23,7 +23,7 @@
    */
   if (nav && links && !links.querySelector('.nav-group')) {
     try {
-            const norm = (href) => { const value = (href || '').replace(/^https?:\/\/[^/]+/i, '').replace(/^\.?\//, ''); return value.charAt(0) === '#' ? value : (value.replace(/[?#].*$/, '') || 'index.html'); };
+      const norm = (href) => { const value = (href || '').replace(/^https?:\/\/[^/]+/i, '').replace(/^\.?\//, ''); return value.charAt(0) === '#' ? value : (value.replace(/[?#].*$/, '') || 'index.html'); };
       const anchors = Array.from(links.querySelectorAll(':scope > a'));
       const byHref = new Map(anchors.map((a) => [norm(a.getAttribute('href')), a]));
       const used = new Set();
