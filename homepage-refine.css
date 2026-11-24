@@ -124,9 +124,6 @@
   .homepage .hm-index {
     gap: 8px 12px;
   }
-  .homepage .hm-creative-studio__visual {
-    min-width: 0;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
