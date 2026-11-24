@@ -2,6 +2,8 @@ import type { Env } from "./types";
 import { handleAdmin } from "./routes/admin";
 import { handleAuth } from "./routes/auth";
 import { handlePublic } from "./routes/public";
+import { handleLearning } from "./learning/routes";
+import { handleLearningAdmin } from "./learning/admin-routes";
 import { handlePromotionAdmin, handlePromotionPublic } from "./routes/promotions";
 import { handleSpotlightAdmin, handleSpotlightPublic } from "./routes/spotlight";
 import { corsHeaders, error, json } from "./routes/util";
@@ -14,7 +16,7 @@ const INGEST_PATHS = new Set([`${API}/public/pageview`, `${API}/public/traffic-s
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const path = new URL(request.url).pathname;
-    const scope = INGEST_PATHS.has(path) ? "ingest" : path.startsWith(`${API}/public/`) ? "public" : "admin";
+    const scope = INGEST_PATHS.has(path) ? "ingest" : path.startsWith(`${API}/public/`) || path.startsWith(`${API}/learning/`) ? "public" : "admin";
 
     // CORS preflight: admin/auth answer only for the site's own origins.
     if (request.method === "OPTIONS") {
@@ -32,11 +34,16 @@ export default {
           : publicPath.startsWith("spotlight")
             ? await handleSpotlightPublic(request, publicPath.slice("spotlight".length).replace("/", ""), env, ctx)
             : await handlePublic(request, publicPath, env, ctx);
+      } else if (path.startsWith(`${API}/learning/`)) {
+        // Boztik Learning Hub (learner API; Bearer private-link token, CORS "*" is safe because no cookies are used).
+        response = await handleLearning(request, path.slice(`${API}/learning/`.length), env);
       } else if (path.startsWith(`${API}/auth/`)) {
         response = await handleAuth(request, path.slice(`${API}/auth/`.length), env);
       } else if (path.startsWith(`${API}/admin/`)) {
         const adminPath = path.slice(`${API}/admin/`.length);
-        response = adminPath.startsWith("promotions")
+        response = adminPath === "learning" || adminPath.startsWith("learning/")
+          ? await handleLearningAdmin(request, adminPath.slice("learning".length), env)
+          : adminPath.startsWith("promotions")
           ? await handlePromotionAdmin(request, adminPath.split("/").filter(Boolean).slice(1), env)
           : adminPath.startsWith("spotlight")
             ? await handleSpotlightAdmin(request, adminPath.slice("spotlight".length).replace("/", ""), env)

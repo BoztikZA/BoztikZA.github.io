@@ -30,6 +30,16 @@ export interface Env {
   NOTIFY_EMAIL_FROM?: string;      // verified sender address
   EMAIL_PROVIDER_URL?: string;     // outbound email HTTP API endpoint
   EMAIL_PROVIDER_KEY?: string;     // API key for that endpoint
+
+  // Boztik Learning Hub (all optional; the Hub works without any of them except AUTH_TOKEN_SALT).
+  // PayPal contributions stay OFF until every PAYPAL_* value is set AND LEARNING_CONTRIBUTIONS_ENABLED="1".
+  // PAYPAL_ENV defaults to "sandbox"; "live" must be set deliberately. See docs/learning-hub-runbook.md.
+  PAYPAL_CLIENT_ID?: string;       // secret
+  PAYPAL_CLIENT_SECRET?: string;   // secret
+  PAYPAL_WEBHOOK_ID?: string;      // id of the webhook registered in the PayPal dashboard
+  PAYPAL_ENV?: string;             // "sandbox" (default) | "live"
+  LEARNING_CONTRIBUTIONS_ENABLED?: string; // "1" to show/accept contributions
+  LEARNING_SITE_ORIGIN?: string;   // public origin used in certificate verification URLs (default https://www.boztik.com)
 }
 
 export interface DeliveryRow {

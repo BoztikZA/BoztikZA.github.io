@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "courses": [
+    {
+      "slug": "cybersecurity-digital-safety",
+      "title": "Cybersecurity & Digital Safety Fundamentals",
+      "subtitle": "Protect your accounts, devices and information from the scams and threats ordinary people actually face.",
+      "category": "cybersecurity-digital-safety",
+      "level": "Beginner–Intermediate",
+      "summary": "Practical, plain-language digital safety: passwords, MFA, phishing, malware, safe browsing, privacy, Wi-Fi and phones, ending in a personal 30-day plan.",
+      "estimatedHours": "5–6 hours",
+      "modules": 10,
+      "lessons": 29,
+      "minutes": 303,
+      "passMark": 70,
+      "practicalPassMark": null,
+      "questionCount": 30
+    },
+    {
+      "slug": "data-analysis-spreadsheets",
+      "title": "Data Analysis & Spreadsheet Skills",
+      "subtitle": "From messy spreadsheet to a clear answer you can defend, using one real practice file.",
+      "category": "data-analytics",
+      "level": "Beginner–Intermediate",
+      "summary": "Learn to clean data, build formulas and PivotTables, chart honestly and report findings, using a practice café dataset that is deliberately messy.",
+      "estimatedHours": "6–7 hours",
+      "modules": 10,
+      "lessons": 25,
+      "minutes": 260,
+      "passMark": 75,
+      "practicalPassMark": 75,
+      "questionCount": 30
+    },
+    {
+      "slug": "practical-ai-productivity",
+      "title": "Practical Artificial Intelligence & AI Productivity",
+      "subtitle": "Use AI tools confidently, check what they give you, and build routines that save real time.",
+      "category": "ai-emerging-technology",
+      "level": "Beginner–Intermediate",
+      "summary": "A hands-on, jargon-free course on using AI chat and image tools for study, work and small business, safely and honestly.",
+      "estimatedHours": "5–6 hours",
+      "modules": 10,
+      "lessons": 28,
+      "minutes": 302,
+      "passMark": 70,
+      "practicalPassMark": null,
+      "questionCount": 30
+    }
+  ]
+}
