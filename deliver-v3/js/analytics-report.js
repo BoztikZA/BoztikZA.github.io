@@ -13,25 +13,27 @@
 
 export const PAGE_LABELS = {
   homepage: "Home",
+  discover: "Discover (retired URL)",
   stores: "Boztik Stores",
   deliver: "Deliver (public page)",
   services: "Services",
   portfolio: "Portfolio",
   toolkit: "Creative Toolkit",
-  tools: "Tools (Image Inspector + Creative Assistant)",
-  guides: "Guides (hub + 4 guide articles)",
+  tools: "Legacy Tools (redirected to Creative Toolkit)",
+  guides: "Guides (hub + 10 guide articles)",
   about: "About",
   support: "Support",
   contact: "Contact",
-  spotlight: "Boztik Spotlight"
+  spotlight: "Boztik Spotlight",
+  spotlight_submit: "Spotlight application page"
 };
 /** Short names for journeys and flow tables. */
 export const SHORT_LABELS = {
-  homepage: "Home", stores: "Stores", deliver: "Deliver", services: "Services", portfolio: "Portfolio",
-  toolkit: "Toolkit", tools: "Tools", guides: "Guides", about: "About", support: "Support", contact: "Contact", spotlight: "Spotlight"
+  homepage: "Home", discover: "Discover (legacy)", stores: "Stores", deliver: "Deliver", services: "Services", portfolio: "Portfolio",
+  toolkit: "Toolkit", tools: "Legacy Tools", guides: "Guides", about: "About", support: "Support", contact: "Contact", spotlight: "Spotlight", spotlight_submit: "Spotlight Apply"
 };
 /** Public pages that should normally receive traffic; used to spot pages with no recorded views. */
-export const KEY_PAGES = ["homepage", "stores", "deliver", "services", "portfolio", "toolkit", "tools", "guides", "about", "support", "contact", "spotlight"];
+export const KEY_PAGES = ["homepage", "stores", "deliver", "services", "portfolio", "toolkit", "guides", "about", "support", "contact", "spotlight", "spotlight_submit"];
 
 export const TYPE_LABELS = {
   photoshop_battles: "PhotoshopBattles",
@@ -310,7 +312,9 @@ export function buildReport(model, { generatedAt = new Date() } = {}) {
   line("- Website page views come from Boztik's own first-party counter (js/pageview.js). It counts page loads, not people; it ignores visitors who send Do Not Track or Global Privacy Control; it may include some automated traffic; it does not de-duplicate repeat loads.");
   line(`- Website counter data begins ${w.dataSince ? `on ${w.dataSince}` : "on an unknown date"}; earlier traffic is not in these numbers.${model.periodKey === "all" ? " 'All available' therefore starts there." : ""}`);
   line("- Numbers here will not match GA4: GA4 counts differently (users, sessions, consent and filtering) and is not connected to Command Centre.");
-  line("- Creative Toolkit page views are only counted after the Worker update adding the 'toolkit' page key is deployed; earlier views were not recorded.");
+  line("- Creative Toolkit page views use the 'toolkit' page key; historical views from before the Worker accepted that key are not included.");
+  line("- Spotlight directory and profile visits remain grouped under Spotlight. The application page has its own page-view key from this tracker update onward; older Spotlight counts are not split retroactively.");
+  line("- Retired Discover, Image Inspector and Creative Assistant URLs redirect to the homepage or Creative Toolkit and are no longer expected as separate current pages. Historical keys remain labelled where present.");
   line("- Legal pages (Privacy, Terms) send no page-view and are not counted as website traffic. The public Deliver page (deliver.html) IS counted as a website page; private delivery activity is reported below under Deliver usage.");
   line("- Deliver views count every load of a delivery page or direct image link, including repeat views. PhotoshopBattles images are public direct links, so they register views only (no downloads), and Reddit/browser caching can hide repeat views.");
   line("- Deliver shares include completed copies/system shares and opened WhatsApp/Facebook/X/Reddit sheets (attempts); a published post cannot be confirmed.");

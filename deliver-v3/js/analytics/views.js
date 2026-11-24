@@ -141,9 +141,9 @@ export function sourcesView(model) {
 
 /* ------------------------------------------------------- visitor flow + store clicks */
 const FLOW_LABELS = {
-  homepage: "Home", stores: "Stores", deliver: "Deliver", services: "Services", portfolio: "Portfolio",
-  toolkit: "Creative Toolkit", tools: "Tools", guides: "Guides", about: "About", support: "Support",
-  contact: "Contact", spotlight: "Spotlight",
+  homepage: "Home", discover: "Discover (legacy)", stores: "Stores", deliver: "Deliver", services: "Services", portfolio: "Portfolio",
+  toolkit: "Creative Toolkit", tools: "Legacy Tools", guides: "Guides", about: "About", support: "Support",
+  contact: "Contact", spotlight: "Spotlight", spotlight_submit: "Spotlight Apply",
 };
 const STORE_LABELS = {
   redbubble: "Redbubble", teepublic: "TeePublic", kofi: "Ko-fi",
@@ -152,6 +152,7 @@ const STORE_LABELS = {
 const PLACEMENT_LABELS = {
   store_grid: "Store product cards", stores: "Stores page", homepage: "Homepage",
   home: "Homepage", footer: "Footer", toolkit: "Creative Toolkit",
+  platform_card: "Store platform cards", bottom_cta: "Store bottom CTA", new_releases: "Homepage New Releases",
 };
 const pageName = key => FLOW_LABELS[key] || key;
 const placementName = value => PLACEMENT_LABELS[value] || String(value || "Not recorded").replace(/[_-]+/g, " ").replace(/\b\w/g, c => c.toUpperCase());
