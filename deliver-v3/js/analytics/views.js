@@ -152,7 +152,7 @@ const STORE_LABELS = {
 const PLACEMENT_LABELS = {
   store_grid: "Store product cards", stores: "Stores page", homepage: "Homepage",
   home: "Homepage", footer: "Footer", toolkit: "Creative Toolkit",
-  platform_card: "Store platform cards", bottom_cta: "Store bottom CTA",
+  platform_card: "Store platform cards", bottom_cta: "Store bottom CTA", new_releases: "Homepage New Releases",
 };
 const pageName = key => FLOW_LABELS[key] || key;
 const placementName = value => PLACEMENT_LABELS[value] || String(value || "Not recorded").replace(/[_-]+/g, " ").replace(/\b\w/g, c => c.toUpperCase());
