@@ -16,17 +16,14 @@
   background: linear-gradient(180deg, rgba(255,255,255,0.012), rgba(255,255,255,0));
 }
 .homepage .hm-studio__grid,
-.homepage .hm-toolkit__grid,
-.homepage .hm-creative-studio__grid {
+.homepage .hm-toolkit__grid {
   min-width: 0;
 }
 .homepage .hm-head h2,
-.homepage .hm-creative-studio__copy h2,
 .homepage .hm-toolkit__copy h2 {
   text-wrap: balance;
 }
 .homepage .hm-head p,
-.homepage .hm-creative-studio__copy > p,
 .homepage .hm-toolkit__copy > p {
   text-wrap: pretty;
 }
