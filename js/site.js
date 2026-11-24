@@ -45,7 +45,7 @@
       ] : [
         'index.html',
         { label: 'Photo work', items: ['services.html', 'portfolio.html', 'deliver.html'] },
-        { label: 'Creative tools', items: ['creative-toolkit.html', 'creative-studio.html'] },
+        { label: 'Creative tools', items: ['creative-toolkit.html'] },
         'guides.html',
         'spotlight/',
         'stores.html',
