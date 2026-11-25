@@ -48,6 +48,7 @@ jobs:
         working-directory: .
         run: |
           for file in learning/js/*.js; do node --input-type=module --check < "$file"; done
+          node --input-type=module --check < deliver-v3/js/spotlight-invitation.js
           node --input-type=module --check < deliver-v3/js/spotlight-manager.js
           node --input-type=module --check < spotlight/spotlight.js
           node --input-type=module --check < spotlight/media.js
