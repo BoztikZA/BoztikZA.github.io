@@ -455,6 +455,10 @@
   <div class="bz-sticky-cta" data-bz-sticky hidden><a class="hm-btn hm-btn--primary" href="#explore-platform">Explore Boztik</a></div>
   <script defer src="js/pageview.js?v=4"></script>
   <script type="module" src="spotlight/spotlight-home.js?v=14"></script>
+  <script type="module">
+    import { initSpotlightInvitation } from "./deliver-v3/js/spotlight-invitation.js?v=discovery-cards-4";
+    initSpotlightInvitation(null, { pageType: "home" });
+  </script>
   <script defer src="js/boztik-events.js?v=4"></script>
   <script defer src="js/store-clicks.js?v=2"></script>
   <script src="js/site.js?v=20261125-learning-hub"></script>
