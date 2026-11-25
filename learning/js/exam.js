@@ -164,41 +164,113 @@ async function showCertificate(el, id, known) {
     h("dl", { class: "lh-dl" }, h("dt", { text: "Certificate ID" }), h("dd", { text: id }), cert ? [h("dt", { text: "Name" }), h("dd", { text: cert.learnerName }), h("dt", { text: "Completed" }), h("dd", { text: fmtDate(cert.issuedAt) })] : null),
     h("div", { class: "lh-btnrow", style: "margin-top:16px" }, dlBtn, h("button", { class: "lh-btn", type: "button", onclick: () => copyText(verify, "Verification link copied"), text: "Copy verification link" })),
     h("p", { class: "lh-muted", style: "margin-top:12px;font-size:.92rem", text: "Boztik courses are independently developed and not formally accredited. This is a certificate of achievement, not an academic qualification or professional certification." })));
-  // Offered once, right after the certificate is issued — not on every later visit.
-  if (known) contribution(el.parentElement);
+  // Keep the optional support choice available whenever a learner revisits a passed result.
+  contribution(el.parentElement);
 }
 
 // ---------------------------------------------------------------- optional contribution (never required, never gating)
 async function contribution(parent) {
   if ($("#contrib")) return;
-  let cfg; try { cfg = (await api("GET", "config", undefined, { auth: false })).contributions; } catch { cfg = { enabled: false }; }
-  const box = h("section", { id: "contrib", class: "lh-panel" });
+  let cfg;
+  try { cfg = (await api("GET", "config", undefined, { auth: false })).contributions; }
+  catch { cfg = { enabled: false }; }
+
+  const box = h("section", { id: "contrib", class: "lh-panel lh-contrib", "aria-labelledby": "contrib-title" });
   parent.append(box);
+
   const next = async () => {
-    clear(box).append(h("h2", { style: "font-size:1.3rem;margin-bottom:8px", text: "Thank you for learning with us" }), h("p", { class: "lh-muted", text: "Discover what to learn next:" }));
-    try { const all = await catalogue(); box.append(h("div", { class: "lh-grid lh-grid--2", style: "margin-top:16px" }, all.filter((c) => c.slug !== slug).map((c) => courseCard(c)))); } catch { /* ignore */ }
+    clear(box).append(
+      h("span", { class: "lh-eyebrow", text: "Your next step" }),
+      h("h2", { style: "font-size:1.3rem;margin:8px 0", text: "Thank you for learning with us" }),
+      h("p", { class: "lh-muted", text: "Keep building your skills with another free course:" })
+    );
+    try {
+      const all = await catalogue();
+      box.append(h("div", { class: "lh-grid lh-grid--2", style: "margin-top:16px" }, all.filter((c) => c.slug !== slug).map((c) => courseCard(c))));
+    } catch { /* course suggestions are optional */ }
     box.append(h("p", { style: "margin-top:16px" }, h("a", { class: "lh-btn", href: "/learning/dashboard/", text: "Go to my learning" })));
   };
-  clear(box).append(h("h2", { style: "font-size:1.3rem;margin-bottom:8px", text: "Optional: help keep Boztik Learning free" }),
-    h("p", { class: "lh-muted", text: "Every course is free and your certificate is already yours. If this course helped, you can choose to contribute towards maintaining the Learning Hub and developing new courses. It is entirely voluntary and these are not charitable donations." }));
-  if (!cfg.enabled) { box.append(h("p", { class: "lh-note", style: "margin-top:14px", text: "Contributions are not switched on yet — there is nothing you need to do." }), h("p", { style: "margin-top:14px" }, h("button", { class: "lh-btn", type: "button", onclick: next, text: "Continue" }))); return; }
-  let amount = 1000;
-  const custom = h("input", { id: "custom", type: "number", min: cfg.minCents / 100, max: cfg.maxCents / 100, step: "1", placeholder: "Other amount (min $5)", "aria-label": "Custom amount in US dollars" });
-  const err = h("p", { class: "lh-error", role: "alert" });
-  const presets = [["Starter Support", 500], ["Learning Supporter", 1000], ["Growth Supporter", 1500], ["Premium Supporter", 2000]];
-  const btns = presets.map(([name, c]) => h("button", { class: "lh-amount", type: "button", "aria-pressed": c === amount ? "true" : "false", onclick: () => { amount = c; custom.value = ""; btns.forEach((b, i) => b.setAttribute("aria-pressed", presets[i][1] === c ? "true" : "false")); } }, h("b", { text: dollars(c) }), h("small", { text: name })));
-  const pay = h("button", { class: "lh-btn lh-btn--primary", type: "button", text: "Continue to PayPal" });
+
+  clear(box).append(
+    h("span", { class: "lh-eyebrow", text: "Optional · PayPal" }),
+    h("h2", { id: "contrib-title", style: "font-size:clamp(1.35rem,3vw,1.8rem);margin:9px 0 10px", text: "Help keep practical learning accessible" }),
+    h("p", { class: "lh-contrib__lead", text: "You’ve completed this course and your certificate is yours. If you found the learning useful, you can optionally help us keep the Hub free for the next learner. No subscription, no pressure." }),
+    h("div", { class: "lh-contrib__uses", "aria-label": "What contributions help fund" },
+      h("div", { class: "lh-contrib__use" }, h("strong", { text: "Platform & hosting" }), h("span", { text: "Keeping lessons, learner progress and certificates available." })),
+      h("div", { class: "lh-contrib__use" }, h("strong", { text: "Course development" }), h("span", { text: "Researching, writing and testing practical new lessons." })),
+      h("div", { class: "lh-contrib__use" }, h("strong", { text: "Better learning resources" }), h("span", { text: "Improving assessments and keeping existing material up to date." }))
+    )
+  );
+
+  if (!cfg.enabled) {
+    box.append(
+      h("p", { class: "lh-contrib__notice", text: "Online support options are being prepared. You can continue to your learning dashboard or explore another free course." }),
+      h("div", { class: "lh-btnrow", style: "margin-top:16px" }, h("button", { class: "lh-btn lh-btn--quiet", type: "button", onclick: next, text: "Continue" }))
+    );
+    return;
+  }
+
+  const currency = cfg.currency || "USD";
+  const currencyLabel = currency === "USD" ? "US dollars" : currency;
+  const presets = (Array.isArray(cfg.presetsCents) ? cfg.presetsCents : [])
+    .filter((c) => Number.isInteger(c) && c >= cfg.minCents && c <= cfg.maxCents)
+    .filter((c, i, all) => all.indexOf(c) === i);
+  const presetLabels = ["Help with hosting", "Improve resources", "Develop courses", "Support the Hub"];
+  let amount = presets[0] ?? cfg.minCents;
+  const custom = h("input", {
+    id: "custom", type: "number", min: cfg.minCents / 100, max: cfg.maxCents / 100, step: "0.01",
+    inputmode: "decimal", placeholder: `Other amount (min ${dollars(cfg.minCents)})`,
+    "aria-label": `Custom contribution amount in ${currencyLabel}`
+  });
+  const err = h("p", { class: "lh-error", role: "alert", "aria-live": "polite" });
+  const btns = presets.map((c, i) => h("button", {
+    class: "lh-amount", type: "button", "aria-pressed": c === amount ? "true" : "false",
+    onclick: () => {
+      amount = c; custom.value = "";
+      btns.forEach((b, index) => b.setAttribute("aria-pressed", presets[index] === c ? "true" : "false"));
+    }
+  }, h("b", { text: dollars(c) }), h("small", { text: presetLabels[i] || "Support learning" })));
+
+  const pay = h("button", { class: "lh-btn lh-btn--primary", type: "button", text: "Continue securely with PayPal" });
   pay.addEventListener("click", async () => {
     err.textContent = "";
     let cents = amount;
-    if (custom.value) { cents = Math.round(Number(custom.value) * 100); btns.forEach((b) => b.setAttribute("aria-pressed", "false")); }
-    if (!Number.isInteger(cents) || cents < cfg.minCents) { err.textContent = "The minimum contribution is $5."; return; }
-    if (cents > cfg.maxCents) { err.textContent = "The maximum contribution is $500."; return; }
+    if (custom.value.trim()) {
+      if (!/^\d+(?:\.\d{1,2})?$/.test(custom.value.trim())) {
+        err.textContent = "Enter an amount using no more than two decimal places.";
+        return;
+      }
+      cents = Math.round(Number(custom.value) * 100);
+      btns.forEach((b) => b.setAttribute("aria-pressed", "false"));
+    }
+    if (!Number.isSafeInteger(cents) || cents < cfg.minCents) {
+      err.textContent = `The minimum contribution is ${dollars(cfg.minCents)}.`;
+      return;
+    }
+    if (cents > cfg.maxCents) {
+      err.textContent = `The maximum contribution is ${dollars(cfg.maxCents)}.`;
+      return;
+    }
     pay.disabled = true;
-    try { const r = await api("POST", "contributions", { amountCents: cents, courseSlug: slug }); location.href = r.approveUrl; }
-    catch (e) { err.textContent = e.message; pay.disabled = false; }
+    pay.textContent = "Connecting to PayPal…";
+    try {
+      const r = await api("POST", "contributions", { amountCents: cents, courseSlug: slug });
+      if (!r.approveUrl || !/^https:\/\/(www\.)?(sandbox\.)?paypal\.com\//i.test(r.approveUrl)) throw new Error("PayPal returned an invalid checkout link. Please try again later.");
+      location.href = r.approveUrl;
+    } catch (e) {
+      err.textContent = e.message || "We could not start PayPal checkout. Your certificate is unaffected.";
+      pay.disabled = false;
+      pay.textContent = "Continue securely with PayPal";
+    }
   });
-  box.append(h("div", { class: "lh-amounts", style: "margin:16px 0" }, btns), h("div", { class: "lh-field" }, h("label", { for: "custom", text: "Or choose your own amount (US$)" }), custom), err,
-    h("div", { class: "lh-btnrow" }, pay, h("button", { class: "lh-btn lh-btn--quiet", type: "button", onclick: next, text: "No thanks" })),
-    h("small", { class: "lh-muted", style: "display:block;margin-top:10px", text: "You will pay on PayPal's own page. Boztik never sees or stores your card details. Your result and certificate are not affected either way." }));
+
+  box.append(
+    h("h3", { class: "lh-contrib__choice-title", text: "Choose an amount" }),
+    h("p", { class: "lh-muted", text: "Every contribution is optional and helps support the Learning Hub as a whole." }),
+    h("div", { class: "lh-amounts", style: "margin:14px 0" }, btns),
+    h("div", { class: "lh-field" }, h("label", { for: "custom", text: `Or enter your own amount (${currency})` }), custom),
+    err,
+    h("div", { class: "lh-btnrow", style: "margin-top:14px" }, pay, h("button", { class: "lh-btn lh-btn--quiet", type: "button", onclick: next, text: "Maybe later" })),
+    h("p", { class: "lh-contrib__fine", text: "PayPal handles checkout. Boztik does not receive or store your card details. This is a voluntary contribution, not a charitable donation; no certificate, result or course access depends on paying." })
+  );
 }
