@@ -31,7 +31,7 @@ jobs:
           # Publish the marketing site and Deliver browser app. Exclude Worker source,
           # scratch HTML pages, supporting docs and other non-production files.
           mkdir -p _site
-          cp -r js images deliver-v3 spotlight _site/
+          cp -r js images deliver-v3 spotlight learning _site/
           cp -- \
             index.html 404.html stores.html discover.html about.html contact.html creative-assistant.html creative-studio.html creative-studio-sw.js creative-toolkit.html \
             deliver.html guide-ai-vs-professional-editing.html guide-object-removal.html \
@@ -94,6 +94,9 @@ jobs:
               if parsed.netloc not in {"www.boztik.com", "boztik.com"}:
                   continue
               path = unquote(parsed.path or "/")
+              # The Boztik Learning Hub is deliberately ad-free (lessons and exams are distraction-free), so its
+              # pages must be staged but are exempt from the AdSense loader requirement.
+              ad_exempt = path.startswith("/learning/")
               if path.endswith("/"):
                   path += "index.html"
               elif not os.path.splitext(path)[1]:
@@ -104,7 +107,7 @@ jobs:
                   continue
               with open(file_path, encoding="utf-8") as handle:
                   html = handle.read()
-              if "pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3739684241868984" not in html:
+              if not ad_exempt and "pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3739684241868984" not in html:
                   missing.append(f"{url} (missing AdSense loader)")
           if missing:
               raise SystemExit("::error::AdSense code coverage failed:\\n" + "\\n".join(missing))
