@@ -22,8 +22,8 @@
   <link rel="stylesheet" href="../styles-premium.css?v=20261106a">
   <link rel="stylesheet" href="css/deliver.css?v=13">
   <link rel="stylesheet" href="css/command-centre.css?v=4">
-  <link rel="stylesheet" href="css/analytics.css?v=an7">
-  <link rel="stylesheet" href="css/spotlight-manager.css?v=17">
+  <link rel="stylesheet" href="css/analytics.css?v=an8">
+  <link rel="stylesheet" href="css/spotlight-manager.css?v=18">
   <link rel="stylesheet" href="css/learning-manager.css?v=1">
   <link rel="stylesheet" href="css/deliver-animations.css?v=1">
   <link rel="stylesheet" href="css/deliver-experience.css?v=1">
@@ -354,6 +354,7 @@
         <div class="cc-kpis sp-admin-kpis">
           <article class="cc-kpi"><header>Pending decision</header><strong class="cc-kpi-val" id="sp-admin-pending">—</strong></article>
           <article class="cc-kpi"><header>Unread applications</header><strong class="cc-kpi-val" id="sp-admin-unread">—</strong></article>
+          <article class="cc-kpi"><header>New profiles · 7 days</header><strong class="cc-kpi-val" id="sp-admin-new-profiles">—</strong></article>
           <article class="cc-kpi"><header>Approved to publish</header><strong class="cc-kpi-val" id="sp-admin-approved">—</strong></article>
           <article class="cc-kpi"><header>Published profiles</header><strong class="cc-kpi-val" id="sp-admin-published">—</strong></article>
           <article class="cc-kpi"><header>Featured on homepage</header><strong class="cc-kpi-val" id="sp-admin-featured">—</strong></article>
@@ -1704,6 +1705,14 @@
           </article>
 
           <div class="an-kpis" id="cc-site-kpis" role="group" aria-label="1 · Overview"></div>
+
+          <article class="cc-card an-spotlight-card" aria-labelledby="cc-spotlight-performance-title">
+            <header class="cc-card-head">
+              <div><span class="cc-eyebrow">Spotlight · listing performance</span><h2 id="cc-spotlight-performance-title">Creator and business engagement</h2>
+                <p class="cc-card-desc">Compare published profiles, review new and unpublished listings, and see how visitors interact with each Spotlight profile in the selected reporting period.</p></div>
+            </header>
+            <div id="cc-spotlight-performance" aria-live="polite"><p class="cc-muted">Loading Spotlight performance…</p></div>
+          </article>
 
           <div class="an-dashboard-grid">
           <article class="cc-card an-trend an-grid-wide" id="an-trend" aria-labelledby="an-trend-title">

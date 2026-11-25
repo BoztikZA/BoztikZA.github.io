@@ -11,20 +11,20 @@
 //   * the report, CSV and screen all read the same view-model (analytics/model.js)
 // The public exports (initSiteAnalytics, refreshSiteAnalytics) are unchanged: command-centre.js calls them as before.
 import { fetchPageAnalytics } from "./api.js";
-import { fetchSummary, fetchTrend, fetchSources, fetchFlow, fetchStore, fetchHealth, AnalyticsError } from "./analytics/client.js?v=an4";
+import { fetchSummary, fetchTrend, fetchSources, fetchFlow, fetchStore, fetchHealth, fetchSpotlight, AnalyticsError } from "./analytics/client.js?v=an5";
 import { PRESETS, DEFAULT_RANGE, normalizeRange, rangeId, rangeLabel, validateCustom, windowMatches, addDays, MIN_CUSTOM_DAY } from "./analytics/range.js?v=an2";
-import { buildAnalyticsModel, metricPoints, METRICS } from "./analytics/model.js?v=an2";
+import { buildAnalyticsModel, metricPoints, METRICS } from "./analytics/model.js?v=an3";
 import { buildSignals } from "./analytics/signals.js?v=an2";
 import { createTrendChart } from "./analytics/chart.js?v=an2";
-import { buildFullReport, buildCsv, csvFileName } from "./analytics/export.js?v=an8";
+import { buildFullReport, buildCsv, csvFileName } from "./analytics/export.js?v=an9";
 import * as V from "./analytics/views.js?v=an7";
 
 const $ = id => document.getElementById(id);
 const REFRESH_MS = 5 * 60 * 1000;
 const STORE_KEY = "boztik.analytics.view.v1";
 const OPT_OUT_COOKIE = "boztik_analytics_optout";
-const KEYS = ["summary", "trend", "sources", "flow", "store", "health"];
-const FETCH = { summary: fetchSummary, trend: fetchTrend, sources: fetchSources, flow: fetchFlow, store: fetchStore };
+const KEYS = ["summary", "trend", "sources", "flow", "store", "health", "spotlight"];
+const FETCH = { summary: fetchSummary, trend: fetchTrend, sources: fetchSources, flow: fetchFlow, store: fetchStore, spotlight: fetchSpotlight };
 
 const S = {
   range: { ...DEFAULT_RANGE }, compare: true, metric: "website_views",
@@ -117,7 +117,7 @@ function rebuild() {
   S.model = buildAnalyticsModel({ range: S.range, ...S.data, fallbackPages: S.data.summary ? null : S.fallback, states: S.states, generatedAt: S.lastOk || new Date() });
   S.signals = buildSignals(S.model);
 }
-const hasData = () => !!(S.model && (S.model.website?.available || S.model.trend));
+const hasData = () => !!(S.model && (S.model.website?.available || S.model.trend || S.model.spotlight));
 const timeText = d => (d ? d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "never");
 
 function render() {
@@ -134,9 +134,44 @@ function render() {
   renderPages();
   set("cc-data-health", V.healthView(m));
   set("cc-site-deliver", V.deliverView(m));
+  renderSpotlightPerformance(m.spotlight, S.states.spotlight);
   const btn = $("cc-report-btn"), csv = $("cc-report-csv");
   const ready = hasData();
   for (const b of [btn, csv]) if (b) { b.disabled = !ready; b.title = ready ? "" : "Available once data has loaded"; }
+}
+
+function renderSpotlightPerformance(data, state) {
+  const host = $("cc-spotlight-performance");
+  if (!host) return;
+  if (state?.status === "loading" && !data) { host.innerHTML = '<p class="cc-muted">Loading Spotlight listing performance…</p>'; return; }
+  if (!data) {
+    const message = state?.error || "Spotlight analytics are not available for this period.";
+    host.innerHTML = `<p class="cc-inline-error" role="status">${V.esc(message)} <button type="button" class="cc-btn cc-btn-inline" data-retry="all">Try again</button></p>`;
+    return;
+  }
+  const summary = data.summary || {};
+  const profiles = Array.isArray(data.profiles) ? data.profiles : [];
+  const nf = value => Number(value || 0).toLocaleString();
+  const pct = (a,b) => Number(b) > 0 ? (Number(a) / Number(b) * 100).toFixed(1) + "%" : "—";
+  const tiles = [
+    ["Published listings", summary.published, "currently published"],
+    ["Awaiting decision", summary.pending, "new or under review"],
+    ["Approved / unpublished", Math.max(0, Number(summary.unpublished || 0) - Number(summary.pending || 0)), "ready for publication"],
+    ["Profile views", summary.views, "individual profile page loads"],
+    ["Featured impressions", summary.featured_impressions, "featured placements seen"],
+    ["Outbound clicks", summary.outbound_clicks, "website, social and media"],
+  ];
+  const rows = [...profiles].sort((a,b) => Number(b.views || 0) - Number(a.views || 0) || Number(b.outbound_clicks || 0) - Number(a.outbound_clicks || 0));
+  const top = rows.filter(p => p.status === "published").slice(0, 12);
+  const queue = rows.filter(p => p.status !== "published" && p.status !== "archived" && !["declined","expired"].includes(p.application_status));
+  const statusLabel = p => p.status === "published" ? "Published" : p.application_status === "approved" ? "Approved · not published" : p.application_status === "new" ? "New application" : p.application_status === "under_review" ? "Under review" : (p.application_status || p.status || "Draft").replace(/_/g," ");
+  host.innerHTML = `
+    <div class="an-spotlight-kpis">${tiles.map(([label,value,note]) => `<div class="an-spotlight-tile"><span>${label}</span><strong>${nf(value)}</strong><small>${note}</small></div>`).join("")}</div>
+    <div class="an-spotlight-note">Selected reporting window: <strong>${V.esc(data.period?.since || "—")} to ${V.esc(data.period?.until || "—")}</strong>. Profile views are page loads; daily unique visitors are visitor-days, not unique people across the whole period. Featured impressions are separate from profile views.</div>
+    ${queue.length ? `<section class="an-spotlight-queue"><h3>New and unpublished profiles <span>${queue.length}</span></h3><div class="an-spotlight-queue-list">${queue.slice(0,12).map(p => `<div><strong>${V.esc(p.display_name)}</strong><span class="an-spotlight-status is-pending">${V.esc(statusLabel(p))}</span><small>Submitted ${V.esc(p.created_at ? new Date(p.created_at * 1000).toLocaleDateString() : "date unavailable")}</small></div>`).join("")}</div>${queue.length>12?'<p class="cc-muted">Showing the 12 most recent unpublished profiles.</p>':""}</section>` : ""}
+    <section class="an-spotlight-table-wrap"><h3>Published listing performance</h3>
+      ${top.length ? `<div class="an-spotlight-table-scroll"><table class="an-spotlight-table"><thead><tr><th>Profile</th><th>Views</th><th>Daily unique visitor-days</th><th>Featured impressions</th><th>Outbound clicks</th><th>Website clicks</th><th>Social clicks</th><th>Media clicks</th><th>Top visit source</th><th>Click rate*</th><th>Plays</th></tr></thead><tbody>${top.map(p => `<tr><th scope="row">${V.esc(p.display_name)}<small>${V.esc(p.category || "—")}</small></th><td>${nf(p.views)}</td><td>${nf(p.unique_views)}</td><td>${nf(p.featured_impressions)}</td><td>${nf(p.outbound_clicks)}</td><td>${nf(p.website_clicks)}</td><td>${nf(p.social_clicks)}</td><td>${nf(p.media_clicks)}</td><td>${V.esc([...(p.sources || [])].sort((a,b)=>Number(b.views||0)-Number(a.views||0))[0]?.source || "—")}</td><td>${pct(p.outbound_clicks,p.views)}</td><td>${nf(p.player_interactions)} / ${nf(p.completed_plays)}<small>started / completed</small></td></tr>`).join("")}</tbody></table></div><p class="an-spotlight-footnote">* Click rate is outbound link clicks divided by profile views. It is a directional ratio, not a conversion or sales rate. Showing the 12 highest-view published profiles.</p>` : '<p class="cc-muted">No published profile views were recorded in this period.</p>'}
+    </section>`;
 }
 
 function renderStatus() {

@@ -152,6 +152,10 @@ console.log("idempotent ingestion");
     assert.equal(await dbm.recordPageView(env, "stores", S("e"), "evt-stores01"), true);
     assert.equal(views("stores"), 1);
   });
+  await check("the Spotlight application page key is accepted", async () => {
+    assert.equal(await dbm.recordPageView(env, "spotlight_submit", S("f"), "evt-spotapply01"), true);
+    assert.equal(views("spotlight_submit"), 1);
+  });
 }
 
 console.log("period summaries on a seeded database");
@@ -496,6 +500,17 @@ console.log("browser tracker contract (real beacon path)");
   await check("the Stores page is mapped to the 'stores' key", () => {
     const pv = JSON.parse(run("../../../js/pageview.js", { path: "/stores.html" }).sent.find(s => s.url.endsWith("/pageview"))!.body);
     assert.equal(pv.page, "stores");
+  });
+  await check("new guide articles and Spotlight applications use current page keys", () => {
+    for (const [path, key] of [["/guide-faded-photo-colour-correction.html", "guides"], ["/guide-natural-portrait-retouching.html", "guides"], ["/spotlight/submit/", "spotlight_submit"]] as const) {
+      const pv = JSON.parse(run("../../../js/pageview.js", { path }).sent.find(s => s.url.endsWith("/pageview"))!.body);
+      assert.equal(pv.page, key, path);
+    }
+  });
+  await check("retired redirect URLs are not counted as separate pages", () => {
+    for (const path of ["/discover.html", "/image-inspector.html", "/creative-assistant.html", "/creative-studio.html"]) {
+      assert.equal(run("../../../js/pageview.js", { path }).sent.length, 0, path);
+    }
   });
   await check("fetch fallback is used only when sendBeacon is unavailable, still text/plain, credentials omitted", () => {
     const { sent } = run("../../../js/pageview.js", { beacon: false });

@@ -17,7 +17,6 @@ Boztik is based around three connected areas: photo editing services, creative s
 ## Creative tools
 
 - [Boztik Creative Toolkit](https://www.boztik.com/creative-toolkit.html): A free Chrome and Edge browser extension for image editing, including selections, distraction removal, brush refinement and creative looks.
-- [Boztik Creative Studio](https://www.boztik.com/creative-studio.html): Browser-based creative utilities for image inspection, colour sampling, canvas planning, prompt building and editing guidance. Image inspection is designed to run locally in the browser.
 
 ## Learning and practical guides
 

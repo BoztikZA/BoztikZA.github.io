@@ -658,3 +658,37 @@
 @media (prefers-reduced-motion: reduce) {
   .hm-spotlight-card[data-featured="1"] { transition: none; }
 }
+
+
+/* Homepage headline: a focused neon beam sweeps across the words "in the spotlight". */
+@keyframes hm-spotlight-title-beam {
+  0%, 18% { background-position: 180% 50%; }
+  68%, 100% { background-position: -80% 50%; }
+}
+.hm-spotlight-head h2 em {
+  color: #8eff3d;
+  background-image: linear-gradient(
+    105deg,
+    #8eff3d 0%,
+    #8eff3d 34%,
+    #dffff0 46%,
+    #ffffff 50%,
+    #dffff0 54%,
+    #8eff3d 68%,
+    #8eff3d 100%
+  );
+  background-size: 240% 100%;
+  background-position: 180% 50%;
+  background-repeat: no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: hm-spotlight-title-beam 24s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  filter: drop-shadow(0 0 10px rgba(142,255,61,.24));
+}
+@media (prefers-reduced-motion: reduce) {
+  .hm-spotlight-head h2 em {
+    animation: none;
+    background-position: 50% 50%;
+  }
+}

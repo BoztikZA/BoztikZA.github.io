@@ -1,0 +1,135 @@
+/* Boztik homepage refinement layer.
+   Scoped to the homepage so page-specific layouts and the Learning Hub remain untouched. */
+
+/* Give the long homepage a clearer visual rhythm without changing its content model. */
+.homepage .hm-section {
+  position: relative;
+  isolation: isolate;
+  padding-block: clamp(68px, 8vw, 108px);
+}
+.homepage .hm-section + .hm-section {
+  border-top: 1px solid rgba(246, 255, 244, 0.055);
+}
+.homepage .hm-studio,
+.homepage .hm-guides,
+.homepage .hm-also {
+  background: linear-gradient(180deg, rgba(255,255,255,0.012), rgba(255,255,255,0));
+}
+.homepage .hm-studio__grid,
+.homepage .hm-toolkit__grid {
+  min-width: 0;
+}
+.homepage .hm-head h2,
+.homepage .hm-toolkit__copy h2 {
+  text-wrap: balance;
+}
+.homepage .hm-head p,
+.homepage .hm-toolkit__copy > p {
+  text-wrap: pretty;
+}
+
+/* Turn the studio's service list into a deliberate, easy-to-scan set of choices. */
+.homepage .hm-offers li {
+  padding-block: clamp(20px, 2.5vw, 27px);
+}
+.homepage .hm-offers h3 {
+  max-width: 34ch;
+}
+.homepage .hm-offers p {
+  max-width: 56ch;
+}
+.homepage .hm-offers li:focus-within {
+  background: linear-gradient(90deg, rgba(142,255,61,0.075), transparent 78%);
+}
+
+/* Keep portfolio examples and the store preview visually contained on narrow screens. */
+.homepage .hm-slide__print,
+.homepage .hm-pslide__media {
+  min-width: 0;
+}
+.homepage .hm-slide__text {
+  min-width: 0;
+}
+.homepage .hm-guide-list a {
+  min-width: 0;
+}
+.homepage .hm-guide__body strong {
+  text-wrap: balance;
+}
+
+/* A little more breathing room around the community and shopping destinations. */
+.homepage .hm-spotlight {
+  scroll-margin-top: 100px;
+}
+.homepage .hm-shop {
+  border-block: 1px solid rgba(142,255,61,0.12);
+}
+.homepage .hm-also__list li {
+  min-width: 0;
+}
+.homepage .hm-close__inner {
+  padding-inline: clamp(20px, 4vw, 40px);
+}
+
+/* Visible keyboard focus is consistent across homepage links and controls. */
+.homepage a:focus-visible,
+.homepage button:focus-visible {
+  outline: 2px solid var(--hm-neon);
+  outline-offset: 4px;
+}
+.homepage .hm-btn:focus-visible {
+  outline-offset: 3px;
+}
+
+@media (max-width: 720px) {
+  .homepage .hm-section {
+    padding-block: 58px;
+  }
+  .homepage .hm-offers li {
+    padding-right: 34px;
+  }
+  .homepage .hm-guide-list a {
+    gap: 8px;
+    padding-block: 20px;
+  }
+  .homepage .hm-spotlight {
+    padding-block: 54px;
+  }
+  .homepage .hm-close__inner {
+    margin-inline: auto;
+  }
+}
+@media (max-width: 480px) {
+  .homepage .hm-wrap {
+    padding-inline: 18px;
+  }
+  .homepage .hm-hero__title {
+    font-size: clamp(2.1rem, 10vw, 2.8rem);
+    line-height: 1.04;
+  }
+  .homepage .hm-print {
+    padding: 12px;
+  }
+  .homepage .hm-print__seal {
+    right: -2px;
+    bottom: 52px;
+    width: 72px;
+  }
+  .homepage .hm-print figcaption {
+    padding-right: 54px;
+  }
+  .homepage .hm-index {
+    gap: 8px 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .homepage *,
+  .homepage *::before,
+  .homepage *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
