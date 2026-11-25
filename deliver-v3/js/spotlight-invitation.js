@@ -21,14 +21,6 @@ function randomBetween(min, max) {
   return min + Math.floor(Math.random() * (max - min + 1));
 }
 
-function shuffle(items) {
-  const result = [...items];
-  for (let i = result.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
-  }
-  return result;
-}
 
 function hasRecentDismissal() {
   try {
@@ -193,7 +185,11 @@ export function initSpotlightInvitation(delivery, options = {}) {
       : randomBetween(13000, 18000);
 
   const show = () => {
-    if (disposed || sequence.stopped || document.visibilityState !== "visible" || !document.body) return;
+    if (disposed || sequence.stopped || !document.body) return;
+    if (document.visibilityState !== "visible") {
+      showTimer = window.setTimeout(show, 5000);
+      return;
+    }
     const promo = PROMO;
     sequence.shown = true;
     saveSequence(sequence);
@@ -207,13 +203,7 @@ export function initSpotlightInvitation(delivery, options = {}) {
     hideTimer = window.setTimeout(() => stop(false), AUTO_HIDE_MS);
   };
 
-  showTimer = window.setTimeout(() => {
-    if (document.visibilityState !== "visible") {
-      showTimer = window.setTimeout(show, 5000);
-      return;
-    }
-    show();
-  }, delay);
+  showTimer = window.setTimeout(show, delay);
 
   return { cancel: () => stop(false) };
 }
