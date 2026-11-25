@@ -6,45 +6,16 @@ const DISMISS_KEY = "boztik-discovery-dismissed-until-v1";
 const DISMISS_DAYS = 14;
 const AUTO_HIDE_MS = 11500;
 const EXIT_MS = 360;
-const PROMOS = [
-  {
-    id: "spotlight",
-    eyebrow: "Boztik Spotlight · Creator discovery",
-    title: "Your next discovery could start here.",
-    description: "Meet independent creators, makers, small businesses and developers. Have a project of your own? Introduce your work to the Boztik community.",
-    action: "Explore Spotlight",
-    secondary: { label: "Apply to be featured", href: "https://www.boztik.com/spotlight/submit/" },
-    href: "https://www.boztik.com/spotlight/",
-    icon: '<path d="m12 2 2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2L12 2Z"/><path d="M19 16v4M17 18h4"/>'
-  },
-  {
-    id: "toolkit",
-    eyebrow: "Create with Boztik",
-    title: "A little more room to create.",
-    description: "Explore Boztik Creative Toolkit, a free browser workspace for image inspection, editing tools and practical creative workflows.",
-    action: "Explore Creative Toolkit",
-    href: "https://www.boztik.com/creative-toolkit.html",
-    icon: '<path d="m15 5 4 4M4 20l4.5-1 10.8-10.8a2.1 2.1 0 0 0-3-3L5.5 16 4 20Z"/><path d="M12 3H5a2 2 0 0 0-2 2v7M21 12v7a2 2 0 0 1-2 2h-7"/>'
-  },
-  {
-    id: "stores",
-    eyebrow: "Explore Boztik Stores",
-    title: "Original designs for everyday life.",
-    description: "Discover Boztik designs on Redbubble and TeePublic, along with downloadable wallpaper collections in the Ko-fi shop.",
-    action: "Browse Boztik Stores",
-    href: "https://www.boztik.com/stores.html",
-    icon: '<path d="M3 9h18l-1.5-5h-15L3 9Z"/><path d="M5 9v11h14V9M9 20v-6h6v6M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/>'
-  },
-  {
-    id: "photo-editing",
-    eyebrow: "Professional photo editing",
-    title: "Give your photographs a little more care.",
-    description: "Explore natural portrait retouching, thoughtful enhancements and restoration. Get in touch to discuss a project.",
-    action: "Explore photo editing",
-    href: "https://www.boztik.com/services.html",
-    icon: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/>'
-  }
-];
+const PROMO = {
+  id: "spotlight",
+  eyebrow: "Boztik Spotlight · Creator discovery",
+  title: "Your next discovery could start here.",
+  description: "Meet independent creators, makers, small businesses and developers. Have a project of your own? Introduce your work to the Boztik community.",
+  action: "Explore Spotlight",
+  secondary: { label: "Apply to be featured", href: "https://www.boztik.com/spotlight/submit/" },
+  href: "https://www.boztik.com/spotlight/",
+  icon: '<path d="m12 2 2.2 6.8L21 11l-6.8 2.2L12 20l-2.2-6.8L3 11l6.8-2.2L12 2Z"/><path d="M19 16v4M17 18h4"/>'
+};
 
 function randomBetween(min, max) {
   return min + Math.floor(Math.random() * (max - min + 1));
@@ -79,10 +50,10 @@ function readSequence() {
     const raw = sessionStorage.getItem(SESSION_KEY);
     if (raw) {
       const saved = JSON.parse(raw);
-      if (saved && Array.isArray(saved.order) && typeof saved.stopped === "boolean") return saved;
+      if (saved && typeof saved.stopped === "boolean" && typeof saved.shown === "boolean") return saved;
     }
   } catch { /* Session storage is optional. */ }
-  const fresh = { order: shuffle(PROMOS.map(promo => promo.id)), stopped: false, shown: false };
+  const fresh = { stopped: false, shown: false };
   saveSequence(fresh);
   return fresh;
 }
@@ -223,7 +194,7 @@ export function initSpotlightInvitation(delivery, options = {}) {
 
   const show = () => {
     if (disposed || sequence.stopped || document.visibilityState !== "visible" || !document.body) return;
-    const promo = PROMOS.find(item => item.id === sequence.order[0]) || PROMOS[0];
+    const promo = PROMO;
     sequence.shown = true;
     saveSequence(sequence);
     addStyles();
@@ -238,8 +209,7 @@ export function initSpotlightInvitation(delivery, options = {}) {
 
   showTimer = window.setTimeout(() => {
     if (document.visibilityState !== "visible") {
-      sequence.stopped = true;
-      saveSequence(sequence);
+      showTimer = window.setTimeout(show, 5000);
       return;
     }
     show();
