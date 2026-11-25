@@ -1,0 +1,23 @@
+/* Command Centre → Learning panel. Builds on command-centre.css tokens. */
+#learning-root .lm-nav{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+#learning-root .lm-tab.is-active{border-color:var(--cc-accent-line,#8eff3d);background:var(--cc-accent-soft,rgba(142,255,61,.12))}
+#learning-root .lm-body{display:grid;gap:18px}
+#learning-root .lm-card{display:grid;gap:14px}
+#learning-root .lm-grid{display:grid;gap:18px}@media(min-width:900px){#learning-root .lm-grid{grid-template-columns:1fr 1fr}}
+#learning-root .lm-def{margin:6px 0 0;font-size:.78rem;line-height:1.4;color:var(--cc-muted,#9fb0a0)}
+#learning-root .lm-tablewrap{overflow-x:auto}
+#learning-root .lm-table{width:100%;border-collapse:collapse;font-size:.88rem}
+#learning-root .lm-table th,#learning-root .lm-table td{padding:8px 10px;text-align:left;border-top:1px solid var(--cc-line,rgba(246,255,244,.1));vertical-align:top}
+#learning-root .lm-table th{font-size:.74rem;text-transform:uppercase;letter-spacing:.06em;color:var(--cc-muted,#9fb0a0)}
+#learning-root .lm-bar{display:inline-block;width:100%;min-width:90px;height:8px;border-radius:99px;background:rgba(246,255,244,.1);overflow:hidden;vertical-align:middle}
+#learning-root .lm-bar i{display:block;height:100%;background:#8eff3d}
+#learning-root .lm-bar.warn i{background:#ffd166}#learning-root .lm-bar.bad i{background:#ff7a6b}
+#learning-root .lm-usage{display:flex;gap:12px;align-items:center}
+#learning-root .lm-pill{display:inline-block;padding:2px 10px;border-radius:99px;border:1px solid var(--cc-line-2,rgba(246,255,244,.2));font-size:.78rem}
+#learning-root .lm-pill.ok{border-color:rgba(52,211,153,.5);color:#8eff3d}#learning-root .lm-pill.bad{border-color:rgba(255,92,92,.6);color:#ffb3ad}
+#learning-root .lm-danger{border-color:rgba(255,92,92,.5)!important;color:#ffb3ad}
+#learning-root .lm-toolbar{display:flex;flex-wrap:wrap;gap:10px}#learning-root .lm-toolbar input{flex:1;min-width:200px}
+#learning-root .lm-error{color:#ffb3ad}
+#learning-root .lm-note{padding:10px 14px;border-left:3px solid #ffd166;background:rgba(255,209,102,.07);border-radius:0 8px 8px 0}
+#learning-root .lm-defs{display:grid;grid-template-columns:minmax(120px,max-content) 1fr;gap:6px 16px;font-size:.88rem}
+#learning-root .lm-defs dt{color:var(--cc-muted,#9fb0a0);text-transform:capitalize}

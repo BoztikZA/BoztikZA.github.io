@@ -13,14 +13,14 @@ const here = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(here, "../../..");
 const SITE = "http://localhost:8080";
 export const db = new SqliteD1();
-const env: any = {
+export const env: any = {
   DB: db, BUCKET: {}, PUBLIC_ORIGIN: SITE, ALLOWED_ORIGINS: SITE, STORAGE_LIMIT_BYTES: "0", MAX_UPLOAD_BYTES: "0", MAX_FILES_PER_DELIVERY: "0",
   SESSION_HOURS: "12", DEFAULT_EXPIRY_HOURS: "24", ABANDONED_UPLOAD_GRACE_HOURS: "1", RATE_LIMIT_PUBLIC_PER_MINUTE: "100000",
   LOGIN_MAX_FAILURES: "8", PAGE_ANALYTICS_ALLOWED: "", ADMIN_USERNAME: "a", ADMIN_PASSWORD_HASH: "x", AUTH_TOKEN_SALT: "dev-only-salt",
   LEARNING_SITE_ORIGIN: SITE,
 };
 const ctx: any = { waitUntil() {}, passThroughOnException() {} };
-const TYPES: Record<string, string> = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".json": "application/json", ".svg": "image/svg+xml", ".png": "image/png", ".csv": "text/csv", ".xml": "application/xml", ".txt": "text/plain", ".ico": "image/x-icon" };
+const TYPES: Record<string, string> = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".mjs": "text/javascript", ".json": "application/json", ".svg": "image/svg+xml", ".png": "image/png", ".csv": "text/csv", ".xml": "application/xml", ".txt": "text/plain", ".ico": "image/x-icon" };
 
 export function start(api = 8787, site = 8080) {
   const apiServer = createServer(async (req, res) => {

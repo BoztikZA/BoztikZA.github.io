@@ -405,6 +405,12 @@ await test("Command Centre API: existing admin auth only; metrics, definitions, 
   assert.ok(!/token|recovery|hash/i.test(lj), "no credential material in learner admin");
   assert.ok(!lj.includes(l.token));
   assert.equal((await call("GET", "/api/admin/learning/learners?q=%25", { token: admin.token })).data.learners.length, 0, "LIKE wildcards are escaped");
+  // regression: a missing ?limit used to clamp to 1 row (Number(null) === 0)
+  await enrol(AI, "Second Learner");
+  const dflt = (await call("GET", "/api/admin/learning/learners", { token: admin.token })).data;
+  const explicit = (await call("GET", "/api/admin/learning/learners?limit=100", { token: admin.token })).data;
+  assert.equal(dflt.limit, 50); assert.ok(dflt.learners.length > 1, "default list returns more than one learner"); assert.equal(dflt.learners.length, explicit.learners.length);
+  assert.equal((await call("GET", "/api/admin/learning/certificates", { token: admin.token })).data.limit, 50);
   // certificate admin: search, verify, revoke
   const found = (await call("GET", `/api/admin/learning/certificates?q=${cert.certificateId}`, { token: admin.token })).data;
   assert.equal(found.total, 1);

@@ -25,6 +25,7 @@ export const DEFINITIONS = {
 
 const escapeLike = (s: string) => s.replace(/[\\%_]/g, (m) => `\\${m}`);
 const clampInt = (v: string | null, def: number, min: number, max: number) => {
+  if (v == null || v.trim() === "") return def; // Number(null) is 0, which would silently clamp a missing limit to the minimum
   const n = Number(v);
   return Number.isFinite(n) ? Math.min(max, Math.max(min, Math.floor(n))) : def;
 };
