@@ -254,7 +254,7 @@ for (const c of catalogue) {
   const isoMinutes = `PT${Math.floor(c.minutes / 60)}H${c.minutes % 60}M`;
   add({
     path: `/learning/courses/${c.slug}/`,
-    title: `${c.title} — Free Course | Boztik Learning`,
+    title: `${c.title} | Boztik Learning`,
     description: c.summary,
     script: "/learning/js/course.js",
     ogImage: `${ORIGIN}/learning/assets/img/course-${ILLUSTRATION[c.slug]}.svg`,

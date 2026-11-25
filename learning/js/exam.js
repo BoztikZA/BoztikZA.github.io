@@ -105,7 +105,7 @@ function result(r) {
   const modName = (id) => course.modules.find((m) => m.id === id)?.title || id;
   const weak = Object.entries(r.modules).filter(([, m]) => m.total && m.percent < 60);
   const box = h("div", { class: "lh-narrow", style: "display:grid;gap:22px;margin-inline:auto" });
-  box.append(
+  box.append(...[
     h("span", { class: "lh-eyebrow", text: course.title }),
     h("h1", { text: r.passed ? "You passed. Well done." : "Not passed this time" }),
     h("div", { class: "lh-panel", style: "display:flex;flex-wrap:wrap;gap:24px;align-items:center" },
@@ -115,7 +115,7 @@ function result(r) {
         h("p", { class: "lh-muted", style: "margin-top:8px", text: r.passed ? "Your certificate is ready to claim below." : "That is useful information, not a verdict. Review the topics below, then retake whenever you are ready." }))),
     h("div", { class: "lh-panel" }, h("h2", { style: "font-size:1.2rem;margin-bottom:14px", text: "Results by module" }),
       h("div", { class: "lh-modbars" }, Object.entries(r.modules).map(([id, m]) => h("div", { class: `lh-modbar${m.total && m.percent < 60 ? " weak" : ""}` }, h("span", { class: "t", text: modName(id) }), h("b", { text: `${m.correct}/${m.total}` }), h("div", { class: "lh-bar" }, h("span", { style: `width:${m.percent}%` })))))),
-    r.practical ? h("div", { class: "lh-panel" }, h("h2", { style: "font-size:1.2rem;margin-bottom:10px", text: "Practical tasks" }), h("p", { class: "lh-muted", text: "Each task is marked right or wrong. We do not show the correct values, so recheck your cleaning steps and calculations." }), h("p", { style: "margin-top:10px" }, Object.entries(r.practical.perTask).map(([k, ok], i) => h("span", { class: "lh-chip", style: `margin:0 8px 8px 0;${ok ? "border-color:var(--lh-neon);color:var(--lh-neon)" : ""}`, text: `Task ${i + 1}: ${ok ? "correct" : "not correct"}` })))) : null);
+    r.practical ? h("div", { class: "lh-panel" }, h("h2", { style: "font-size:1.2rem;margin-bottom:10px", text: "Practical tasks" }), h("p", { class: "lh-muted", text: "Each task is marked right or wrong. We do not show the correct values, so recheck your cleaning steps and calculations." }), h("p", { style: "margin-top:10px" }, Object.entries(r.practical.perTask).map(([k, ok], i) => h("span", { class: "lh-chip", style: `margin:0 8px 8px 0;${ok ? "border-color:var(--lh-neon);color:var(--lh-neon)" : ""}`, text: `Task ${i + 1}: ${ok ? "correct" : "not correct"}` })))) : null].filter(Boolean));
   if (!r.passed) {
     box.append(h("div", { class: "lh-panel lh-panel--neon" }, h("h2", { style: "font-size:1.2rem;margin-bottom:10px", text: "What to do next" }),
       weak.length ? h("ul", { class: "lh-outcomes", style: "grid-template-columns:1fr" }, weak.map(([id]) => h("li", {}, "Review ", h("a", { href: `/learning/learn/?c=${slug}&l=${course.modules.find((m) => m.id === id).lessons[0].id}`, text: modName(id) })))) : h("p", { class: "lh-muted", text: "Your module scores are fairly even — a steady pass over the lessons will help." }),

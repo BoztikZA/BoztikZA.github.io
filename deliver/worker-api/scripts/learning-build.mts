@@ -17,7 +17,7 @@ const OUT_JSON = join(ROOT, "learning/data/courses.json");
 const check = process.argv.includes("--check");
 
 const rules = JSON.parse(readFileSync(join(COURSES, "rules.json"), "utf8")) as Record<string, { passMark: number; practicalPassMark: number | null }>;
-const slugs = readdirSync(COURSES, { withFileTypes: true }).filter((d) => d.isDirectory() && existsSync(join(COURSES, d.name, "course.json"))).map((d) => d.name).sort();
+const slugs = readdirSync(COURSES, { withFileTypes: true }).filter((d) => d.isDirectory() && existsSync(join(COURSES, d.name, "course.json"))).map((d) => d.name).sort((a, b) => { const o = Object.keys(rules); const ia = o.indexOf(a), ib = o.indexOf(b); return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib) || a.localeCompare(b); }); // display order = key order in rules.json
 
 const manifest: CourseRules[] = [];
 const catalogue: Record<string, unknown>[] = [];

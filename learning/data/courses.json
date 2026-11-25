@@ -2,6 +2,21 @@
   "version": 1,
   "courses": [
     {
+      "slug": "practical-ai-productivity",
+      "title": "Practical Artificial Intelligence & AI Productivity",
+      "subtitle": "Use AI tools confidently, check what they give you, and build routines that save real time.",
+      "category": "ai-emerging-technology",
+      "level": "Beginner–Intermediate",
+      "summary": "A hands-on, jargon-free course on using AI chat and image tools for study, work and small business, safely and honestly.",
+      "estimatedHours": "5–6 hours",
+      "modules": 10,
+      "lessons": 28,
+      "minutes": 302,
+      "passMark": 70,
+      "practicalPassMark": null,
+      "questionCount": 30
+    },
+    {
       "slug": "cybersecurity-digital-safety",
       "title": "Cybersecurity & Digital Safety Fundamentals",
       "subtitle": "Protect your accounts, devices and information from the scams and threats ordinary people actually face.",
@@ -29,21 +44,6 @@
       "minutes": 260,
       "passMark": 75,
       "practicalPassMark": 75,
-      "questionCount": 30
-    },
-    {
-      "slug": "practical-ai-productivity",
-      "title": "Practical Artificial Intelligence & AI Productivity",
-      "subtitle": "Use AI tools confidently, check what they give you, and build routines that save real time.",
-      "category": "ai-emerging-technology",
-      "level": "Beginner–Intermediate",
-      "summary": "A hands-on, jargon-free course on using AI chat and image tools for study, work and small business, safely and honestly.",
-      "estimatedHours": "5–6 hours",
-      "modules": 10,
-      "lessons": 28,
-      "minutes": 302,
-      "passMark": 70,
-      "practicalPassMark": null,
       "questionCount": 30
     }
   ]
