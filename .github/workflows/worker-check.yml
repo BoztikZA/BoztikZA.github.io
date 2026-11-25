@@ -44,9 +44,10 @@ jobs:
           cache-dependency-path: deliver/worker-api/package-lock.json
       - name: Install dependencies
         run: npm ci
-      - name: Check Spotlight browser JavaScript syntax
+      - name: Check browser JavaScript syntax
         working-directory: .
         run: |
+          for file in learning/js/*.js; do node --input-type=module --check < "$file"; done
           node --input-type=module --check < deliver-v3/js/spotlight-manager.js
           node --input-type=module --check < spotlight/spotlight.js
           node --input-type=module --check < spotlight/media.js
