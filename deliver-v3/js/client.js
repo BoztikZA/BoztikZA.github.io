@@ -28,7 +28,7 @@ import {
 import { createDeliveryReactionController } from "./animations/reactions.js";
 import { applyDeliveryTheme } from "./animations/theme.js";
 import { initShare } from "./share.js?v=spotlight-client-init-1";
-import { initSpotlightInvitation } from "./spotlight-invitation.js?v=discovery-cards-3";
+import { initSpotlightInvitation } from "./spotlight-invitation.js?v=discovery-cards-4";
 
 
 /* =========================================================
@@ -3454,7 +3454,7 @@ async function init() {
 
     }
 
-    initSpotlightInvitation(delivery);
+    if (!isPhotoshopBattlesDelivery) initSpotlightInvitation(delivery);
 
     /* =====================================================
        DELIVERY HEADER
