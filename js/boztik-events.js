@@ -7,7 +7,7 @@
  *
  *   action       e.g. chrome_web_store, edge_store, kofi, paypal, redbubble_store, teepublic_store, stores_page,
  *                contact_email, contact_page, portfolio_page, external_portfolio, creative_toolkit, image_inspector, services_page,
- *                creative_assistant, launchzone_listing, social_link, deliver, resource_partner
+ *                creative_assistant, launchzone_listing, social_link, deliver, resource_partner, learning_hub, learning_course
  *   destination  a hostname (external links) or a path (internal links). Never a full URL, never a query
  *                string, never an email address.
  *   position     nav | hero | footer | content
@@ -55,9 +55,12 @@
       "/support.html": "support",
       "/contact.html": "contact",
       "/privacy.html": "privacy",
-      "/terms.html": "terms"
+      "/terms.html": "terms",
+      "/learning/": "learning"
     };
-    var pageKey = PAGE_KEYS[location.pathname.replace(/\/index\.html$/, "/")] || "other";
+    var COURSE_PATH = /^\/learning\/courses\/[a-z0-9-]+\/$/;
+    var pagePath = location.pathname.replace(/\/index\.html$/, "/");
+    var pageKey = PAGE_KEYS[pagePath] || (COURSE_PATH.test(pagePath) ? "learning_course" : "other");
 
     var EXTERNAL = {
       "chromewebstore.google.com": "chrome_web_store",
@@ -99,6 +102,8 @@
       if (own) {
         var path = url.pathname.replace(/\/index\.html$/, "/");
         if (path.indexOf("/deliver") === 0) return { action: "deliver", destination: "/deliver" };
+        if (path === "/learning/") return { action: "learning_hub", destination: path }; // hub / catalogue (a #fragment is never sent)
+        if (COURSE_PATH.test(path)) return { action: "learning_course", destination: path }; // one of a handful of course pages
         var internal = INTERNAL[path];
         return internal ? { action: internal, destination: path } : null;
       }

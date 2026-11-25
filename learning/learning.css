@@ -217,3 +217,7 @@
 @keyframes lhsk{to{background-position:-200% 0}}
 @media(prefers-reduced-motion:reduce){.lh *{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
 @media print{.lh-topbar,header,footer,.lh-noprint{display:none!important}}
+
+/* Header: the full navigation plus the long tagline wraps "Contact" onto a second row above 1200px. Learning pages
+   hide the tagline in that range (site.js already does the same up to 1200px) so the header stays on one line. */
+@media (min-width:1201px){body.lh .logo-area .logo-subtitle{display:none}}

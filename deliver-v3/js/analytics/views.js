@@ -144,6 +144,7 @@ const FLOW_LABELS = {
   homepage: "Home", discover: "Discover (legacy)", stores: "Stores", deliver: "Deliver", services: "Services", portfolio: "Portfolio",
   toolkit: "Creative Toolkit", tools: "Legacy Tools", guides: "Guides", about: "About", support: "Support",
   contact: "Contact", spotlight: "Spotlight", spotlight_submit: "Spotlight Apply",
+  learning: "Learning", learning_course: "Learning course",
 };
 const STORE_LABELS = {
   redbubble: "Redbubble", teepublic: "TeePublic", kofi: "Ko-fi",

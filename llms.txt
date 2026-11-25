@@ -18,7 +18,14 @@ Boztik is based around three connected areas: photo editing services, creative s
 
 - [Boztik Creative Toolkit](https://www.boztik.com/creative-toolkit.html): A free Chrome and Edge browser extension for image editing, including selections, distraction removal, brush refinement and creative looks.
 
-## Learning and practical guides
+## Learning
+
+- [Boztik Learning Hub](https://www.boztik.com/learning/): Free, self-paced practical courses with assessments and verifiable certificates of completion. Launch courses: Practical Artificial Intelligence & AI Productivity, Cybersecurity & Digital Safety Fundamentals, and Data Analysis & Spreadsheet Skills. Further categories are planned.
+- [Practical AI & AI Productivity](https://www.boztik.com/learning/courses/practical-ai-productivity/)
+- [Cybersecurity & Digital Safety Fundamentals](https://www.boztik.com/learning/courses/cybersecurity-digital-safety/)
+- [Data Analysis & Spreadsheet Skills](https://www.boztik.com/learning/courses/data-analysis-spreadsheets/)
+
+## Practical guides
 
 - [Photo editing and restoration guides](https://www.boztik.com/guides.html): Practical, step-by-step learning resources for photo restoration, Photoshop workflows, retouching, scanning and image quality.
 

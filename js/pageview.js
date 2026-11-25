@@ -55,7 +55,8 @@
       "/guide-natural-portrait-retouching.html": "guides",
       "/about.html": "about",
       "/support.html": "support",
-      "/contact.html": "contact"
+      "/contact.html": "contact",
+      "/learning/": "learning"
     };
     var COOKIE_NAME = "boztik_anon_session";
     var SESSION_TTL_DAYS = 180;
@@ -163,7 +164,9 @@
     }
 
     var path = location.pathname.replace(/\/index\.html$/, "/");
-    var page = PAGE_KEYS[path];
+    // Learning Hub: only the public catalogue and course landing pages are counted. Lessons, exams, dashboards and private
+    // links (/learning/learn/, /exam/, /dashboard/, /resume/ ...) are not listed, so they are never counted.
+    var page = PAGE_KEYS[path] || (/^\/learning\/courses\/[a-z0-9-]+\/$/.test(path) ? "learning_course" : undefined);
     if (!page) return; // unlisted / private pages are never counted
 
     var sessionId = readCookie(COOKIE_NAME);

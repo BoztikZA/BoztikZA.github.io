@@ -1,0 +1,31 @@
+/* Homepage → Learning Hub feature section. Scoped to .homepage so the standalone /learning/ pages are never affected.
+   Builds on the tokens in homepage-platform.css (--platform-*) and the reveal/hover layer in homepage-signature.css. */
+.homepage .home-learning__facts { display:flex; flex-wrap:wrap; gap:8px 10px; margin:0 0 26px; padding:0; list-style:none; }
+.homepage .home-learning__facts li { display:inline-flex; align-items:baseline; gap:6px; padding:7px 13px; border:1px solid rgba(142,255,61,.22); border-radius:999px; background:rgba(142,255,61,.055); color:var(--platform-muted); font-size:.74rem; line-height:1.3; }
+.homepage .home-learning__facts strong { color:var(--platform-green); font-weight:800; }
+.homepage .home-learning__copy>p:not(.home-eyebrow) { margin-bottom:20px; }
+.homepage .home-learning__actions { display:flex; flex-wrap:wrap; align-items:center; gap:12px; }
+.homepage .home-learning__actions .hm-btn { min-height:46px; border-radius:7px; font-size:.82rem; }
+
+/* Course cards: real destinations, so they look and behave like links. */
+.homepage .home-learning__course { position:relative; display:grid; grid-template-columns:minmax(0,1fr) 28px; gap:6px 16px; align-items:center; padding:18px 16px; border-radius:9px; color:inherit; text-decoration:none; transition:background-color .25s ease, transform .25s cubic-bezier(.2,.7,.2,1); }
+.homepage .home-learning__course::before { position:absolute; top:14px; bottom:14px; left:0; width:2px; border-radius:2px; content:""; background:var(--platform-green); opacity:0; transform:scaleY(.4); transition:opacity .25s ease, transform .25s ease; }
+.homepage .home-learning__course em { grid-column:1; color:#8fa394; font-size:.7rem; font-style:normal; line-height:1.4; }
+.homepage .home-learning__course i { display:grid; width:28px; height:28px; place-items:center; border:1px solid rgba(142,255,61,.3); border-radius:50%; font-size:.9rem; transition:transform .25s ease, background-color .25s ease, color .25s ease; }
+.homepage .home-learning__course:hover, .homepage .home-learning__course:focus-visible { background:rgba(142,255,61,.065); transform:translateX(3px); }
+.homepage .home-learning__course:hover::before, .homepage .home-learning__course:focus-visible::before { opacity:1; transform:scaleY(1); }
+.homepage .home-learning__course:hover i, .homepage .home-learning__course:focus-visible i { background:var(--platform-green); color:#061007; transform:rotate(45deg); }
+.homepage .home-learning__course:focus-visible { outline:2px solid var(--platform-green); outline-offset:-2px; }
+.homepage .home-learning__footnote a { color:#baff9a; text-underline-offset:3px; }
+.homepage .home-learning__footnote a:hover { color:#fff; }
+
+@media (max-width:560px) {
+  .homepage .home-learning__actions .hm-btn { width:100%; justify-content:center; }
+  .homepage .home-learning__facts li { font-size:.7rem; }
+  .homepage .home-learning__course { padding:16px 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .homepage .home-learning__course, .homepage .home-learning__course::before, .homepage .home-learning__course i { transition:none!important; }
+  .homepage .home-learning__course:hover, .homepage .home-learning__course:focus-visible { transform:none; }
+  .homepage .home-learning__course:hover i, .homepage .home-learning__course:focus-visible i { transform:none; }
+}

@@ -49,6 +49,7 @@
   <link rel="stylesheet" href="spotlight/spotlight-discovery.css?v=20261121a">
   <link rel="stylesheet" href="homepage-platform.css?v=20261124a">
   <link rel="stylesheet" href="homepage-signature.css?v=20261124a">
+  <link rel="stylesheet" href="homepage-learning.css?v=20261125a">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3739684241868984"
        crossorigin="anonymous"></script>
   <script type="application/ld+json">
@@ -113,6 +114,17 @@
         }
       },
       {
+        "@type": "ItemList",
+        "@id": "https://www.boztik.com/#learning-courses",
+        "name": "Boztik Learning Hub launch courses",
+        "url": "https://www.boztik.com/learning/",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Practical Artificial Intelligence & AI Productivity", "url": "https://www.boztik.com/learning/courses/practical-ai-productivity/" },
+          { "@type": "ListItem", "position": 2, "name": "Cybersecurity & Digital Safety Fundamentals", "url": "https://www.boztik.com/learning/courses/cybersecurity-digital-safety/" },
+          { "@type": "ListItem", "position": 3, "name": "Data Analysis & Spreadsheet Skills", "url": "https://www.boztik.com/learning/courses/data-analysis-spreadsheets/" }
+        ]
+      },
+      {
         "@type": "WebSite",
         "@id": "https://www.boztik.com/#website",
         "name": "Boztik",
@@ -142,7 +154,7 @@
         <a href="#discover-highlights">Discover</a>
         <a class="nav-spotlight-link" href="/spotlight/" aria-label="Explore Boztik Spotlight">Spotlight</a>
         <a href="creative-toolkit.html">Creative Toolkit</a>
-        <a href="#learning-hub">Learn</a>
+        <a class="nav-learning-link" href="/learning/" aria-label="Boztik Learning Hub">Learn</a>
         <a class="nav-store-link" href="stores.html" aria-label="Boztik Stores" title="Boztik Stores"><img class="nav-store-logo" src="images/boztik-mark.png" alt="" width="320" height="295"><span class="nav-store-sign" aria-hidden="true">OPEN</span></a>
         <a href="services.html">Services</a><a href="portfolio.html">Portfolio</a><a href="deliver.html">Deliver</a>
         <a href="guides.html">Guides</a><a href="about.html">About</a><a href="support.html">Support</a><a href="contact.html">Contact</a>
@@ -200,10 +212,10 @@
             <h3>Creative Toolkit</h3><p>Practical browser-based tools for image inspection, editing and everyday creative work.</p>
             <span class="home-path-card__link">Explore the toolkit <span aria-hidden="true">→</span></span>
           </a>
-          <a class="home-path-card home-path-card--learn bz-reveal" href="#learning-hub">
+          <a class="home-path-card home-path-card--learn bz-reveal" href="/learning/">
             <span class="home-path-card__top"><span>04 / GROW</span><span aria-hidden="true">↗</span></span><span class="home-path-card__symbol" aria-hidden="true">↗</span>
-            <h3>Learning Hub</h3><p>Build useful digital skills through practical, self-paced learning. Coming soon.</p>
-            <span class="home-path-card__link">See what's taking shape <span aria-hidden="true">→</span></span>
+            <h3>Learning Hub</h3><p>Practical, self-paced courses in AI, digital safety and data skills, each ending in a certificate when you pass.</p>
+            <span class="home-path-card__link">Start learning <span aria-hidden="true">→</span></span>
           </a>
         </div>
       </div>
@@ -304,16 +316,31 @@
     <section class="home-learning hm-section" id="learning-hub" aria-labelledby="learning-title">
       <div class="hm-wrap home-learning__grid">
         <div class="home-learning__copy bz-reveal">
-          <p class="home-eyebrow">A NEW WAY TO GROW · COMING SOON</p>
+          <p class="home-eyebrow">BOZTIK LEARNING HUB · FREE, SELF-PACED COURSES</p>
           <h2 id="learning-title">Learn skills you can put to work.</h2>
-          <p>The Boztik Learning Hub is taking shape around practical, self-paced digital learning. The first planned courses focus on skills people can use in everyday work and life.</p>
-          <a class="hm-btn hm-btn--ghost" href="guides.html">Explore our guides in the meantime <span aria-hidden="true">↗</span></a>
+          <p>Structured, plain-English courses you can start today and finish in your own time. Every course stands on its own, so you can begin with whichever one matters most to you. Pass the assessment and you can download a certificate of completion with its own verification link.</p>
+          <ul class="home-learning__facts" aria-label="What the Learning Hub offers">
+            <li><strong>3</strong> launch courses</li><li><strong>Free</strong> to learn</li><li><strong>Certificate</strong> when you pass</li>
+          </ul>
+          <div class="home-learning__actions">
+            <a class="hm-btn hm-btn--primary" href="/learning/" data-learning-cta="hub">Open the Learning Hub <span aria-hidden="true">→</span></a>
+            <a class="hm-btn hm-btn--ghost" href="/learning/#courses" data-learning-cta="browse">Browse the courses</a>
+          </div>
         </div>
-        <div class="home-learning__courses bz-reveal" role="list" aria-label="Planned Learning Hub courses">
-          <div class="home-learning__course" role="listitem"><span>01 / THINK SMARTER</span><strong>Practical Artificial Intelligence &amp; AI Productivity</strong><i aria-hidden="true">↗</i></div>
-          <div class="home-learning__course"><span>02 / STAY SAFER</span><strong>Cybersecurity &amp; Digital Safety Fundamentals</strong><i aria-hidden="true">↗</i></div>
-          <div class="home-learning__course"><span>03 / WORK WITH DATA</span><strong>Data Analysis &amp; Spreadsheet Skills</strong><i aria-hidden="true">↗</i></div>
-          <p class="home-learning__footnote">These are planned launch courses. More learning paths will follow.</p>
+        <div class="home-learning__courses bz-reveal" role="list" aria-label="Boztik Learning Hub launch courses">
+          <a class="home-learning__course" role="listitem" href="/learning/courses/practical-ai-productivity/" data-learning-course="practical-ai-productivity">
+            <span>01 / THINK SMARTER</span><strong>Practical Artificial Intelligence &amp; AI Productivity</strong>
+            <em>10 modules · 28 lessons · about 5–6 hours</em><i aria-hidden="true">↗</i>
+          </a>
+          <a class="home-learning__course" role="listitem" href="/learning/courses/cybersecurity-digital-safety/" data-learning-course="cybersecurity-digital-safety">
+            <span>02 / STAY SAFER</span><strong>Cybersecurity &amp; Digital Safety Fundamentals</strong>
+            <em>10 modules · 29 lessons · about 5–6 hours</em><i aria-hidden="true">↗</i>
+          </a>
+          <a class="home-learning__course" role="listitem" href="/learning/courses/data-analysis-spreadsheets/" data-learning-course="data-analysis-spreadsheets">
+            <span>03 / WORK WITH DATA</span><strong>Data Analysis &amp; Spreadsheet Skills</strong>
+            <em>10 modules · 25 lessons · about 6–7 hours · practical included</em><i aria-hidden="true">↗</i>
+          </a>
+          <p class="home-learning__footnote">Eight learning categories are planned. Three have courses today; the rest are <a href="/learning/#categories">on the way</a>.</p>
         </div>
       </div>
     </section>
@@ -413,7 +440,7 @@
     <p>Discover useful digital tools, independent creators, creative technology and practical learning. One independent platform, with room to grow.</p>
     <div class="footer-links">
       <a href="index.html">Home</a><a href="#discover-highlights">Discover</a><a href="spotlight/">Spotlight</a>
-      <a href="creative-toolkit.html">Creative Toolkit</a><a href="#learning-hub">Learning Hub</a><a href="guides.html">Guides</a>
+      <a href="creative-toolkit.html">Creative Toolkit</a><a href="/learning/">Learning Hub</a><a href="guides.html">Guides</a>
       <a href="services.html">Creative Services</a><a href="portfolio.html">Portfolio</a><a href="stores.html">Boztik Stores</a>
       <a href="deliver.html">Deliver</a><a href="about.html">About</a><a href="support.html">Support</a><a href="contact.html">Contact</a>
       <a href="privacy.html">Privacy</a><a href="terms.html">Terms</a>
@@ -426,11 +453,11 @@
   </footer>
 
   <div class="bz-sticky-cta" data-bz-sticky hidden><a class="hm-btn hm-btn--primary" href="#explore-platform">Explore Boztik</a></div>
-  <script defer src="js/pageview.js?v=3"></script>
+  <script defer src="js/pageview.js?v=4"></script>
   <script type="module" src="spotlight/spotlight-home.js?v=14"></script>
-  <script defer src="js/boztik-events.js?v=3"></script>
+  <script defer src="js/boztik-events.js?v=4"></script>
   <script defer src="js/store-clicks.js?v=2"></script>
-  <script src="js/site.js?v=20261124-learning"></script>
+  <script src="js/site.js?v=20261125-learning-hub"></script>
   <script src="js/support.js"></script>
   <script defer src="js/home.js?v=20261102b"></script>
   <script defer src="js/home-stores.js?v=20261102b"></script>

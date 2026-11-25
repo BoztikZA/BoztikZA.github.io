@@ -6,15 +6,25 @@
   const toggle = document.querySelector('.nav-toggle');
   const links = document.querySelector('.nav-links');
 
-  // Boztik Learning Hub entry point (additive; the existing "Learn" guides link is unchanged).
-  if (nav && links && !links.querySelector('a[href*="learning/"]')) {
-    const learningLink = document.createElement('a');
-    learningLink.href = '/learning/';
-    learningLink.textContent = 'Courses';
-    if (/^\/learning\//.test(location.pathname)) learningLink.setAttribute('aria-current', 'page');
+  /*
+   * Boztik Learning Hub.
+   * The homepage navigation already carries a "Learn" item that points at /learning/. On every other page "Learn" has
+   * always been the guides link, so the Learning Hub is added beside it (never twice) and the guides link is named
+   * for what it is. Without JavaScript the original static navigation is untouched and still works.
+   */
+  if (nav && links) {
     const guidesLink = links.querySelector('a[href$="guides.html"]');
-    if (guidesLink) guidesLink.insertAdjacentElement('afterend', learningLink);
-    else links.append(learningLink);
+    let learningLink = links.querySelector('a[href*="learning/"]');
+    if (!learningLink) {
+      learningLink = document.createElement('a');
+      learningLink.href = '/learning/';
+      learningLink.textContent = 'Learn';
+      learningLink.setAttribute('aria-label', 'Boztik Learning Hub');
+      if (guidesLink) guidesLink.insertAdjacentElement('afterend', learningLink);
+      else links.append(learningLink);
+    }
+    if (guidesLink && guidesLink !== learningLink && guidesLink.textContent.trim() === 'Learn') guidesLink.textContent = 'Guides';
+    if (/^\/learning\//.test(location.pathname)) learningLink.setAttribute('aria-current', 'page');
   }
 
   if (nav && links && !links.querySelector('a[href*="spotlight/"]')) {
@@ -49,7 +59,7 @@
         '#discover-highlights',
         'spotlight/',
         'creative-toolkit.html',
-        '#learning-hub',
+        'learning/',
         'stores.html',
         { label: 'More', items: ['services.html', 'portfolio.html', 'deliver.html', 'guides.html', 'about.html', 'support.html'] },
         'contact.html'

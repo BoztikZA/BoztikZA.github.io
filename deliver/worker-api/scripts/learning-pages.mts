@@ -12,7 +12,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(here, "../../..");
 const ORIGIN = "https://www.boztik.com";
 const check = process.argv.includes("--check");
-const V = "20261124a";
+const V = "20261125a";
 
 const esc = (s: unknown) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const catalogue = JSON.parse(readFileSync(join(ROOT, "learning/data/courses.json"), "utf8")).courses as any[];
@@ -30,13 +30,13 @@ const CATEGORY_TEXT: Record<string, { name: string; blurb: string }> = {
 };
 const COMING_SOON = "Something exciting is on the way! We're developing new learning experiences for this category. New courses will be added soon.";
 
-interface PageOpts { path: string; title: string; description: string; robots?: "index" | "noindex"; body: string; script?: string; jsonld?: unknown[]; bodyClass?: string; ogImage?: string }
+interface PageOpts { analytics?: boolean; path: string; title: string; description: string; robots?: "index" | "noindex"; body: string; script?: string; jsonld?: unknown[]; bodyClass?: string; ogImage?: string }
 
 const NAV = `<header>
     <nav class="navbar" aria-label="Primary navigation">
       <a href="/index.html" class="logo-area">
         <img src="/images/boztik-mark.png" alt="Boztik logo" width="320" height="295">
-        <div><span class="logo-title">BOZTIK</span><span class="logo-subtitle">Photoshop · Restoration · Tools</span></div>
+        <div><span class="logo-title">BOZTIK</span><span class="logo-subtitle">Discover · Create · Learn · Grow</span></div>
       </a>
       <button class="nav-toggle" type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="primary-navigation"><span class="nav-toggle__label">Menu</span><span class="nav-toggle__icon" aria-hidden="true"></span></button>
       <div class="nav-links" id="primary-navigation">
@@ -45,11 +45,10 @@ const NAV = `<header>
         <a href="/portfolio.html">Portfolio</a>
         <a href="/deliver.html">Deliver</a>
         <a href="/creative-toolkit.html">Creative Toolkit</a>
-        <a href="/creative-studio.html">Creative Studio</a>
-        <a href="/guides.html">Learn</a>
-        <a href="/learning/" aria-current="page">Courses</a>
-        <a href="/spotlight/">Spotlight</a>
-        <a class="nav-store-link" href="/stores.html"><span class="nav-store-mark" aria-hidden="true"><b>BOZTIK</b><i>STORES</i></span><span>Stores</span></a>
+        <a href="/guides.html">Guides</a>
+        <a href="/learning/" aria-label="Boztik Learning Hub" aria-current="page">Learn</a>
+        <a class="nav-spotlight-link" href="/spotlight/" aria-label="Explore Boztik Spotlight">Spotlight</a>
+        <a class="nav-store-link" href="/stores.html" aria-label="Boztik Stores" title="Boztik Stores"><img class="nav-store-logo" src="/images/boztik-mark.png" alt="" width="320" height="295"><span class="nav-store-sign" aria-hidden="true">OPEN</span></a>
         <a href="/about.html">About</a>
         <a href="/support.html">Support</a>
         <a href="/contact.html">Contact</a>
@@ -59,14 +58,18 @@ const NAV = `<header>
 
 const FOOTER = `<footer>
     <img src="/learning/assets/brand/boztik-learning-mark.svg" alt="Boztik Learning" class="footer-logo" width="96" height="96">
-    <h3>BOZTIK LEARNING</h3>
-    <p>Free, practical, independently developed courses from Boztik. Not formally accredited; certificates are certificates of completion.</p>
+    <h3>BOZTIK LEARNING HUB</h3>
+    <p>The learning pillar of Boztik: free, practical, independently developed courses. Not formally accredited; certificates are certificates of completion.</p>
     <div class="footer-links">
+      <a href="/index.html">Boztik Home</a>
       <a href="/learning/">All courses</a>
       <a href="/learning/dashboard/">My learning</a>
       <a href="/learning/verify/">Verify a certificate</a>
+      <a href="/spotlight/">Spotlight</a>
+      <a href="/creative-toolkit.html">Creative Toolkit</a>
+      <a href="/guides.html">Guides</a>
+      <a href="/stores.html">Boztik Stores</a>
       <a href="/learning/privacy/">Learning privacy</a>
-      <a href="/guides.html">Photo guides</a>
       <a href="/privacy.html">Privacy</a>
       <a href="/terms.html">Terms</a>
       <a href="/contact.html">Contact</a>
@@ -94,7 +97,7 @@ function page(o: PageOpts): string {
   <meta property="og:title" content="${esc(o.title)}">
   <meta property="og:description" content="${esc(o.description)}">
   <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Boztik Learning">
+  <meta property="og:site_name" content="Boztik">
   <meta property="og:url" content="${canonical}">
   <meta property="og:image" content="${og}">
   <meta name="twitter:card" content="summary_large_image">
@@ -107,7 +110,7 @@ function page(o: PageOpts): string {
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/styles-premium.css?v=20261106a">
+  <link rel="stylesheet" href="/styles-premium.css?v=20261123e">
   <link rel="stylesheet" href="/learning/learning.css?v=${V}">
 ${(o.jsonld ?? []).map((j) => `  <script type="application/ld+json">${JSON.stringify(j).replace(/</g, "\\u003c")}</script>`).join("\n")}
 </head>
@@ -117,7 +120,7 @@ ${(o.jsonld ?? []).map((j) => `  <script type="application/ld+json">${JSON.strin
 ${o.body}
   </main>
   ${FOOTER}
-  <script src="/js/site.js?v=20261124-learning"></script>
+${o.analytics ? `  <script defer src="/js/pageview.js?v=4"></script>\n` : ""}  <script src="/js/site.js?v=20261125-learning-hub"></script>
 ${o.script ? `  <script type="module" src="${o.script}?v=${V}"></script>\n` : ""}</body>
 </html>
 `;
@@ -147,17 +150,22 @@ const add = (o: PageOpts) => { pages.push({ path: o.path, html: page(o) }); if (
 const liveCats = new Set(catalogue.map((c) => c.category));
 add({
   path: "/learning/",
-  title: "Boztik Learning — Free Practical Courses with Certificates",
-  description: "Free, practical online courses in AI, cybersecurity and data analysis. Learn at your own pace, pass the assessment and earn a Boztik certificate of achievement.",
+  title: "Boztik Learning Hub | Free Practical Courses with Certificates",
+  description: "Free, practical online courses in AI, cybersecurity and data analysis. Learn at your own pace, pass the assessment and earn a Boztik certificate of completion. Part of the Boztik platform.",
   script: "/learning/js/home.js",
+  analytics: true,
   jsonld: [
-    { "@context": "https://schema.org", "@type": "CollectionPage", name: "Boztik Learning", url: `${ORIGIN}/learning/`, description: "Free practical courses from Boztik.", isPartOf: { "@type": "WebSite", name: "Boztik", url: `${ORIGIN}/` } },
+    { "@context": "https://schema.org", "@type": "CollectionPage", name: "Boztik Learning Hub", url: `${ORIGIN}/learning/`, description: "Free practical courses from Boztik.", isPartOf: { "@type": "WebSite", name: "Boztik", url: `${ORIGIN}/` } },
+    { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Boztik", item: `${ORIGIN}/` },
+      { "@type": "ListItem", position: 2, name: "Learning Hub", item: `${ORIGIN}/learning/` } ] },
     { "@context": "https://schema.org", "@type": "ItemList", itemListElement: catalogue.map((c, i) => ({ "@type": "ListItem", position: i + 1, url: `${ORIGIN}/learning/courses/${c.slug}/`, name: c.title })) },
   ],
   body: `
     <section class="lh-hero">
       <div class="lh-wrap lh-hero__grid">
         <div>
+          <p class="lh-crumbs"><a href="/index.html">Boztik</a> / Learning Hub</p>
           <img src="/learning/assets/brand/boztik-learning-logo-dark.svg" alt="Boztik Learning" width="260" height="64" style="height:52px;width:auto">
           <h1>Learn something useful. Finish it. Be proud of it.</h1>
           <p class="lh-lead">Free, practical courses written to be completed — clear lessons, honest assessments and a certificate you earn by passing.</p>
@@ -257,6 +265,7 @@ for (const c of catalogue) {
     title: `${c.title} | Boztik Learning`,
     description: c.summary,
     script: "/learning/js/course.js",
+    analytics: true,
     ogImage: `${ORIGIN}/learning/assets/img/course-${ILLUSTRATION[c.slug]}.svg`,
     jsonld: [
       {
@@ -267,14 +276,15 @@ for (const c of catalogue) {
         hasCourseInstance: { "@type": "CourseInstance", courseMode: "online", courseWorkload: isoMinutes },
       },
       { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [
-        { "@type": "ListItem", position: 1, name: "Boztik Learning", item: `${ORIGIN}/learning/` },
-        { "@type": "ListItem", position: 2, name: c.title, item: `${ORIGIN}/learning/courses/${c.slug}/` } ] },
+        { "@type": "ListItem", position: 1, name: "Boztik", item: `${ORIGIN}/` },
+        { "@type": "ListItem", position: 2, name: "Learning Hub", item: `${ORIGIN}/learning/` },
+        { "@type": "ListItem", position: 3, name: c.title, item: `${ORIGIN}/learning/courses/${c.slug}/` } ] },
     ],
     body: `
     <section class="lh-hero" style="padding-block:clamp(32px,6vw,72px)">
       <div class="lh-wrap lh-hero__grid">
         <div>
-          <p class="lh-crumbs"><a href="/learning/">Boztik Learning</a> / ${esc(CATEGORY_TEXT[c.category]!.name)}</p>
+          <p class="lh-crumbs"><a href="/index.html">Boztik</a> / <a href="/learning/">Learning Hub</a> / ${esc(CATEGORY_TEXT[c.category]!.name)}</p>
           <h1>${esc(c.title)}</h1>
           <p class="lh-lead" style="margin-top:14px">${esc(c.subtitle)}</p>
           <div class="lh-meta" style="margin-top:18px"><span class="lh-chip lh-chip--free">Free</span><span class="lh-chip">${esc(c.level)}</span><span class="lh-chip">${esc(c.estimatedHours)}</span><span class="lh-chip">${c.modules} modules · ${c.lessons} lessons</span></div>
@@ -330,7 +340,7 @@ add({
   title: "Boztik Learning privacy and private links",
   description: "How Boztik Learning private session links, progress, certificates, verification and optional contributions handle your information.",
   body: `    <div class="lh-wrap lh-narrow lh-section" style="display:grid;gap:22px">
-      <p class="lh-crumbs"><a href="/learning/">Boztik Learning</a> / Privacy</p>
+      <p class="lh-crumbs"><a href="/index.html">Boztik</a> / <a href="/learning/">Learning Hub</a> / Privacy</p>
       <h1>Privacy and private links</h1>
       <p class="lh-lead">The short version of what Boztik Learning stores, why, and what you control.</p>
       <h2>Private links (no password, no account)</h2>
@@ -343,7 +353,7 @@ add({
       <h2>Your choices</h2>
       <p class="lh-muted">From your dashboard you can delete your session and data at any time, optionally including your certificates. Certificates you keep remain verifiable by ID but stop showing your name publicly.</p>
       <h2>Analytics</h2>
-      <p class="lh-muted">The Learning pages do not load advertising scripts or Google Analytics. Lessons and progress use only what is needed to run the service.</p>
+      <p class="lh-muted">The Learning pages do not load advertising scripts or Google Analytics. The course catalogue and course overview pages count page views with the same first-party counter used across boztik.com: it stores an anonymous random session cookie, never your name or email, and sends nothing if Do Not Track or Global Privacy Control is on. Lessons, exams, your dashboard, private links and certificate pages are never counted. Lessons and progress use only what is needed to run the service.</p>
       <p class="lh-muted">Questions: <a href="/contact.html">contact Boztik</a>. See also the site-wide <a href="/privacy.html">Privacy Policy</a> and <a href="/terms.html">Terms</a>.</p>
     </div>`,
 });
@@ -359,7 +369,7 @@ for (const p of pages) {
 
 // Sitemap: a delimited block so reruns are idempotent and the rest of the file is untouched.
 const START = "  <!-- learning:start -->", END = "  <!-- learning:end -->";
-const block = `${START}\n${sitemap.map((s) => `  <url><loc>${s.loc}</loc><lastmod>2026-11-24</lastmod><changefreq>${s.changefreq}</changefreq><priority>${s.priority}</priority></url>`).join("\n")}\n${END}`;
+const block = `${START}\n${sitemap.map((s) => `  <url><loc>${s.loc}</loc><lastmod>2026-11-25</lastmod><changefreq>${s.changefreq}</changefreq><priority>${s.priority}</priority></url>`).join("\n")}\n${END}`;
 const smPath = join(ROOT, "sitemap.xml");
 let sm = readFileSync(smPath, "utf8");
 const next = sm.includes(START) ? sm.replace(new RegExp(`${START}[\\s\\S]*?${END}`), block) : sm.replace("</urlset>", `${block}\n</urlset>`);

@@ -25,15 +25,17 @@ export const PAGE_LABELS = {
   support: "Support",
   contact: "Contact",
   spotlight: "Boztik Spotlight",
-  spotlight_submit: "Spotlight application page"
+  spotlight_submit: "Spotlight application page",
+  learning: "Boztik Learning Hub (course catalogue)",
+  learning_course: "Learning Hub course pages"
 };
 /** Short names for journeys and flow tables. */
 export const SHORT_LABELS = {
   homepage: "Home", discover: "Discover (legacy)", stores: "Stores", deliver: "Deliver", services: "Services", portfolio: "Portfolio",
-  toolkit: "Toolkit", tools: "Legacy Tools", guides: "Guides", about: "About", support: "Support", contact: "Contact", spotlight: "Spotlight", spotlight_submit: "Spotlight Apply"
+  toolkit: "Toolkit", tools: "Legacy Tools", guides: "Guides", about: "About", support: "Support", contact: "Contact", spotlight: "Spotlight", spotlight_submit: "Spotlight Apply", learning: "Learning", learning_course: "Learning course"
 };
 /** Public pages that should normally receive traffic; used to spot pages with no recorded views. */
-export const KEY_PAGES = ["homepage", "stores", "deliver", "services", "portfolio", "toolkit", "guides", "about", "support", "contact", "spotlight", "spotlight_submit"];
+export const KEY_PAGES = ["homepage", "stores", "deliver", "services", "portfolio", "toolkit", "guides", "about", "support", "contact", "spotlight", "spotlight_submit", "learning"];
 
 export const TYPE_LABELS = {
   photoshop_battles: "PhotoshopBattles",

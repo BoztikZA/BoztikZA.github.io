@@ -156,6 +156,12 @@ console.log("idempotent ingestion");
     assert.equal(await dbm.recordPageView(env, "spotlight_submit", S("f"), "evt-spotapply01"), true);
     assert.equal(views("spotlight_submit"), 1);
   });
+  await check("Learning Hub catalogue and course page keys are accepted; unknown learning keys are not", async () => {
+    assert.equal(await dbm.recordPageView(env, "learning", S("g"), "evt-learning001"), true);
+    assert.equal(await dbm.recordPageView(env, "learning_course", S("g"), "evt-learning002"), true);
+    assert.equal(views("learning"), 1); assert.equal(views("learning_course"), 1);
+    assert.equal(await dbm.recordPageView(env, "learning_exam", S("g"), "evt-learning003"), false);
+  });
 }
 
 console.log("period summaries on a seeded database");
@@ -506,6 +512,34 @@ console.log("browser tracker contract (real beacon path)");
       const pv = JSON.parse(run("../../../js/pageview.js", { path }).sent.find(s => s.url.endsWith("/pageview"))!.body);
       assert.equal(pv.page, key, path);
     }
+  });
+  await check("Learning Hub: catalogue and course landing pages are counted; lessons, exams and learner pages never are", () => {
+    for (const [path, key] of [["/learning/", "learning"], ["/learning/index.html", "learning"], ["/learning/courses/practical-ai-productivity/", "learning_course"], ["/learning/courses/data-analysis-spreadsheets/", "learning_course"]] as const) {
+      const pv = JSON.parse(run("../../../js/pageview.js", { path }).sent.find(s => s.url.endsWith("/pageview"))!.body);
+      assert.equal(pv.page, key, path);
+    }
+    for (const path of ["/learning/learn/", "/learning/exam/", "/learning/dashboard/", "/learning/resume/", "/learning/thanks/", "/learning/verify/", "/learning/courses/", "/learning/courses/x/y/", "/learning/privacy/"]) {
+      assert.equal(run("../../../js/pageview.js", { path }).sent.length, 0, path);
+    }
+  });
+  await check("boztik_action: Learning links are classified, with path-only destinations and the right position", () => {
+    const events: any[] = [];
+    const click = (pathname: string, href: string, closest: string) => {
+      events.length = 0;
+      const { listeners, ctx } = run("../../../js/boztik-events.js", { path: pathname });
+      ctx.window.gtag = (_e: string, name: string, p: any) => events.push({ name, ...p });
+      ctx.location.href = `https://www.boztik.com${pathname}`;
+      const a: any = { getAttribute: () => href, closest: (sel: string) => (sel === "a[href]" ? a : sel.includes(closest) ? a : null) };
+      listeners.get("doc:click")!({ type: "click", target: { closest: (sel: string) => (sel === "a[href]" ? a : null) } });
+      return events[0];
+    };
+    const hub = click("/", "/learning/", "__none__"); assert.equal(hub.action, "learning_hub"); assert.equal(hub.destination, "/learning/"); assert.equal(hub.page_key, "homepage");
+    const frag = click("/", "/learning/#courses", "__none__"); assert.equal(frag.action, "learning_hub"); assert.equal(frag.destination, "/learning/");
+    const course = click("/", "/learning/courses/cybersecurity-digital-safety/", "__none__"); assert.equal(course.action, "learning_course"); assert.equal(course.destination, "/learning/courses/cybersecurity-digital-safety/");
+    const nav = click("/services.html", "/learning/", ".navbar"); assert.equal(nav.position, "nav"); assert.equal(nav.page_key, "services");
+    assert.equal(click("/learning/", "/learning/courses/practical-ai-productivity/", "__none__").page_key, "learning");
+    assert.equal(click("/", "/learning/dashboard/", "__none__"), undefined, "private learner pages are never reported");
+    for (const e of [hub, frag, course, nav]) assert.ok(!/[?#]/.test(e.destination));
   });
   await check("retired redirect URLs are not counted as separate pages", () => {
     for (const path of ["/discover.html", "/image-inspector.html", "/creative-assistant.html", "/creative-studio.html"]) {
