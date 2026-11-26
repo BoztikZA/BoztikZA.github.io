@@ -226,12 +226,27 @@
 /* Completion contribution panel — optional support, presented after the certificate. */
 .lh-contrib{margin-top:22px;border-color:rgba(142,255,61,.24);background:linear-gradient(145deg,rgba(142,255,61,.055),var(--lh-panel) 48%)}
 .lh-contrib__lead{max-width:68ch;font-size:1.02rem;color:var(--text-muted)}
-.lh-contrib__uses{display:grid;grid-template-columns:1fr;gap:10px;margin:20px 0 24px}
+.lh-contrib__uses{display:grid;grid-template-columns:1fr;gap:10px;margin:20px 0 14px;padding:0;list-style:none}
 .lh-contrib__use{display:grid;gap:5px;padding:15px 16px;border:1px solid var(--lh-line);border-radius:14px;background:rgba(255,255,255,.018)}
 .lh-contrib__use strong{font-size:.94rem}
 .lh-contrib__use span{color:var(--text-muted);font-size:.9rem;line-height:1.55}
 .lh-contrib__notice{margin-top:16px;padding:13px 15px;border:1px solid var(--lh-line);border-radius:12px;color:var(--text-muted);font-size:.92rem}
 .lh-contrib__choice-title{margin:0 0 5px;font-size:1.05rem}
 .lh-contrib__fine{margin-top:14px;color:var(--text-muted);font-size:.82rem;line-height:1.6}
-@media(min-width:620px){.lh-contrib__uses{grid-template-columns:repeat(3,minmax(0,1fr))}.lh-contrib__use{min-height:124px}}
-@media(prefers-reduced-motion:reduce){.lh-contrib *{scroll-behavior:auto}}
+.lh-contrib__free{margin:0 0 22px;color:var(--lh-neon);font-size:.95rem;font-weight:600}
+.lh-contrib__summary{min-height:1.5em;margin:12px 0 0;color:var(--text-muted);font-size:.94rem}
+.lh-contrib__done{display:grid;gap:8px;margin-top:12px;font-size:.94rem}
+.lh-contrib__done a{color:var(--lh-neon);text-decoration:underline;text-underline-offset:3px}
+.lh-contrib input[aria-invalid=true]{border-color:var(--lh-danger)}
+.lh-contrib .lh-amount[aria-pressed=true]{box-shadow:0 0 0 1px var(--lh-neon),0 0 22px rgba(142,255,61,.14)}
+.lh-contrib .lh-amount b{font-size:1.3rem}
+.lh-contrib .lh-amount small{text-align:center;line-height:1.3}
+@media(min-width:620px){.lh-contrib__uses{grid-template-columns:repeat(2,minmax(0,1fr))}.lh-contrib__use{min-height:96px}}
+@media(max-width:380px){.lh-contrib .lh-btnrow .lh-btn{width:100%}}
+@media(prefers-reduced-motion:no-preference){
+  .lh-contrib .lh-amount{transition:border-color .18s ease,background-color .18s ease,box-shadow .18s ease,transform .18s ease}
+  .lh-contrib .lh-amount:hover{transform:translateY(-2px)}
+  .lh-contrib__done{animation:lh-contrib-in .28s ease both}
+  @keyframes lh-contrib-in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+}
+@media(prefers-reduced-motion:reduce){.lh-contrib *{scroll-behavior:auto;transition:none!important;animation:none!important}}
