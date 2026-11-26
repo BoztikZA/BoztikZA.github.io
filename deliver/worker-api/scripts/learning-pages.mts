@@ -197,8 +197,7 @@ add({
         <h2 style="margin:10px 0 8px">Practical answers before you enrol</h2>
         <p class="lh-lead" style="margin-bottom:24px">Explore straightforward guides on AI, online safety, spreadsheets and building your skills. Each guide is free and points to a relevant course when you are ready to go deeper.</p>
         <div class="lh-grid lh-grid--3">
-          ${LEARNING_RESOURCES.slice(0, 3).map((r) => `<article class="lh-resource-card"><span class="lh-chip">${esc(r.category)}</span><h3><a href="/learning/resources/${r.slug}/">${esc(r.title)}</a></h3><p class="lh-muted">${esc(r.excerpt)}</p><a class="lh-text-link" href="/learning/resources/${r.slug}/">Read guide <span aria-hidden="true">→</span></a></article>`).join("
-          ")}
+          ${LEARNING_RESOURCES.slice(0, 3).map((r) => `<article class="lh-resource-card"><span class="lh-chip">${esc(r.category)}</span><h3><a href="/learning/resources/${r.slug}/">${esc(r.title)}</a></h3><p class="lh-muted">${esc(r.excerpt)}</p><a class="lh-text-link" href="/learning/resources/${r.slug}/">Read guide <span aria-hidden="true">→</span></a></article>`).join("\n          ")}
         </div>
         <p style="margin-top:20px"><a class="lh-btn" href="/learning/resources/">Browse all free learning resources</a></p>
       </div>
@@ -333,8 +332,7 @@ for (const c of catalogue) {
       </aside>
     </div></section>
 
-    <section class="lh-section lh-related-resources" style="padding-top:0"><div class="lh-wrap"><span class="lh-eyebrow">Keep learning</span><h2 style="margin:10px 0 18px">Free guides related to this course</h2><div class="lh-grid lh-grid--2">${LEARNING_RESOURCES.filter((r) => r.courseSlug === c.slug).map((r) => `<article class="lh-resource-card"><span class="lh-chip">${esc(r.readTime)}</span><h3><a href="/learning/resources/${r.slug}/">${esc(r.title)}</a></h3><p class="lh-muted">${esc(r.excerpt)}</p><a class="lh-text-link" href="/learning/resources/${r.slug}/">Read guide <span aria-hidden="true">→</span></a></article>`).join("
-")}</div></div></section>
+    <section class="lh-section lh-related-resources" style="padding-top:0"><div class="lh-wrap"><span class="lh-eyebrow">Keep learning</span><h2 style="margin:10px 0 18px">Free guides related to this course</h2><div class="lh-grid lh-grid--2">${LEARNING_RESOURCES.filter((r) => r.courseSlug === c.slug).map((r) => `<article class="lh-resource-card"><span class="lh-chip">${esc(r.readTime)}</span><h3><a href="/learning/resources/${r.slug}/">${esc(r.title)}</a></h3><p class="lh-muted">${esc(r.excerpt)}</p><a class="lh-text-link" href="/learning/resources/${r.slug}/">Read guide <span aria-hidden="true">→</span></a></article>`).join("\n")}</div></div></section>
 
     <section class="lh-section" style="padding-top:0"><div class="lh-wrap" id="discover-slot" data-category="${c.category}" data-slug="${c.slug}"></div></section>
 
