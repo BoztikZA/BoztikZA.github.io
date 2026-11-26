@@ -38,6 +38,7 @@ for (const resource of LEARNING_RESOURCES) {
   const canonical = `https://www.boztik.com/learning/resources/${resource.slug}/`;
   assert.ok(page.includes(`<link rel="canonical" href="${canonical}">`), `${resource.slug}: canonical URL mismatch`);
   assert.ok(page.includes('"@type":"Article"'), `${resource.slug}: Article structured data is missing`);
+  assert.ok(page.includes('/js/pageview.js?v=4'), `${resource.slug}: first-party page counting is not enabled`);
   assert.ok(page.includes(`<h1>${resource.title}</h1>`), `${resource.slug}: visible H1 is missing`);
   assert.ok(!/name="robots" content="noindex/i.test(page), `${resource.slug}: public article must be indexable`);
   assert.ok(hub.includes(`/learning/resources/${resource.slug}/`), `${resource.slug}: resource hub link is missing`);
