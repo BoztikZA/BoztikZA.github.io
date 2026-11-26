@@ -1,37 +1,36 @@
 # Boztik Learning Hub — deployment runbook
 
-Nothing in this branch has been deployed, migrated or pushed. Everything below is a manual step for the site owner.
-Order matters: **validate → migrate remote D1 → deploy Worker → verify API → merge to `main` (publishes Pages) → smoke test → (optional) PayPal.**
-Stop at the first failure. Never merge before the Worker is live: the Learning pages call `https://deliver-api.boztik.com/api/learning/*`.
+The Learning Hub and its first public resource library have been merged to `main`. Cloudflare Pages publishes the static site from `main`; the Learning API is deployed separately as a Worker.
+This resource release adds **no D1 migration**. It adds the public analytics key `learning_resource`, so the Worker must be redeployed before resource-page views will be accepted by production analytics.
+
+For future releases, order matters: **validate → inspect remote D1 state → apply only genuinely pending migrations → deploy Worker → verify API → publish Pages → smoke test**.
+Stop at the first failure. Never apply or roll back database migrations just because a page or Worker changed.
 
 Prerequisites: `npx wrangler login` (or `CLOUDFLARE_API_TOKEN` with Workers + D1 edit) for Worker `boztik-deliver-api` and D1 `boztik-deliver`.
-Run from `deliver/worker-api` on the feature branch.
+Run from `deliver/worker-api` after pulling the latest `main` branch.
 
 ## 0. Pre-flight (read-only)
 
 ```bash
-git checkout feature/boztik-learning-hub
-cd deliver/worker-api && npm ci
-npm run typecheck && npm test              # must be green (includes learning content + API tests)
-npm run learning:check                      # generated manifest, courses.json and static pages are in sync
-npm run db:migrate:local
-npx wrangler d1 migrations list boztik-deliver --remote   # read the real production level first
+git checkout main
+git pull
+cd deliver/worker-api
+npm ci
+npm run learning:pages                      # regenerate committed static pages from source
+npm run learning:check                      # manifest, courses.json, pages and sitemap must be in sync
+npm run typecheck && npm test               # full regression suite, including resource and analytics tests
+npm run db:migrate:local                     # validate local migration chain
+npx wrangler d1 migrations list boztik-deliver --remote   # inspect production state; read-only
 ```
 
-Production should be at `0022_spotlight_rotation.sql`; `0023_learning_hub.sql` is the only new migration. If production
-differs from the repository history, stop and investigate.
+The Learning Hub baseline migration is `0023_learning_hub.sql`. The resource-library release does not add or change any migration.
+Confirm that production has already applied the expected Learning Hub migration. If production differs from repository history, stop and investigate before deploying.
 
-## 1. Apply the D1 migration
+## 1. Database state
 
-`0023` only **creates** new `learning_*` tables (`IF NOT EXISTS`). It does not alter or read any existing table.
+There is **no remote migration to apply for this resource release**. Do not run `npm run db:migrate:remote` unless the read-only migration listing proves a separate, approved migration is pending.
 
-```bash
-npm run db:migrate:remote
-npx wrangler d1 execute boztik-deliver --remote --command "SELECT name FROM sqlite_master WHERE name LIKE 'learning_%' ORDER BY name"
-```
-
-Expect 9 tables: audit, attempts, certificates, contributions, enrolments, learners, progress, usage, webhook_events.
-Rollback if ever needed: drop those nine tables; no other table depends on them.
+The original `0023_learning_hub.sql` migration creates the nine Learning tables. It is not part of this release's change set.
 
 ## 2. Deploy the Worker
 
@@ -47,9 +46,9 @@ curl -s https://deliver-api.boztik.com/api/learning/config | head -c 400     # 3
 curl -s -o /dev/null -w "%{http_code}\n" https://deliver-api.boztik.com/api/admin/learning/overview   # 401 without admin login
 ```
 
-## 3. Merge and verify Pages
+## 3. Verify the published Pages
 
-Merge the PR to `main`; GitHub Pages publishes `/learning/` and the Command Centre panel. Check:
+The resource-library PR is already merged. Confirm that the latest Cloudflare Pages production deployment has completed before treating the public pages as live. Check:
 
 - https://www.boztik.com/learning/ (8 categories, 3 courses, free resources feature)
 - https://www.boztik.com/learning/resources/ and each article URL; confirm canonical, Article schema, source links and course CTAs.
@@ -90,7 +89,7 @@ Either way nothing gates results or certificates, "Maybe later" is remembered pe
 
 - Storage: Command Centre → Learning → Contributions & storage shows use of the separate 1.5 GB allocation (warnings at 70/85/95%; new learners pause at 100%). It is an estimate.
 - Adding a course: add content under `learning/courses/<slug>/`, an exam bank, an entry in `learning/courses/rules.json`, then `npm run learning:build && npm run learning:pages` and commit the generated files.
-- Editorial resources: maintain the editorial article content in `deliver/worker-api/scripts/learning-resources.mts`. The `learning:pages` generator creates `/learning/resources/`, the individual article pages, homepage feature cards, course cross-links and the Learning sitemap block. After editing resources, run `npm run learning:pages`, then `npm run learning:check` and commit the generated HTML plus `sitemap.xml`.
+- Editorial resources: maintain article content in `deliver/worker-api/scripts/learning-resources.mts`. The `learning:pages` generator creates the resource hub, article pages, homepage feature cards, course cross-links and sitemap entries. After editing resources, run `npm run learning:pages`, `npm run learning:check` and `npm test`, then commit the generated HTML and `sitemap.xml`. The Learning Hub quality workflow also regenerates and validates these pages.
 - Local preview with no production access: `npm run learning:dev` → http://localhost:8080/learning/ (in-memory data).
 - Optional browser checks (Playwright is not a repo dependency): `scripts/learning-e2e.mts` (learner journey) and `scripts/learning-admin-e2e.mts` (Command Centre panel).
 
