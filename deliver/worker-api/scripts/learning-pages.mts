@@ -153,11 +153,11 @@ const liveCats = new Set(catalogue.map((c) => c.category));
 add({
   path: "/learning/",
   title: "Boztik Learning Hub | Free Practical Courses with Certificates",
-  description: "Free, practical online courses in AI, cybersecurity and data analysis. Learn at your own pace, pass the assessment and earn a Boztik certificate of completion. Part of the Boztik platform.",
+  description: "Free online courses and practical digital skills guides in AI, cybersecurity and data analysis. Learn at your own pace, practise useful skills and earn a Boztik certificate of achievement by passing the assessment.",
   script: "/learning/js/home.js",
   analytics: true,
   jsonld: [
-    { "@context": "https://schema.org", "@type": "CollectionPage", name: "Boztik Learning Hub", url: `${ORIGIN}/learning/`, description: "Free practical courses from Boztik.", isPartOf: { "@type": "WebSite", name: "Boztik", url: `${ORIGIN}/` } },
+    { "@context": "https://schema.org", "@type": "CollectionPage", name: "Boztik Learning Hub", url: `${ORIGIN}/learning/`, description: "Free practical courses and beginner-friendly digital skills guides from Boztik.", isPartOf: { "@type": "WebSite", name: "Boztik", url: `${ORIGIN}/` } },
     { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [
       { "@type": "ListItem", position: 1, name: "Boztik", item: `${ORIGIN}/` },
       { "@type": "ListItem", position: 2, name: "Learning Hub", item: `${ORIGIN}/learning/` } ] },
