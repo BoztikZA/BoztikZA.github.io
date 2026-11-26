@@ -285,3 +285,5 @@
 .lh-article-cta .lh-btn{justify-self:start}
 .lh-article-disclaimer{margin-top:28px;padding-top:18px;border-top:1px solid var(--lh-line);color:var(--text-muted);font-size:.88rem;line-height:1.6}
 @media(prefers-reduced-motion:reduce){.lh-resource-card{transition:none}}
+
+.lh-resource-card a:focus-visible,.lh-text-link:focus-visible{outline:3px solid var(--lh-neon);outline-offset:4px;border-radius:4px}
