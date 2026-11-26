@@ -346,6 +346,7 @@ for (const c of catalogue) {
 const resourceCards = LEARNING_RESOURCES.map((r) => `<article class="lh-resource-card"><span class="lh-chip">${esc(r.category)}</span><h2><a href="/learning/resources/${r.slug}/">${esc(r.title)}</a></h2><p class="lh-muted">${esc(r.excerpt)}</p><div class="lh-resource-meta">${esc(r.readTime)} · Published ${esc(r.publishedAt)}</div><a class="lh-text-link" href="/learning/resources/${r.slug}/">Read guide <span aria-hidden="true">→</span></a></article>`).join("\n");
 add({
   path: "/learning/resources/",
+  analytics: true,
   title: "Free Digital Skills Guides & Tutorials | Boztik Learning",
   description: "Practical, free beginner-friendly guides to AI prompting, phishing prevention, spreadsheet data cleaning, Excel PivotTables and presenting online learning on your CV.",
   jsonld: [
@@ -364,6 +365,7 @@ for (const r of LEARNING_RESOURCES) {
   const sources = r.sources.map((source) => `<li><a href="${esc(source.url)}" target="_blank" rel="noopener noreferrer">${esc(source.name)}</a><span>${esc(source.note)}</span></li>`).join("\n");
   add({
     path: `/learning/resources/${r.slug}/`,
+    analytics: true,
     title: `${r.title} | Boztik Learning`,
     description: r.description,
     ogType: "article",
