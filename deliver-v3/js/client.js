@@ -3454,7 +3454,7 @@ async function init() {
 
     }
 
-    if (!isPhotoshopBattlesDelivery) initSpotlightInvitation(delivery);
+    initSpotlightInvitation(delivery);
 
     /* =====================================================
        DELIVERY HEADER
