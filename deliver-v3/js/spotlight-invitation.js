@@ -129,7 +129,6 @@ export function initSpotlightInvitation(delivery, options = {}) {
   const hasLegacySingleFile = Boolean(delivery?.file_path && delivery?.file_name);
 
   if (!isSupportPage && !isHomePage && (!delivery?.id || (!hasMultiFileDelivery && !hasLegacySingleFile))) return;
-  if (!isSupportPage && !isHomePage && new URLSearchParams(location.search).get("preview") === "1") return;
   if (document.getElementById("boztik-discovery-promo") || hasRecentDismissal()) return;
 
   const sequence = readSequence();
