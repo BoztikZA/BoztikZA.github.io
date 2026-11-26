@@ -31,7 +31,7 @@ const CATEGORY_TEXT: Record<string, { name: string; blurb: string }> = {
 };
 const COMING_SOON = "Something exciting is on the way! We're developing new learning experiences for this category. New courses will be added soon.";
 
-interface PageOpts { analytics?: boolean; path: string; title: string; description: string; robots?: "index" | "noindex"; body: string; script?: string; jsonld?: unknown[]; bodyClass?: string; ogImage?: string; ogType?: "website" | "article" }
+interface PageOpts { analytics?: boolean; path: string; title: string; description: string; robots?: "index" | "noindex"; body: string; script?: string; jsonld?: unknown[]; bodyClass?: string; ogImage?: string; ogType?: "website" | "article"; sitemapPriority?: string; sitemapChangefreq?: string }
 
 const NAV = `<header>
     <nav class="navbar" aria-label="Primary navigation">
@@ -146,7 +146,7 @@ function card(c: any): string {
 
 const pages: { path: string; html: string }[] = [];
 const sitemap: { loc: string; priority: string; changefreq: string }[] = [];
-const add = (o: PageOpts) => { pages.push({ path: o.path, html: page(o) }); if ((o.robots ?? "index") === "index") sitemap.push({ loc: `${ORIGIN}${o.path}`, priority: o.path === "/learning/" ? "0.8" : "0.7", changefreq: "weekly" }); };
+const add = (o: PageOpts) => { pages.push({ path: o.path, html: page(o) }); if ((o.robots ?? "index") === "index") sitemap.push({ loc: `${ORIGIN}${o.path}`, priority: o.sitemapPriority ?? (o.path === "/learning/" ? "0.8" : "0.7"), changefreq: o.sitemapChangefreq ?? "weekly" }); };
 
 // ---------------------------------------------------------------------------- Home
 const liveCats = new Set(catalogue.map((c) => c.category));
@@ -364,6 +364,8 @@ for (const r of LEARNING_RESOURCES) {
   add({
     path: `/learning/resources/${r.slug}/`,
     analytics: true,
+    sitemapPriority: "0.6",
+    sitemapChangefreq: "monthly",
     title: `${r.title} | Boztik Learning`,
     description: r.description,
     ogType: "article",
@@ -394,6 +396,8 @@ shell("/learning/verify/", "Verify a certificate — Boztik Learning", "Check th
 // Privacy (indexable, static)
 add({
   path: "/learning/privacy/",
+  sitemapPriority: "0.3",
+  sitemapChangefreq: "yearly",
   title: "Boztik Learning privacy and private links",
   description: "How Boztik Learning private session links, progress, certificates, verification and optional contributions handle your information.",
   body: `    <div class="lh-wrap lh-narrow lh-section" style="display:grid;gap:22px">
