@@ -102,4 +102,4 @@ Either way nothing gates results or certificates, "Maybe later" is remembered pe
 - A name typo after issuance cannot be self-corrected; an admin can revoke, and the learner can re-claim.
 - PayPal refund handling depends on PayPal including the order id in the refund webhook.
 - Storage figure is an estimate, not a Cloudflare billing number.
-- Learning pages carry no analytics or ads by design.
+- Learning pages carry no third-party analytics or ads. Public catalogue, course overview and resource pages use the existing privacy-first first-party counter; private learner pages are excluded.
