@@ -41,7 +41,11 @@ for (const resource of LEARNING_RESOURCES) {
   assert.ok(page.includes(`<h1>${resource.title}</h1>`), `${resource.slug}: visible H1 is missing`);
   assert.ok(!/name="robots" content="noindex/i.test(page), `${resource.slug}: public article must be indexable`);
   assert.ok(hub.includes(`/learning/resources/${resource.slug}/`), `${resource.slug}: resource hub link is missing`);
-  assert.ok(home.includes(`/learning/resources/${resource.slug}/`) || resource !== LEARNING_RESOURCES[4], `${resource.slug}: homepage feature link is missing`);
+  if (LEARNING_RESOURCES.slice(0, 3).includes(resource)) assert.ok(home.includes(`/learning/resources/${resource.slug}/`), `${resource.slug}: homepage feature link is missing`);
+  if (["practical-ai-productivity", "cybersecurity-digital-safety", "data-analysis-spreadsheets"].includes(resource.courseSlug)) {
+    const coursePage = readFileSync(join(root, `learning/courses/${resource.courseSlug}/index.html`), "utf8");
+    assert.ok(coursePage.includes(`/learning/resources/${resource.slug}/`), `${resource.slug}: course cross-link is missing`);
+  }
   assert.ok(sitemap.includes(`<loc>${canonical}</loc>`), `${resource.slug}: sitemap entry is missing`);
   for (const source of resource.sources) assert.ok(page.includes(source.url.replace(/&/g, "&amp;")), `${resource.slug}: source link is not rendered`);
 }
