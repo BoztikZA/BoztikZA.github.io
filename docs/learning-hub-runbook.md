@@ -7,7 +7,7 @@ For future releases, order matters: **validate → inspect remote D1 state → a
 Stop at the first failure. Never apply or roll back database migrations just because a page or Worker changed.
 
 Prerequisites: `npx wrangler login` (or `CLOUDFLARE_API_TOKEN` with Workers + D1 edit) for Worker `boztik-deliver-api` and D1 `boztik-deliver`.
-Run from `deliver/worker-api` after pulling the latest `main` branch.
+Start at the repository root for the Git commands below, then run npm and Wrangler commands from `deliver/worker-api`.
 
 ## 0. Pre-flight (read-only)
 
