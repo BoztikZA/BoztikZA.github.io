@@ -16,6 +16,7 @@ on:
       - "deliver-v3/js/analytics-report.js"
       - "js/pageview.js"
       - "sitemap.xml"
+      - ".github/workflows/learning-hub-quality.yml"
   pull_request:
     paths:
       - "learning/**"
@@ -28,6 +29,7 @@ on:
       - "deliver-v3/js/analytics-report.js"
       - "js/pageview.js"
       - "sitemap.xml"
+      - ".github/workflows/learning-hub-quality.yml"
   workflow_dispatch:
 
 permissions:
