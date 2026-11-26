@@ -8,7 +8,7 @@ export const LEARNING_RESOURCES = [
     courseSlug: "practical-ai-productivity",
     category: "AI & Emerging Technology",
     readTime: "7 min read",
-    reviewedAt: "2026-11-26",
+    publishedAt: "2026-11-26",
     excerpt: "Better AI results usually start with a clearer brief. Learn how to give an AI assistant the context, task, audience, format and boundaries it needs.",
     sections: [
       { heading: "Start with the job, not clever wording", html: `<p>A useful prompt is a short work brief. It tells the assistant what you are trying to achieve, what information it should use and what a good answer should look like. You do not need secret phrases or complicated prompt formulas.</p><p>Before writing, ask yourself three questions: What task am I delegating? What would I need to tell a capable colleague? How will I check whether the answer is good enough?</p>` },
@@ -30,7 +30,7 @@ export const LEARNING_RESOURCES = [
     courseSlug: "cybersecurity-digital-safety",
     category: "Cybersecurity & Digital Safety",
     readTime: "8 min read",
-    reviewedAt: "2026-11-26",
+    publishedAt: "2026-11-26",
     excerpt: "Phishing messages imitate trusted people and organisations to steal information or money. Learn a safe pause-check-report routine.",
     sections: [
       { heading: "What phishing looks like today", html: `<p>Phishing is a form of social engineering. An attacker sends a message that tries to make you reveal information, open a harmful attachment, approve a login or send money. The message may arrive by email, SMS, messaging app, social media or phone.</p><p>Some scams contain spelling mistakes or strange formatting, but many are carefully written and visually convincing. Good grammar, a familiar logo or your name in the greeting does not prove that a message is genuine.</p>` },
@@ -52,7 +52,7 @@ export const LEARNING_RESOURCES = [
     courseSlug: "data-analysis-spreadsheets",
     category: "Data & Analytics",
     readTime: "8 min read",
-    reviewedAt: "2026-11-26",
+    publishedAt: "2026-11-26",
     excerpt: "Reliable spreadsheet analysis starts with reliable data. Learn a repeatable cleaning process that protects the original file and makes errors easier to find.",
     sections: [
       { heading: "Why cleaning comes before formulas", html: `<p>A spreadsheet can look tidy and still contain problems that distort totals. The same customer may appear under two spellings, dates may be stored as text, blank rows may interrupt a range, and duplicate transactions may inflate revenue. If you analyse the file before checking its structure, a polished chart can make a wrong answer look convincing.</p><p>Data cleaning is not about making every cell look attractive. It is about making the records consistent enough to answer a specific question without hiding important exceptions.</p>` },
@@ -73,7 +73,7 @@ export const LEARNING_RESOURCES = [
     courseSlug: "data-analysis-spreadsheets",
     category: "Data & Analytics",
     readTime: "7 min read",
-    reviewedAt: "2026-11-26",
+    publishedAt: "2026-11-26",
     excerpt: "PivotTables help turn long lists of records into useful summaries. Learn how to prepare the source, choose fields and check the result.",
     sections: [
       { heading: "What a PivotTable is for", html: `<p>A PivotTable summarises a larger table without requiring you to write a formula for every group. For example, a sales list with thousands of transactions can be summarised by branch, product, month or salesperson. You can rearrange the fields to explore different questions while leaving the original records in place.</p><p>A PivotTable does not repair poor data or decide what a business should do. It organises the records you give it, so the quality of the answer still depends on the source data and the question.</p>` },
@@ -94,7 +94,7 @@ export const LEARNING_RESOURCES = [
     courseSlug: "career-professional-skills",
     category: "Career & Professional Skills",
     readTime: "6 min read",
-    reviewedAt: "2026-11-26",
+    publishedAt: "2026-11-26",
     excerpt: "A course certificate can support your CV when you explain what you learned and what you can demonstrate. Here's how to present it accurately.",
     sections: [
       { heading: "Use a clear section heading", html: `<p>If you have completed relevant short courses, add a section called “Professional Development”, “Additional Training” or “Relevant Courses”. Place it where it supports the role you are applying for. For an entry-level role, relevant learning may sit above unrelated work history; for an experienced applicant, it may fit below employment and qualifications.</p><p>Do not place an independently issued course certificate under a heading that implies a formal degree, licence or accredited qualification.</p>` },
