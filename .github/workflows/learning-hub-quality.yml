@@ -71,5 +71,5 @@ jobs:
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git commit -m "chore: regenerate Learning Hub pages [skip ci]"
-            git push
+            git push origin HEAD:refs/heads/${{ github.head_ref || github.ref_name }}
           fi
