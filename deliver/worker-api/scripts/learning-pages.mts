@@ -13,7 +13,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(here, "../../..");
 const ORIGIN = "https://www.boztik.com";
 const check = process.argv.includes("--check");
-const V = "20261126a";
+const V = "20261126b";
 
 const esc = (s: unknown) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const catalogue = JSON.parse(readFileSync(join(ROOT, "learning/data/courses.json"), "utf8")).courses as any[];
