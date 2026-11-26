@@ -12,7 +12,7 @@ import { heroCardMarkup, discoverSectionMarkup, categoryLabel, profileImageUrls 
 
 const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const SITE = "https://www.boztik.com/";
-const STYLESHEETS = ["styles-premium.css", "homepage.css", "spotlight/spotlight-home.css", "homepage-boost.css",
+const STYLESHEETS = ["styles-premium.css", "homepage.css", "spotlight/spotlight-home.css", "spotlight/downloads.css", "homepage-boost.css",
   "spotlight/spotlight-premium.css", "spotlight/spotlight-discovery.css"];
 
 /** A creator that can be featured: approved/published, listing still live. */

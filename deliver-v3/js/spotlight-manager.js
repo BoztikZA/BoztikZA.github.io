@@ -1,6 +1,7 @@
 import { config } from "./config.js";
 import { authHeaders, getSession, onAuthChange } from "./auth.js";
 import { prepareSpotlightImage } from "../../spotlight/image-processing.js";
+import { DOWNLOAD_TYPE_META, safeDownloadUrl, cleanDownloadLabel, normaliseDownloadLinks } from "../../spotlight/downloads.js";
 import { createFeaturedPanel } from "./spotlight-featured-panel.js?v=2";
 import { spotlightProfileSaveRequest, normaliseWebsiteUrl, validateSpotlightDraft, publishGateState, describeSaveError } from "./spotlight-profile-request.mjs?v=2";
 
@@ -296,6 +297,7 @@ function openNewProfile() {
   galleryPreviewUrls.forEach(url => URL.revokeObjectURL(url));
   galleryPreviewUrls = [];
   $("sp-profile-feature").checked = false;
+  setAdminDownloadRows([]);
   clearFormStatus();
   applyPublishGate("");
   editForm.hidden = false;
@@ -316,6 +318,7 @@ function openEditor(profile) {
   clearFormStatus();
   applyPublishGate(profile.id, publishState(profile));
   for (const key of ["youtube", "twitch", "instagram", "tiktok", "facebook", "linkedin", "x", "spotify", "pinterest"]) editForm.elements[key].value = profile.social_links?.[key] || "";
+  setAdminDownloadRows(normaliseDownloadLinks(profile.download_links));
   editForm.hidden = false;
   const preview = $("sp-profile-image-preview");
   preview.textContent = "Loading image…";
@@ -392,6 +395,142 @@ async function loadGallery(profile) {
 }
 
 $("sp-admin-new").addEventListener("click", openNewProfile);
+
+const adminDownloadsList = $("sp-admin-downloads-list");
+const adminDownloadsClear = $("sp-admin-downloads-clear");
+
+function syncAdminDownloadControls() {
+  if (!adminDownloadsList) return;
+  const rows = [...adminDownloadsList.querySelectorAll(".sp-admin-download-row")];
+  if (adminDownloadsClear) adminDownloadsClear.hidden = rows.length === 0;
+  rows.forEach((row, index) => {
+    const up = row.querySelector("[data-dl-up]");
+    const down = row.querySelector("[data-dl-down]");
+    if (up) up.disabled = index === 0;
+    if (down) down.disabled = index === rows.length - 1;
+  });
+}
+
+function addAdminDownloadRow(item = { type: "generic", url: "", label: "" }) {
+  if (!adminDownloadsList || adminDownloadsList.children.length >= 10) return;
+  const type = DOWNLOAD_TYPE_META[item?.type] ? item.type : "generic";
+  const row = document.createElement("div");
+  row.className = "sp-admin-download-row";
+
+  const typeLabel = document.createElement("label");
+  typeLabel.textContent = "Destination type";
+  const select = document.createElement("select");
+  for (const [key, meta] of Object.entries(DOWNLOAD_TYPE_META)) {
+    const opt = document.createElement("option");
+    opt.value = key;
+    opt.textContent = meta.name;
+    if (key === type) opt.selected = true;
+    select.append(opt);
+  }
+  typeLabel.append(select);
+
+  const urlLabel = document.createElement("label");
+  urlLabel.textContent = "Download URL (HTTPS)";
+  const urlInput = document.createElement("input");
+  urlInput.type = "url";
+  urlInput.inputMode = "url";
+  urlInput.maxLength = 500;
+  urlInput.required = true;
+  urlInput.value = item?.url || "";
+  urlInput.placeholder = DOWNLOAD_TYPE_META[type].placeholder;
+  urlLabel.append(urlInput);
+
+  const labelWrap = document.createElement("label");
+  labelWrap.textContent = "Button label (optional)";
+  const labelInput = document.createElement("input");
+  labelInput.type = "text";
+  labelInput.maxLength = 48;
+  labelInput.value = item?.label || "";
+  labelInput.placeholder = DOWNLOAD_TYPE_META[type].defaultLabel;
+  labelWrap.append(labelInput);
+
+  select.addEventListener("change", () => {
+    const meta = DOWNLOAD_TYPE_META[select.value] || DOWNLOAD_TYPE_META.generic;
+    urlInput.placeholder = meta.placeholder;
+    labelInput.placeholder = meta.defaultLabel;
+  });
+
+  const controls = document.createElement("div");
+  controls.className = "sp-admin-download-controls";
+  const up = document.createElement("button");
+  up.type = "button";
+  up.className = "cc-btn";
+  up.dataset.dlUp = "1";
+  up.setAttribute("aria-label", "Move download up");
+  up.textContent = "↑";
+  up.addEventListener("click", () => {
+    const prev = row.previousElementSibling;
+    if (prev) { adminDownloadsList.insertBefore(row, prev); syncAdminDownloadControls(); }
+  });
+
+  const down = document.createElement("button");
+  down.type = "button";
+  down.className = "cc-btn";
+  down.dataset.dlDown = "1";
+  down.setAttribute("aria-label", "Move download down");
+  down.textContent = "↓";
+  down.addEventListener("click", () => {
+    const next = row.nextElementSibling;
+    if (next) { adminDownloadsList.insertBefore(next, row); syncAdminDownloadControls(); }
+  });
+
+  const remove = document.createElement("button");
+  remove.type = "button";
+  remove.className = "cc-btn sp-delete";
+  remove.textContent = "Remove";
+  remove.addEventListener("click", () => { row.remove(); syncAdminDownloadControls(); });
+
+  controls.append(up, down, remove);
+  row.append(typeLabel, urlLabel, labelWrap, controls);
+  adminDownloadsList.append(row);
+  syncAdminDownloadControls();
+}
+
+function setAdminDownloadRows(links) {
+  if (!adminDownloadsList) return;
+  adminDownloadsList.replaceChildren();
+  (Array.isArray(links) ? links : []).forEach(item => addAdminDownloadRow(item));
+  syncAdminDownloadControls();
+}
+
+function collectAdminDownloadLinks() {
+  if (!adminDownloadsList) return { links: [], error: "", focus: null };
+  const links = [];
+  for (const row of adminDownloadsList.querySelectorAll(".sp-admin-download-row")) {
+    const select = row.querySelector("select");
+    const urlInput = row.querySelector('input[type="url"]');
+    const labelInput = row.querySelector('input[type="text"]');
+    const type = select.value;
+    urlInput.value = normaliseWebsiteUrl(urlInput.value);
+    const url = safeDownloadUrl(type, urlInput.value);
+    if (!url) {
+      return {
+        links: [],
+        error: DOWNLOAD_TYPE_META[type]?.hint || "Enter a valid HTTPS download URL.",
+        focus: urlInput
+      };
+    }
+    const label = cleanDownloadLabel(labelInput.value);
+    links.push(label ? { type, url, label } : { type, url });
+  }
+  return { links, error: "", focus: null };
+}
+
+document.querySelectorAll("[data-admin-download-add]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    addAdminDownloadRow({ type: btn.dataset.adminDownloadAdd, url: "", label: "" });
+    adminDownloadsList?.lastElementChild?.querySelector('input[type="url"]')?.focus();
+  });
+});
+
+adminDownloadsClear?.addEventListener("click", () => {
+  setAdminDownloadRows([]);
+});
 
 // Accept pasted domains and add HTTPS before validating or saving.
 function normaliseProfileUrls() {
@@ -528,6 +667,7 @@ async function openReviewModal(profile) {
     }
   }
   const socials = Object.entries(profile.social_links || {}).map(([key, value]) => reviewLink(key, value)).join("");
+  const downloads = normaliseDownloadLinks(profile.download_links).map(item => reviewLink((DOWNLOAD_TYPE_META[item.type]?.name || item.type) + (item.label ? " · " + item.label : ""), item.url)).join("");
   const song = profile.song?.url ? reviewLink("Spotify " + (profile.song.type || "track") + (profile.song.verified === false ? " (unverified: Spotify was unreachable)" : "") + ": " + (profile.song.title || "Open link"), profile.song.url) : "";
   let videoEmbed = "";
   const video = profile.video;
@@ -552,6 +692,7 @@ async function openReviewModal(profile) {
     </dl>
     <section><h4>About the applicant</h4><p class="sp-review-description">${esc(profile.description || "No description supplied.")}</p></section>
     <section><h4>Website and social profiles</h4><div class="sp-review-links">${socials || "<span>No social links supplied.</span>"}${song}</div></section>
+    ${downloads ? `<section><h4>Submitted download links</h4><div class="sp-review-links">${downloads}</div></section>` : ""}
     ${videoPreview}
     ${applicantDialogue(profile)}
     <section><h4>Showcase images</h4><div id="sp-review-gallery" class="sp-review-gallery"><span>Loading showcase images…</span></div></section>
@@ -819,6 +960,12 @@ editForm.addEventListener("submit", async event => {
     showFormStatus("error", problem);
     return;
   }
+  const downloadResult = collectAdminDownloadLinks();
+  if (downloadResult.error) {
+    showFormStatus("error", downloadResult.error);
+    downloadResult.focus?.focus();
+    return;
+  }
   if (!editForm.checkValidity()) {
     const invalid = editForm.querySelector(":invalid");
     const label = invalid?.closest("label")?.firstChild?.textContent?.trim();
@@ -849,7 +996,8 @@ editForm.addEventListener("submit", async event => {
     category: form.get("category"),
     contact_email: form.get("contact_email"),
     website_url: form.get("website_url"),
-    social_links: social
+    social_links: social,
+    download_links: downloadResult.links
   };
   const save = editForm.querySelector('button[type="submit"]');
   editForm.dataset.saving = "true";
@@ -981,6 +1129,7 @@ $("sp-gallery-upload").addEventListener("click", async () => {
 
 $("sp-admin-edit-cancel").addEventListener("click", () => {
   editForm.reset();
+  setAdminDownloadRows([]);
   editForm.hidden = true;
   clearFormStatus();
   $("sp-admin-publish").hidden = true;

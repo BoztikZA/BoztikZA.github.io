@@ -7,6 +7,7 @@
  */
 import { esc, featuredPlayersMarkup } from "./media.js";
 import { socialLinksMarkup } from "./social-links.js";
+import { downloadButtonsMarkup } from "./downloads.js";
 
 /** The featured window is 24 hours; the stage's progress bar drains across it. */
 export const FEATURE_WINDOW_SECONDS = 86400;
@@ -96,6 +97,7 @@ export function featuredShowcaseMarkup(profile, { hostname, now } = {}) {
       <h2>${name}</h2>
       ${profile.tagline ? `<h3>${esc(profile.tagline)}</h3>` : ""}
       <p class="sp-featured-description">${esc(profile.description || "Discover the person behind this independent business or creative project.")}</p>
+      ${downloadButtonsMarkup(profile.download_links, { variant: "showcase", profileName: profile.display_name })}
       ${linkRailMarkup(profile)}
       ${portfolioStripMarkup(profile)}
       <a class="sp-stage-profile" href="${esc(profileHref(profile) + "&src=featured")}">Read the full profile</a>

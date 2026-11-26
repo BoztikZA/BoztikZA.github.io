@@ -1,4 +1,5 @@
 import { prepareSpotlightImage } from "../image-processing.js";
+import { DOWNLOAD_TYPE_META, safeDownloadUrl, cleanDownloadLabel } from "../downloads.js";
 
 const API = "https://deliver-api.boztik.com/api/public/spotlight/submit";
 const form = document.querySelector("#sp-submit-form");
@@ -7,7 +8,69 @@ const button = form.querySelector('button[type="submit"]');
 const mainImage = document.querySelector("#sp-submit-main-image");
 const galleryImages = document.querySelector("#sp-submit-showcase-images");
 const previews = document.querySelector("#sp-submit-image-preview");
+const downloadsList = document.querySelector("#sp-submit-downloads-list");
 let previewUrls = [];
+
+function createDownloadRow(type = "generic") {
+  if (!downloadsList || downloadsList.children.length >= 10) return;
+  const row = document.createElement("div");
+  row.className = "sp-download-row";
+
+  const typeLabel = document.createElement("label");
+  typeLabel.textContent = "Destination type";
+  const select = document.createElement("select");
+  select.name = "download_type";
+  for (const [key, meta] of Object.entries(DOWNLOAD_TYPE_META)) {
+    const opt = document.createElement("option");
+    opt.value = key;
+    opt.textContent = meta.name;
+    if (key === type) opt.selected = true;
+    select.append(opt);
+  }
+  typeLabel.append(select);
+
+  const urlLabel = document.createElement("label");
+  urlLabel.textContent = "Download URL (HTTPS)";
+  const urlInput = document.createElement("input");
+  urlInput.type = "url";
+  urlInput.inputMode = "url";
+  urlInput.name = "download_url";
+  urlInput.maxLength = 500;
+  urlInput.required = true;
+  urlInput.placeholder = DOWNLOAD_TYPE_META[type]?.placeholder || "https://";
+  urlInput.addEventListener("blur", () => { urlInput.value = normaliseWebsite(urlInput.value); });
+  urlLabel.append(urlInput);
+
+  const remove = document.createElement("button");
+  remove.type = "button";
+  remove.className = "sp-download-remove";
+  remove.textContent = "Remove";
+  remove.addEventListener("click", () => row.remove());
+
+  const labelWrap = document.createElement("label");
+  labelWrap.className = "sp-download-label-field";
+  labelWrap.textContent = "Button label (optional)";
+  const labelInput = document.createElement("input");
+  labelInput.type = "text";
+  labelInput.name = "download_label";
+  labelInput.maxLength = 48;
+  labelInput.placeholder = DOWNLOAD_TYPE_META[type]?.defaultLabel || "Download Now";
+  labelWrap.append(labelInput);
+
+  select.addEventListener("change", () => {
+    const meta = DOWNLOAD_TYPE_META[select.value] || DOWNLOAD_TYPE_META.generic;
+    urlInput.placeholder = meta.placeholder;
+    labelInput.placeholder = meta.defaultLabel;
+  });
+
+  row.append(typeLabel, urlLabel, remove, labelWrap);
+  downloadsList.append(row);
+  urlInput.focus();
+}
+
+document.querySelectorAll("[data-download-add]").forEach(btn => {
+  btn.addEventListener("click", () => createDownloadRow(btn.dataset.downloadAdd));
+});
 
 function normaliseWebsite(value) {
   const text = value.trim();
@@ -96,9 +159,27 @@ form.addEventListener("submit", async event => {
       socialLinks[key] = input.value;
     }
   }
+  const downloadLinks = [];
+  if (downloadsList) {
+    for (const row of downloadsList.querySelectorAll(".sp-download-row")) {
+      const type = row.querySelector('select[name="download_type"]').value;
+      const urlInput = row.querySelector('input[name="download_url"]');
+      urlInput.value = normaliseWebsite(urlInput.value);
+      const url = safeDownloadUrl(type, urlInput.value);
+      if (!url) {
+        status.dataset.kind = "error";
+        status.textContent = DOWNLOAD_TYPE_META[type]?.hint || "Enter a valid HTTPS download URL.";
+        urlInput.focus();
+        return;
+      }
+      const label = cleanDownloadLabel(row.querySelector('input[name="download_label"]').value);
+      downloadLinks.push(label ? { type, url, label } : { type, url });
+    }
+  }
   const payload = new FormData(form);
   payload.set("website_url", website.value);
   payload.set("social_links", JSON.stringify(socialLinks));
+  payload.set("download_links", JSON.stringify(downloadLinks));
   button.disabled = true;
   status.textContent = "Optimizing images and sending your profile securely for review…";
   try {
@@ -110,6 +191,7 @@ form.addEventListener("submit", async event => {
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(data.error || "We couldn't submit your profile. Please try again.");
     form.reset();
+    if (downloadsList) downloadsList.replaceChildren();
     showPreviews();
     status.dataset.kind = "success";
     status.textContent = data.message || "Thank you. Your profile and images are queued for human review; nothing is published until approved.";

@@ -165,3 +165,11 @@
 .sp-admin-performance-facts b { color:var(--cc-text); font-variant-numeric:tabular-nums; }
 @media(max-width:760px){.sp-admin-performance-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.sp-admin-performance-heading{align-items:flex-start;flex-direction:column}}
 @media(max-width:420px){.sp-admin-performance-summary{grid-template-columns:1fr 1fr}.sp-admin-performance-summary strong{font-size:1.1rem}}
+.sp-admin-downloads-editor{display:grid;gap:10px}
+.sp-admin-downloads-list{display:grid;gap:10px}
+.sp-admin-downloads-list:empty{display:none}
+.sp-admin-download-row{display:grid;grid-template-columns:170px minmax(220px,1fr) minmax(160px,220px) auto;gap:8px;align-items:end;padding:10px 12px;border:1px solid var(--cc-line);border-radius:10px;background:rgba(255,255,255,.02)}
+.sp-admin-download-row label{display:grid;gap:5px;margin:0;font-size:.72rem}
+.sp-admin-download-controls{display:flex;gap:6px;align-items:center}
+.sp-admin-downloads-toolbar{display:flex;flex-wrap:wrap;gap:8px}
+@media(max-width:900px){.sp-admin-download-row{grid-template-columns:1fr}.sp-admin-download-controls{justify-content:flex-start}}

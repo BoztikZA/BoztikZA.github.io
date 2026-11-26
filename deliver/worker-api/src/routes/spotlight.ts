@@ -10,6 +10,7 @@ import {
   fetchSpotifyMetadata, normalizeSong, normalizeVideo, parseFeaturedVideo, parseSpotifyResource,
   type FeaturedVideo, type SpotifyMedia,
 } from "../lib/spotlight-media";
+import { checkedDownloadLinks, normalizeDownloadLinks } from "../lib/spotlight-downloads";
 import { reserveUpload, claimUpload, commitUpload, getPendingUpload, holdStoredUploadReservation, releaseReservation, releaseStoredPending, markUncertain, reconcileStorage } from "../lib/storage";
 import { assertSameSiteOrigin, checkPublicRate, error, json, readJson, requireJson, segments, wrap } from "./util";
 
@@ -245,10 +246,12 @@ export function publicDto(row: any, gallery: any[] = [], options: DtoOptions = {
   const mediaVisible = options.moderator === true || row.status === "published";
   const song = mediaVisible ? normalizeSong(row.song_metadata) : null;
   const video = mediaVisible ? normalizeVideo(row.video_metadata) : null;
+  const downloadLinks = mediaVisible ? normalizeDownloadLinks(row.download_links) : [];
   return {
     id: row.id, slug: row.slug, display_name: row.display_name, tagline: row.tagline,
     description: row.description, category: row.category, website_url: row.website_url,
     social_links: publicSocialLinks(row.social_links),
+    download_links: downloadLinks,
     song: options.moderator === true ? song : publicSong(song),
     video,
     image_url: imageUrl,
@@ -301,7 +304,7 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
         bindings.push(timestamp, cursor.featured, timestamp, cursor.featured, cursor.publishedAt, cursor.publishedAt, cursor.id);
       }
       const rows = await env.DB.prepare(
-        `SELECT id,slug,display_name,tagline,description,category,website_url,social_links,song_metadata,video_metadata,image_key,image_size,image_content_type,status,featured_until,created_at,published_at
+        `SELECT id,slug,display_name,tagline,description,category,website_url,social_links,download_links,song_metadata,video_metadata,image_key,image_size,image_content_type,status,featured_until,created_at,published_at
            FROM spotlight_profiles
           WHERE ${clauses.join(" AND ")}
           ORDER BY CASE WHEN featured_until > ? THEN 0 ELSE 1 END,
@@ -396,11 +399,17 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
           try { socialLinks = JSON.parse(socialText); }
           catch { throw new HttpError(422, "invalid_social_links", "Check the social links and try submitting again."); }
         }
+        let downloadLinks: unknown = [];
+        const downloadText = value("download_links");
+        if (typeof downloadText === "string" && downloadText.trim()) {
+          try { downloadLinks = JSON.parse(downloadText); }
+          catch { throw new HttpError(422, "invalid_download_links", "Check the download links and try submitting again."); }
+        }
         b = {
           display_name: value("display_name"), tagline: value("tagline"), description: value("description"),
           category: value("category"), website_url: value("website_url"), contact_email: value("contact_email"),
           song_url: value("song_url"), video_url: value("video_url"), company_website: value("company_website"),
-          consent: value("consent") === "on", social_links: socialLinks,
+          consent: value("consent") === "on", social_links: socialLinks, download_links: downloadLinks,
         };
         const primary = value("main_image");
         mainImage = typeof File !== "undefined" && primary instanceof File && primary.size ? primary : null;
@@ -424,6 +433,7 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
       const song = await resolveSongInput(b.song_url);
       const video = resolveVideoInput(b.video_url);
       const website = safeWebsiteUrl(b.website_url);
+      const downloadLinks = checkedDownloadLinks(b.download_links);
       if (displayName.length < 2 || tagline.length < 8 || description.length < 30) throw new HttpError(422, "invalid_profile", "Please provide a name, a clear tagline and a description of at least 30 characters.");
       if (!CATEGORIES.has(category)) throw new HttpError(422, "invalid_category", "Choose a valid category.");
       if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new HttpError(422, "invalid_email", "Enter a valid contact email, or leave the field blank.");
@@ -447,15 +457,15 @@ export function handleSpotlightPublic(request: Request, path: string, env: Env, 
       const ownerTokenHash = await hashOwnerToken(ownerToken);
       const inserted = await env.DB.prepare(
         `INSERT INTO spotlight_profiles
-          (id,slug,display_name,tagline,description,category,contact_email,website_url,social_links,song_metadata,video_metadata,
+          (id,slug,display_name,tagline,description,category,contact_email,website_url,social_links,download_links,song_metadata,video_metadata,
            status,application_status,review_expires_at,review_unread,created_at,updated_at,
            owner_token_hash,terms_version,terms_accepted_at)
-         SELECT ?,?,?,?,?,?,?,?,?,?,?,'pending','new',?,1,?,?,?,?,?
+         SELECT ?,?,?,?,?,?,?,?,?,?,?,?,'pending','new',?,1,?,?,?,?,?
           WHERE NOT EXISTS (
             SELECT 1 FROM spotlight_profiles
              WHERE contact_email=? AND lower(display_name)=lower(?) AND status<>'archived' AND created_at>=?
           )`,
-      ).bind(id,slug,displayName,tagline,description,category,email,website,JSON.stringify(social),song ? JSON.stringify(song) : null,video ? JSON.stringify(video) : null,timestamp + SPOTLIGHT_REVIEW_WINDOW_SECONDS,timestamp,timestamp,ownerTokenHash,SPOTLIGHT_TERMS_VERSION,timestamp,email,displayName,timestamp - SPOTLIGHT_DUPLICATE_WINDOW_SECONDS).run();
+      ).bind(id,slug,displayName,tagline,description,category,email,website,JSON.stringify(social),downloadLinks.length ? JSON.stringify(downloadLinks) : null,song ? JSON.stringify(song) : null,video ? JSON.stringify(video) : null,timestamp + SPOTLIGHT_REVIEW_WINDOW_SECONDS,timestamp,timestamp,ownerTokenHash,SPOTLIGHT_TERMS_VERSION,timestamp,email,displayName,timestamp - SPOTLIGHT_DUPLICATE_WINDOW_SECONDS).run();
       if ((inserted.meta.changes || 0) === 0) {
         return json({
           ok: true,
@@ -668,6 +678,7 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       const description = cleanDescription(b.description), category = clean(b.category, 40);
       const email = clean(b.contact_email, 254).toLowerCase();
       const website = b.website_url ? safeWebsiteUrl(b.website_url) : null;
+      const downloadLinks = checkedDownloadLinks(b.download_links);
       const song = await resolveSongInput(b.song_url);
       const video = resolveVideoInput(b.video_url);
       if (displayName.length < 2 || tagline.length < 8 || description.length < 30) throw new HttpError(422, "invalid_profile", "Please provide a name, a clear tagline and a description of at least 30 characters.");
@@ -688,8 +699,8 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       }
       const id = ID(), timestamp = now(), slug = slugify(displayName) + "-" + id.slice(0, 5);
       await env.DB.prepare(
-        "INSERT INTO spotlight_profiles (id,slug,display_name,tagline,description,category,contact_email,website_url,social_links,song_metadata,video_metadata,status,application_status,review_unread,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,'pending','approved',0,?,?)"
-      ).bind(id,slug,displayName,tagline,description,category,email,website,JSON.stringify(social),song ? JSON.stringify(song) : null,video ? JSON.stringify(video) : null,timestamp,timestamp).run();
+        "INSERT INTO spotlight_profiles (id,slug,display_name,tagline,description,category,contact_email,website_url,social_links,download_links,song_metadata,video_metadata,status,application_status,review_unread,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,'pending','approved',0,?,?)"
+      ).bind(id,slug,displayName,tagline,description,category,email,website,JSON.stringify(social),downloadLinks.length ? JSON.stringify(downloadLinks) : null,song ? JSON.stringify(song) : null,video ? JSON.stringify(video) : null,timestamp,timestamp).run();
       const row = await env.DB.prepare("SELECT * FROM spotlight_profiles WHERE id=?").bind(id).first<any>();
       return json({ ok:true, profile:{...publicDto(row, [], { moderator: true }),contact_email:row.contact_email,status:row.status,application_status:row.application_status} }, 201);
     }
@@ -839,6 +850,7 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       const category = b.category === undefined ? old.category : clean(b.category, 40);
       const contactEmail = b.contact_email === undefined ? old.contact_email : clean(b.contact_email, 254).toLowerCase();
       const website = b.website_url === undefined ? old.website_url : (b.website_url ? safeWebsiteUrl(b.website_url) : null);
+      const downloadLinks = b.download_links === undefined ? normalizeDownloadLinks(old.download_links) : checkedDownloadLinks(b.download_links);
       const song = b.song_url === undefined ? normalizeSong(old.song_metadata) : await resolveSongInput(b.song_url);
       const video = b.video_url === undefined ? normalizeVideo(old.video_metadata) : resolveVideoInput(b.video_url);
       const social = b.social_links === undefined ? publicSocialLinks(old.social_links) : checkedSocialLinks(b.social_links);
@@ -871,8 +883,8 @@ export function handleSpotlightAdmin(request: Request, path: string, env: Env): 
       }
       statements.push(
         env.DB.prepare(
-          "UPDATE spotlight_profiles SET display_name=?,tagline=?,description=?,category=?,contact_email=?,website_url=?,social_links=?,song_metadata=?,video_metadata=?,status=?,application_status=?,review_expires_at=CASE WHEN ?='published' THEN NULL ELSE review_expires_at END,listing_expires_at=?,featured_until=?,updated_at=?,published_at=CASE WHEN ?='published' THEN COALESCE(published_at,?) ELSE published_at END WHERE id=?",
-        ).bind(displayName,tagline,description,category,contactEmail,website,JSON.stringify(social),song ? JSON.stringify(song) : null,video ? JSON.stringify(video) : null,status,nextApplicationStatus,status,listingExpiresAt,featured,updated,status,updated,seg[1])
+          "UPDATE spotlight_profiles SET display_name=?,tagline=?,description=?,category=?,contact_email=?,website_url=?,social_links=?,download_links=?,song_metadata=?,video_metadata=?,status=?,application_status=?,review_expires_at=CASE WHEN ?='published' THEN NULL ELSE review_expires_at END,listing_expires_at=?,featured_until=?,updated_at=?,published_at=CASE WHEN ?='published' THEN COALESCE(published_at,?) ELSE published_at END WHERE id=?",
+        ).bind(displayName,tagline,description,category,contactEmail,website,JSON.stringify(social),downloadLinks.length ? JSON.stringify(downloadLinks) : null,song ? JSON.stringify(song) : null,video ? JSON.stringify(video) : null,status,nextApplicationStatus,status,listingExpiresAt,featured,updated,status,updated,seg[1])
       );
       if (status === "published" && old.status !== "published") {
         statements.push(env.DB.prepare(

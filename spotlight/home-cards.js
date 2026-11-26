@@ -8,6 +8,7 @@
  * ever passed in here.
  */
 import { socialLinksMarkup } from "./social-links.js";
+import { downloadButtonsMarkup } from "./downloads.js";
 
 export const API_BASE = "https://deliver-api.boztik.com/api/public/spotlight";
 
@@ -69,6 +70,7 @@ export function heroCardMarkup(profile, { profileBase = "spotlight/" } = {}) {
   const websiteUrl = safeWebsiteUrl(profile.website_url);
   const shareUrl = API_BASE + "/share/" + encodeURIComponent(profile.slug);
   const socialLinks = socialLinksMarkup(profile.social_links, name, "hm-spotlight-social-link");
+  const downloads = downloadButtonsMarkup(profile.download_links, { variant: "hero", profileName: name });
   const image = imageUrl
     ? `<img class="is-active" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(name)} logo or profile photograph" width="640" height="420" loading="lazy" decoding="async" data-layer="0"><img alt="" width="640" height="420" loading="lazy" decoding="async" data-layer="1" aria-hidden="true">`
     : `<span class="hm-spotlight-image-fallback" role="img" aria-label="Initials for ${escapeHtml(name)}">${escapeHtml(initials(name))}</span><span class="hm-spotlight-image-note">${escapeHtml(category)}</span>`;
@@ -96,6 +98,7 @@ export function heroCardMarkup(profile, { profileBase = "spotlight/" } = {}) {
           ${legacyCountdown}
           ${profile.tagline ? `<p class="hm-spotlight-tagline">${escapeHtml(profile.tagline)}</p>` : ""}
           <p class="hm-spotlight-description">${escapeHtml(profile.description)}</p>
+          ${downloads}
           ${socialLinks ? `<div class="hm-spotlight-socials" aria-label="Social profiles">${socialLinks}</div>` : ""}
           <div class="hm-spotlight-actions">
             <a class="hm-spotlight-profile-link" href="${escapeHtml(href)}">See what ${escapeHtml(name)} offers <span aria-hidden="true">↗</span></a>

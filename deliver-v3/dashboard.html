@@ -372,6 +372,16 @@
             <div class="sp-admin-edit-wide sp-image-editor"><label>Additional showcase images<input id="sp-gallery-images" type="file" accept="image/jpeg,image/png,image/webp" multiple><small>Upload up to two additional images, optimized to a 2,000 px longest edge and maximum 5 MB each. All images count toward the shared storage limit.</small></label><div id="sp-gallery-image-list" class="sp-gallery-image-list" aria-live="polite">Save or select a profile to manage its additional images.</div><button class="cc-btn" id="sp-gallery-upload" type="button" disabled>Upload selected images</button><span id="sp-gallery-status" role="status"></span></div>
             <label class="sp-admin-edit-wide sp-description-field">About the profile<textarea name="description" rows="7" maxlength="5000" required minlength="30" aria-describedby="sp-description-help sp-description-count"></textarea><small id="sp-description-help">Describe the business, services, experience and what makes it different. Up to 5,000 characters.</small><small id="sp-description-count" class="sp-description-count">0 / 5,000 characters</small></label>
              <label class="sp-admin-feature-option"><input name="feature_on_homepage" id="sp-profile-feature" type="checkbox" disabled><span><strong>Main featured creator on the homepage</strong><small>Read-only here. Publishing never changes the featured creator; use the Main featured creator panel above to preview and confirm a change.</small></span></label>
+            <div class="sp-admin-edit-wide sp-social-optional-heading"><strong>Download destinations (optional)</strong><small>Add Apple App Store, Google Play Store or generic HTTPS download buttons. Leave empty if this profile has no downloads. Only valid, saved destinations appear publicly.</small></div>
+            <div class="sp-admin-edit-wide sp-admin-downloads-editor">
+              <div id="sp-admin-downloads-list" class="sp-admin-downloads-list" aria-live="polite"></div>
+              <div class="sp-admin-downloads-toolbar">
+                <button class="cc-btn" type="button" data-admin-download-add="apple_app_store">+ Apple App Store</button>
+                <button class="cc-btn" type="button" data-admin-download-add="google_play">+ Google Play Store</button>
+                <button class="cc-btn" type="button" data-admin-download-add="generic">+ Generic Download</button>
+                <button class="cc-btn sp-delete" type="button" id="sp-admin-downloads-clear" hidden>Remove all downloads</button>
+              </div>
+            </div>
             <div class="sp-admin-edit-wide sp-social-optional-heading"><strong>Social links (optional)</strong><small>These are completely optional. A website link on its own is enough.</small></div><label>YouTube URL<input name="youtube" type="url" placeholder="https://"></label>
             <label>Instagram URL<input name="instagram" type="url" placeholder="https://"></label>
             <label>Twitch URL<input name="twitch" type="url" placeholder="https://"></label>

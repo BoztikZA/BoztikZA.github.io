@@ -2,6 +2,7 @@ import { classifySource, clickTarget, sendEvent } from "./analytics.js";
 import { socialLinksMarkup } from "./social-links.js";
 import { describeSong, describeVideo, mediaLinkCardMarkup } from "./media.js";
 import { linkRailMarkup } from "./showcase.js";
+import { downloadButtonsMarkup } from "./downloads.js";
 
 const API = "https://deliver-api.boztik.com/api/public/spotlight";
 const visitorId = (() => {
@@ -188,6 +189,7 @@ async function load() {
     const host_ = websiteUrl ? new URL(websiteUrl).hostname.replace(/^www\./, "") : "";
     const music = mediaLinkCardMarkup(describeSong(profile.song));
     const featuredVideo = mediaLinkCardMarkup(describeVideo(profile.video));
+    const downloads = downloadButtonsMarkup(profile.download_links, { variant: "profile", profileName: name });
     const featuredLabel = !profile.featured ? ""
       : profile.featured_open_ended === true ? " · FEATURED CREATOR"
       : ` · FEATURED TODAY <span class="sp-countdown" data-countdown="${Number(profile.featured_until || 0)}">Ends in <time>--:--:--</time></span>`;
@@ -208,6 +210,7 @@ async function load() {
         ${host_ ? `<div><dt>Website</dt><dd>${esc(host_)}</dd></div>` : ""}
         <div><dt>Listing</dt><dd>Boztik Spotlight</dd></div>
       </dl>
+      ${downloads}
       ${renderGallery(images, profile.display_name)}
       <article class="sp-profile-about">
         <p class="sp-kicker">WHAT THEY OFFER</p>

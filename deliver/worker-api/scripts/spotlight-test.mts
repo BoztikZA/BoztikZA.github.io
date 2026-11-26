@@ -354,7 +354,7 @@ class FakeD1 {
       return 1;
     }
     if (sql.startsWith("INSERT INTO spotlight_profiles") && sql.includes("WHERE NOT EXISTS")) {
-      const [id, slug, displayName, tagline, description, category, email, website, social, song, video, reviewExpiresAt, createdAt, updatedAt, ownerTokenHash, termsVersion, termsAcceptedAt, duplicateEmail, duplicateName, cutoff] = args;
+      const [id, slug, displayName, tagline, description, category, email, website, social, downloadLinks, song, video, reviewExpiresAt, createdAt, updatedAt, ownerTokenHash, termsVersion, termsAcceptedAt, duplicateEmail, duplicateName, cutoff] = args;
       const duplicate = this.submissions.some(profile =>
         profile.contact_email === duplicateEmail
         && profile.display_name.toLowerCase() === String(duplicateName).toLowerCase()
