@@ -11,6 +11,7 @@ on:
       - "deliver/worker-api/src/learning/**"
       - "learning/courses/**"
       - "learning/data/**"
+      - ".github/workflows/learning-hub-regenerate.yml"
   workflow_dispatch:
 
 permissions:
