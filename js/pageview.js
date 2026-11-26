@@ -56,7 +56,8 @@
       "/about.html": "about",
       "/support.html": "support",
       "/contact.html": "contact",
-      "/learning/": "learning"
+      "/learning/": "learning",
+      "/learning/resources/": "learning_resource"
     };
     var COOKIE_NAME = "boztik_anon_session";
     var SESSION_TTL_DAYS = 180;
@@ -164,9 +165,9 @@
     }
 
     var path = location.pathname.replace(/\/index\.html$/, "/");
-    // Learning Hub: only the public catalogue and course landing pages are counted. Lessons, exams, dashboards and private
-    // links (/learning/learn/, /exam/, /dashboard/, /resume/ ...) are not listed, so they are never counted.
-    var page = PAGE_KEYS[path] || (/^\/learning\/courses\/[a-z0-9-]+\/$/.test(path) ? "learning_course" : undefined);
+    // Learning Hub: count the public catalogue, course landing pages and public resource articles only.
+    // Lessons, exams, dashboards and private links (/learning/learn/, /exam/, /dashboard/, /resume/ ...) are never counted.
+    var page = PAGE_KEYS[path] || (/^\/learning\/courses\/[a-z0-9-]+\/$/.test(path) ? "learning_course" : undefined) || (/^\/learning\/resources\/[a-z0-9-]+\/$/.test(path) ? "learning_resource" : undefined);
     if (!page) return; // unlisted / private pages are never counted
 
     var sessionId = readCookie(COOKIE_NAME);

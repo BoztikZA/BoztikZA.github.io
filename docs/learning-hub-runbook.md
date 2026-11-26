@@ -51,7 +51,8 @@ curl -s -o /dev/null -w "%{http_code}\n" https://deliver-api.boztik.com/api/admi
 
 Merge the PR to `main`; GitHub Pages publishes `/learning/` and the Command Centre panel. Check:
 
-- https://www.boztik.com/learning/ (8 categories, 3 courses, 5 "something exciting is on the way" cards)
+- https://www.boztik.com/learning/ (8 categories, 3 courses, free resources feature)
+- https://www.boztik.com/learning/resources/ and each article URL; confirm canonical, Article schema, source links and course CTAs.
 - A course page, then enrol with a test name, finish a lesson, open the private link from another browser.
 - `/guides/` and the main nav still work; "Courses" appears in the nav.
 - `/deliver-v3/dashboard.html` → sign in → **Learning** tab loads overview, courses, certificates, learner sessions, contributions & storage.
@@ -89,6 +90,7 @@ Either way nothing gates results or certificates, "Maybe later" is remembered pe
 
 - Storage: Command Centre → Learning → Contributions & storage shows use of the separate 1.5 GB allocation (warnings at 70/85/95%; new learners pause at 100%). It is an estimate.
 - Adding a course: add content under `learning/courses/<slug>/`, an exam bank, an entry in `learning/courses/rules.json`, then `npm run learning:build && npm run learning:pages` and commit the generated files.
+- Editorial resources: maintain the editorial article content in `deliver/worker-api/scripts/learning-resources.mts`. The `learning:pages` generator creates `/learning/resources/`, the individual article pages, homepage feature cards, course cross-links and the Learning sitemap block. After editing resources, run `npm run learning:pages`, then `npm run learning:check` and commit the generated HTML plus `sitemap.xml`.
 - Local preview with no production access: `npm run learning:dev` → http://localhost:8080/learning/ (in-memory data).
 - Optional browser checks (Playwright is not a repo dependency): `scripts/learning-e2e.mts` (learner journey) and `scripts/learning-admin-e2e.mts` (Command Centre panel).
 
@@ -100,4 +102,4 @@ Either way nothing gates results or certificates, "Maybe later" is remembered pe
 - A name typo after issuance cannot be self-corrected; an admin can revoke, and the learner can re-claim.
 - PayPal refund handling depends on PayPal including the order id in the refund webhook.
 - Storage figure is an estimate, not a Cloudflare billing number.
-- Learning pages carry no analytics or ads by design.
+- Learning pages carry no third-party analytics or ads. Public catalogue, course overview and resource pages use the existing privacy-first first-party counter; private learner pages are excluded.

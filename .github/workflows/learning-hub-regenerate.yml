@@ -1,0 +1,55 @@
+name: Regenerate Learning Hub pages
+
+on:
+  push:
+    branches:
+      - feat/learning-hub-seo-growth
+    paths:
+      - "deliver/worker-api/scripts/learning-pages.mts"
+      - "deliver/worker-api/scripts/learning-resources.mts"
+      - "deliver/worker-api/scripts/learning-build.mts"
+      - "deliver/worker-api/src/learning/**"
+      - "learning/courses/**"
+      - "learning/data/**"
+      - ".github/workflows/learning-hub-regenerate.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate:
+    name: Generate committed Learning Hub pages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/learning-hub-seo-growth
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: deliver/worker-api/package-lock.json
+      - name: Install dependencies
+        working-directory: deliver/worker-api
+        run: npm ci
+      - name: Regenerate course catalogue and worker manifest
+        working-directory: deliver/worker-api
+        run: npm run learning:build
+      - name: Regenerate public Learning pages and sitemap
+        working-directory: deliver/worker-api
+        run: npm run learning:pages
+      - name: Commit generated files when changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add learning/index.html learning/courses learning/learn learning/exam learning/dashboard learning/resume learning/thanks learning/verify learning/privacy learning/resources learning/data/courses.json deliver/worker-api/src/learning/manifest.generated.ts sitemap.xml
+          if git diff --cached --quiet; then
+            echo "Generated Learning Hub files are already current."
+          else
+            git commit -m "chore: regenerate Learning Hub pages"
+            git push origin HEAD:feat/learning-hub-seo-growth
+          fi

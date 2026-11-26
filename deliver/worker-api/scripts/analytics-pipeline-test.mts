@@ -159,7 +159,8 @@ console.log("idempotent ingestion");
   await check("Learning Hub catalogue and course page keys are accepted; unknown learning keys are not", async () => {
     assert.equal(await dbm.recordPageView(env, "learning", S("g"), "evt-learning001"), true);
     assert.equal(await dbm.recordPageView(env, "learning_course", S("g"), "evt-learning002"), true);
-    assert.equal(views("learning"), 1); assert.equal(views("learning_course"), 1);
+    assert.equal(await dbm.recordPageView(env, "learning_resource", S("g"), "evt-learning004"), true);
+    assert.equal(views("learning"), 1); assert.equal(views("learning_course"), 1); assert.equal(views("learning_resource"), 1);
     assert.equal(await dbm.recordPageView(env, "learning_exam", S("g"), "evt-learning003"), false);
   });
 }
