@@ -3422,6 +3422,13 @@ async function init() {
       delivery.is_photoshop_battles === true;
 
     /*
+      Show the low-key discovery invitation once the delivery record is
+      available, including expired deliveries and Command Centre previews.
+      This does not render delivery content or request file previews.
+    */
+    initSpotlightInvitation(delivery);
+
+    /*
       IMPORTANT:
 
       Check expiry immediately after retrieving the
@@ -3453,8 +3460,6 @@ async function init() {
       return;
 
     }
-
-    initSpotlightInvitation(delivery);
 
     /* =====================================================
        DELIVERY HEADER
