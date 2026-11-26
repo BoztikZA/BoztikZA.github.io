@@ -90,7 +90,7 @@ Either way nothing gates results or certificates, "Maybe later" is remembered pe
 
 - Storage: Command Centre → Learning → Contributions & storage shows use of the separate 1.5 GB allocation (warnings at 70/85/95%; new learners pause at 100%). It is an estimate.
 - Adding a course: add content under `learning/courses/<slug>/`, an exam bank, an entry in `learning/courses/rules.json`, then `npm run learning:build && npm run learning:pages` and commit the generated files.
-- Editorial resources: maintain the reviewed article content in `deliver/worker-api/scripts/learning-resources.mts`. The `learning:pages` generator creates `/learning/resources/`, the individual article pages, homepage feature cards, course cross-links and the Learning sitemap block. After editing resources, run `npm run learning:pages`, then `npm run learning:check` and commit the generated HTML plus `sitemap.xml`.
+- Editorial resources: maintain the editorial article content in `deliver/worker-api/scripts/learning-resources.mts`. The `learning:pages` generator creates `/learning/resources/`, the individual article pages, homepage feature cards, course cross-links and the Learning sitemap block. After editing resources, run `npm run learning:pages`, then `npm run learning:check` and commit the generated HTML plus `sitemap.xml`.
 - Local preview with no production access: `npm run learning:dev` → http://localhost:8080/learning/ (in-memory data).
 - Optional browser checks (Playwright is not a repo dependency): `scripts/learning-e2e.mts` (learner journey) and `scripts/learning-admin-e2e.mts` (Command Centre panel).
 
