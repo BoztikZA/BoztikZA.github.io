@@ -1,0 +1,42 @@
+name: Learning Hub quality checks
+
+on:
+  pull_request:
+    paths:
+      - "learning/**"
+      - "deliver/worker-api/src/learning/**"
+      - "deliver/worker-api/src/lib/db.ts"
+      - "deliver/worker-api/scripts/learning-*"
+      - "deliver/worker-api/scripts/analytics-pipeline-test.mts"
+      - "deliver/worker-api/package.json"
+      - "deliver/worker-api/package-lock.json"
+      - "deliver-v3/js/analytics-report.js"
+      - "js/pageview.js"
+      - "sitemap.xml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  learning:
+    name: Build and test Learning Hub
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: deliver/worker-api
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: deliver/worker-api/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Type-check Worker
+        run: npm run typecheck
+      - name: Run complete regression suite
+        run: npm test
