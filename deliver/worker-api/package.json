@@ -22,7 +22,7 @@
     "test:spotlight-email": "tsx scripts/spotlight-email-test.mts",
     "test:spotlight-form": "node scripts/spotlight-form-test.mjs",
     "test:spotlight-media": "tsx scripts/spotlight-media-test.mts && tsx scripts/spotlight-media-routes-test.mts && tsx scripts/spotlight-media-client-test.mts",
-    "test": "npm run test:unit && npm run test:delivery-list && npm run test:retention && npm run test:traffic-source && npm run test:analytics && npm run test:client && npm run test:spotlight && npm run test:spotlight-admin && npm run test:spotlight-email && npm run test:spotlight-form && npm run test:spotlight-media && npm run test:spotlight-owner && npm run test:spotlight-analytics && npm run test:spotlight-seo && npm run test:spotlight-featured && npm run learning:check && npm run test:learning-content && npm run test:learning",
+    "test": "npm run test:unit && npm run test:delivery-list && npm run test:retention && npm run test:traffic-source && npm run test:analytics && npm run test:client && npm run test:spotlight && npm run test:spotlight-admin && npm run test:spotlight-email && npm run test:spotlight-form && npm run test:spotlight-media && npm run test:spotlight-owner && npm run test:spotlight-analytics && npm run test:spotlight-seo && npm run test:spotlight-featured && npm run learning:check && npm run test:learning-content && npm run test:learning && npm run test:learning-support",
     "test:spotlight-owner": "tsx scripts/spotlight-owner-test.mts",
     "test:spotlight-analytics": "tsx scripts/spotlight-analytics-test.mts && tsx scripts/spotlight-analytics-client-test.mts",
     "test:spotlight-seo": "tsx scripts/spotlight-seo-test.mts",
@@ -32,7 +32,8 @@
     "learning:build": "tsx scripts/learning-build.mts",
     "learning:check": "tsx scripts/learning-build.mts --check && tsx scripts/learning-pages.mts --check",
     "learning:dev": "tsx scripts/learning-devserver.mts",
-    "learning:pages": "tsx scripts/learning-pages.mts"
+    "learning:pages": "tsx scripts/learning-pages.mts",
+    "test:learning-support": "tsx scripts/learning-support-test.mts"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260901.0",

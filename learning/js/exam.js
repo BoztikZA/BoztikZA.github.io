@@ -1,6 +1,7 @@
 // Assessment, result, certificate claim and the optional contribution screen.
 // Questions arrive from the server for ONE in-progress attempt. Marking happens on the server; the browser never holds an answer key.
-import { api, session, h, $, clear, inline, loadCourse, toast, copyText, fmtDate, dollars, catalogue, courseCard } from "./core.js";
+import { api, session, h, $, clear, inline, loadCourse, toast, copyText, fmtDate, catalogue, courseCard } from "./core.js";
+import { REDIRECT_LIMITS, SUPPORT_TIERS, buildPayPalMeUrl, dismissKey, formatUsd, isBoztikPayPalMeUrl, parseAmount } from "./support.js";
 
 const app = $("#app");
 const params = new URLSearchParams(location.search);
@@ -165,112 +166,136 @@ async function showCertificate(el, id, known) {
     h("div", { class: "lh-btnrow", style: "margin-top:16px" }, dlBtn, h("button", { class: "lh-btn", type: "button", onclick: () => copyText(verify, "Verification link copied"), text: "Copy verification link" })),
     h("p", { class: "lh-muted", style: "margin-top:12px;font-size:.92rem", text: "Boztik courses are independently developed and not formally accredited. This is a certificate of achievement, not an academic qualification or professional certification." })));
   // Keep the optional support choice available whenever a learner revisits a passed result.
-  contribution(el.parentElement);
+  // The slug comes from the loaded course, not the URL: the "?a=<id>&view=result" revisit path has no ?c= parameter.
+  contribution(el.parentElement, course?.slug || slug);
 }
 
-// ---------------------------------------------------------------- optional contribution (never required, never gating)
-async function contribution(parent) {
+// ---------------------------------------------------------------- optional support (never required, never gating)
+// Two modes, never confused:
+//  * verified  — the Worker has PayPal Orders configured: checkout is created server-side and confirmed only by PayPal's signed webhook.
+//  * redirect  — default: a plain PayPal.Me link. Boztik cannot see the outcome, so this UI never reports a payment as received.
+async function contribution(parent, courseSlug) {
   if ($("#contrib")) return;
   let cfg;
   try { cfg = (await api("GET", "config", undefined, { auth: false })).contributions; }
   catch { cfg = { enabled: false }; }
+  if ($("#contrib")) return;
+
+  const verified = Boolean(cfg && cfg.enabled);
+  const limits = verified ? { minCents: cfg.minCents, maxCents: cfg.maxCents } : REDIRECT_LIMITS;
+  const key = dismissKey(courseSlug);
+  const dismissed = {
+    get: () => { try { return localStorage.getItem(key) === "1"; } catch { return false; } },
+    set: (on) => { try { if (on) localStorage.setItem(key, "1"); else localStorage.removeItem(key); } catch { /* storage unavailable: "Maybe later" lasts for this view only */ } }
+  };
 
   const box = h("section", { id: "contrib", class: "lh-panel lh-contrib", "aria-labelledby": "contrib-title" });
   parent.append(box);
 
-  const next = async () => {
+  const next = async (moveFocus) => {
     clear(box).append(
       h("span", { class: "lh-eyebrow", text: "Your next step" }),
-      h("h2", { style: "font-size:1.3rem;margin:8px 0", text: "Thank you for learning with us" }),
+      h("h2", { id: "contrib-title", tabindex: "-1", style: "font-size:1.3rem;margin:8px 0", text: "Thank you for learning with us" }),
       h("p", { class: "lh-muted", text: "Keep building your skills with another free course:" })
     );
+    if (moveFocus) $("#contrib-title").focus({ preventScroll: true });
     try {
       const all = await catalogue();
-      box.append(h("div", { class: "lh-grid lh-grid--2", style: "margin-top:16px" }, all.filter((c) => c.slug !== slug).map((c) => courseCard(c))));
+      box.append(h("div", { class: "lh-grid lh-grid--2", style: "margin-top:16px" }, all.filter((c) => c.slug !== courseSlug).map((c) => courseCard(c))));
     } catch { /* course suggestions are optional */ }
-    box.append(h("p", { style: "margin-top:16px" }, h("a", { class: "lh-btn", href: "/learning/dashboard/", text: "Go to my learning" })));
+    box.append(h("div", { class: "lh-btnrow", style: "margin-top:16px" },
+      h("a", { class: "lh-btn", href: "/learning/dashboard/", text: "Go to my learning" }),
+      h("button", { class: "lh-btn lh-btn--quiet", type: "button", text: "Support Boztik (optional)", onclick: () => { dismissed.set(false); offer(); } })));
   };
 
-  clear(box).append(
-    h("span", { class: "lh-eyebrow", text: "Optional · PayPal" }),
-    h("h2", { id: "contrib-title", style: "font-size:clamp(1.35rem,3vw,1.8rem);margin:9px 0 10px", text: "Help keep practical learning accessible" }),
-    h("p", { class: "lh-contrib__lead", text: "You’ve completed this course and your certificate is yours. If you found the learning useful, you can optionally help us keep the Hub free for the next learner. No subscription, no pressure." }),
-    h("div", { class: "lh-contrib__uses", "aria-label": "What contributions help fund" },
-      h("div", { class: "lh-contrib__use" }, h("strong", { text: "Platform & hosting" }), h("span", { text: "Keeping lessons, learner progress and certificates available." })),
-      h("div", { class: "lh-contrib__use" }, h("strong", { text: "Course development" }), h("span", { text: "Researching, writing and testing practical new lessons." })),
-      h("div", { class: "lh-contrib__use" }, h("strong", { text: "Better learning resources" }), h("span", { text: "Improving assessments and keeping existing material up to date." }))
-    )
-  );
+  const offer = () => {
+    clear(box);
+    let selected = null;
+    const tiers = verified
+      ? (Array.isArray(cfg.presetsCents) ? cfg.presetsCents : [])
+        .filter((c) => Number.isInteger(c) && c >= limits.minCents && c <= limits.maxCents)
+        .filter((c, i, all) => all.indexOf(c) === i)
+        .map((c) => ({ cents: c, label: SUPPORT_TIERS.find((t) => t.cents === c)?.label || "Support learning" }))
+      : SUPPORT_TIERS.filter((t) => t.cents >= limits.minCents && t.cents <= limits.maxCents);
+    const via = verified ? "secure PayPal checkout" : "PayPal opens in a new tab";
 
-  if (!cfg.enabled) {
-    box.append(
-      h("p", { class: "lh-contrib__notice", text: "Online support options are being prepared. You can continue to your learning dashboard or explore another free course." }),
-      h("div", { class: "lh-btnrow", style: "margin-top:16px" }, h("button", { class: "lh-btn lh-btn--quiet", type: "button", onclick: next, text: "Continue" }))
-    );
-    return;
-  }
+    const err = h("p", { id: "contrib-error", class: "lh-error", role: "alert" });
+    const summary = h("p", { id: "contrib-summary", class: "lh-contrib__summary", "aria-live": "polite" });
+    const done = h("div", { class: "lh-contrib__done", "aria-live": "polite" });
+    const custom = h("input", {
+      id: "contrib-custom", type: "text", inputmode: "decimal", autocomplete: "off", maxlength: 9,
+      placeholder: `Other amount (${formatUsd(limits.minCents)} – ${formatUsd(limits.maxCents)})`,
+      "aria-describedby": "contrib-summary contrib-error"
+    });
+    const current = () => custom.value.trim()
+      ? parseAmount(custom.value, limits)
+      : selected != null ? { ok: true, cents: selected } : { ok: false, message: "Choose an amount to continue." };
+    const refresh = (showError) => {
+      const c = current();
+      err.textContent = showError && !c.ok ? c.message : "";
+      if (showError && !c.ok && custom.value.trim()) custom.setAttribute("aria-invalid", "true"); else custom.removeAttribute("aria-invalid");
+      summary.textContent = c.ok ? `Your selection: ${formatUsd(c.cents)} · ${via}` : "No amount selected yet. Contributing is entirely optional.";
+    };
+    const btns = tiers.map((t) => h("button", {
+      class: "lh-amount", type: "button", "aria-pressed": "false",
+      onclick: () => { selected = t.cents; custom.value = ""; sync(); refresh(false); done.replaceChildren(); }
+    }, h("b", { text: formatUsd(t.cents) }), h("small", { text: t.label })));
+    const sync = () => btns.forEach((b, i) => b.setAttribute("aria-pressed", String(!custom.value.trim() && tiers[i].cents === selected)));
+    custom.addEventListener("input", () => { selected = null; sync(); refresh(false); done.replaceChildren(); });
+    custom.addEventListener("blur", () => { if (custom.value.trim()) refresh(true); });
 
-  const currency = cfg.currency || "USD";
-  const currencyLabel = currency === "USD" ? "US dollars" : currency;
-  const presets = (Array.isArray(cfg.presetsCents) ? cfg.presetsCents : [])
-    .filter((c) => Number.isInteger(c) && c >= cfg.minCents && c <= cfg.maxCents)
-    .filter((c, i, all) => all.indexOf(c) === i);
-  const presetLabels = ["Help with hosting", "Improve resources", "Develop courses", "Support the Hub"];
-  let amount = presets[0] ?? cfg.minCents;
-  const custom = h("input", {
-    id: "custom", type: "number", min: cfg.minCents / 100, max: cfg.maxCents / 100, step: "0.01",
-    inputmode: "decimal", placeholder: `Other amount (min ${dollars(cfg.minCents)})`,
-    "aria-label": `Custom contribution amount in ${currencyLabel}`
-  });
-  const err = h("p", { class: "lh-error", role: "alert", "aria-live": "polite" });
-  const btns = presets.map((c, i) => h("button", {
-    class: "lh-amount", type: "button", "aria-pressed": c === amount ? "true" : "false",
-    onclick: () => {
-      amount = c; custom.value = "";
-      btns.forEach((b, index) => b.setAttribute("aria-pressed", presets[index] === c ? "true" : "false"));
-    }
-  }, h("b", { text: dollars(c) }), h("small", { text: presetLabels[i] || "Support learning" })));
-
-  const pay = h("button", { class: "lh-btn lh-btn--primary", type: "button", text: "Continue securely with PayPal" });
-  pay.addEventListener("click", async () => {
-    err.textContent = "";
-    let cents = amount;
-    if (custom.value.trim()) {
-      if (!/^\d+(?:\.\d{1,2})?$/.test(custom.value.trim())) {
-        err.textContent = "Enter an amount using no more than two decimal places.";
+    const go = h("button", { class: "lh-btn lh-btn--primary", type: "button", text: verified ? "Continue securely with PayPal" : "Continue to PayPal" });
+    go.addEventListener("click", async () => {
+      done.replaceChildren();
+      const c = current();
+      refresh(true);
+      if (!c.ok) return;
+      if (!verified) {
+        let url;
+        try { url = buildPayPalMeUrl(c.cents, limits); } catch { err.textContent = "That amount can't be used. Please choose another."; return; }
+        if (!isBoztikPayPalMeUrl(url)) { err.textContent = "We couldn't prepare the PayPal link. Please try again later."; return; }
+        window.open(url, "_blank", "noopener,noreferrer");
+        done.append(
+          h("p", {}, "PayPal should now be open in a new tab. If your browser blocked it, ", h("a", { href: url, target: "_blank", rel: "noopener noreferrer", text: "open PayPal here" }), "."),
+          h("p", { class: "lh-muted", text: "This is a direct PayPal.Me payment, so Boztik cannot see whether it was completed and nothing is confirmed here. If you did contribute, thank you — it genuinely helps." })
+        );
         return;
       }
-      cents = Math.round(Number(custom.value) * 100);
-      btns.forEach((b) => b.setAttribute("aria-pressed", "false"));
-    }
-    if (!Number.isSafeInteger(cents) || cents < cfg.minCents) {
-      err.textContent = `The minimum contribution is ${dollars(cfg.minCents)}.`;
-      return;
-    }
-    if (cents > cfg.maxCents) {
-      err.textContent = `The maximum contribution is ${dollars(cfg.maxCents)}.`;
-      return;
-    }
-    pay.disabled = true;
-    pay.textContent = "Connecting to PayPal…";
-    try {
-      const r = await api("POST", "contributions", { amountCents: cents, courseSlug: slug });
-      if (!r.approveUrl || !/^https:\/\/(www\.)?(sandbox\.)?paypal\.com\//i.test(r.approveUrl)) throw new Error("PayPal returned an invalid checkout link. Please try again later.");
-      location.href = r.approveUrl;
-    } catch (e) {
-      err.textContent = e.message || "We could not start PayPal checkout. Your certificate is unaffected.";
-      pay.disabled = false;
-      pay.textContent = "Continue securely with PayPal";
-    }
-  });
+      go.disabled = true;
+      go.textContent = "Connecting to PayPal…";
+      try {
+        const r = await api("POST", "contributions", { amountCents: c.cents, courseSlug: courseSlug || undefined });
+        if (!r.approveUrl || !/^https:\/\/(www\.)?(sandbox\.)?paypal\.com\//i.test(r.approveUrl)) throw new Error("PayPal returned an invalid checkout link. Please try again later.");
+        location.href = r.approveUrl;
+      } catch (e) {
+        err.textContent = e.message || "We could not start PayPal checkout. Your certificate is unaffected.";
+        go.disabled = false;
+        go.textContent = "Continue securely with PayPal";
+      }
+    });
 
-  box.append(
-    h("h3", { class: "lh-contrib__choice-title", text: "Choose an amount" }),
-    h("p", { class: "lh-muted", text: "Every contribution is optional and helps support the Learning Hub as a whole." }),
-    h("div", { class: "lh-amounts", style: "margin:14px 0" }, btns),
-    h("div", { class: "lh-field" }, h("label", { for: "custom", text: `Or enter your own amount (${currency})` }), custom),
-    err,
-    h("div", { class: "lh-btnrow", style: "margin-top:14px" }, pay, h("button", { class: "lh-btn lh-btn--quiet", type: "button", onclick: next, text: "Maybe later" })),
-    h("p", { class: "lh-contrib__fine", text: "PayPal handles checkout. Boztik does not receive or store your card details. This is a voluntary contribution, not a charitable donation; no certificate, result or course access depends on paying." })
-  );
+    clear(box).append(
+      h("span", { class: "lh-eyebrow", text: "Optional · Always free" }),
+      h("h2", { id: "contrib-title", tabindex: "-1", style: "font-size:clamp(1.35rem,3vw,1.8rem);margin:9px 0 10px", text: "Help keep learning open to everyone." }),
+      h("p", { class: "lh-contrib__lead", text: "You’ve completed your course! If you found the learning experience valuable, you can optionally support Boztik’s continued development. Your contribution helps maintain the platform, develop new courses and keep educational resources accessible to everyone." }),
+      h("ul", { class: "lh-contrib__uses", "aria-label": "What contributions help fund" },
+        h("li", { class: "lh-contrib__use" }, h("strong", { text: "Hosting & infrastructure" }), h("span", { text: "Keeping lessons, progress and certificates online." })),
+        h("li", { class: "lh-contrib__use" }, h("strong", { text: "New courses" }), h("span", { text: "Researching, writing and testing more practical learning." })),
+        h("li", { class: "lh-contrib__use" }, h("strong", { text: "Better material" }), h("span", { text: "Improving and updating the courses that already exist." })),
+        h("li", { class: "lh-contrib__use" }, h("strong", { text: "Free resources" }), h("span", { text: "Sharing educational resources with the wider community." }))
+      ),
+      h("p", { class: "lh-contrib__free", text: "All courses, assessments and certificates remain free. Your certificate never depends on this." }),
+      h("h3", { id: "contrib-choice", class: "lh-contrib__choice-title", text: "Choose an amount (optional)" }),
+      h("div", { class: "lh-amounts", role: "group", "aria-labelledby": "contrib-choice", style: "margin:14px 0" }, btns),
+      h("div", { class: "lh-field" }, h("label", { for: "contrib-custom", text: "Or enter your own amount in US dollars" }), custom),
+      summary, err, done,
+      h("div", { class: "lh-btnrow", style: "margin-top:14px" }, go, h("button", { class: "lh-btn lh-btn--quiet", type: "button", text: "Maybe later", onclick: () => { dismissed.set(true); next(true); } })),
+      h("p", { class: "lh-contrib__fine", text: verified
+        ? "PayPal handles checkout. Boztik does not receive or store your card details. This is a voluntary contribution, not a charitable donation; no certificate, result or course access depends on paying."
+        : "PayPal.Me opens PayPal’s own website; Boztik does not receive or store your card details. This is a voluntary contribution, not a charitable donation or a purchase; no certificate, result or course access depends on paying." })
+    );
+    refresh(false);
+  };
+
+  if (dismissed.get()) next(false); else offer();
 }

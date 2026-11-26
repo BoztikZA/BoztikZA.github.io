@@ -79,6 +79,12 @@ Contributions are inert by default. Certificates never depend on them.
 
 If any secret is missing the Worker reports contributions as unavailable and the learner flow continues normally.
 
+### Two support modes (after a learner passes)
+The completion screen always offers optional support; which path it uses depends on the config above.
+- **Default (Orders API not configured):** a **PayPal.Me redirect** to `https://paypal.me/angry5p1c3/<amount>USD` ($2 / $5 / $10 / $20 or a custom $1–$500). This is *not* a verified payment: Boztik cannot see whether the learner paid, and the UI never says a payment was received.
+- **Verified (all PayPal secrets set + `LEARNING_CONTRIBUTIONS_ENABLED=1`):** server-created PayPal order, confirmed only by PayPal's signed webhook ($5–$500).
+Either way nothing gates results or certificates, "Maybe later" is remembered per course in the browser, and the destination must stay `paypal.me/angry5p1c3` (`npm run test:learning-support` fails if any other PayPal.Me address appears).
+
 ## 5. Ongoing
 
 - Storage: Command Centre → Learning → Contributions & storage shows use of the separate 1.5 GB allocation (warnings at 70/85/95%; new learners pause at 100%). It is an estimate.
