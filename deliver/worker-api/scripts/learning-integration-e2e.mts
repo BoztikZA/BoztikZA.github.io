@@ -118,9 +118,11 @@ try {
   assert.ok(posts.some((p) => /pageview.*"page":"learning"/.test(p)), "catalogue page view sent: " + posts.join("|"));
   posts.length = 0; await pg.goto(`${SITE}/learning/courses/data-analysis-spreadsheets/`); await pg.waitForTimeout(800);
   assert.ok(posts.some((p) => /pageview.*"page":"learning_course"/.test(p)));
+  posts.length = 0; await pg.goto(`${SITE}/learning/resources/spot-and-report-phishing/`); await pg.waitForTimeout(800);
+  assert.ok(posts.some((p) => /pageview.*"page":"learning_resource"/.test(p)));
   posts.length = 0; await pg.goto(`${SITE}/learning/dashboard/`); await pg.waitForTimeout(800);
   assert.equal(posts.length, 0, "private learner pages are never counted"); await pv.close();
-  ok("analytics: catalogue + course visits counted; learner pages never");
+  ok("analytics: catalogue, course and public resource visits counted; learner pages never");
 
   // an inner page gets the Learning Hub link exactly once and Guides keeps its own name
   const inner = await open({ width: 1280, height: 900 }, "/services.html");
