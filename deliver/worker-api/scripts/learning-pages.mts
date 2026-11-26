@@ -343,7 +343,7 @@ for (const c of catalogue) {
 }
 
 // ---------------------------------------------------------------------------- Public editorial resources (indexable, static HTML)
-const resourceCards = LEARNING_RESOURCES.map((r) => `<article class="lh-resource-card"><span class="lh-chip">${esc(r.category)}</span><h2><a href="/learning/resources/${r.slug}/">${esc(r.title)}</a></h2><p class="lh-muted">${esc(r.excerpt)}</p><div class="lh-resource-meta">${esc(r.readTime)} · Reviewed ${esc(r.reviewedAt)}</div><a class="lh-text-link" href="/learning/resources/${r.slug}/">Read guide <span aria-hidden="true">→</span></a></article>`).join("\n");
+const resourceCards = LEARNING_RESOURCES.map((r) => `<article class="lh-resource-card"><span class="lh-chip">${esc(r.category)}</span><h2><a href="/learning/resources/${r.slug}/">${esc(r.title)}</a></h2><p class="lh-muted">${esc(r.excerpt)}</p><div class="lh-resource-meta">${esc(r.readTime)} · Published ${esc(r.publishedAt)}</div><a class="lh-text-link" href="/learning/resources/${r.slug}/">Read guide <span aria-hidden="true">→</span></a></article>`).join("\n");
 add({
   path: "/learning/resources/",
   title: "Free Digital Skills Guides & Tutorials | Boztik Learning",
@@ -368,14 +368,14 @@ for (const r of LEARNING_RESOURCES) {
     description: r.description,
     ogType: "article",
     jsonld: [
-      { "@context": "https://schema.org", "@type": "Article", headline: r.title, description: r.description, datePublished: r.reviewedAt, dateModified: r.reviewedAt, author: { "@type": "Organization", name: "Boztik Learning Editorial Team" }, publisher: { "@type": "Organization", name: "Boztik", url: ORIGIN }, mainEntityOfPage: url, inLanguage: "en" },
+      { "@context": "https://schema.org", "@type": "Article", headline: r.title, description: r.description, datePublished: r.publishedAt, dateModified: r.publishedAt, author: { "@type": "Organization", name: "Boztik Learning Editorial Team" }, publisher: { "@type": "Organization", name: "Boztik", url: ORIGIN }, mainEntityOfPage: url, inLanguage: "en" },
       { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [
         { "@type": "ListItem", position: 1, name: "Boztik", item: `${ORIGIN}/` },
         { "@type": "ListItem", position: 2, name: "Learning Hub", item: `${ORIGIN}/learning/` },
         { "@type": "ListItem", position: 3, name: "Resources", item: `${ORIGIN}/learning/resources/` },
         { "@type": "ListItem", position: 4, name: r.title, item: url } ] },
     ],
-    body: `<article class="lh-article"><header class="lh-article-head"><p class="lh-crumbs"><a href="/index.html">Boztik</a> / <a href="/learning/">Learning Hub</a> / <a href="/learning/resources/">Resources</a></p><span class="lh-eyebrow">${esc(r.category)}</span><h1>${esc(r.title)}</h1><p class="lh-lead">${esc(r.excerpt)}</p><p class="lh-resource-meta">${esc(r.readTime)} · Reviewed ${esc(r.reviewedAt)} · Boztik Learning Editorial Team</p></header><div class="lh-article-content">${sections}<section class="lh-article-section lh-sources"><h2>Trusted further reading</h2><ul>${sources}</ul></section><aside class="lh-article-cta"><h2>Put the knowledge into practice</h2><p>Continue with a structured course, short lessons, practical exercises and an independently assessed certificate of achievement.</p>${course ? `<a class="lh-btn lh-btn--primary" href="/learning/courses/${course.slug}/">Explore ${esc(course.title)}</a>` : `<a class="lh-btn lh-btn--primary" href="/learning/">Explore the Learning Hub</a>`}</aside><p class="lh-article-disclaimer">Boztik Learning courses are independently developed and not formally accredited. Certificates are certificates of completion or achievement, not academic qualifications or professional certifications.</p></div></article>`,
+    body: `<article class="lh-article"><header class="lh-article-head"><p class="lh-crumbs"><a href="/index.html">Boztik</a> / <a href="/learning/">Learning Hub</a> / <a href="/learning/resources/">Resources</a></p><span class="lh-eyebrow">${esc(r.category)}</span><h1>${esc(r.title)}</h1><p class="lh-lead">${esc(r.excerpt)}</p><p class="lh-resource-meta">${esc(r.readTime)} · Published ${esc(r.publishedAt)} · Boztik Learning Editorial Team</p></header><div class="lh-article-content">${sections}<section class="lh-article-section lh-sources"><h2>Trusted further reading</h2><ul>${sources}</ul></section><aside class="lh-article-cta"><h2>Put the knowledge into practice</h2><p>Continue with a structured course, short lessons, practical exercises and an independently assessed certificate of achievement.</p>${course ? `<a class="lh-btn lh-btn--primary" href="/learning/courses/${course.slug}/">Explore ${esc(course.title)}</a>` : `<a class="lh-btn lh-btn--primary" href="/learning/">Explore the Learning Hub</a>`}</aside><p class="lh-article-disclaimer">Boztik Learning courses are independently developed and not formally accredited. Certificates are certificates of completion or achievement, not academic qualifications or professional certifications.</p></div></article>`,
   });
 }
 
