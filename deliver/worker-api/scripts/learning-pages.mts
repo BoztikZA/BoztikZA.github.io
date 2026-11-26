@@ -7,6 +7,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { GLOBAL_DISCLAIMER } from "../src/learning/certificate-pdf.ts";
 import { LEARNING_CATEGORIES } from "../src/learning/types.ts";
+import { LEARNING_RESOURCES } from "./learning-resources.mts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(here, "../../..");
@@ -30,7 +31,7 @@ const CATEGORY_TEXT: Record<string, { name: string; blurb: string }> = {
 };
 const COMING_SOON = "Something exciting is on the way! We're developing new learning experiences for this category. New courses will be added soon.";
 
-interface PageOpts { analytics?: boolean; path: string; title: string; description: string; robots?: "index" | "noindex"; body: string; script?: string; jsonld?: unknown[]; bodyClass?: string; ogImage?: string }
+interface PageOpts { analytics?: boolean; path: string; title: string; description: string; robots?: "index" | "noindex"; body: string; script?: string; jsonld?: unknown[]; bodyClass?: string; ogImage?: string; ogType?: "website" | "article" }
 
 const NAV = `<header>
     <nav class="navbar" aria-label="Primary navigation">
@@ -63,6 +64,7 @@ const FOOTER = `<footer>
     <div class="footer-links">
       <a href="/index.html">Boztik Home</a>
       <a href="/learning/">All courses</a>
+      <a href="/learning/resources/">Free learning resources</a>
       <a href="/learning/dashboard/">My learning</a>
       <a href="/learning/verify/">Verify a certificate</a>
       <a href="/spotlight/">Spotlight</a>
@@ -96,7 +98,7 @@ function page(o: PageOpts): string {
   <link rel="canonical" href="${canonical}">
   <meta property="og:title" content="${esc(o.title)}">
   <meta property="og:description" content="${esc(o.description)}">
-  <meta property="og:type" content="website">
+  <meta property="og:type" content="${o.ogType ?? "website"}">
   <meta property="og:site_name" content="Boztik">
   <meta property="og:url" content="${canonical}">
   <meta property="og:image" content="${og}">
@@ -189,6 +191,19 @@ add({
       </div>
     </section>
 
+    <section class="lh-section lh-resource-feature" id="resources" style="padding-top:0">
+      <div class="lh-wrap">
+        <span class="lh-eyebrow">Free learning resources</span>
+        <h2 style="margin:10px 0 8px">Practical answers before you enrol</h2>
+        <p class="lh-lead" style="margin-bottom:24px">Explore straightforward guides on AI, online safety, spreadsheets and building your skills. Each guide is free and points to a relevant course when you are ready to go deeper.</p>
+        <div class="lh-grid lh-grid--3">
+          ${LEARNING_RESOURCES.slice(0, 3).map((r) => `<article class="lh-resource-card"><span class="lh-chip">${esc(r.category)}</span><h3><a href="/learning/resources/${r.slug}/">${esc(r.title)}</a></h3><p class="lh-muted">${esc(r.excerpt)}</p><a class="lh-text-link" href="/learning/resources/${r.slug}/">Read guide <span aria-hidden="true">→</span></a></article>`).join("
+          ")}
+        </div>
+        <p style="margin-top:20px"><a class="lh-btn" href="/learning/resources/">Browse all free learning resources</a></p>
+      </div>
+    </section>
+
     <section class="lh-section" id="categories" style="padding-top:0">
       <div class="lh-wrap">
         <span class="lh-eyebrow">Categories</span>
@@ -259,7 +274,9 @@ add({
 // ---------------------------------------------------------------------------- Course pages
 for (const c of catalogue) {
   const course = JSON.parse(readFileSync(join(ROOT, `learning/courses/${c.slug}/course.json`), "utf8"));
-  const isoMinutes = `PT${Math.floor(c.minutes / 60)}H${c.minutes % 60}M`;
+  const estimate = String(c.estimatedHours).match(/(\d+(?:\.\d+)?)\s*(?:–|-|to)\s*(\d+(?:\.\d+)?)\s*hours?/i);
+  const minimumHours = estimate ? Number(estimate[1]) : Math.ceil(c.minutes / 60);
+  const isoMinutes = `PT${Math.floor(minimumHours)}H${Math.round((minimumHours % 1) * 60)}M`;
   add({
     path: `/learning/courses/${c.slug}/`,
     title: `${c.title} | Boztik Learning`,
@@ -316,9 +333,49 @@ for (const c of catalogue) {
       </aside>
     </div></section>
 
+    <section class="lh-section lh-related-resources" style="padding-top:0"><div class="lh-wrap"><span class="lh-eyebrow">Keep learning</span><h2 style="margin:10px 0 18px">Free guides related to this course</h2><div class="lh-grid lh-grid--2">${LEARNING_RESOURCES.filter((r) => r.courseSlug === c.slug).map((r) => `<article class="lh-resource-card"><span class="lh-chip">${esc(r.readTime)}</span><h3><a href="/learning/resources/${r.slug}/">${esc(r.title)}</a></h3><p class="lh-muted">${esc(r.excerpt)}</p><a class="lh-text-link" href="/learning/resources/${r.slug}/">Read guide <span aria-hidden="true">→</span></a></article>`).join("
+")}</div></div></section>
+
     <section class="lh-section" style="padding-top:0"><div class="lh-wrap" id="discover-slot" data-category="${c.category}" data-slug="${c.slug}"></div></section>
 
     <section class="lh-section" style="padding-top:0"><div class="lh-wrap lh-narrow"><h3 style="margin-bottom:12px">Disclaimer</h3>${disclaimerHtml}</div></section>`,
+  });
+}
+
+// ---------------------------------------------------------------------------- Public editorial resources (indexable, static HTML)
+const resourceCards = LEARNING_RESOURCES.map((r) => `<article class="lh-resource-card"><span class="lh-chip">${esc(r.category)}</span><h2><a href="/learning/resources/${r.slug}/">${esc(r.title)}</a></h2><p class="lh-muted">${esc(r.excerpt)}</p><div class="lh-resource-meta">${esc(r.readTime)} · Reviewed ${esc(r.reviewedAt)}</div><a class="lh-text-link" href="/learning/resources/${r.slug}/">Read guide <span aria-hidden="true">→</span></a></article>`).join("\n");
+add({
+  path: "/learning/resources/",
+  title: "Free Digital Skills Guides & Tutorials | Boztik Learning",
+  description: "Practical, free beginner-friendly guides to AI prompting, phishing prevention, spreadsheet data cleaning, Excel PivotTables and presenting online learning on your CV.",
+  jsonld: [
+    { "@context": "https://schema.org", "@type": "CollectionPage", name: "Free Learning Resources", url: `${ORIGIN}/learning/resources/`, description: "Practical free guides from Boztik Learning.", isPartOf: { "@type": "WebSite", name: "Boztik", url: `${ORIGIN}/` } },
+    { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Boztik", item: `${ORIGIN}/` },
+      { "@type": "ListItem", position: 2, name: "Learning Hub", item: `${ORIGIN}/learning/` },
+      { "@type": "ListItem", position: 3, name: "Free learning resources", item: `${ORIGIN}/learning/resources/` } ] },
+  ],
+  body: `<section class="lh-hero"><div class="lh-wrap"><p class="lh-crumbs"><a href="/index.html">Boztik</a> / <a href="/learning/">Learning Hub</a> / Resources</p><span class="lh-eyebrow">Learn something practical</span><h1>Free guides for skills you can use</h1><p class="lh-lead">Clear, practical explanations for everyday digital work. Start with a question, learn the fundamentals and explore a structured course when you want to go further.</p><div class="lh-btnrow" style="margin-top:22px"><a class="lh-btn lh-btn--primary" href="/learning/">Explore free courses</a></div></div></section><section class="lh-section"><div class="lh-wrap"><div class="lh-resource-grid">${resourceCards}</div><p class="lh-note" style="margin-top:28px">These guides are educational resources, not a substitute for professional advice. Check official documentation for current product instructions and security recommendations.</p></div></section>`,
+});
+for (const r of LEARNING_RESOURCES) {
+  const url = `${ORIGIN}/learning/resources/${r.slug}/`;
+  const course = catalogue.find((c) => c.slug === r.courseSlug);
+  const sections = r.sections.map((section) => `<section class="lh-article-section"><h2>${esc(section.heading)}</h2>${section.html}</section>`).join("\n");
+  const sources = r.sources.map((source) => `<li><a href="${esc(source.url)}" target="_blank" rel="noopener noreferrer">${esc(source.name)}</a><span>${esc(source.note)}</span></li>`).join("\n");
+  add({
+    path: `/learning/resources/${r.slug}/`,
+    title: `${r.title} | Boztik Learning`,
+    description: r.description,
+    ogType: "article",
+    jsonld: [
+      { "@context": "https://schema.org", "@type": "Article", headline: r.title, description: r.description, datePublished: r.reviewedAt, dateModified: r.reviewedAt, author: { "@type": "Organization", name: "Boztik Learning Editorial Team" }, publisher: { "@type": "Organization", name: "Boztik", url: ORIGIN }, mainEntityOfPage: url, inLanguage: "en" },
+      { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Boztik", item: `${ORIGIN}/` },
+        { "@type": "ListItem", position: 2, name: "Learning Hub", item: `${ORIGIN}/learning/` },
+        { "@type": "ListItem", position: 3, name: "Resources", item: `${ORIGIN}/learning/resources/` },
+        { "@type": "ListItem", position: 4, name: r.title, item: url } ] },
+    ],
+    body: `<article class="lh-article"><header class="lh-article-head"><p class="lh-crumbs"><a href="/index.html">Boztik</a> / <a href="/learning/">Learning Hub</a> / <a href="/learning/resources/">Resources</a></p><span class="lh-eyebrow">${esc(r.category)}</span><h1>${esc(r.title)}</h1><p class="lh-lead">${esc(r.excerpt)}</p><p class="lh-resource-meta">${esc(r.readTime)} · Reviewed ${esc(r.reviewedAt)} · Boztik Learning Editorial Team</p></header><div class="lh-article-content">${sections}<section class="lh-article-section lh-sources"><h2>Trusted further reading</h2><ul>${sources}</ul></section><aside class="lh-article-cta"><h2>Put the knowledge into practice</h2><p>Continue with a structured course, short lessons, practical exercises and an independently assessed certificate of achievement.</p>${course ? `<a class="lh-btn lh-btn--primary" href="/learning/courses/${course.slug}/">Explore ${esc(course.title)}</a>` : `<a class="lh-btn lh-btn--primary" href="/learning/">Explore the Learning Hub</a>`}</aside><p class="lh-article-disclaimer">Boztik Learning courses are independently developed and not formally accredited. Certificates are certificates of completion or achievement, not academic qualifications or professional certifications.</p></div></article>`,
   });
 }
 
@@ -369,7 +426,7 @@ for (const p of pages) {
 
 // Sitemap: a delimited block so reruns are idempotent and the rest of the file is untouched.
 const START = "  <!-- learning:start -->", END = "  <!-- learning:end -->";
-const block = `${START}\n${sitemap.map((s) => `  <url><loc>${s.loc}</loc><lastmod>2026-11-25</lastmod><changefreq>${s.changefreq}</changefreq><priority>${s.priority}</priority></url>`).join("\n")}\n${END}`;
+const block = `${START}\n${sitemap.map((s) => `  <url><loc>${s.loc}</loc><lastmod>2026-11-26</lastmod><changefreq>${s.changefreq}</changefreq><priority>${s.priority}</priority></url>`).join("\n")}\n${END}`;
 const smPath = join(ROOT, "sitemap.xml");
 let sm = readFileSync(smPath, "utf8");
 const next = sm.includes(START) ? sm.replace(new RegExp(`${START}[\\s\\S]*?${END}`), block) : sm.replace("</urlset>", `${block}\n</urlset>`);
