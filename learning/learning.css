@@ -287,3 +287,4 @@
 @media(prefers-reduced-motion:reduce){.lh-resource-card{transition:none}}
 
 .lh-resource-card a:focus-visible,.lh-text-link:focus-visible{outline:3px solid var(--lh-neon);outline-offset:4px;border-radius:4px}
+.lh-article-content{overflow-wrap:anywhere}
