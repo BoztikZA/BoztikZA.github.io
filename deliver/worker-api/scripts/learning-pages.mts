@@ -153,7 +153,7 @@ const liveCats = new Set(catalogue.map((c) => c.category));
 add({
   path: "/learning/",
   title: "Boztik Learning Hub | Free Practical Courses with Certificates",
-  description: "Free online courses and practical digital skills guides in AI, cybersecurity and data analysis. Learn at your own pace, practise useful skills and earn a Boztik certificate of achievement by passing the assessment.",
+  description: "Free online courses and practical guides in AI, cybersecurity and data analysis. Build useful skills and earn a Boztik certificate of achievement.",
   script: "/learning/js/home.js",
   analytics: true,
   jsonld: [
