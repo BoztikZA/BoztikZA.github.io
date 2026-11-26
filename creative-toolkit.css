@@ -183,6 +183,114 @@
   text-align: center;
 }
 
+/* ---------- supported browsers ---------- */
+.tk-browsers__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.tk-browser-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+  padding: clamp(20px, 2.4vw, 26px);
+  border: 1px solid var(--tk-line);
+  border-radius: 18px;
+  background: var(--tk-panel);
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.tk-browser-card:focus-within { border-color: var(--tk-line-strong); }
+.tk-browser-card__top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+}
+.tk-browser-card__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 52px;
+  height: 52px;
+  border: 1px solid rgba(142, 255, 61, 0.22);
+  border-radius: 14px;
+  background: rgba(6, 10, 7, 0.85);
+}
+.tk-browser-card__icon img {
+  display: block;
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+.tk-browser-card__title h3 {
+  margin: 0 0 3px;
+  font-family: var(--font-heading);
+  font-size: 1.08rem;
+  line-height: 1.25;
+}
+.tk-browser-card__badge {
+  display: inline-block;
+  color: var(--primary);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.tk-browser-card p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  line-height: 1.58;
+}
+.tk-browser-card__link {
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--primary);
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: rgba(142, 255, 61, 0.4);
+  text-underline-offset: 4px;
+  transition: color 0.25s ease, text-decoration-color 0.25s ease;
+}
+.tk-browser-card__link:hover,
+.tk-browser-card__link:focus-visible {
+  color: #b7ff84;
+  text-decoration-color: currentColor;
+}
+.tk-browser-card__link:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 4px;
+}
+.tk-browsers__guidance {
+  margin-top: 18px;
+  padding: 16px 20px;
+  border: 1px solid rgba(142, 255, 61, 0.26);
+  border-radius: 16px;
+  background: rgba(142, 255, 61, 0.05);
+  color: var(--text-muted);
+  font-size: 0.94rem;
+  line-height: 1.6;
+  text-align: center;
+}
+.tk-browsers__guidance strong { color: var(--text); }
+.tk-browsers__guidance a {
+  color: var(--primary);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: rgba(142, 255, 61, 0.45);
+  text-underline-offset: 4px;
+}
+.tk-browsers__guidance a:hover,
+.tk-browsers__guidance a:focus-visible {
+  color: #b7ff84;
+  text-decoration-color: currentColor;
+}
+
 /* ---------- B. what is it ---------- */
 .tk-what {
   display: grid;
@@ -420,12 +528,14 @@
 /* ---------- hover polish (pointer devices only) ---------- */
 @media (hover: hover) {
   .tk-card:hover,
+  .tk-browser-card:hover,
   .tk-who__item:hover,
   .tk-step:hover {
     border-color: var(--primary);
     box-shadow: 0 0 0 1px rgba(142, 255, 61, 0.28), 0 18px 44px rgba(0, 0, 0, 0.35), 0 0 34px rgba(142, 255, 61, 0.08);
   }
   .tk-card:hover,
+  .tk-browser-card:hover,
   .tk-step:hover { transform: translateY(-4px); }
   .tk-who__item { transition: border-color 0.3s ease, box-shadow 0.3s ease; }
 }
@@ -449,6 +559,7 @@
   .js .tk-reveal.is-in { opacity: 1; transform: none; }
   /* Once revealed, hand transform/opacity back to the faster hover transitions. */
   .js .tk-card.tk-reveal.is-in,
+  .js .tk-browser-card.tk-reveal.is-in,
   .js .tk-step.tk-reveal.is-in { transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease; transition-delay: 0s; }
 
   .js .tk-hero__visual .tk-frame {
@@ -492,8 +603,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tk-card, .tk-step, .tk-who__item, .tk-cta a, .tk-jump a { transition: none; }
-  .tk-card:hover, .tk-step:hover, .tk-cta a:hover { transform: none; }
+  .tk-card, .tk-browser-card, .tk-step, .tk-who__item, .tk-cta a, .tk-jump a { transition: none; }
+  .tk-card:hover, .tk-browser-card:hover, .tk-step:hover, .tk-cta a:hover { transform: none; }
 }
 
 /* ---------- tablet ---------- */
@@ -511,6 +622,7 @@
 /* ---------- mobile ---------- */
 @media (max-width: 720px) {
   .tk-tools,
+  .tk-browsers__grid,
   .tk-hub__grid,
   .tk-showcase-grid,
   .tk-privacy__grid,
