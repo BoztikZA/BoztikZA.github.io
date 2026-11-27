@@ -47,7 +47,7 @@ const NAV = `<header>
         <a href="/deliver.html">Deliver</a>
         <a href="/creative-toolkit.html">Creative Toolkit</a>
         <a href="/guides.html">Guides</a>
-        <a href="/learning/" aria-label="Boztik Learning Hub" aria-current="page">Learn</a>
+        <a class="nav-learning-link" href="/learning/" aria-label="Boztik Learning Hub" aria-current="page">Learn</a>
         <a class="nav-spotlight-link" href="/spotlight/" aria-label="Explore Boztik Spotlight">Spotlight</a>
         <a class="nav-store-link" href="/stores.html" aria-label="Boztik Stores" title="Boztik Stores"><img class="nav-store-logo" src="/images/boztik-mark.png" alt="" width="320" height="295"><span class="nav-store-sign" aria-hidden="true">OPEN</span></a>
         <a href="/about.html">About</a>
@@ -112,7 +112,7 @@ function page(o: PageOpts): string {
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/styles-premium.css?v=20261123e">
+  <link rel="stylesheet" href="/styles-premium.css?v=20261127a">
   <link rel="stylesheet" href="/learning/learning.css?v=${V}">
 ${(o.jsonld ?? []).map((j) => `  <script type="application/ld+json">${JSON.stringify(j).replace(/</g, "\\u003c")}</script>`).join("\n")}
 </head>
@@ -122,7 +122,7 @@ ${(o.jsonld ?? []).map((j) => `  <script type="application/ld+json">${JSON.strin
 ${o.body}
   </main>
   ${FOOTER}
-${o.analytics ? `  <script defer src="/js/pageview.js?v=4"></script>\n` : ""}  <script src="/js/site.js?v=20261125-learning-hub"></script>
+${o.analytics ? `  <script defer src="/js/pageview.js?v=4"></script>\n` : ""}  <script src="/js/site.js?v=20261127a-learning-hub"></script>
 ${o.script ? `  <script type="module" src="${o.script}?v=${V}"></script>\n` : ""}</body>
 </html>
 `;
@@ -169,7 +169,7 @@ add({
         <div>
           <p class="lh-crumbs"><a href="/index.html">Boztik</a> / Learning Hub</p>
           <img src="/learning/assets/brand/boztik-learning-logo-dark.svg" alt="Boztik Learning" width="260" height="64" style="height:52px;width:auto">
-          <h1>Learn something useful. Finish it. Be proud of it.</h1>
+          <h1>Learn something useful. Finish it. <span class="bz-signature-accent">Be proud of it.</span></h1>
           <p class="lh-lead">Free, practical courses written to be completed — clear lessons, honest assessments and a certificate you earn by passing.</p>
           <div class="lh-btnrow" style="margin-top:26px"><a class="lh-btn lh-btn--primary" href="#courses">Browse free courses</a><a class="lh-btn" href="#certificates">How certificates work</a></div>
           <div class="lh-stats"><span><strong>${catalogue.length}</strong>launch courses</span><span><strong>100%</strong>free to learn</span><span><strong>Any device</strong>resume anywhere</span></div>
@@ -183,7 +183,7 @@ add({
     <section class="lh-section" id="courses">
       <div class="lh-wrap">
         <span class="lh-eyebrow">Featured courses</span>
-        <h2 style="margin:10px 0 8px">Start with a course that pays off quickly</h2>
+        <h2 class="bz-section-title" style="margin:10px 0 8px">Start with a course that pays off quickly</h2>
         <p class="lh-lead" style="margin-bottom:28px">Each course has ten short modules, knowledge checks as you go, and a final assessment. Every course is free.</p>
         <div class="lh-grid lh-grid--3">
       ${catalogue.map(card).join("\n      ")}
@@ -206,7 +206,7 @@ add({
     <section class="lh-section" id="categories" style="padding-top:0">
       <div class="lh-wrap">
         <span class="lh-eyebrow">Categories</span>
-        <h2 style="margin:10px 0 24px">Eight areas, growing over time</h2>
+        <h2 class="bz-section-title" style="margin:10px 0 24px">Eight areas, growing over time</h2>
         <div class="lh-grid lh-grid--2">
       ${LEARNING_CATEGORIES.map((id) => {
         const live = catalogue.filter((c) => c.category === id);
@@ -222,7 +222,7 @@ add({
     <section class="lh-section" style="background:var(--lh-panel,#0b110d);border-block:1px solid rgba(246,255,244,.1)">
       <div class="lh-wrap">
         <span class="lh-eyebrow">How it works</span>
-        <h2 style="margin:10px 0 24px">Four steps, no account</h2>
+        <h2 class="bz-section-title" style="margin:10px 0 24px">Four steps, no account</h2>
         <ol class="lh-steps lh-steps--row">
           <li><h3>Pick a course</h3><p class="lh-muted">Read the outline first. Enrol with your name — email and country are optional.</p></li>
           <li><h3>Learn at your pace</h3><p class="lh-muted">Short lessons with examples, exercises and knowledge checks. Progress saves on our server.</p></li>
@@ -236,7 +236,7 @@ add({
       <div class="lh-wrap lh-split">
         <div>
           <span class="lh-eyebrow">Certificates</span>
-          <h2 style="margin:10px 0 14px">A certificate you actually earn</h2>
+          <h2 class="bz-section-title" style="margin:10px 0 14px">A certificate you actually earn</h2>
           <p class="lh-muted">Pass the assessment and you can claim a Certificate of Achievement showing your name, the course, completion date, your score and the pass mark, with a unique ID and a public verification page.</p>
           <ul class="lh-outcomes" style="margin:18px 0;grid-template-columns:1fr">
             <li>Printed and downloadable as a PDF</li>

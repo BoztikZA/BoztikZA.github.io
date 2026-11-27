@@ -23,6 +23,8 @@
       if (guidesLink) guidesLink.insertAdjacentElement('afterend', learningLink);
       else links.append(learningLink);
     }
+    // Visual destination treatment (styles-premium.css): applied here so it always lands on the Learning Hub link.
+    learningLink.classList.add('nav-learning-link');
     if (guidesLink && guidesLink !== learningLink && guidesLink.textContent.trim() === 'Learn') guidesLink.textContent = 'Guides';
     if (/^\/learning\//.test(location.pathname)) learningLink.setAttribute('aria-current', 'page');
   }
