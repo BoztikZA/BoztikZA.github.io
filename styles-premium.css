@@ -4224,7 +4224,7 @@ footer h3 {
 /* Primary navigation spacing. The Spotlight / Learn / Stores destination family is styled
    in the "Boztik visual system" block at the end of this file. */
 .nav-links{column-gap:clamp(15px,1.55vw,22px);row-gap:14px}
-.nav-links>a:not(.nav-store-link):not(.nav-spotlight-link):not(.nav-learning-link){padding-inline:2px}
+.nav-links>a{padding-inline:2px}
 @media(max-width:820px){
   .nav-links{column-gap:16px;row-gap:13px}
 }
@@ -4327,10 +4327,10 @@ footer h3 {
 
 /* ==========================================================================
    Boztik visual system
-   1. Destination family: Spotlight · Learn · Stores share one frame, spacing and
-      interaction model; each keeps its own identity.
-        Spotlight – illuminated pill, spark glyph, restrained light sweep
-        Learn     – mortarboard glyph, progress line that fills on hover
+   1. Navigation system: every item shares one type scale, spacing and baseline; the three
+      destinations differ only by effect.
+        Spotlight – neon light sweep across the label
+        Learn     – flowing progress underline that completes on hover / current page
         Stores    – the original flickering neon OPEN sign (rules earlier in this file, untouched)
    2. Heading hierarchy
         L1 .bz-signature-accent  – signature headings (glow aura, breathes slowly)
@@ -4347,172 +4347,103 @@ footer h3 {
   --bz-dest-bg-hover:linear-gradient(180deg,rgba(37,69,27,.9),rgba(9,23,9,.96));
 }
 
-/* ---- 1. Destination family ------------------------------------------------ */
-.nav-links a.nav-spotlight-link,
-.nav-links a.nav-learning-link,
-.nav-links a.nav-store-link{
-  position:relative;
-  isolation:isolate;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:7px;
-  min-height:34px;
-  margin-inline:2px;
-  border:1px solid rgba(142,255,61,.48);
-  border-radius:5px;
-  background:var(--bz-dest-bg);
-  box-shadow:inset 0 0 12px rgba(142,255,61,.09),0 0 9px rgba(142,255,61,.14);
-  text-decoration:none;
-  transition:border-color .25s ease,box-shadow .25s ease,background-color .25s ease,color .25s ease,transform .25s ease;
-}
-.nav-links a.nav-spotlight-link,
-.nav-links a.nav-learning-link{
-  overflow:hidden;
-  padding:7px 12px;
-  color:var(--bz-neon-ink);
-  font-weight:800;
-  letter-spacing:.055em;
-  text-shadow:0 0 8px rgba(142,255,61,.5);
-}
-/* Stores keeps its own sign; the frame is quieter so the OPEN sign remains the focal point. */
-.nav-links a.nav-store-link{
-  padding:3px 9px 3px 7px;
-  border-color:rgba(142,255,61,.3);
-  background:rgba(8,16,9,.6);
-  box-shadow:inset 0 0 10px rgba(142,255,61,.05);
+/* ---- 1. Navigation system ------------------------------------------------- */
+/* One typographic baseline for every primary-nav item (links, the "More" button, Contact).
+   Spotlight, Learn and Stores differ only in their effect, never in type, size or spacing. */
+:root{--bz-nav-fs:.95rem;--bz-nav-fw:600;--bz-nav-ls:.01em;--bz-nav-lh:1.25}
+.nav-links>a,
+.nav-links .nav-group__btn{
+  font-family:var(--font-body);
+  font-size:var(--bz-nav-fs);
+  font-weight:var(--bz-nav-fw);
+  letter-spacing:var(--bz-nav-ls);
+  line-height:var(--bz-nav-lh);
 }
 
-/* Shared hover / keyboard focus / current-page states */
-.nav-links a.nav-spotlight-link:focus-visible,
-.nav-links a.nav-learning-link:focus-visible,
-.nav-links a.nav-store-link:focus-visible,
-.nav-links a.nav-spotlight-link[aria-current="page"],
-.nav-links a.nav-learning-link[aria-current="page"],
-.nav-links a.nav-store-link[aria-current="page"]{
-  border-color:var(--bz-neon-soft);
-  box-shadow:inset 0 0 15px rgba(142,255,61,.16),0 0 12px rgba(142,255,61,.42),0 0 25px rgba(142,255,61,.2);
+/* Spotlight – premium neon light sweep travelling across the label (no frame, no icon).
+   Static fallback: softly lit label. */
+.nav-links a.nav-spotlight-link{
+  color:var(--bz-neon-ink);
+  text-shadow:0 0 12px rgba(142,255,61,.38);
 }
+.nav-links a.nav-spotlight-link:hover,
 .nav-links a.nav-spotlight-link:focus-visible,
-.nav-links a.nav-learning-link:focus-visible,
-.nav-links a.nav-spotlight-link[aria-current="page"],
-.nav-links a.nav-learning-link[aria-current="page"]{
+.nav-links a.nav-spotlight-link[aria-current="page"]{
   color:#efffe7;
-  background:var(--bz-dest-bg-hover);
+  text-shadow:0 0 14px rgba(142,255,61,.6);
 }
-.nav-links a.nav-store-link:focus-visible,
-.nav-links a.nav-store-link[aria-current="page"]{background:rgba(14,28,13,.8)}
+
+/* Learn – a flowing progress underline. It rests partly "filled" and completes on hover,
+   focus and on the Learning Hub itself. Sits on the shared underline slot (same offset). */
+.nav-links a.nav-learning-link::after{
+  background:linear-gradient(90deg,rgba(142,255,61,.35),var(--bz-neon) 35%,var(--bz-neon-ink) 50%,var(--bz-neon) 65%,rgba(142,255,61,.35));
+  background-size:200% 100%;
+  box-shadow:0 0 8px rgba(142,255,61,.45);
+  transform:scaleX(.4);
+  transform-origin:left center;
+  transition:transform .5s cubic-bezier(.2,.8,.2,1);
+}
+.nav-links a.nav-learning-link:hover::after,
+.nav-links a.nav-learning-link:focus-visible::after,
+.nav-links a.nav-learning-link[aria-current="page"]::after{transform:scaleX(1)}
+
+/* Stores – keeps the original flickering OPEN sign (rules earlier in this file). The old
+   frame is dropped so the sign sits on the same footing as the other items. */
+.nav-links a.nav-store-link{
+  gap:6px;
+  padding-inline:2px;
+  border:0;
+  background:none;
+  box-shadow:none;
+}
+
 .nav-links a.nav-spotlight-link:focus-visible,
 .nav-links a.nav-learning-link:focus-visible,
-.nav-links a.nav-store-link:focus-visible{outline:2px solid var(--bz-neon-soft);outline-offset:3px}
+.nav-links a.nav-store-link:focus-visible{outline:2px solid var(--bz-neon-soft);outline-offset:6px;border-radius:4px}
 .nav-store-link:focus-visible .nav-store-sign{border-color:#baff91;box-shadow:inset 0 0 10px rgba(142,255,61,.28),0 0 10px rgba(142,255,61,.65),0 0 22px rgba(142,255,61,.35)}
 
-@media(hover:hover){
-  .nav-links a.nav-spotlight-link:hover,
-  .nav-links a.nav-learning-link:hover,
-  .nav-links a.nav-store-link:hover{
-    border-color:var(--bz-neon-soft);
-    box-shadow:inset 0 0 15px rgba(142,255,61,.16),0 0 12px rgba(142,255,61,.42),0 0 25px rgba(142,255,61,.2);
-    transform:translateY(-1px);
+/* Motion: desktop bar only, and only when the visitor has not asked for reduced motion. */
+@media(prefers-reduced-motion:no-preference) and (min-width:1201px){
+  @supports ((-webkit-background-clip:text) or (background-clip:text)){
+    .nav-links a.nav-spotlight-link{
+      background:linear-gradient(105deg,var(--bz-neon-ink) 0,var(--bz-neon-ink) 42%,#fff 50%,var(--bz-neon-ink) 58%,var(--bz-neon-ink) 100%) 100% 0/250% 100% no-repeat;
+      -webkit-background-clip:text;
+      background-clip:text;
+      -webkit-text-fill-color:transparent;
+      color:transparent;
+      text-shadow:none;
+      filter:drop-shadow(0 0 6px rgba(142,255,61,.38));
+      transition:filter .25s ease;
+      animation:boztik-spotlight-sweep 8s ease-in-out infinite;
+    }
+    .nav-links a.nav-spotlight-link:hover,
+    .nav-links a.nav-spotlight-link:focus-visible,
+    .nav-links a.nav-spotlight-link[aria-current="page"]{
+      color:transparent;
+      text-shadow:none;
+      filter:drop-shadow(0 0 9px rgba(142,255,61,.65));
+    }
   }
-  .nav-links a.nav-spotlight-link:hover,
-  .nav-links a.nav-learning-link:hover{color:#efffe7;background:var(--bz-dest-bg-hover)}
-  .nav-links a.nav-store-link:hover{background:rgba(14,28,13,.8)}
+  .nav-links a.nav-learning-link::after{animation:boztik-learn-flow 3.6s linear infinite}
 }
-/* Press feedback doubles as the touch-device alternative to hover. */
-.nav-links a.nav-spotlight-link:active,
-.nav-links a.nav-learning-link:active,
-.nav-links a.nav-store-link:active{
-  transform:scale(.98);
-  border-color:var(--bz-neon-soft);
-  background:var(--bz-dest-bg-hover);
+@keyframes boztik-spotlight-sweep{
+  0%,40%{background-position:100% 0}
+  72%,100%{background-position:0 0}
 }
+@keyframes boztik-learn-flow{from{background-position:0 0}to{background-position:-200% 0}}
 
-/* Spotlight: spark glyph + light sweep (the sweep itself is opt-in, see below) */
-.nav-links a.nav-spotlight-link::before{
-  content:"";
-  position:absolute;
-  z-index:-1;
-  inset:-45% -65%;
-  background:linear-gradient(108deg,transparent 42%,rgba(142,255,61,.08) 47%,rgba(225,255,207,.78) 50%,rgba(142,255,61,.28) 53%,transparent 59%);
-  transform:translateX(-72%) skewX(-18deg);
-  opacity:0;
-  pointer-events:none;
-}
-.nav-links a.nav-spotlight-link::after,
-.nav-links a.nav-learning-link::before{
-  content:"";
-  display:block;
-  position:static;
-  flex:0 0 auto;
-  width:11px;
-  height:11px;
-  background:currentColor;
-  -webkit-mask:var(--bz-glyph) center/contain no-repeat;
-  mask:var(--bz-glyph) center/contain no-repeat;
-  filter:drop-shadow(0 0 4px rgba(142,255,61,.7));
-  transform:none;
-  transition:transform .3s ease;
-}
-.nav-links a.nav-spotlight-link::after{
-  /* four-point spark */
-  --bz-glyph:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 1c.6 6.2 4.8 10.4 11 11-6.2.6-10.4 4.8-11 11-.6-6.2-4.8-10.4-11-11C7.2 11.4 11.4 7.2 12 1z'/%3E%3C/svg%3E");
-}
-.nav-links a.nav-learning-link::before{
-  /* mortarboard */
-  --bz-glyph:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 3 1 9l11 6 9-4.9V17h2V9L12 3zM5 13.2v4L12 21l7-3.8v-4L12 17l-7-3.8z'/%3E%3C/svg%3E");
-  width:14px;
-  height:14px;
-}
-/* Learn: progress line */
-.nav-links a.nav-learning-link::after{
-  content:"";
-  display:block;
-  position:absolute;
-  right:0;
-  bottom:0;
-  left:0;
-  height:2px;
-  border-radius:0;
-  background:linear-gradient(90deg,var(--bz-neon),var(--bz-neon-soft));
-  box-shadow:0 0 8px rgba(142,255,61,.7);
-  transform:scaleX(.32);
-  transform-origin:left center;
-  transition:transform .45s cubic-bezier(.2,.8,.2,1);
-}
-.nav-links a.nav-learning-link[aria-current="page"]::after,
-.nav-links a.nav-learning-link:focus-visible::after{transform:scaleX(1)}
-@media(hover:hover){
-  .nav-links a.nav-learning-link:hover::after{transform:scaleX(1)}
-  .nav-links a.nav-learning-link:hover::before{transform:translateY(-1px) rotate(-8deg)}
-  .nav-links a.nav-spotlight-link:hover::after{transform:rotate(90deg) scale(1.15)}
-}
-
-/* Continuous / entrance motion: only when allowed, and only in the desktop bar */
-@media(prefers-reduced-motion:no-preference){
-  .nav-links a.nav-learning-link::after{animation:boztik-learn-progress 1.4s .5s cubic-bezier(.2,.8,.2,1) both}
-}
-@media(prefers-reduced-motion:no-preference) and (hover:hover) and (min-width:1201px){
-  .nav-links a.nav-spotlight-link::before{animation:boztik-spotlight-nav-beam 7s ease-in-out infinite}
-}
-@keyframes boztik-spotlight-nav-beam{
-  0%,22%{transform:translateX(-72%) skewX(-18deg);opacity:0}
-  32%{opacity:1}
-  58%,100%{transform:translateX(72%) skewX(-18deg);opacity:0}
-}
-@keyframes boztik-learn-progress{from{transform:scaleX(0)}to{transform:scaleX(.32)}}
-
-/* Collapsed menu (matches the existing toggle breakpoint): full-width, 44px touch rows */
+/* Collapsed menu (matches the existing toggle breakpoint): full-width, 44px touch rows.
+   Static alternatives: Spotlight stays softly lit, Learn keeps a short accent bar. */
 @media(max-width:1200px){
-  .nav-links a.nav-spotlight-link,
-  .nav-links a.nav-learning-link,
-  .nav-links a.nav-store-link{
-    justify-content:flex-start;
-    min-height:44px;
-    margin:3px 0;
-    padding-inline:14px;
-  }
   .nav-links a.nav-store-link{gap:10px}
+  .nav-links a.nav-learning-link::after{
+    display:block;
+    right:auto;
+    left:2px;
+    bottom:7px;
+    width:34px;
+    transform:none;
+  }
 }
 
 /* ---- 2. Heading hierarchy ------------------------------------------------- */
