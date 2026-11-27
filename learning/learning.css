@@ -218,10 +218,6 @@
 @media(prefers-reduced-motion:reduce){.lh *{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
 @media print{.lh-topbar,header,footer,.lh-noprint{display:none!important}}
 
-/* Header: the full navigation plus the long tagline wraps "Contact" onto a second row above 1200px. Learning pages
-   hide the tagline in that range (site.js already does the same up to 1200px) so the header stays on one line. */
-@media (min-width:1201px){body.lh .logo-area .logo-subtitle{display:none}}
-
 
 /* Completion contribution panel — optional support, presented after the certificate. */
 .lh-contrib{margin-top:22px;border-color:rgba(142,255,61,.24);background:linear-gradient(145deg,rgba(142,255,61,.055),var(--lh-panel) 48%)}

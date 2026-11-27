@@ -2,7 +2,6 @@
 .homepage { --platform-bg:#070b09; --platform-panel:#0d1511; --platform-green:#8eff3d; --platform-text:#f3f7f1; --platform-muted:#aab8ad; background:var(--platform-bg); }
 html { scroll-behavior:smooth; }
 .homepage [id] { scroll-margin-top:104px; }
-.homepage .logo-subtitle { color:#b9c7ba; font-size:.62rem; font-weight:700; letter-spacing:.085em; }
 .homepage .hm-wrap { max-width:1240px; }
 .homepage .hm-section { padding-block:clamp(68px,8vw,112px); }
 .homepage .home-eyebrow { margin:0 0 14px; color:var(--platform-green); font-size:.68rem; font-weight:850; letter-spacing:.17em; line-height:1.5; text-transform:uppercase; }
