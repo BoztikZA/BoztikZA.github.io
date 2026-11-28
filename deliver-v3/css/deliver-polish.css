@@ -1,0 +1,336 @@
+/* Boztik Deliver — consistency polish (v1)
+   Additive layer loaded after deliver.css / deliver-experience.css.
+   Scope: non-active states (loading / expired / error), the shared
+   .btn-* buttons that had no base styles, the compact footer, and the
+   quiet "More from Boztik" discovery row. Active-delivery layout,
+   download controls and PhotoshopBattles presentation are untouched. */
+
+/* ---------- Loading / expired / error states ----------
+   These sections only carry the generic .deliver-section class, which had
+   no rules, so titles sat hard-left and text ran into the buttons. */
+#deliver-loading,
+#deliver-expired,
+#deliver-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: min(62vh, 560px);
+  max-width: 760px;
+  margin: 0 auto;
+  padding: clamp(36px, 8vw, 72px) 0 12px;
+  text-align: center;
+}
+
+#deliver-loading[hidden],
+#deliver-expired[hidden],
+#deliver-error[hidden] {
+  display: none;
+}
+
+#deliver-loading .deliver-hero-title,
+#deliver-expired .deliver-hero-title,
+#deliver-error .deliver-hero-title {
+  margin: 0 0 14px;
+  font-size: clamp(2rem, 5.4vw, 3.1rem);
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+}
+
+#deliver-loading .deliver-hero-subtitle,
+#deliver-expired .deliver-hero-subtitle,
+#deliver-error .deliver-hero-subtitle {
+  max-width: 580px;
+  margin: 0 auto;
+  font-size: clamp(0.95rem, 2.4vw, 1.08rem);
+  line-height: 1.65;
+  text-align: center;
+}
+
+.deliver-error-detail {
+  max-width: 520px;
+  margin: 16px 0 0;
+  color: var(--deliver-text-muted);
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+
+.deliver-error-detail[hidden] {
+  display: none;
+}
+
+/* ---------- Shared buttons (no base rules existed) ---------- */
+.btn-primary-deliver,
+.btn-secondary-deliver {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 28px;
+  border-radius: 999px;
+  font: 800 0.92rem/1 "Plus Jakarta Sans", Inter, system-ui, sans-serif;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.btn-primary-deliver {
+  width: 100%;
+  border: 1px solid rgba(190, 255, 151, 0.5);
+  background: linear-gradient(115deg, #a5ff57 0%, #83e83b 55%, #baff83 100%);
+  color: #091006;
+  box-shadow: 0 10px 28px rgba(142, 255, 61, 0.16), inset 0 1px rgba(255, 255, 255, 0.45);
+}
+
+.btn-primary-deliver:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 36px rgba(142, 255, 61, 0.24), inset 0 1px rgba(255, 255, 255, 0.5);
+}
+
+.btn-secondary-deliver {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--deliver-text);
+}
+
+.btn-secondary-deliver:hover {
+  transform: translateY(-1px);
+  border-color: rgba(165, 255, 87, 0.45);
+  background: rgba(165, 255, 87, 0.08);
+}
+
+.btn-primary-deliver:active,
+.btn-secondary-deliver:active {
+  transform: translateY(0);
+}
+
+#deliver-expired .deliver-expired-actions {
+  width: 100%;
+  margin-top: 28px;
+}
+
+#deliver-expired .deliver-expired-actions .btn-primary-deliver {
+  width: auto;
+  min-width: 190px;
+  max-width: none !important;
+}
+
+#deliver-error .btn-primary-deliver {
+  width: auto;
+  min-width: 170px;
+  max-width: none !important;
+}
+
+#deliver-expired .deliver-expired-support {
+  width: 100%;
+  text-align: center;
+}
+
+/* Expired tip-jar card: keep it inside the centred column instead of
+   stretching the full page width. */
+#deliver-expired-support {
+  width: 100%;
+  max-width: 640px;
+}
+
+/* ---------- Services card actions ---------- */
+.boztik-services-actions .btn-primary-deliver {
+  width: auto;
+  min-width: 190px;
+}
+
+.boztik-services-actions .btn-secondary-deliver {
+  padding: 0 28px;
+}
+
+/* ---------- "More from Boztik" discovery row ---------- */
+.boztik-discover-links {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+  max-width: 720px;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.boztik-discover-links a {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  height: 100%;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  text-align: left;
+  text-decoration: none;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.boztik-discover-links a:hover,
+.boztik-discover-links a:focus-visible {
+  border-color: rgba(165, 255, 87, 0.35);
+  background: rgba(165, 255, 87, 0.05);
+}
+
+.boztik-discover-links a:focus-visible {
+  outline: 2px solid var(--deliver-accent);
+  outline-offset: 2px;
+}
+
+.boztik-discover-links strong {
+  color: var(--deliver-text);
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+
+.boztik-discover-links span {
+  color: var(--deliver-text-muted);
+  font-size: 0.74rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 700px) {
+  .boztik-discover-links {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- Compact footer ---------- */
+.bz-footer {
+  margin-top: 56px;
+  padding: 26px 0 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.bz-footer__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px 32px;
+  flex-wrap: wrap;
+  padding-bottom: 20px;
+}
+
+.bz-footer__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  color: var(--deliver-text);
+  font: 800 0.98rem/1 "Plus Jakarta Sans", Inter, sans-serif;
+  letter-spacing: 0.14em;
+  text-decoration: none;
+}
+
+.bz-footer__brand img {
+  display: block;
+  width: auto;
+  height: 34px;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.bz-footer__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+}
+
+.bz-footer__nav a,
+.bz-footer__legal a {
+  color: var(--deliver-text-muted);
+  font-size: 0.8rem;
+  text-decoration: none;
+  transition: color 0.18s ease;
+}
+
+.bz-footer__nav a:hover,
+.bz-footer__legal a:hover,
+.bz-footer__nav a:focus-visible,
+.bz-footer__legal a:focus-visible {
+  color: var(--deliver-accent);
+}
+
+.bz-footer a:focus-visible {
+  outline: 2px solid var(--deliver-accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.bz-footer__bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.bz-footer__bottom p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.74rem;
+}
+
+.bz-footer__legal {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+}
+
+.bz-footer__legal a {
+  font-size: 0.74rem;
+}
+
+.bz-footer__secure {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.72rem;
+  font-weight: 650;
+}
+
+.bz-footer__secure svg {
+  width: 13px;
+  height: 13px;
+  color: var(--deliver-accent);
+}
+
+/* PhotoshopBattles keeps a purely navigational footer: no services link. */
+body.is-photoshop-battles .bz-footer__commerce {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .bz-footer {
+    margin-top: 40px;
+  }
+
+  .bz-footer__top,
+  .bz-footer__bottom {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+#deliver-expired-support .boztik-support-section {
+  text-align: center;
+}
+
+#deliver-expired-support .deliver-section-label {
+  justify-content: center;
+}
+
+@media (max-width: 600px) {
+  .boztik-services-actions .btn-primary-deliver,
+  .boztik-services-actions .btn-secondary-deliver {
+    width: 100%;
+    min-width: 0;
+  }
+}

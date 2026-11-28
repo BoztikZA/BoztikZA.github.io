@@ -28,7 +28,6 @@ import {
 import { createDeliveryReactionController } from "./animations/reactions.js";
 import { applyDeliveryTheme } from "./animations/theme.js";
 import { initShare } from "./share.js?v=spotlight-client-init-1";
-import { initSpotlightInvitation } from "./spotlight-invitation.js?v=discovery-cards-6";
 
 
 /* =========================================================
@@ -3422,11 +3421,11 @@ async function init() {
       delivery.is_photoshop_battles === true;
 
     /*
-      Show the low-key discovery invitation once the delivery record is
-      available, including expired deliveries and Command Centre previews.
-      This does not render delivery content or request file previews.
+      Platform discovery on delivery pages is the single inline "More from
+      Boztik" row (see #deliver-discover). The rotating overlay card is no
+      longer used here: it floated over the download area and, on
+      PhotoshopBattles, was promotional content that page must not carry.
     */
-    initSpotlightInvitation(delivery);
 
     /*
       IMPORTANT:
@@ -4169,37 +4168,15 @@ function showError(
     els.errorDetail
   ) {
 
-    const parts =
-      [];
-
-
-    if (
-      error?.message
-    ) {
-
-      parts.push(
-        error.message
-      );
-
-    }
-
-
-    if (
-      error?.code
-    ) {
-
-      parts.push(
-        `(code: ${error.code})`
-      );
-
-    }
-
+    /* Never echo server-provided text (error.message can come straight from
+       the API response). Show a short, generic hint only. */
+    const offline =
+      error?.code === "network";
 
     els.errorDetail.textContent =
-      parts.length
-        ? `Diagnostic: ${parts.join(" ")}`
-        : "Diagnostic: no error details were available.";
-
+      offline
+        ? "We couldn't reach the Boztik Deliver server. Check your connection and try again."
+        : "If this keeps happening, please contact Boztik and include your delivery link.";
 
     els.errorDetail.hidden =
       false;

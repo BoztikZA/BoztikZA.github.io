@@ -44,6 +44,7 @@
   <link rel="stylesheet" href="css/deliver-animations.css?v=2">
   <link rel="stylesheet" href="css/deliver-themes.css?v=1">
   <link rel="stylesheet" href="css/deliver-experience.css?v=2">
+  <link rel="stylesheet" href="css/deliver-polish.css?v=1">
 
   <!-- =====================================================
        BOZTIK DELIVERY PAGE REFINEMENT
@@ -865,274 +866,6 @@
 
 
     /* =====================================================
-       PROFESSIONAL FOOTER
-    ====================================================== */
-
-    .boztik-professional-footer {
-      margin-top: 50px;
-
-      padding:
-        34px 0 22px;
-
-      border-top:
-        1px solid
-        rgba(255,255,255,0.07);
-    }
-
-
-    .boztik-footer-main {
-      display: grid;
-
-      grid-template-columns:
-        minmax(220px, 1.4fr)
-        repeat(3, minmax(120px, 0.65fr));
-
-      gap: 34px;
-
-      padding-bottom: 28px;
-    }
-
-
-    .boztik-footer-brand strong {
-      display: block;
-
-      margin-bottom: 8px;
-
-      font-family:
-        "Plus Jakarta Sans",
-        sans-serif;
-
-      color:
-        var(--deliver-text);
-
-      font-size: 1.05rem;
-
-      letter-spacing: 0.12em;
-    }
-
-
-    .boztik-footer-brand p {
-      max-width: 290px;
-
-      margin: 0;
-
-      color:
-        var(--deliver-text-muted);
-
-      font-size: 0.72rem;
-
-      line-height: 1.6;
-    }
-
-
-    .boztik-footer-column h3 {
-      margin: 0 0 10px;
-
-      color:
-        var(--deliver-text);
-
-      font-size: 0.68rem;
-
-      font-weight: 800;
-
-      letter-spacing: 0.09em;
-
-      text-transform: uppercase;
-    }
-
-
-    .boztik-footer-column a {
-      display: block;
-
-      width: fit-content;
-
-      margin-bottom: 7px;
-
-      color:
-        var(--deliver-text-muted);
-
-      font-size: 0.7rem;
-
-      text-decoration: none;
-
-      transition: color 180ms ease;
-    }
-
-
-    .boztik-footer-column a:hover {
-      color:
-        var(--deliver-accent);
-    }
-
-    .boztik-footer-column a.boztik-footer-spotlight {
-      color: #a5ff69;
-      font-weight: 800;
-    }
-
-    .boztik-footer-column a.boztik-footer-spotlight:hover {
-      color: #c5ff9f;
-    }
-
-
-    .boztik-footer-bottom {
-      display: flex;
-
-      align-items: center;
-      justify-content: space-between;
-
-      gap: 18px;
-
-      padding-top: 19px;
-
-      border-top:
-        1px solid
-        rgba(255,255,255,0.045);
-    }
-
-
-    .boztik-footer-bottom p {
-      margin: 0;
-
-      color:
-        rgba(255,255,255,0.35);
-
-      font-size: 0.63rem;
-
-      line-height: 1.5;
-    }
-
-
-    .boztik-footer-security {
-      display: inline-flex;
-
-      align-items: center;
-
-      gap: 6px;
-
-      color:
-        rgba(255,255,255,0.42);
-
-      font-size: 0.62rem;
-
-      font-weight: 650;
-    }
-
-
-    .boztik-footer-security svg {
-      width: 13px;
-      height: 13px;
-
-      color:
-        var(--deliver-accent);
-    }
-
-
-    .boztik-footer-legal {
-      display: inline-flex;
-
-      align-items: center;
-
-      gap: 14px;
-    }
-
-
-    .boztik-footer-legal a {
-      color:
-        rgba(255,255,255,0.4);
-
-      font-size: 0.63rem;
-
-      text-decoration: none;
-
-      transition: color 180ms ease;
-    }
-
-
-    .boztik-footer-legal a:hover {
-      color:
-        var(--deliver-accent);
-    }
-
-
-    .boztik-footer-toggle-wrap {
-      display: flex;
-
-      justify-content: center;
-
-      margin-bottom: 26px;
-    }
-
-
-    .boztik-footer-toggle {
-      display: inline-flex;
-
-      align-items: center;
-
-      gap: 7px;
-
-      padding:
-        7px 14px;
-
-      border:
-        1px solid
-        rgba(255,255,255,0.09);
-
-      border-radius: 999px;
-
-      background:
-        rgba(255,255,255,0.03);
-
-      color:
-        rgba(255,255,255,0.55);
-
-      font-size: 0.66rem;
-
-      font-weight: 700;
-
-      letter-spacing: 0.05em;
-
-      cursor: pointer;
-
-      transition:
-        color 180ms ease,
-        border-color 180ms ease,
-        background 180ms ease;
-    }
-
-
-    .boztik-footer-toggle:hover {
-      color:
-        var(--deliver-accent);
-
-      border-color:
-        rgba(89,163,255,0.4);
-
-      background:
-        rgba(255,255,255,0.05);
-    }
-
-
-    .boztik-footer-toggle-chevron {
-      width: 13px;
-      height: 13px;
-
-      transition: transform 220ms ease;
-    }
-
-
-    .boztik-professional-footer.is-collapsed
-    .boztik-footer-toggle-chevron {
-      transform: rotate(180deg);
-    }
-
-
-    .boztik-professional-footer.is-collapsed
-    .boztik-footer-body {
-      display: none;
-    }
-
-
-    /* =====================================================
        SUPPORT SECTION RESPONSES
     ====================================================== */
 
@@ -1210,9 +943,6 @@
        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
-      .boztik-footer-main {
-       grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
     }
 
 
@@ -1298,19 +1028,6 @@
        min-width: 0;
      }
 
-
-     .boztik-footer-main {
-       grid-template-columns: 1fr;
-
-       gap: 24px;
-     }
-
-
-     .boztik-footer-bottom {
-       flex-direction: column;
-
-       align-items: flex-start;
-     }
 
     }
 
@@ -2031,20 +1748,34 @@
 
         </div>
 
-        <!-- Other deliveries: slightly stronger, still professional -->
+        <!-- Other deliveries: one quiet, useful row. No overlay, no repeat of the
+             services card below, and nothing that competes with the download. -->
         <div class="boztik-discover-copy boztik-discover-copy--standard">
 
           <p class="boztik-discover-wordmark">
-            Need something edited?
+            More from Boztik
           </p>
 
-          <p class="boztik-discover-sub">
-            Photo restoration, retouching, Photoshop manipulation, composites and more.
-          </p>
-
-          <a class="boztik-discover-cta" href="../services.html">
-            See what Boztik can do <span aria-hidden="true">→</span>
-          </a>
+          <ul class="boztik-discover-links">
+            <li>
+              <a href="../creative-toolkit.html">
+                <strong>Creative Toolkit</strong>
+                <span>Free browser extension for image and creative work</span>
+              </a>
+            </li>
+            <li>
+              <a href="../spotlight/">
+                <strong>Spotlight</strong>
+                <span>Discover independent creators and makers</span>
+              </a>
+            </li>
+            <li>
+              <a href="../learning/">
+                <strong>Learning Hub</strong>
+                <span>Practical courses with certificates</span>
+              </a>
+            </li>
+          </ul>
 
         </div>
 
@@ -2606,12 +2337,8 @@
 
       <p
         id="deliver-error-detail"
-        style="
-          font-family: monospace;
-          font-size: 0.8rem;
-          opacity: 0.5;
-          margin-top: 20px;
-        "
+        class="deliver-error-detail"
+        role="status"
         hidden
       ></p>
 
@@ -2632,195 +2359,47 @@
 
 
     <!-- =====================================================
-         PROFESSIONAL FOOTER
+         FOOTER
+         One compact footer shared by every delivery state. Navigation
+         only: no payment links (those live in the support cards), so it
+         is identical and uncluttered on PhotoshopBattles too.
     ====================================================== -->
 
-    <footer class="boztik-professional-footer">
+    <footer class="bz-footer boztik-professional-footer">
 
-      <!-- COLLAPSE TOGGLE -->
-      <div class="boztik-footer-toggle-wrap">
-        <button
-          type="button"
-          class="boztik-footer-toggle"
-          id="boztik-footer-toggle"
-          aria-expanded="true"
-          aria-controls="boztik-footer-body"
-        >
-          <svg class="boztik-footer-toggle-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M6 15l6-6 6 6"/>
-          </svg>
-          <span class="boztik-footer-toggle-label">Collapse footer</span>
-        </button>
-      </div>
+      <div class="bz-footer__top">
 
+        <a class="bz-footer__brand" href="../index.html" aria-label="Boztik home">
+          <img src="../images/boztik-mark.png" alt="" width="320" height="295" loading="lazy" decoding="async">
+          <span>BOZTIK</span>
+        </a>
 
-      <div class="boztik-footer-body" id="boztik-footer-body">
-
-        <div class="boztik-footer-main">
-
-
-        <!-- BRAND -->
-
-        <div class="boztik-footer-brand">
-
-          <img
-            class="boztik-footer-logo"
-            src="../images/boztik-logo.png"
-            alt="Boztik"
-            width="560"
-            height="491"
-            loading="lazy"
-            decoding="async"
-          >
-
-          <p>
-            Software, creative tools and professional photo services for photographers, designers and creators.
-          </p>
-
-        </div>
-
-
-        <!-- EXPLORE -->
-
-        <div class="boztik-footer-column">
-
-          <h3>
-            Explore
-          </h3>
-
-          <a href="https://www.boztik.com/spotlight/" class="boztik-footer-spotlight" aria-label="Visit Boztik Spotlight">
-            Spotlight — Get Featured
-          </a>
-
-          <a href="../index.html">
-            Website
-          </a>
-
-          <a
-            href="https://boztiktech9a11.myportfolio.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Portfolio
-          </a>
-
-          <a href="../creative-toolkit.html">
-            Creative Toolkit
-          </a>
-
-          <a href="../image-inspector.html">
-            Image Inspector
-          </a>
-
-        </div>
-
-
-        <!-- SERVICES -->
-
-        <div class="boztik-footer-column">
-
-          <h3>
-            Services
-          </h3>
-
-          <a
-            href="https://ko-fi.com/c/36ad8145f5"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Request an Edit
-          </a>
-
-          <a
-            href="https://boztiktech9a11.myportfolio.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Photo Editing
-          </a>
-
-          <a
-            href="https://boztiktech9a11.myportfolio.com/contact"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Custom Requests
-          </a>
-
-        </div>
-
-
-        <!-- SUPPORT -->
-
-        <div id="deliver-footer-support" class="boztik-footer-column">
-
-          <h3>
-            Support
-          </h3>
-
-          <a
-            href="https://ko-fi.com/boztik"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Ko-fi
-          </a>
-
-          <a
-            href="http://paypal.me/angry5p1c3"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            PayPal
-          </a>
-
-          <a
-            href="https://boztiktech9a11.myportfolio.com/contact"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Contact Boztik
-          </a>
-
-        </div>
+        <nav class="bz-footer__nav" aria-label="Boztik">
+          <a href="../index.html">Home</a>
+          <a href="../creative-toolkit.html">Creative Toolkit</a>
+          <a href="../spotlight/">Spotlight</a>
+          <a href="../learning/">Learning Hub</a>
+          <a href="../discover.html">Discover</a>
+          <a href="../services.html" class="bz-footer__commerce">Creative Services</a>
+          <a href="../contact.html">Contact</a>
+        </nav>
 
       </div>
 
+      <div class="bz-footer__bottom">
 
-      <div class="boztik-footer-bottom">
+        <p>&copy; 2026 Boztik. All rights reserved.</p>
 
-
-        <p>
-          &copy; 2026 Boztik. All rights reserved.
-        </p>
-
-
-        <div class="boztik-footer-legal">
-          <a href="../terms.html">Terms</a>
+        <div class="bz-footer__legal">
+          <a href="../deliver.html">About Boztik Deliver</a>
           <a href="../privacy.html">Privacy</a>
+          <a href="../terms.html">Terms</a>
         </div>
 
-
-        <div class="boztik-footer-security">
-
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-
-          </svg>
-
+        <span class="bz-footer__secure">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           Secure private delivery
-
-        </div>
-
-      </div>
+        </span>
 
       </div>
 
@@ -2861,7 +2440,7 @@
 
   <script
     type="module"
-    src="js/client.js?v=discovery-cards-5"
+    src="js/client.js?v=experience-polish-1"
   ></script>
 
 </body>
