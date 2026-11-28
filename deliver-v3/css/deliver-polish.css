@@ -334,3 +334,31 @@ body.is-photoshop-battles .bz-footer__commerce {
     min-width: 0;
   }
 }
+
+/* ---------- Verification fixes ---------- */
+
+/* The PhotoshopBattles discovery copy was visible on every delivery because
+   `.boztik-discover-copy { display: flex }` (later in deliver.css) overrode its
+   `display: none`, so normal deliveries showed two discovery blocks. Higher
+   specificity restores the intended split; the Battles rule in deliver.css
+   (body.is-photoshop-battles …, higher still) keeps showing it there. */
+.boztik-discover .boztik-discover-copy--battles {
+  display: none;
+}
+
+/* On phones deliver.css flattens the files column and sequences its children
+   with `order`; the discovery row had none, so it rendered above the files.
+   Keep it after the download and share controls. */
+@media (max-width: 840px) {
+  body:not(.is-photoshop-battles) #deliver-discover {
+    order: 5;
+  }
+}
+
+/* Two-line button labels on very narrow phones were cramped at line-height 1. */
+.btn-primary-deliver,
+.btn-secondary-deliver {
+  line-height: 1.25;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
